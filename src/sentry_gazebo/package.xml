@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>sentry_gazebo</name>
+  <version>0.4.0</version>
+  <description>
+    RMUL 2027 sentry Gazebo Harmonic simulation: the arena (official STEP
+    geometry as model://rmul_2027), the sentry robot built from
+    sentry_description, MID-360 / Unitree L2 gpu_lidar sensors and the ROS 2
+    bridge.  All ROS-side nodes are stock (robot_state_publisher, tf2_ros,
+    ros_gz_bridge); the only custom code is the URDF->SDF generator and the
+    planar velocity gz system.
+  </description>
+  <maintainer email="yang@example.com">yang</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>tf2_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+  <!-- robot description: shared with the real robot, no Gazebo dependency -->
+  <exec_depend>sentry_description</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

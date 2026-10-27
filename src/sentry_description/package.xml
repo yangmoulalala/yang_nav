@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>sentry_description</name>
+  <version>0.1.0</version>
+  <description>
+    Robot description of the RMUL 2027 sentry: URDF and meshes only.
+    Deliberately free of Gazebo and simulation dependencies so the same
+    description can be used by robot_state_publisher on the real robot.
+  </description>
+  <maintainer email="yang@example.com">yang</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>urdf</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

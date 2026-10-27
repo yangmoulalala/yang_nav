@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- 声明定位工作空间统一启动入口的运行依赖。 -->
+<package format="3">
+  <name>bringup</name>
+  <version>0.0.1</version>
+  <description>Z-Localization 前端与后端的统一启动入口。</description>
+  <maintainer email="zhujunheng2005@gmail.com">mozihe</maintainer>
+  <author email="zhujunheng2005@gmail.com">mozihe</author>
+  <license>GPL-2.0-only</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>frontend</exec_depend>
+  <exec_depend>backend</exec_depend>
+  <exec_depend>livox_ros_driver2</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>domain_coordinator</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>localization_interfaces</test_depend>
+  <test_depend>nav_msgs</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>sensor_msgs_py</test_depend>
+  <test_depend>std_msgs</test_depend>
+  <test_depend>std_srvs</test_depend>
+  <test_depend>python3-yaml</test_depend>
+
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

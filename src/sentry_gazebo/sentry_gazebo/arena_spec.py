@@ -1,0 +1,240 @@
+"""Single source of truth for the RMUL 2027 sentry simulation.
+
+Everything that describes the *scene* lives here, so that the Gazebo world
+(:mod:`sentry_gazebo.sdf_builder`) and the documentation cannot drift apart.
+
+Arena
+-----
+All numbers were measured from the official STEP tessellation
+(``RMUL2027_3V3_V1.0.0.stp``, shipped as
+``models/rmul_2027/meshes/step_textured.dae``).  The boxes below were validated
+with a vertical ray cast on 42 921 sample columns: the top surface agrees with
+the tessellation everywhere except on the 50 mm cell borders (the ray test
+needs a strictly interior hit, hence the one-cell rim in the validation
+report).
+
+Coordinate frame: map frame of ``rmul_2027.pgm`` -- southwest inner corner at
+(0, 0), +x east, +y north, finished main floor at z = 0.  The blue half of the
+field is the red half rotated by 180 deg about the field centre (6, 4).
+
+Robot
+-----
+The sensor mount poses are copied verbatim from
+``sentry_description/urdf/sentry_robot.urdf`` -- nothing here overrides the
+URDF:
+
+* the MID-360 sits at z = +0.164 inside the turret and looks forward/down,
+* the Unitree L2 sits at z = -0.176, i.e. 17 cm above the ground, under the
+  chassis, and looks backwards.
+
+Both were confirmed by forward kinematics of the URDF and by ray casting
+against the 1.3 M-triangle chassis meshes.
+
+LiDAR
+-----
+The point clouds come from Gazebo's built-in ``gpu_lidar`` sensors (ogre2 ray
+casting, uniform angular grid).  All sampling parameters, mount poses, frames
+and topic names live here so the SDF, the bridge config and the docs cannot
+diverge.
+"""
+
+import math
+
+PI = math.pi
+D2R = math.pi / 180.0
+
+
+# ---------------------------------------------------------------------------
+# Robot
+# ---------------------------------------------------------------------------
+ROBOT_MODEL_NAME = 'sentry'
+
+# The robot's pose in the world -- the *only* thing that places the model.
+# ``sentry_robot.urdf`` is authored z-up (wheels spread over x-y, ``yaw_joint``
+# about +z), so no re-orientation is needed.
+ROBOT_SPAWN_XY_YAW = (1.25, 6.75, 0.0)   # scenario.json spawn, in the red supply zone
+ROBOT_Z = 0.062          # wheel bottoms on the floor (joint z 0.003 - radius 0.065)
+
+# The URDF's own orientation.  z-up already, so this stays identity; it is kept
+# so a future y-up export only has to change this one value.
+ROBOT_MODEL_RPY = (0.0, 0.0, 0.0)
+
+
+# --- laser mounts -----------------------------------------------------------
+# Only which links carry a LiDAR: their pose is the URDF joint chain, read in
+# ``sdf_builder`` with ``Urdf.pose_of``.  No numbers live here, so a new CAD
+# export cannot desynchronise the simulation.
+
+# --- chassis / wheel geometry ----------------------------------------------
+# Wheel joints and every link pose are read straight from sentry_robot.urdf
+# (see ``sdf_builder.robot_model_xml``); only what the URDF does not carry --
+# the simplified collision shapes -- lives here.
+WHEEL_RADIUS = 0.065
+WHEEL_LENGTH = 0.04      # wheel_front_left.stl is 4 cm thick along its axis
+
+# Collision hull of the chassis: one box instead of the 1.29 M-triangle STL.
+# Values are the bounding box of base_link.stl after its URDF visual rotation
+# (0.594 x 0.594 x 0.170, centred 0.027 above the link origin), so the hull
+# follows the CAD without hand-tuned numbers.
+CHASSIS_HULL_CENTRE = (0.0, 0.0, 0.027)
+CHASSIS_HULL_SIZE = (0.594, 0.594, 0.170)
+CHASSIS_MASS = 18.0
+TURRET_MASS = 4.0
+
+# planar velocity controller limits (m/s, rad/s) -- RMUL 3v3 rules: 3 m/s chassis
+MAX_LINEAR_VELOCITY = 3.0
+MAX_ANGULAR_VELOCITY = 6.0
+
+
+def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max, frame_id,
+          rate=10.0, stddev=0.01, topic=None):
+    """One LiDAR: geometry/FOV shared by the SDF and the docs.
+
+    ``topic`` is the *base* topic.  gz-sim expands it into two topics:
+
+        <base>          gz.msgs.LaserScan        (one scan line, for viz)
+        <base>/points   gz.msgs.PointCloudPacked (the 3-D cloud we bridge)
+
+    The base name must not start with ``/``: gz then treats it as a relative
+    topic.  Frame ids and the ROS-side names are derived in
+    :data:`GZ_TOPIC_MID360_CLOUD` / :data:`GZ_TOPIC_L2_CLOUD`.
+    """
+    return {
+        'name': name,
+        'frame_id': frame_id,
+        'update_rate': rate,
+        'topic': topic or '/%s/points' % name,
+        'samples_h': n_h,
+        'h_min': -PI,
+        'h_max': PI,
+        'samples_v': n_v,
+        'v_min': v_min_deg * D2R,
+        'v_max': v_max_deg * D2R,
+        'range_min': r_min,
+        'range_max': r_max,
+        'range_resolution': 0.005,
+        'noise_stddev': stddev,
+    }
+
+
+# Livox MID-360 (vendor data sheet): 360 deg x 59 deg FOV (-7 .. +52 deg),
+# 200 000 points/s, 0.1 .. 40 m.  gpu_lidar can only do a uniform grid, so the
+# 720 x 40 = 28 800 points/frame is a 1.4x oversampled stand-in for the real
+# 20 000 points/frame rosette; 720 columns = 0.5 deg, the figure used by the
+# LXRobotics Gazebo-Harmonic write-up.  Raise n_h if you want denser clouds.
+MID360_LIDAR = lidar('mid360_lidar', 720, 40, -7.0, 52.0, 0.1, 40.0, 'mid360_link',
+                     topic='lidar_mid360/points')
+# Unitree 4D LiDAR L2 (vendor manual): 360 deg x 96 deg FOV, 64 000 points/s,
+# 0.05 .. 30 m, and a *two-axis single-beam* scan (5.55 Hz azimuth / 216 Hz
+# elevation) -- not a 55-ring mechanical LiDAR.  160 x 40 = 6 400 points/frame
+# matches the real point budget at 10 Hz, which matters: an SLAM front end
+# tuned on a 10x denser simulation falls apart on the real device.
+L2_LIDAR = lidar('l2_lidar', 160, 40, -48.0, 48.0, 0.05, 30.0, 'l2_link',
+                 topic='lidar_l2/points')
+
+# link, parent link, lidar spec, visual box size, colour
+ROBOT_MOUNTS = (
+    ('mid360_link', 'yaw_link', MID360_LIDAR,
+     (0.07, 0.05, 0.05), (0.10, 0.75, 0.35, 1.0)),
+    ('l2_link', 'yaw_link', L2_LIDAR,
+     (0.055, 0.045, 0.05), (0.15, 0.45, 0.95, 1.0)),
+)
+
+# ROS topics (bridged from Gazebo)
+TOPIC_CMD_VEL = '/cmd_vel'
+TOPIC_ODOM = '/odom'
+TOPIC_JOINT_STATES = '/joint_states'
+# gz topic of the stock OdometryPublisher's Pose_V (odom -> base_link TF)
+GZ_TOPIC_ODOM_TF = '/tf_odom'
+
+# gz topic carrying the packed cloud: gz-sim appends "/points" to <topic>
+GZ_TOPIC_MID360_CLOUD = '/' + MID360_LIDAR['topic'] + '/points'
+GZ_TOPIC_L2_CLOUD = '/' + L2_LIDAR['topic'] + '/points'
+
+# gz sensor name -> link frame; the launch file publishes an identity
+# static transform from the link to the scoped frame gz stamps on the cloud
+# ("sentry/mid360_link/mid360_lidar"), which SDFormat 1.9 cannot rename.
+SENSOR_FRAMES = {m[2]['name']: m[0] for m in ROBOT_MOUNTS}
+
+
+# ---------------------------------------------------------------------------
+# Arena
+# ---------------------------------------------------------------------------
+FLOOR = (0.62, 0.62, 0.62, 1.0)
+FLOOR_SUPPLY = (0.55, 0.58, 0.60, 1.0)
+FLOOR_TUNNEL = (0.66, 0.66, 0.68, 1.0)
+FLOOR_CENTRE = (0.60, 0.74, 0.86, 1.0)
+RED = (0.72, 0.20, 0.20, 1.0)
+BLUE = (0.20, 0.32, 0.72, 1.0)
+METAL = (0.45, 0.46, 0.50, 1.0)
+PARAPET = (0.55, 0.56, 0.60, 1.0)
+PERIMETER = (0.26, 0.27, 0.30, 1.0)
+CROWN = (0.72, 0.20, 0.20, 1.0)
+WORKBENCH = (0.80, 0.62, 0.36, 1.0)
+GROUND = (0.20, 0.21, 0.23, 1.0)
+
+PERIMETER_MU = 0.8
+FLOOR_MU = 0.8
+
+# name, min corner, size, contact (perimeter boxes are static walls)
+ARENA_BOXES = (
+    # --- base -------------------------------------------------------------
+    ('ground', (-3.0, -3.0, -0.1), (18.0, 14.0, 0.06), GROUND),
+    ('field', (0.0, 0.0, -0.1), (12.0, 8.0, 0.1), FLOOR),
+    # --- floors / supply zones / tunnel floors ----------------------------
+    ('supply_red', (0.0, 6.0, -0.002), (2.5, 2.0, 0.005), FLOOR_SUPPLY),
+    ('supply_blue', (9.5, 0.0, -0.002), (2.5, 2.0, 0.005), FLOOR_SUPPLY),
+    ('supply_chamfer_south_red', (0.0, 5.98, 0.0), (2.5, 0.02, 0.002), FLOOR),
+    ('supply_chamfer_north_red', (0.0, 8.0, 0.0), (2.5, 0.02, 0.002), FLOOR),
+    ('supply_chamfer_west_red', (-0.02, 6.0, 0.0), (0.02, 2.0, 0.002), FLOOR),
+    ('supply_chamfer_east_red', (2.5, 6.0, 0.0), (0.02, 2.0, 0.002), FLOOR),
+    ('supply_chamfer_south_blue', (9.5, 1.98, 0.0), (2.5, 0.02, 0.002), FLOOR),
+    ('supply_chamfer_north_blue', (9.5, 4.0, 0.0), (2.5, 0.02, 0.002), FLOOR),
+    ('supply_chamfer_west_blue', (9.48, 2.0, 0.0), (0.02, 2.0, 0.002), FLOOR),
+    ('supply_chamfer_east_blue', (12.0, 2.0, 0.0), (0.02, 2.0, 0.002), FLOOR),
+    ('tunnel_floor_red', (2.5, 7.06, -0.002), (2.0, 0.8, 0.003), FLOOR_TUNNEL),
+    ('tunnel_floor_blue', (7.5, 0.14, -0.002), (2.0, 0.8, 0.003), FLOOR_TUNNEL),
+    ('centre_plate', (4.5, 2.5, -0.005), (3.0, 3.0, 0.015), FLOOR_CENTRE),
+    ('centre_logo', (5.385, 3.47, 0.01), (1.229, 1.032, 0.001), FLOOR_CENTRE),
+    # --- highlands (200 mm) ------------------------------------------------
+    ('highland_red', (2.5, 3.0, -0.1), (2.0, 4.06, 0.3), RED),
+    ('highland_blue', (7.5, 0.94, -0.1), (2.0, 4.06, 0.3), BLUE),
+    ('highland_control_red', (2.9, 4.2, 0.2), (1.2, 1.2, 0.0012), RED),
+    ('highland_control_blue', (7.9, 2.6, 0.2), (1.2, 1.2, 0.0012), BLUE),
+    ('highland_mark_red', (3.254, 4.588, 0.2), (0.492, 0.413, 0.0016), METAL),
+    ('highland_mark_blue', (8.254, 2.999, 0.2), (0.492, 0.413, 0.0016), METAL),
+    # parapets: 150 x 1800 x 200 on the far edge of each highland
+    ('parapet_red', (4.35, 3.9, 0.2), (0.15, 1.8, 0.2), PARAPET),
+    ('parapet_blue', (7.5, 2.3, 0.2), (0.15, 1.8, 0.2), PARAPET),
+    # --- tunnel roofs (underside 250, top 270) + ramp on the field side ----
+    ('tunnel_roof_red', (3.325, 6.98, 0.25), (0.35, 0.96, 0.02), METAL),
+    ('tunnel_roof_blue', (8.325, 0.06, 0.25), (0.35, 0.96, 0.02), METAL),
+    ('tunnel_ramp_red', (3.325, 6.92, 0.21), (0.35, 0.06, 0.04), METAL),
+    ('tunnel_ramp_blue', (8.325, 1.02, 0.21), (0.35, 0.06, 0.04), METAL),
+    ('tunnel_ramp_top_red', (3.325, 6.92, 0.233), (0.35, 0.02, 0.027), METAL),
+    ('tunnel_ramp_top_blue', (8.325, 1.02, 0.233), (0.35, 0.02, 0.027), METAL),
+    # --- workbenches: 750 x 450 top at 403 --------------------------------
+    ('workbench_red', (0.0, 7.55, 0.003), (0.75, 0.45, 0.4), WORKBENCH),
+    ('workbench_blue', (11.25, 0.0, 0.003), (0.75, 0.45, 0.4), WORKBENCH),
+    # --- perimeter: 300 thick, wall top 400 + 20 crown --------------------
+    ('perimeter_south', (-0.3, -0.3, -0.1), (12.6, 0.3, 0.5), PERIMETER),
+    ('perimeter_north', (-0.3, 8.0, -0.1), (12.6, 0.3, 0.5), PERIMETER),
+    ('perimeter_west', (-0.3, 0.0, -0.1), (0.3, 8.0, 0.5), PERIMETER),
+    ('perimeter_east', (12.0, 0.0, -0.1), (0.3, 8.0, 0.5), PERIMETER),
+    ('crown_south', (-0.3, -0.2, 0.4), (12.6, 0.2, 0.02), CROWN),
+    ('crown_north', (-0.3, 8.0, 0.4), (12.6, 0.2, 0.02), CROWN),
+    ('crown_west', (-0.2, 0.0, 0.4), (0.2, 8.0, 0.02), CROWN),
+    ('crown_east', (12.0, 0.0, 0.4), (0.2, 8.0, 0.02), CROWN),
+)
+
+# The perimeter is a rigid wall: drive-into-it behaviour should stop the robot.
+def box_center(entry):
+    """Return (centre xyz, size xyz) for an ``ARENA_BOXES`` entry."""
+    _name, mn, size, _rgba = entry
+    return (mn[0] + size[0] / 2.0, mn[1] + size[1] / 2.0, mn[2] + size[2] / 2.0), size
+
+
+def box_mu(name):
+    """Per-box friction coefficient."""
+    return PERIMETER_MU
+

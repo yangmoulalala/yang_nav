@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<robot name="sentry_chassis_yaw">
+
+  <link name="base_link">
+    <visual><origin xyz="0.000000 0.000000 0.000000" rpy="1.570796 0 0"/>
+      <geometry><mesh filename="meshes/base_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="0.000000 0.000000 0.000000" rpy="1.570796 0 0"/>
+      <geometry><mesh filename="meshes/base_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <link name="wheel_front_left">
+    <visual><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_front_left.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_front_left.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <joint name="wheel_front_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_front_left"/>
+    <origin xyz="-0.207983 -0.207983 0.003000" rpy="-1.570796 -0.000000 2.356194"/>
+    <axis xyz="0.000000 0.000000 -1.000000"/>
+  </joint>
+
+  <link name="wheel_rear_right">
+    <visual><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_rear_right.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_rear_right.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <joint name="wheel_rear_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_rear_right"/>
+    <origin xyz="0.207983 0.207983 0.003000" rpy="-1.570796 -0.000000 -0.785398"/>
+    <axis xyz="0.000000 0.000000 -1.000000"/>
+  </joint>
+
+  <link name="wheel_front_right">
+    <visual><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_front_right.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_front_right.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <joint name="wheel_front_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_front_right"/>
+    <origin xyz="0.207983 -0.207983 0.003000" rpy="-1.570796 -0.000000 -2.356194"/>
+    <axis xyz="0.000000 0.000000 -1.000000"/>
+  </joint>
+
+  <link name="wheel_rear_left">
+    <visual><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_rear_left.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="-0.000000 -0.000000 0.006200" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/wheel_rear_left.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <joint name="wheel_rear_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_rear_left"/>
+    <origin xyz="-0.207983 0.207983 0.003000" rpy="-1.570796 -0.000000 0.785398"/>
+    <axis xyz="0.000000 0.000000 -1.000000"/>
+  </joint>
+
+  <link name="yaw_link">
+    <visual><origin xyz="-0.000000 -0.025000 0.000000" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/yaw_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="-0.000000 -0.025000 0.000000" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/yaw_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <joint name="yaw_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="yaw_link"/>
+    <origin xyz="-0.000000 0.000000 0.005000" rpy="-1.570796 0.000000 -1.570796"/>
+    <axis xyz="-0.000000 1.000000 -0.000000"/>
+  </joint>
+
+  <link name="mid360_link">
+    <visual><origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/mid360_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/mid360_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <joint name="mid360_joint" type="fixed">
+    <parent link="yaw_link"/>
+    <child link="mid360_link"/>
+    <origin xyz="0.163595 -0.131644 0.055760" rpy="-2.879793 -1.570796 0.000000"/>
+  </joint>
+
+  <link name="l2_link">
+    <visual><origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/l2_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
+    <collision><origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+      <geometry><mesh filename="meshes/l2_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
+  </link>
+
+  <joint name="l2_joint" type="fixed">
+    <parent link="yaw_link"/>
+    <child link="l2_link"/>
+    <origin xyz="-0.176070 -0.157491 -0.042617" rpy="-1.570796 -1.178097 1.570796"/>
+  </joint>
+
+</robot>

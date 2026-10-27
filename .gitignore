@@ -1,0 +1,34 @@
+# ---- colcon build artifacts -------------------------------------------------
+/build/
+/install/
+/log/
+/build_*/
+/install_*/
+/log_*/
+
+# ---- python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ---- local vendored deps / pip --target dirs --------------------------------
+/.pylib/
+/.deps/
+
+# ---- local snapshots (not source) ------------------------------------------
+# pre-refactor tarball of src/sentry_gazebo
+/backup/
+# upstream checkouts used as reading material (they carry their own .git)
+/reference/
+
+# ---- scratch ---------------------------------------------------------------
+# created by a mistyped `gz sim --generated-dir ...`
+/--generated-dir/
+
+# ---- editors / OS ----------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store

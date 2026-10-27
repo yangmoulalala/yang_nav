@@ -1,0 +1,58 @@
+%YAML 1.2
+# ROS <-> Gazebo bridge for the sentry simulation.
+#
+# gz -> ros
+#   /clock           sim time
+#   /odom            ground truth, gz::sim::systems::OdometryPublisher
+#   /tf              odom -> base_link (Pose_V from the same system)
+#   /joint_states    passive joints, gz::sim::systems::JointStatePublisher
+#   /lidar_*/points  the two gpu_lidar sensors (sensor topics set in the SDF)
+#
+# ros -> gz
+#   /cmd_vel         consumed by the sentry_velocity_control plugin
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/odom"
+  gz_topic_name: "/odom"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# OdometryPublisher publishes its TF as gz.msgs.Pose_V; the bridge maps the
+# pose header's frame_id / child_frame_id pairs straight onto TransformStamped.
+- ros_topic_name: "/tf"
+  gz_topic_name: "/tf_odom"
+  ros_type_name: "tf2_msgs/msg/TFMessage"
+  gz_type_name: "gz.msgs.Pose_V"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/joint_states"
+  gz_topic_name: "/joint_states"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/cmd_vel"
+  gz_topic_name: "/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/lidar_mid360/points"
+  gz_topic_name: "/lidar_mid360/points/points"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
+  # header.frame_id is the gz scoped name "sentry/mid360_link/mid360_lidar";
+  # the launch file publishes an identity static transform from mid360_link.
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/lidar_l2/points"
+  gz_topic_name: "/lidar_l2/points/points"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
+  # see the MID-360 entry above
+  direction: GZ_TO_ROS

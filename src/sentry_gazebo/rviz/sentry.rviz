@@ -1,0 +1,184 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /TF1
+        - /MID-360 cloud1
+        - /Unitree L2 cloud1
+      Splitter Ratio: 0.5
+    Tree Height: 640
+  - Class: rviz_common/Views
+    Name: Views
+    Splitter Ratio: 0.5
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Alpha: 0.35
+      Cell Size: 1
+      Color: 130; 130; 130
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 30
+      Reference Frame: odom
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Names: false
+      Show Axes: true
+      Show Arrows: false
+      Marker Scale: 0.35
+      Update Interval: 0
+      Frame Timeout: 15
+      All Enabled: true
+    - Class: rviz_default_plugins/RobotModel
+      Name: Robot (needs /robot_description)
+      Enabled: false
+      Description Source: Topic
+      Description Topic:
+        Value: /robot_description
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Depth: 1
+      Alpha: 1
+      Visual Enabled: true
+      Collision Enabled: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+    - Class: rviz_default_plugins/PointCloud2
+      Name: MID-360 cloud
+      Enabled: true
+      Topic:
+        Value: /lidar_mid360/points
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+      Style: Points
+      Size (Pixels): 2
+      Size (m): 0.01
+      Alpha: 1
+      Color Transformer: FlatColor
+      Color: 40; 200; 90
+      Position Transformer: XYZ
+      Use Fixed Frame: true
+      Decay Time: 0
+      Selectable: true
+      Queue Size: 5
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Unitree L2 cloud
+      Enabled: true
+      Topic:
+        Value: /lidar_l2/points
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+      Style: Points
+      Size (Pixels): 2
+      Size (m): 0.01
+      Alpha: 1
+      Color Transformer: FlatColor
+      Color: 40; 120; 240
+      Position Transformer: XYZ
+      Use Fixed Frame: true
+      Decay Time: 0
+      Selectable: true
+      Queue Size: 5
+    - Class: rviz_default_plugins/Odometry
+      Name: Odometry
+      Enabled: false
+      Topic:
+        Value: /odom
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+      Keep: 100
+      Shape:
+        Alpha: 1
+        Color: 255; 25; 0
+        Head Length: 0.1
+        Head Radius: 0.06
+        Shaft Length: 0.15
+        Shaft Radius: 0.03
+        Value: Axes
+      Covariance:
+        Alpha: 0.5
+        Position:
+          Alpha: 1
+          Color: 204; 51; 204
+          Scale: 1
+          Value: false
+        Orientation:
+          Alpha: 1
+          Color: 204; 51; 204
+          Scale: 1
+          Value: false
+        Value: false
+  Enabled: true
+  Global Options:
+    Background Color: 30; 32; 36
+    Fixed Frame: odom
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 14
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 1.25
+        Y: 6.75
+        Z: 0.3
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.65
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 0.8
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1000
+  Hide Left Dock: false
+  Hide Right Dock: false
+  Width: 1600
+  X: 60
+  Y: 40
