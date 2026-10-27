@@ -108,8 +108,8 @@ def build(context):
                         name='robot_state_publisher', output='screen',
                         parameters=[{'robot_description': urdf.read_text(encoding='utf-8'),
                                      'use_sim_time': True}]))
-    # turret and wheels are not simulated as moving joints: publish their
-    # zero angles so robot_state_publisher has the full tree
+    # the turret is fixed in simulation and wheel angles are not bridged:
+    # publish zero angles so robot_state_publisher has the full tree
     actions.append(Node(package='joint_state_publisher', executable='joint_state_publisher',
                         name='joint_state_publisher', output='screen',
                         parameters=[{'robot_description': urdf.read_text(encoding='utf-8'),

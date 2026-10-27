@@ -34,6 +34,7 @@ ros2 launch sentry_gazebo sim.launch.py gui:=true rviz:=true
 | `gui` | `false` | 是否打开 Gazebo GUI；`true` 时追加两路 PointCloud 面板 |
 | `rviz` | `false` | 是否同时启动 RViz2（`rviz/sentry.rviz`） |
 | `generated_dir` | `$SENTRY_GAZEBO_GEN` 或 `/tmp/sentry_gazebo_generated` | 生成的 world 输出目录 |
+| `ground_truth_tf` | `false` | 把 Gazebo 真值 `odom → base_link` 发进 TF；跑定位时保持 `false`，见“坐标系与外参” |
 
 点云只由 Gazebo 内置的 `gpu_lidar` 产生（ogre2 光线投射），没有其他后端。
 
@@ -67,7 +68,7 @@ ros2 run sentry_gazebo teleop
 stdin 不是终端时（管道、launch）改为**每行一个按键、保持 `hold` 秒**，方便脚本化：
 
 ```bash
-printf 'w\nw\na\n' | ros2 run sentry_gazebo teleop -p hold:=2.0
+printf 'w\nw\na\n' | ros2 run sentry_gazebo teleop --ros-args -p hold:=2.0
 ```
 
 ### GPU 加速（WSL 必读）
@@ -118,8 +119,7 @@ gz sim -r -v 3 /tmp/sentry_gazebo_generated/rmul_2027.sdf
 
 ## 坐标系与外参
 
-URDF 是 **z-up** 的，所以模型位姿里没有额外旋转（`ROBOT_MODEL_RPY = (0,0,0)`），
-`odom → base_link` 是纯平移 + yaw。
+URDF 是 **z-up** 的，所以模型位姿里没有额外旋转（`ROBOT_MODEL_RPY = (0,0,0)`）。
 
 机器人在世界中的位置默认**由定位给出**，与真车一致：`map → lio_odom → base_link`（`bringup`）。
 Gazebo 真值只走 `/odom` 话题，不进 TF。不起定位、单独看仿真时用 `ground_truth_tf:=true`
@@ -135,6 +135,7 @@ TF 链完全由标准件产生：
 | `odom → base_link` | `gz_bridge_odom_tf` | 仅 `ground_truth_tf:=true`：gz `OdometryPublisher` 的 `/tf_odom`（`Pose_V`） |
 | `base_link → yaw_link → mid360_link / l2_link` | `robot_state_publisher` | URDF 正解 + `joint_state_publisher` 发布的零位 `/joint_states` |
 | `mid360_link → sentry/mid360_link/mid360_lidar` 等 | `tf2_ros static_transform_publisher` | 见下文 `frame_id` |
+| `mid360_link → imu` | `tf2_ros static_transform_publisher`（`bringup`） | 恒等：仿真 IMU 与雷达同原点，ZLIO 的 `imu` 系即 `mid360_link` |
 
 雷达外参（`tf2_echo base_link mid360_link` 等，即 URDF 关节链的正解结果）：
 
@@ -221,8 +222,9 @@ l2_link     -> sentry/l2_link/l2_lidar
   （而非 URDF 名字）分到 front_left 等槽位，见 `sdf_builder.omni_wheel()`。
   之前的“直接写速度/位姿”插件会让 IMU 运动中读到 100+ m/s² 的假加速度，已删除。
 - **云台**：仿真不驱动云台，`yaw_joint` 在 SDF 里是 fixed（被动关节会被底盘带着空转）。
-- **碰撞**：`base_link` 用单个 box hull（`0.594 × 0.594 × 0.170`，中心 `z = 0.027`，
-  即 `base_link.stl` 按其 URDF visual 旋转后的包围盒）代替 1.29 M 三角面的 STL，
+- **碰撞**：`base_link` 用单个 box hull 代替 1.29 M 三角面的 STL。水平尺寸和顶面取
+  `base_link.stl` 按其 URDF visual 旋转后的包围盒（`0.594 × 0.594`，顶面离地 0.174 m）；
+  底面抬到离地 `CHASSIS_GROUND_CLEARANCE` = 30 mm（原包围盒底面只离地 4 mm，会卡在中央 10 mm 高的台面边上）。
   外加 4 个圆柱轮（r = 0.065，厚 0.04），轮子只在滚动方向有摩擦（`fdir1`，`mu2 = 0`），
   模拟全向轮的小辊子。贴墙时方形车体转不动，需先退开，与真车一致。
 - **视觉**：直接用 URDF 的 STL，URI 为 `model://sentry_description/meshes/*.stl`，通过
@@ -246,7 +248,7 @@ l2_link     -> sentry/l2_link/l2_lidar
 ros2 topic hz /lidar_mid360/points     # 标称 10 Hz
 ros2 topic hz /lidar_l2/points         # 标称 10 Hz
 ros2 topic hz /odom                    # 标称 50 Hz
-ros2 run tf2_ros tf2_echo odom base_link
+ros2 run tf2_ros tf2_echo map base_link        # ground_truth_tf:=true 时用 odom
 ros2 run tf2_ros tf2_echo base_link mid360_link
 ros2 topic echo --once /clock
 ros2 topic echo --once /joint_states
@@ -269,8 +271,7 @@ RTF 直接看 Gazebo GUI 右下角的 World stats（`real time factor`），或
    `point_cloud2.read_points(..., skip_nans=True)` 过滤即可。
 4. **`/odom` 协方差为零**：`OdometryPublisher` 的普通 odometry 话题不带协方差，
    Nav2 里若配置了协方差阈值需要放宽，或用真值当 ground truth。
-5. `RMUL_2027` 包名触发 colcon 命名规范警告（大写），无害。
-6. WSL 下无 GPU 直通时会回退到软件渲染（`MESA-EGL ... kms_swrast`），此时 RTF
+5. WSL 下无 GPU 直通时会回退到软件渲染（`MESA-EGL ... kms_swrast`），此时 RTF
    约 0.5，话题频率按 RTF 等比下降（实测 `/odom` 约 27 Hz、`/clock` 约 126 Hz、
    雷达约 2.6–4.6 Hz），属环境限制。
 
@@ -287,7 +288,7 @@ sentry_gazebo/
 │   ├── prepare_world.py   # 每次启动重新生成 world + env.sh
 │   └── launch_utils.py    # 路径/环境变量共享
 ├── scripts/teleop         # ros2 run 入口（装到 lib/sentry_gazebo）
-├── config/bridge.yaml     # 全部 ROS <-> gz 话题
+├── config/bridge.yaml     # ROS <-> gz 话题（真值 TF 桥由 launch 按 ground_truth_tf 另起）
 ├── rviz/sentry.rviz
 └── models/rmul_2027/      # 官方 STEP 网格 + 贴图（仅视觉）
 ```

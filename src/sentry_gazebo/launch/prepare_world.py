@@ -58,7 +58,7 @@ def write_env_script(path):
     """Shell snippet with the Gazebo environment of the launch file.
 
     Sourcing it lets ``gz sim -r -s <world>`` be run by hand with exactly the
-    same resource/plugin paths as ``ros2 launch sentry_gazebo sim.launch.py``.
+    same resource paths as ``ros2 launch sentry_gazebo sim.launch.py``.
     """
     from launch_utils import gz_environment
 

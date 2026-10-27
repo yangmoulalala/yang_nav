@@ -71,7 +71,7 @@ base_link
 | 文件 | 作用 |
 | --- | --- |
 | `config/bridge.yaml` | ros_gz 桥映射：clock、odom、`/cmd_vel`（ROS→gz）、两路点云、两路 IMU。`/tf_odom`→`/tf` 只在 `ground_truth_tf:=true` 时由 launch 另起桥。 |
-| `rviz/sentry.rviz` | RViz 布局（Fixed Frame = `odom`）。 |
+| `rviz/sentry.rviz` | RViz 布局。Fixed Frame 由 launch 用 `-f` 指定：默认 `map`，`ground_truth_tf:=true` 时 `odom`。 |
 | `scripts/teleop` | `ros2 run sentry_gazebo teleop` 的入口。因为 colcon 把 ament_python 的 console_scripts 装到 `<prefix>/bin`（`ros2 run` 不查那里），所以按 `data_files` 装进 `lib/sentry_gazebo/`。 |
 
 ### 2.5 资源 `models/`
@@ -106,7 +106,7 @@ prepare_world.py
                                       │
                               ros_gz_bridge
                                       │
-                  /lidar_*/points  /lidar_*/imu  /odom  /tf
+           /lidar_*/points  /lidar_*/imu  /odom  （/tf：仅 ground_truth_tf:=true）
                                       │
      joint_state_publisher (零位) ─> robot_state_publisher (URDF 正解)
                                       │
@@ -136,7 +136,7 @@ SDF 里对应的写法（`sdf_builder.robot_model_xml`）：
 ```
 
 `ROBOT_MODEL_RPY` 同时喂给 gz `OdometryPublisher` 的 `<rpy_offset>`（取逆旋转，
-由 `sdf_builder.inverse_rpy()` 算），保证 `odom → base_link` 的 base 帧永远竖直。
+由 `sdf_builder.inverse_rpy()` 算），抵消模型位姿里的整体旋转，让 `odom → base_link` 只反映车的真实运动。
 当前该值为 0，所以 `<rpy_offset>` 也是 0；若以后又导出 y-up 模型，只改这一个常量即可。
 
 ---
@@ -148,7 +148,7 @@ SDF 里对应的写法（`sdf_builder.robot_model_xml`）：
 ```bash
 ros2 topic hz /lidar_mid360/points
 ros2 topic hz /odom
-ros2 run tf2_ros tf2_echo odom base_link
+ros2 run tf2_ros tf2_echo map base_link        # ground_truth_tf:=true 时用 odom
 ros2 run tf2_ros tf2_echo base_link mid360_link
 ros2 topic echo --once /joint_states
 ```

@@ -56,7 +56,7 @@ CHASSIS_RGBA = (0.53, 0.54, 0.58, 1.0)
 TURRET_RGBA = (0.62, 0.62, 0.68, 1.0)
 WHEEL_RGBA = (0.10, 0.10, 0.11, 1.0)
 
-# robot-centric collision / inertia choices (see docs/robot.md)
+# simplified inertia: the URDF carries no <inertial>
 CHASSIS_INERTIA = (0.32, 0.32, 0.42)     # ixx, iyy, izz [kg m^2]
 TURRET_INERTIA = (0.05, 0.05, 0.05)
 WHEEL_MASS = 0.5
@@ -146,7 +146,6 @@ class Urdf:
 
     def __init__(self, path):
         root = ET.parse(path).getroot()
-        self.path = Path(path)
         self.links = {el.get('name'): Link(el) for el in root.findall('link')}
         self.joints = [Joint(el) for el in root.findall('joint')]
         children = {j.child for j in self.joints}
@@ -170,34 +169,9 @@ class Urdf:
             if not progressed:
                 raise RuntimeError('kinematic loop or disconnected joint in the URDF')
 
-    def chain(self, link):
-        """Joints from the root down to ``link`` (root first)."""
-        out = []
-        while link in self.parent_joint:
-            j = self.parent_joint[link]
-            out.append(j)
-            link = j.parent
-        return list(reversed(out))
-
-    def axis_of(self, joint):
-        """``<axis>`` of a joint, exactly as the URDF declares it."""
-        for j in self.joints:
-            if j.name == joint:
-                return j.axis
-        raise KeyError(joint)
-
     def pose_of(self, link):
         xyz, R = self.pose[link]
         return tuple(xyz), mat_to_rpy(R)
-
-    def subtree(self, link):
-        todo = [link]
-        out = []
-        while todo:
-            cur = todo.pop()
-            out.append(cur)
-            todo.extend(j.child for j in self.joints if j.parent == cur)
-        return out
 
     def mesh_of(self, link):
         lk = self.links.get(link)
@@ -216,7 +190,7 @@ class W:
         return '\n'.join(self.lines) + '\n'
 
 
-def material_xml(w, indent, rgba, specular=0.12, roughness_comment=None):
+def material_xml(w, indent, rgba, specular=0.12):
     w(indent, '<material>')
     w(indent + 2, '<ambient>%s</ambient>' % vec([rgba[0] * 0.45, rgba[1] * 0.45, rgba[2] * 0.45, 1.0]))
     w(indent + 2, '<diffuse>%s</diffuse>' % vec(rgba))
@@ -244,19 +218,6 @@ def box_xml(w, indent, centre, size, rgba, name, collision=False, mu=None, visib
         material_xml(w, indent + 2, rgba)
         if visibility is not None:
             w(indent + 2, '<visibility_flags>%d</visibility_flags>' % visibility)
-    w(indent, '</%s>' % tag)
-
-
-def cylinder_xml(w, indent, radius, length, rgba, name, collision=False, mu=None):
-    tag = 'collision' if collision else 'visual'
-    w(indent, '<%s name="%s">' % (tag, name))
-    w(indent + 2, '<geometry><cylinder><radius>%s</radius><length>%s</length></cylinder></geometry>'
-      % (n(radius), n(length)))
-    if collision:
-        if mu is not None:
-            friction_xml(w, indent + 2, mu)
-    else:
-        material_xml(w, indent + 2, rgba)
     w(indent, '</%s>' % tag)
 
 
@@ -312,9 +273,9 @@ def joint_xml(w, indent, joint, joint_type, effort=20.0, velocity=60.0, damping=
 def gpu_lidar_xml(w, indent, spec, parent, mount_xyz, mount_rpy):
     """``<sensor type="gpu_lidar">`` -- uniform angular grid, ogre2 ray casting.
 
-    The sensor frame is the ``*_link`` body frame itself (+x out of the
-    aperture, +y left, +z up), exactly like the URDF link frame, so the point
-    cloud header frame matches the TF tree without extra rotations.
+    The sensor sits at the ``*_link`` origin with no extra rotation, so the
+    cloud is expressed in the URDF link frame.  gpu_lidar scans about the
+    link's +z axis, which on this robot is not vertical (see README).
     """
     w(indent, '<sensor name="%s" type="gpu_lidar">' % spec['name'])
     w(indent + 2, '<pose relative_to="%s">%s %s</pose>' % (parent, vec(mount_xyz), vec(mount_rpy)))

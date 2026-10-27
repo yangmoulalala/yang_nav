@@ -21,7 +21,7 @@ MID-360 内置 IMU ────────────────────�
 | `backend` | 上游，两行编译修正 | 因子图后端：建图、回环、先验地图定位、UWB 辅助（保留，默认关闭） |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
-| `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
+| `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2；`base_tf` 把 `/odometry` 换算为 `lio_odom → base_link` TF |
 | `lidar_calibration` | 新增，核心移植自 navi_minco_bit | L2 → MID-360 外参标定（PCL GICP） |
 | `bringup` | 重写 | `sim.launch.py`、`real.launch.py` 与配置 |
 

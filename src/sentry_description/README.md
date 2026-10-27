@@ -14,29 +14,25 @@ sentry_description/
 ```
 base_link
 ├── wheel_{front,rear}_{left,right}   4 × continuous
-└── yaw_link                          continuous（云台偏航，零位 rpy = (-π, -π/2, 0)）
+└── yaw_link                          continuous（云台偏航，joint origin rpy = (-π/2, 0, -π/2)）
     ├── mid360_link                   fixed  xyz 0.164 -0.132 0.056
     └── l2_link                       fixed  xyz -0.176 -0.157 -0.043
 ```
 
-- 网格 URI 统一用 `package://sentry_description/meshes/...`，RViz 和
-  `robot_state_publisher` 都能直接解析，不依赖当前工作目录。
+- 网格路径是相对路径 `meshes/*.stl`。仿真侧由 `sentry_gazebo` 换成
+  `model://sentry_description/meshes/...`；RViz 的 RobotModel 不解析相对路径，要在 RViz 里
+  显示网格需改成 `package://sentry_description/meshes/...`。
 - 网格单位是毫米，`scale` 已设为 `0.001`。
-- 云台零位是 `-90°` 侧装姿态；`yaw_joint` 绕 `+y` 旋转。
+- `yaw_joint` 的轴在 `yaw_link` 系里是 `+y`，经 joint origin 旋转后在 `base_link` 里是竖直的 `+z`。
 
 ## 真车用法
 
 ```bash
 ros2 run robot_state_publisher robot_state_publisher \
-    --ros-args -p robot_description:="$(xacro $(ros2 pkg prefix sentry_description)/share/sentry_description/urdf/sentry_robot.urdf)"
+    --ros-args -p robot_description:="$(cat $(ros2 pkg prefix sentry_description)/share/sentry_description/urdf/sentry_robot.urdf)"
 ```
 
-或用 `xacro` 直接加载。若要在 RViz 里看模型：
-
-```bash
-ros2 launch ... # 或者
-rviz2 -d $(ros2 pkg prefix sentry_description)/share/sentry_description/urdf/display.rviz
-```
+`bringup/launch/real.launch.py` 已经这样启动了 `robot_state_publisher`，一般不用手动运行。
 
 ## 注意
 

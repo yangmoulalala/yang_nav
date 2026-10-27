@@ -23,9 +23,10 @@ The sensor mount poses are copied verbatim from
 ``sentry_description/urdf/sentry_robot.urdf`` -- nothing here overrides the
 URDF:
 
-* the MID-360 sits at z = +0.164 inside the turret and looks forward/down,
-* the Unitree L2 sits at z = -0.176, i.e. 17 cm above the ground, under the
-  chassis, and looks backwards.
+* the MID-360 origin is at base_link (0.056, -0.164, 0.137), rolled 105 deg,
+  i.e. 0.20 m above the floor,
+* the Unitree L2 origin is at base_link (-0.043, 0.176, 0.163), i.e. 0.22 m
+  above the floor.
 
 Both were confirmed by forward kinematics of the URDF and by ray casting
 against the 1.3 M-triangle chassis meshes.
@@ -91,7 +92,7 @@ MAX_LINEAR_VELOCITY = 3.0
 MAX_ANGULAR_VELOCITY = 6.0
 
 
-def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max, frame_id,
+def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max,
           rate=10.0, stddev=0.01, topic=None):
     """One LiDAR: geometry/FOV shared by the SDF and the docs.
 
@@ -100,14 +101,14 @@ def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max, frame_id,
         <base>          gz.msgs.LaserScan        (one scan line, for viz)
         <base>/points   gz.msgs.PointCloudPacked (the 3-D cloud we bridge)
 
-    The base name must not start with ``/``: gz then treats it as a relative
-    topic.  Frame ids and the ROS-side names are derived in
-    :data:`GZ_TOPIC_MID360_CLOUD` / :data:`GZ_TOPIC_L2_CLOUD`.
+    The base name must not start with ``/``, otherwise gz derives no
+    ``/points`` topic.  The resulting gz cloud topics are
+    :data:`GZ_TOPIC_MID360_CLOUD` / :data:`GZ_TOPIC_L2_CLOUD`; frame ids are
+    set by gz (``<model>/<link>/<sensor>``, see :data:`SENSOR_FRAMES`).
     """
     base = (topic or '%s/points' % name).rsplit('/', 1)[0]
     return {
         'name': name,
-        'frame_id': frame_id,
         'update_rate': rate,
         'topic': topic or '/%s/points' % name,
         # built-in IMU of the device (both MID-360 and L2 have one), mounted at
@@ -133,14 +134,14 @@ def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max, frame_id,
 # 720 x 40 = 28 800 points/frame is a 1.4x oversampled stand-in for the real
 # 20 000 points/frame rosette; 720 columns = 0.5 deg, the figure used by the
 # LXRobotics Gazebo-Harmonic write-up.  Raise n_h if you want denser clouds.
-MID360_LIDAR = lidar('mid360_lidar', 720, 40, -7.0, 52.0, 0.1, 40.0, 'mid360_link',
+MID360_LIDAR = lidar('mid360_lidar', 720, 40, -7.0, 52.0, 0.1, 40.0,
                      topic='lidar_mid360/points')
 # Unitree 4D LiDAR L2 (vendor manual): 360 deg x 96 deg FOV, 64 000 points/s,
 # 0.05 .. 30 m, and a *two-axis single-beam* scan (5.55 Hz azimuth / 216 Hz
 # elevation) -- not a 55-ring mechanical LiDAR.  160 x 40 = 6 400 points/frame
 # matches the real point budget at 10 Hz, which matters: an SLAM front end
 # tuned on a 10x denser simulation falls apart on the real device.
-L2_LIDAR = lidar('l2_lidar', 160, 40, -48.0, 48.0, 0.05, 30.0, 'l2_link',
+L2_LIDAR = lidar('l2_lidar', 160, 40, -48.0, 48.0, 0.05, 30.0,
                  topic='lidar_l2/points')
 
 # link, parent link, lidar spec, visual box size, colour
@@ -154,7 +155,6 @@ ROBOT_MOUNTS = (
 # ROS topics (bridged from Gazebo)
 TOPIC_CMD_VEL = '/cmd_vel'
 TOPIC_ODOM = '/odom'
-TOPIC_JOINT_STATES = '/joint_states'
 # gz topic of the stock OdometryPublisher's Pose_V (odom -> base_link TF)
 GZ_TOPIC_ODOM_TF = '/tf_odom'
 
@@ -188,7 +188,7 @@ GROUND = (0.20, 0.21, 0.23, 1.0)
 PERIMETER_MU = 0.8
 FLOOR_MU = 0.8
 
-# name, min corner, size, contact (perimeter boxes are static walls)
+# name, min corner, size, rgba -- every box also collides (static arena model)
 ARENA_BOXES = (
     # --- base -------------------------------------------------------------
     ('ground', (-3.0, -3.0, -0.1), (18.0, 14.0, 0.06), GROUND),
@@ -239,7 +239,6 @@ ARENA_BOXES = (
     ('crown_east', (12.0, 0.0, 0.4), (0.2, 8.0, 0.02), CROWN),
 )
 
-# The perimeter is a rigid wall: drive-into-it behaviour should stop the robot.
 def box_center(entry):
     """Return (centre xyz, size xyz) for an ``ARENA_BOXES`` entry."""
     _name, mn, size, _rgba = entry
@@ -247,6 +246,6 @@ def box_center(entry):
 
 
 def box_mu(name):
-    """Per-box friction coefficient."""
+    """Friction coefficient of an arena box (currently the same for all)."""
     return PERIMETER_MU
 
