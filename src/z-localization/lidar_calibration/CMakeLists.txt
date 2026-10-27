@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.16)
+project(lidar_calibration)
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(pcl_conversions REQUIRED)
+find_package(message_filters REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common features filters kdtree registration)
+
+add_executable(calibrate src/calibrate.cpp)
+target_compile_features(calibrate PRIVATE cxx_std_17)
+target_include_directories(calibrate PRIVATE ${PCL_INCLUDE_DIRS})
+target_link_libraries(calibrate ${PCL_LIBRARIES} Eigen3::Eigen)
+ament_target_dependencies(calibrate rclcpp sensor_msgs tf2_ros tf2_eigen pcl_conversions message_filters nav_msgs)
+
+install(TARGETS calibrate DESTINATION lib/${PROJECT_NAME})
+ament_package()

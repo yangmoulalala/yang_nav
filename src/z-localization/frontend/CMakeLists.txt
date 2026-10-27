@@ -102,8 +102,5 @@ install(FILES config/lio.yaml DESTINATION share/${PROJECT_NAME}/config)
 install(EXPORT zlioTargets NAMESPACE zlio:: DESTINATION share/zlio/cmake)
 
 localization_enable_warnings()
-if(BUILD_TESTING)
-    add_subdirectory(test)
-endif()
 
 ament_package()

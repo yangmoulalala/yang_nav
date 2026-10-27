@@ -4,10 +4,10 @@
     ros2 run sentry_gazebo teleop --ros-args -p linear_speed:=1.0 -p angular_speed:=2.0
 
 Publishes ``geometry_msgs/Twist`` on ``/cmd_vel``; ``ros_gz_bridge`` forwards it
-to the Gazebo planar velocity plugin (``plugins/sentry_velocity_control.py``).
+to Gazebo's stock ``MecanumDrive`` system on the four omni wheels.
 The chassis is a four-wheel omni base, so ``q``/``e`` strafe sideways as well as
-``w``/``s``/``a``/``d`` drive -- the plugin integrates all three body-frame
-components.
+``w``/``s``/``a``/``d`` drive -- MecanumDrive turns all three body-frame
+components into wheel speeds.
 
 Keys
     w / s    forward / backward
@@ -72,7 +72,7 @@ class Teleop(Node):
         rate = float(self.declare_parameter('rate', 20.0).value)
 
         # limits come from arena_spec so the node cannot ask for more than the
-        # plugin will apply
+        # rules allow
         self.max_linear = A.MAX_LINEAR_VELOCITY
         self.max_angular = A.MAX_ANGULAR_VELOCITY
 

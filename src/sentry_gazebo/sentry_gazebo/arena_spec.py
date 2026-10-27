@@ -81,7 +81,7 @@ CHASSIS_HULL_SIZE = (0.594, 0.594, 0.170)
 CHASSIS_MASS = 18.0
 TURRET_MASS = 4.0
 
-# planar velocity controller limits (m/s, rad/s) -- RMUL 3v3 rules: 3 m/s chassis
+# chassis speed limits used by teleop (m/s, rad/s) -- RMUL 3v3 rules: 3 m/s chassis
 MAX_LINEAR_VELOCITY = 3.0
 MAX_ANGULAR_VELOCITY = 6.0
 
@@ -99,11 +99,17 @@ def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max, frame_id,
     topic.  Frame ids and the ROS-side names are derived in
     :data:`GZ_TOPIC_MID360_CLOUD` / :data:`GZ_TOPIC_L2_CLOUD`.
     """
+    base = (topic or '%s/points' % name).rsplit('/', 1)[0]
     return {
         'name': name,
         'frame_id': frame_id,
         'update_rate': rate,
         'topic': topic or '/%s/points' % name,
+        # built-in IMU of the device (both MID-360 and L2 have one), mounted at
+        # the LiDAR origin so body_from_lidar is the identity in the LIO config
+        'imu_name': name.replace('_lidar', '_imu'),
+        'imu_topic': '/%s/imu' % base,
+        'imu_rate': 200.0,
         'samples_h': n_h,
         'h_min': -PI,
         'h_max': PI,
@@ -154,7 +160,8 @@ GZ_TOPIC_L2_CLOUD = '/' + L2_LIDAR['topic'] + '/points'
 # gz sensor name -> link frame; the launch file publishes an identity
 # static transform from the link to the scoped frame gz stamps on the cloud
 # ("sentry/mid360_link/mid360_lidar"), which SDFormat 1.9 cannot rename.
-SENSOR_FRAMES = {m[2]['name']: m[0] for m in ROBOT_MOUNTS}
+SENSOR_FRAMES = {**{m[2]['name']: m[0] for m in ROBOT_MOUNTS},
+                 **{m[2]['imu_name']: m[0] for m in ROBOT_MOUNTS}}
 
 
 # ---------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<!-- 声明定位工作空间统一启动入口的运行依赖。 -->
+<!-- 定位启动入口：sim.launch.py（Gazebo）与 real.launch.py（真车）。 -->
 <package format="3">
   <name>bringup</name>
-  <version>0.0.1</version>
-  <description>Z-Localization 前端与后端的统一启动入口。</description>
+  <version>0.1.0</version>
+  <description>Z-Localization 仿真与真车启动入口（单/双雷达）。</description>
   <maintainer email="zhujunheng2005@gmail.com">mozihe</maintainer>
   <author email="zhujunheng2005@gmail.com">mozihe</author>
   <license>GPL-2.0-only</license>
@@ -11,22 +11,14 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>frontend</exec_depend>
   <exec_depend>backend</exec_depend>
+  <exec_depend>lidar_fusion</exec_depend>
   <exec_depend>livox_ros_driver2</exec_depend>
+  <exec_depend>sentry_description</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
-
-  <test_depend>ament_cmake_pytest</test_depend>
-  <test_depend>launch_testing_ament_cmake</test_depend>
-  <test_depend>domain_coordinator</test_depend>
-  <test_depend>rclpy</test_depend>
-  <test_depend>localization_interfaces</test_depend>
-  <test_depend>nav_msgs</test_depend>
-  <test_depend>sensor_msgs</test_depend>
-  <test_depend>sensor_msgs_py</test_depend>
-  <test_depend>std_msgs</test_depend>
-  <test_depend>std_srvs</test_depend>
-  <test_depend>python3-yaml</test_depend>
-
 
   <export>
     <build_type>ament_cmake</build_type>

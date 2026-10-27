@@ -16,10 +16,11 @@ truth for geometry:
   from the URDF joints -- no hand-tuned numbers,
 * collisions are primitives (one box for the chassis, one cylinder per wheel),
   visuals keep the URDF meshes,
-* the four wheel origins do not form a planar contact set, so the chassis is
-  driven by a planar velocity controller (``velocity_control`` plugin) and the
-  wheel joints stay passive,
-* the LiDARs are ``gpu_lidar`` sensors on the URDF mount links.
+* the four omni wheels (X layout, axles on the diagonals, coplanar contacts)
+  are driven by the stock ``MecanumDrive`` system through real wheel/ground
+  contacts, so the IMUs read physical accelerations (see ``omni_wheel``),
+* the LiDARs are ``gpu_lidar`` sensors on the URDF mount links, each with
+  an ``imu`` sensor at the same origin (both devices have a built-in IMU).
 
 ``arena_spec`` is the single source of truth for the arena and for the sensor
 sampling parameters.
@@ -45,12 +46,6 @@ from pathlib import Path
 from sentry_gazebo import arena_spec as A
 
 # --------------------------------------------------------------------------- config
-# gz-sim's PythonSystemLoader imports a module by name; the module file is
-# installed into share/sentry_gazebo (GZ_SIM_SYSTEM_PLUGIN_PATH at launch).
-VELOCITY_PLUGIN = 'gz-sim-python-system-loader-system'
-VELOCITY_PLUGIN_CLASS = 'gz::sim::systems::PythonSystemLoader'
-VELOCITY_MODULE = 'sentry_velocity_control'
-
 # URDF STLs are exposed as a Gazebo resource model named sentry_description
 # (a symlink to share/sentry_description/meshes, created by prepare_world).
 MESH_URI_PREFIX = 'model://sentry_description/meshes/'
@@ -65,6 +60,12 @@ WHEEL_RGBA = (0.10, 0.10, 0.11, 1.0)
 CHASSIS_INERTIA = (0.32, 0.32, 0.42)     # ixx, iyy, izz [kg m^2]
 TURRET_INERTIA = (0.05, 0.05, 0.05)
 WHEEL_MASS = 0.5
+
+# The real LiDARs do not see the robot's own meshes as returns (the vendor
+# drivers / blind zone drop them), but gpu_lidar renders every visual.  Robot
+# visuals carry this flag and the LiDARs mask it out.
+ROBOT_VISIBILITY = 0x2
+LIDAR_VISIBILITY_MASK = 0xFFFFFFFF & ~ROBOT_VISIBILITY
 
 
 # --------------------------------------------------------------------------- helpers
@@ -232,7 +233,7 @@ def friction_xml(w, indent, mu):
     w(indent, '<surface><friction><ode><mu>%s</mu><mu2>%s</mu2></ode></friction></surface>' % (n(mu), n(mu)))
 
 
-def box_xml(w, indent, centre, size, rgba, name, collision=False, mu=None):
+def box_xml(w, indent, centre, size, rgba, name, collision=False, mu=None, visibility=None):
     tag = 'collision' if collision else 'visual'
     w(indent, '<%s name="%s">' % (tag, name))
     box_geom(w, indent + 2, centre, size)
@@ -241,6 +242,8 @@ def box_xml(w, indent, centre, size, rgba, name, collision=False, mu=None):
             friction_xml(w, indent + 2, mu)
     else:
         material_xml(w, indent + 2, rgba)
+        if visibility is not None:
+            w(indent + 2, '<visibility_flags>%d</visibility_flags>' % visibility)
     w(indent, '</%s>' % tag)
 
 
@@ -266,6 +269,7 @@ def mesh_visual_xml(w, indent, mesh, rgba, name):
     w(indent + 2, '<geometry><mesh><uri>%s%s</uri><scale>%s</scale></mesh></geometry>'
       % (MESH_URI_PREFIX, basename, vec(scale)))
     material_xml(w, indent + 2, rgba)
+    w(indent + 2, '<visibility_flags>%d</visibility_flags>' % ROBOT_VISIBILITY)
     w(indent, '</visual>')
 
 
@@ -281,11 +285,13 @@ def inertial_xml(w, indent, mass, ixx, iyy, izz, pose=(0, 0, 0, 0, 0, 0)):
     w(indent, '</inertial>')
 
 
-def joint_xml(w, indent, joint, joint_type, effort=20.0, velocity=60.0, damping=0.0):
+def joint_xml(w, indent, joint, joint_type, effort=20.0, velocity=60.0, damping=0.0,
+              limits=(-1e16, 1e16), axis=None):
     """``<joint>`` for a URDF joint: same parent/child, origin and axis.
 
     SDFormat has no ``continuous`` type, so those become ``revolute`` with wide
-    limits; the URDF stays the source of truth for every number here.
+    limits (or the given ``limits``); the URDF stays the source of truth for
+    origin and axis.
     """
     w(indent, '<joint name="%s" type="%s">' % (joint.name, joint_type))
     w(indent + 2, '<parent>%s</parent><child>%s</child>' % (joint.parent, joint.child))
@@ -293,10 +299,10 @@ def joint_xml(w, indent, joint, joint_type, effort=20.0, velocity=60.0, damping=
       % (joint.parent, vec(joint.xyz), vec(joint.rpy)))
     if joint_type != 'fixed':
         w(indent + 2, '<axis>')
-        w(indent + 4, '<xyz>%s</xyz>' % vec(joint.axis))
+        w(indent + 4, '<xyz>%s</xyz>' % vec(axis or joint.axis))
         w(indent + 4, '<limit><lower>%s</lower><upper>%s</upper>'
                       '<effort>%s</effort><velocity>%s</velocity></limit>'
-          % (n(-1e16), n(1e16), n(effort), n(velocity)))
+          % (n(limits[0]), n(limits[1]), n(effort), n(velocity)))
         w(indent + 4, '<dynamics><damping>%s</damping></dynamics>' % n(damping))
         w(indent + 2, '</axis>')
     w(indent, '</joint>')
@@ -344,7 +350,30 @@ def gpu_lidar_xml(w, indent, spec, parent, mount_xyz, mount_rpy):
     w(indent + 6, '<max>%s</max>' % n(spec['range_max']))
     w(indent + 6, '<resolution>%s</resolution>' % n(spec['range_resolution']))
     w(indent + 4, '</range>')
+    w(indent + 4, '<visibility_mask>%d</visibility_mask>' % LIDAR_VISIBILITY_MASK)
     w(indent + 2, '</lidar>')
+    w(indent, '</sensor>')
+
+
+def imu_xml(w, indent, spec, parent):
+    """``<sensor type="imu">`` at the LiDAR origin, like the device's built-in IMU.
+
+    Noise follows the order of magnitude of a MEMS IMU (BMI088 class); the
+    reading is specific force in m/s^2, gravity included.
+    """
+    w(indent, '<sensor name="%s" type="imu">' % spec['imu_name'])
+    w(indent + 2, '<pose relative_to="%s">0 0 0 0 0 0</pose>' % parent)
+    w(indent + 2, '<always_on>1</always_on>')
+    w(indent + 2, '<update_rate>%s</update_rate>' % n(spec['imu_rate']))
+    w(indent + 2, '<topic>%s</topic>' % spec['imu_topic'])
+    w(indent + 2, '<imu>')
+    for group, stddev in (('angular_velocity', 2e-3), ('linear_acceleration', 2e-2)):
+        w(indent + 4, '<%s>' % group)
+        for axis in 'xyz':
+            w(indent + 6, '<%s><noise type="gaussian"><mean>0</mean><stddev>%s</stddev>'
+                          '</noise></%s>' % (axis, n(stddev), axis))
+        w(indent + 4, '</%s>' % group)
+    w(indent + 2, '</imu>')
     w(indent, '</sensor>')
 
 
@@ -375,6 +404,37 @@ def arena_model_xml(w, indent, with_visual_mesh):
     w(indent, '</model>')
 
 
+# --------------------------------------------------------------------------- omni wheels
+# gz MecanumDrive wheel speeds, as signs of (vx, vy, wz):
+#   front_left = vx - vy - L*wz    front_right = vx + vy + L*wz
+#   back_left  = vx + vy - L*wz    back_right  = vx - vy + L*wz
+MECANUM_SLOTS = {'front_left': (1, -1, -1), 'front_right': (1, 1, 1),
+                 'back_left': (1, 1, -1), 'back_right': (1, -1, 1)}
+
+
+def omni_wheel(joint):
+    """MecanumDrive slot, axis sign and rolling direction of one omni wheel.
+
+    A wheel spinning +w about its axle ``a`` pushes the base along ``d = a x z``
+    (its rollers leave ``a`` free), so its speed for a base twist is
+    ``d . (v + wz z x p) / r``.  With the axles on the diagonals this is one
+    mecanum slot divided by sqrt(2), hence ``wheel_radius = sqrt(2) r`` in the
+    MecanumDrive block.  A wheel matching the negated slot pattern gets its
+    joint axis flipped: only the joint sign changes, geometry stays the URDF's.
+    """
+    a = mat_vec(rpy_to_mat(*joint.rpy), joint.axis)
+    norm = math.hypot(a[0], a[1])
+    d = (a[1] / norm, -a[0] / norm)
+    k = (d[0], d[1], d[1] * joint.xyz[0] - d[0] * joint.xyz[1])
+    signs = tuple(1 if c > 1e-6 else -1 if c < -1e-6 else 0 for c in k)
+    for slot, pattern in MECANUM_SLOTS.items():
+        if signs == pattern:
+            return slot, 1.0, d
+        if signs == tuple(-s for s in pattern):
+            return slot, -1.0, d
+    raise RuntimeError('%s is not an X-layout omni wheel (signs %r)' % (joint.name, signs))
+
+
 # --------------------------------------------------------------------------- robot
 # The URDF is used as-is: every link carries the pose the URDF gives it and the
 # model pose places the whole robot in the world (``ROBOT_SPAWN_XY_YAW`` /
@@ -385,7 +445,7 @@ def robot_model_xml(w, indent, urdf):
     root = urdf.root
     spawn = A.ROBOT_SPAWN_XY_YAW
     w(indent, '<model name="%s">' % A.ROBOT_MODEL_NAME)
-    w(indent + 2, '<!-- spawn pose (world); the velocity plugin owns x/y/yaw -->')
+    w(indent + 2, '<!-- spawn pose (world) -->')
     w(indent + 2, '<pose>%s %s %s %s %s %s</pose>'
       % (n(spawn[0]), n(spawn[1]), n(A.ROBOT_Z),
          n(A.ROBOT_MODEL_RPY[0]), n(A.ROBOT_MODEL_RPY[1]), n(spawn[2])))
@@ -402,23 +462,33 @@ def robot_model_xml(w, indent, urdf):
             (0, 0, 0, 1), 'chassis_collision', collision=True, mu=A.FLOOR_MU)
     w(indent + 2, '</link>')
 
-    # ---- wheels (passive, visual only: the velocity plugin moves the model) --
-    for j in urdf.joints:
-        if j.parent != root or not j.child.startswith('wheel_'):
-            continue
+    # ---- omni wheels, driven by MecanumDrive below -------------------------
+    wheels = [j for j in urdf.joints if j.parent == root and j.child.startswith('wheel_')]
+    slots = {}
+    for j in wheels:
+        slot, sign, roll = omni_wheel(j)
+        slots.setdefault(slot, []).append(j.name)
         xyz, rpy = urdf.pose_of(j.child)
         w(indent + 2, '<link name="%s">' % j.child)
         w(indent + 4, '<pose relative_to="%s">%s %s</pose>' % (root, vec(xyz), vec(rpy)))
         inertial_xml(w, indent + 4, WHEEL_MASS, 6e-4, 6e-4, 1.2e-3)
         if urdf.mesh_of(j.child) is not None:
             mesh_visual_xml(w, indent + 4, urdf.mesh_of(j.child), WHEEL_RGBA, 'wheel_mesh')
-        # one cylinder instead of the 109 k-triangle wheel STL
+        # one cylinder instead of the 109 k-triangle wheel STL; friction only
+        # along the rolling direction (fdir1), none along the axle, like the
+        # free rollers of an omni wheel
         w(indent + 4, '<collision name="wheel_collision">')
         w(indent + 6, '<geometry><cylinder><radius>%s</radius><length>%s</length></cylinder></geometry>'
           % (n(A.WHEEL_RADIUS), n(A.WHEEL_LENGTH)))
+        w(indent + 6, '<surface><friction><ode><mu>1</mu><mu2>0</mu2>'
+                      '<fdir1 gz:expressed_in="%s">%s 0</fdir1></ode></friction></surface>'
+          % (root, vec(roll)))
         w(indent + 4, '</collision>')
         w(indent + 2, '</link>')
-        joint_xml(w, indent + 2, j, 'revolute', effort=20, velocity=60, damping=0.02)
+        joint_xml(w, indent + 2, j, 'revolute', effort=20, velocity=60, damping=0.02,
+                  axis=tuple(sign * c for c in j.axis))
+    if sorted(slots) != sorted(MECANUM_SLOTS):
+        raise RuntimeError('omni wheels do not fill the four MecanumDrive slots: %r' % slots)
 
     # ---- turret ------------------------------------------------------------
     if 'yaw_link' in urdf.links:
@@ -429,8 +499,10 @@ def robot_model_xml(w, indent, urdf):
         if urdf.mesh_of('yaw_link') is not None:
             mesh_visual_xml(w, indent + 4, urdf.mesh_of('yaw_link'), TURRET_RGBA, 'turret_mesh')
         w(indent + 2, '</link>')
-        joint_xml(w, indent + 2, urdf.parent_joint['yaw_link'], 'revolute',
-                  effort=10, velocity=10, damping=0.5)
+        # The turret is not actuated in simulation, so yaw_joint is fixed at 0:
+        # a passive or limit-pinned joint drags/jitters the MID-360 and its IMU.
+        # joint_state_publisher (launch file) reports the zero angle for TF.
+        joint_xml(w, indent + 2, urdf.parent_joint['yaw_link'], 'fixed')
 
     # ---- LiDAR sensors -----------------------------------------------------
     # Link pose = URDF joint chain (Urdf.pose_of), joint = the URDF joint itself.
@@ -443,24 +515,27 @@ def robot_model_xml(w, indent, urdf):
         if urdf.mesh_of(link) is not None:
             mesh_visual_xml(w, indent + 4, urdf.mesh_of(link), rgba, 'housing')
         else:
-            box_xml(w, indent + 4, (0, 0, 0), size, rgba, 'housing')
+            box_xml(w, indent + 4, (0, 0, 0), size, rgba, 'housing', visibility=ROBOT_VISIBILITY)
         gpu_lidar_xml(w, indent + 4, spec, link, (0, 0, 0), (0, 0, 0))
+        imu_xml(w, indent + 4, spec, link)
         w(indent + 2, '</link>')
         joint_xml(w, indent + 2, urdf.parent_joint[link], 'fixed')
 
-    # ---- controllers / state publishers ------------------------------------
-    # Planar velocity drive: the one piece Gazebo has no stock system for (its
-    # VelocityControl applies a world-frame twist, ROS cmd_vel is body-frame).
-    w(indent + 2, '<plugin filename="%s" name="%s">' % (VELOCITY_PLUGIN, VELOCITY_PLUGIN_CLASS))
-    w(indent + 4, '<module_name>%s</module_name>' % VELOCITY_MODULE)
-    w(indent + 4, '<cmd_topic>%s</cmd_topic>' % A.TOPIC_CMD_VEL)
-    w(indent + 4, '<max_linear_velocity>%s</max_linear_velocity>' % n(A.MAX_LINEAR_VELOCITY))
-    w(indent + 4, '<max_angular_velocity>%s</max_angular_velocity>' % n(A.MAX_ANGULAR_VELOCITY))
-    w(indent + 4, '<timeout>0.4</timeout>')
+    # ---- drive / ground truth ----------------------------------------------
+    # Stock MecanumDrive: body-frame /cmd_vel -> omni wheel joint velocities.
+    w(indent + 2, '<plugin filename="gz-sim-mecanum-drive-system" '
+                  'name="gz::sim::systems::MecanumDrive">')
+    for slot in MECANUM_SLOTS:
+        for name in slots[slot]:
+            w(indent + 4, '<%s_joint>%s</%s_joint>' % (slot, name, slot))
+    w(indent + 4, '<wheel_separation>%s</wheel_separation>'
+      % n(2 * max(abs(j.xyz[1]) for j in wheels)))
+    w(indent + 4, '<wheelbase>%s</wheelbase>' % n(2 * max(abs(j.xyz[0]) for j in wheels)))
+    w(indent + 4, '<wheel_radius>%s</wheel_radius>' % n(math.sqrt(2) * A.WHEEL_RADIUS))
+    w(indent + 4, '<topic>%s</topic>' % A.TOPIC_CMD_VEL)
     w(indent + 2, '</plugin>')
 
-    # Stock gz systems: ground-truth odometry (+ odom -> base_link TF) and the
-    # passive joint states consumed by robot_state_publisher.
+    # Stock gz system: ground-truth odometry (+ odom -> base_link TF).
     w(indent + 2, '<plugin filename="gz-sim-odometry-publisher-system" '
                   'name="gz::sim::systems::OdometryPublisher">')
     w(indent + 4, '<odom_topic>%s</odom_topic>' % A.TOPIC_ODOM)
@@ -472,11 +547,6 @@ def robot_model_xml(w, indent, urdf):
     w(indent + 4, '<!-- cancel any model rotation so the TF base frame stays')
     w(indent + 4, '     upright (derived from ROBOT_MODEL_RPY) -->')
     w(indent + 4, '<rpy_offset>%s</rpy_offset>' % vec(inverse_rpy(A.ROBOT_MODEL_RPY)))
-    w(indent + 2, '</plugin>')
-    w(indent + 2, '<plugin filename="gz-sim-joint-state-publisher-system" '
-                  'name="gz::sim::systems::JointStatePublisher">')
-    w(indent + 4, '<topic>%s</topic>' % A.TOPIC_JOINT_STATES)
-    w(indent + 4, '<joint_name>yaw_joint</joint_name>')
     w(indent + 2, '</plugin>')
     w(indent, '</model>')
 
@@ -507,6 +577,7 @@ def world_xml(w, urdf, view=False, arena_mesh=True):
     w(6, '<render_engine>ogre2</render_engine>')
     w(6, '<disable_on_drained_battery>false</disable_on_drained_battery>')
     w(4, '</plugin>')
+    w(4, '<plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>')
 
     w(4, '<scene>')
     w(6, '<ambient>0.65 0.65 0.65 1</ambient>')
@@ -553,15 +624,17 @@ def world_xml(w, urdf, view=False, arena_mesh=True):
     w(8, '<real_time_factor>true</real_time_factor>')
     w(6, '</plugin>')
     if view:
+        # gz-gui's PointCloud plugin reads only <point_cloud_topic> and
+        # <float_v_topic>.  With no float_v topic it compares an empty Float_V
+        # against the cloud on every frame and logs "Float message and
+        # pointcloud are not of the same size, visualization may not be
+        # accurate" (PointCloud.cc, PublishMarkers).  Points are still drawn,
+        # in the plugin's default colour; ROS-side data is unaffected.
         w(6, '<!-- live point clouds of both LiDARs (gz.msgs.PointCloudPacked) -->')
-        for name, topic, max_points in (('MID-360', A.GZ_TOPIC_MID360_CLOUD, 200000),
-                                        ('Unitree L2', A.GZ_TOPIC_L2_CLOUD, 100000)):
+        for name, topic in (('MID-360', A.GZ_TOPIC_MID360_CLOUD),
+                            ('Unitree L2', A.GZ_TOPIC_L2_CLOUD)):
             w(6, '<plugin filename="PointCloud" name="%s">' % name)
             w(8, '<point_cloud_topic>%s</point_cloud_topic>' % topic)
-            w(8, '<max_points>%d</max_points>' % max_points)
-            w(8, '<point_size>3</point_size>')
-            w(8, '<use_radii>false</use_radii>')
-            w(8, '<use_intensity>false</use_intensity>')
             w(6, '</plugin>')
     w(4, '</gui>')
 

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- 双雷达外参标定：静止帧 PCL GICP + 多帧鲁棒聚合，初值与结果都经由 tf2。 -->
+<package format="3">
+  <name>lidar_calibration</name>
+  <version>0.1.0</version>
+  <description>MID-360 与 Unitree L2 的外参标定（移植自 navi_minco_bit dual_lidar_calibration 的 GICP 核心）。</description>
+  <maintainer email="yang@example.com">yang</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_eigen</depend>
+  <depend>pcl_conversions</depend>
+  <depend>message_filters</depend>
+  <depend>nav_msgs</depend>
+  <depend>eigen</depend>
+  <build_depend>libpcl-all-dev</build_depend>
+
+  <export><build_type>ament_cmake</build_type></export>
+</package>

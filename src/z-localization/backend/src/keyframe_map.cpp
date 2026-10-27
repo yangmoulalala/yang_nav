@@ -163,7 +163,7 @@ struct KeyframeMap::SpatialIndex {
             if (found)
                 bound = std::min(bound, distances[found - 1]);
         }
-        std::vector<std::pair<std::size_t, double>> hits;
+        std::vector<nanoflann::ResultItem<std::size_t, double>> hits;
         const double margin = std::isfinite(bound) ? 64 * std::numeric_limits<double>::epsilon() *
                                                          std::max(1.0, bound)
                                                    : 0;

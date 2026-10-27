@@ -6,7 +6,8 @@
 可运行的 world。
 
 位姿、TF、关节状态、点云全部由 gz 内置 system 或标准 ROS 2 包提供；自定义代码只有
-URDF→SDF 生成、平面速度插件和一个键盘遥控节点（`ros2 run sentry_gazebo teleop`）。
+URDF→SDF 生成和一个键盘遥控节点（`ros2 run sentry_gazebo teleop`）；底盘由 gz 内置
+`MecanumDrive` 通过真实轮地接触驱动，两台雷达各带一个内置 IMU。
 
 ## 快速开始
 
@@ -54,7 +55,8 @@ ros2 run sentry_gazebo teleop
 | `x` | 退出 |
 
 参数：`-p linear_speed:=0.5 -p angular_speed:=1.0 -p cmd_vel_topic:=/cmd_vel`。
-节点以 20 Hz 重复发布，因为速度插件对指令有 0.4 s 超时，单条消息不会让车一直走。
+节点以 20 Hz 重复发布。`MecanumDrive` 没有指令超时，会一直执行最后一条指令：按空格或
+`x` 退出时 teleop 会发 0，但强杀 teleop 进程车会继续走。
 
 stdin 不是终端时（管道、launch）改为**每行一个按键、保持 `hold` 秒**，方便脚本化：
 
@@ -118,7 +120,7 @@ TF 链完全由标准件产生：
 | 变换 | 发布者 | 来源 |
 | --- | --- | --- |
 | `odom → base_link` | `ros_gz_bridge` | gz 内置 `OdometryPublisher` 的 `/tf_odom`（`Pose_V`） |
-| `base_link → yaw_link → mid360_link / l2_link` | `robot_state_publisher` | URDF 正解 + `/joint_states` |
+| `base_link → yaw_link → mid360_link / l2_link` | `robot_state_publisher` | URDF 正解 + `joint_state_publisher` 发布的零位 `/joint_states` |
 | `mid360_link → sentry/mid360_link/mid360_lidar` 等 | `tf2_ros static_transform_publisher` | 见下文 `frame_id` |
 
 雷达外参（`tf2_echo base_link mid360_link` 等，即 URDF 关节链的正解结果）：
@@ -148,6 +150,11 @@ TF 链完全由标准件产生：
 | 更新率 | 10 Hz | 10 Hz |
 | 噪声 | 高斯 σ = 0.01 m | 高斯 σ = 0.01 m |
 | 每帧点数 | 28 800 | 6 400 |
+| 内置 IMU | gz `imu`，雷达原点，200 Hz | 同左 |
+
+IMU 噪声按 MEMS 量级（陀螺 σ 2e-3 rad/s，加计 σ 2e-2 m/s²），输出比力（含重力，m/s²）。
+车身视觉带 `visibility_flags`，雷达的 `visibility_mask` 将其屏蔽，不会打到自己车身
+（真机驱动同样不出车体回波）。
 
 L2 的采样刻意按真机 64 000 点/s 的点数预算设置：在 10 倍稠密的仿真上整定的 SLAM
 前端换到真机会直接崩掉。需要更密的 MID-360 点云时，改
@@ -162,10 +169,12 @@ L2 的采样刻意按真机 64 000 点/s 的点数预算设置：在 10 倍稠�
 | `/clock` | `rosgraph_msgs/Clock` | gz → ROS | gz |
 | `/odom` | `nav_msgs/Odometry` | gz → ROS | `OdometryPublisher` |
 | `/tf` | `tf2_msgs/TFMessage` | gz → ROS | `OdometryPublisher` 的 `/tf_odom` |
-| `/joint_states` | `sensor_msgs/JointState` | gz → ROS | `JointStatePublisher`（`yaw_joint`） |
+| `/joint_states` | `sensor_msgs/JointState` | ROS | `joint_state_publisher`（全部关节零位，不经 bridge） |
 | `/lidar_mid360/points` | `sensor_msgs/PointCloud2` | gz → ROS | `gpu_lidar` |
 | `/lidar_l2/points` | `sensor_msgs/PointCloud2` | gz → ROS | `gpu_lidar` |
-| `/cmd_vel` | `geometry_msgs/Twist` | ROS → gz | 速度插件 |
+| `/lidar_mid360/imu` | `sensor_msgs/Imu` | gz → ROS | `imu` 传感器 |
+| `/lidar_l2/imu` | `sensor_msgs/Imu` | gz → ROS | `imu` 传感器 |
+| `/cmd_vel` | `geometry_msgs/Twist` | ROS → gz | `MecanumDrive` |
 
 gz 侧的原始话题名是 `lidar_mid360/points` 与 `lidar_l2/points`（`<topic>` 元素必须是
 `<sensor>` 的直接子元素且**不带前导 `/`**，否则 gz 不派生点云话题）。gz 会派生两个话题：
@@ -193,12 +202,16 @@ l2_link     -> sentry/l2_link/l2_lidar
 
 ## 机器人建模方式
 
-- **物理**：平面运动学底盘。`base_link` + 4 个被动轮 joint + `yaw_joint`（云台），
-  由 gz Python system 插件 `plugins/sentry_velocity_control.py` 直接设置模型世界位姿，
-  不依赖摩擦/接触求解，因此 `physics` 是 `type="ignored"`。
+- **底盘**：X 型四全向轮（轮轴沿对角线，四轮接地点共面）。gz 内置 `MecanumDrive`
+  把机体系 `/cmd_vel` 换算成轮速，靠轮地接触驱动，所以 IMU 读到的是真实加速度。
+  全向轮与麦轮运动学等价、轮缘速度差 √2，故 `wheel_radius = √2 × 0.065`；轮子按几何位置
+  （而非 URDF 名字）分到 front_left 等槽位，见 `sdf_builder.omni_wheel()`。
+  之前的“直接写速度/位姿”插件会让 IMU 运动中读到 100+ m/s² 的假加速度，已删除。
+- **云台**：仿真不驱动云台，`yaw_joint` 在 SDF 里是 fixed（被动关节会被底盘带着空转）。
 - **碰撞**：`base_link` 用单个 box hull（`0.594 × 0.594 × 0.170`，中心 `z = 0.027`，
   即 `base_link.stl` 按其 URDF visual 旋转后的包围盒）代替 1.29 M 三角面的 STL，
-  外加 4 个圆柱轮（r = 0.065，厚 0.04）。
+  外加 4 个圆柱轮（r = 0.065，厚 0.04），轮子只在滚动方向有摩擦（`fdir1`，`mu2 = 0`），
+  模拟全向轮的小辊子。贴墙时方形车体转不动，需先退开，与真车一致。
 - **视觉**：直接用 URDF 的 STL，URI 为 `model://sentry_description/meshes/*.stl`，通过
   `GZ_SIM_RESOURCE_PATH` 里的 `sentry_description` 模型 shim 解析（`prepare_world.py` 会把
   `meshes/` 软链到生成目录）。
@@ -237,9 +250,8 @@ RTF 直接看 Gazebo GUI 右下角的 World stats（`real time factor`），或
    （`PointCloud.cc` 的 `PublishMarkers`），于是每帧报一次。只影响 GUI 的点着色，
    **ROS 话题上的点云数据完全不受影响**（`/lidar_*/points` 的 width、frame_id、
    坐标都正常）。要彻底消掉只能关掉这两个 GUI 面板。
-2. **雷达自遮挡**：按当前 URDF 挂载姿态，两个雷达的 +z 扫描轴都不是竖直的，
-   近场有大量车体回波（`p50 ≈ 0.15 m`，57% 射线有回波）。属模型侧问题，仿真如实
-   复现，未做补偿。
+2. **雷达近场点**：车身已对雷达隐藏，剩下的近场点主要是地面（MID-360 离地约 0.2 m、
+   侧倾 105°）。定位侧 `lidar_fusion` 丢弃 0.3 m 内的点。
 3. **非有限点**：gz 未命中的 ray 返回 `inf`（约 43%），ROS 侧用
    `point_cloud2.read_points(..., skip_nans=True)` 过滤即可。
 4. **`/odom` 协方差为零**：`OdometryPublisher` 的普通 odometry 话题不带协方差，
@@ -258,12 +270,9 @@ sentry_gazebo/
 │   ├── sdf_builder.py     # URDF + arena_spec -> SDF world
 │   └── teleop.py          # 键盘遥控节点（发布 /cmd_vel）
 ├── launch/
-│   ├── sim.launch.py      # 主入口（gz + bridge + robot_state_publisher + 帧别名）
+│   ├── sim.launch.py      # 主入口（gz + bridge + robot/joint_state_publisher + 帧别名）
 │   ├── prepare_world.py   # 每次启动重新生成 world + env.sh
 │   └── launch_utils.py    # 路径/环境变量共享
-├── plugins/
-│   ├── sentry_velocity_control.py   # gz Python system 插件（平面速度）
-│   └── sitecustomize.py
 ├── scripts/teleop         # ros2 run 入口（装到 lib/sentry_gazebo）
 ├── config/bridge.yaml     # 全部 ROS <-> gz 话题
 ├── rviz/sentry.rviz

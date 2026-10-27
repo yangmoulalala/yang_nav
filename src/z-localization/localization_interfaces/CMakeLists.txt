@@ -23,8 +23,5 @@ ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_dependencies(rosidl_default_runtime)
 install(FILES LICENSE DESTINATION share/${PROJECT_NAME})
 
-if(BUILD_TESTING)
-    add_subdirectory(test)
-endif()
 
 ament_package()

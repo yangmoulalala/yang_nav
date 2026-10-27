@@ -61,8 +61,4 @@ def gz_environment():
     """Environment variables for the Gazebo process."""
     return {
         'GZ_SIM_RESOURCE_PATH': os.pathsep.join(resource_paths()),
-        # Python system plugins are found through this path
-        'GZ_SIM_SYSTEM_PLUGIN_PATH': os.pathsep.join(
-            [str(share() / 'plugins'), str(share()),
-             os.environ.get('GZ_SIM_SYSTEM_PLUGIN_PATH', '')]),
     }

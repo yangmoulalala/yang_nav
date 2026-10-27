@@ -5,11 +5,11 @@
 #   /clock           sim time
 #   /odom            ground truth, gz::sim::systems::OdometryPublisher
 #   /tf              odom -> base_link (Pose_V from the same system)
-#   /joint_states    passive joints, gz::sim::systems::JointStatePublisher
 #   /lidar_*/points  the two gpu_lidar sensors (sensor topics set in the SDF)
+#   /lidar_*/imu     the built-in IMU of each LiDAR (gz imu sensor, same origin)
 #
 # ros -> gz
-#   /cmd_vel         consumed by the sentry_velocity_control plugin
+#   /cmd_vel         consumed by gz::sim::systems::MecanumDrive
 - ros_topic_name: "/clock"
   gz_topic_name: "/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
@@ -28,12 +28,6 @@
   gz_topic_name: "/tf_odom"
   ros_type_name: "tf2_msgs/msg/TFMessage"
   gz_type_name: "gz.msgs.Pose_V"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/joint_states"
-  gz_topic_name: "/joint_states"
-  ros_type_name: "sensor_msgs/msg/JointState"
-  gz_type_name: "gz.msgs.Model"
   direction: GZ_TO_ROS
 
 - ros_topic_name: "/cmd_vel"
@@ -55,4 +49,18 @@
   ros_type_name: "sensor_msgs/msg/PointCloud2"
   gz_type_name: "gz.msgs.PointCloudPacked"
   # see the MID-360 entry above
+  direction: GZ_TO_ROS
+
+# specific force in m/s^2 (gravity included), frame is the gz scoped sensor
+# name aliased onto the LiDAR link by the launch file
+- ros_topic_name: "/lidar_mid360/imu"
+  gz_topic_name: "/lidar_mid360/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/lidar_l2/imu"
+  gz_topic_name: "/lidar_l2/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
   direction: GZ_TO_ROS

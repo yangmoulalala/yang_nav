@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- 单/双雷达点云融合：时间同步 + tf2 外参变换 + 逐点时间字段。 -->
+<package format="3">
+  <name>lidar_fusion</name>
+  <version>0.1.0</version>
+  <description>将 MID-360 与 Unitree L2 点云按 tf2 外参合并为 ZLIO 可用的单一 PointCloud2。</description>
+  <maintainer email="yang@example.com">yang</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>message_filters</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+
+  <export><build_type>ament_python</build_type></export>
+</package>

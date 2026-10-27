@@ -52,22 +52,25 @@ base_link
 
 | 文件 | 作用 |
 | --- | --- |
-| `launch/sim.launch.py` | 主入口。参数 `gui` / `rviz` / `generated_dir`；调 `prepare_world.generate()` 生成 world，然后起 gz、`ros_gz_bridge`、`robot_state_publisher`、每个传感器一个 `static_transform_publisher`（帧别名），可选 RViz2。 |
+| `launch/sim.launch.py` | 主入口。参数 `gui` / `rviz` / `generated_dir`；调 `prepare_world.generate()` 生成 world，然后起 gz、`ros_gz_bridge`、`robot_state_publisher`、`joint_state_publisher`（关节零位）、每个传感器一个 `static_transform_publisher`（帧别名），可选 RViz2。 |
 | `launch/prepare_world.py` | **每次启动重新生成** `rmul_2027.sdf`、`env.sh` 到 `/tmp/sentry_gazebo_generated`，并建 `model://sentry_description/meshes` 软链。**生成物不落仓库**。 |
-| `launch/launch_utils.py` | 路径解析（`generated_dir()`、`urdf_path()`）和 `gz_environment()`（`GZ_SIM_RESOURCE_PATH` / `SYSTEM_PLUGIN_PATH`）。 |
+| `launch/launch_utils.py` | 路径解析（`generated_dir()`、`urdf_path()`）和 `gz_environment()`（`GZ_SIM_RESOURCE_PATH`）。 |
 
-### 2.3 gz 插件 `plugins/`
+### 2.3 gz system（全部内置，写在 `sdf_builder.py` 里）
 
-| 文件 | 作用 |
+| system | 作用 |
 | --- | --- |
-| `sentry_velocity_control.py` | gz Python system，**不依赖 rclpy**。订 gz 的 `/cmd_vel`（`gz.msgs.Twist`），积分成平面位姿后直接写模型世界位姿（只改 x/y/yaw，z 在第一条指令时锁定）。`/odom` 和 `/joint_states` 不在这里发，交给 gz 内置 system。 |
-| `sitecustomize.py` | 让 gz 的 Python 进程能找到本包的模块。 |
+| `MecanumDrive` | 订 gz `/cmd_vel`，驱动四个全向轮关节（轮槽位、轴向、`fdir1` 由 `omni_wheel()` 从 URDF 算出）。 |
+| `OdometryPublisher` | 真值 `/odom` 与 `odom → base_link`（`/tf_odom`）。 |
+| `Sensors` + `Imu` | 两个 `gpu_lidar` 与两个 `imu` 传感器。 |
+
+不再有自写 gz 插件（原 `plugins/sentry_velocity_control.py` 已删除：它直接写速度/位姿，IMU 运动中读数错误）。
 
 ### 2.4 配置 / 界面 / 入口
 
 | 文件 | 作用 |
 | --- | --- |
-| `config/bridge.yaml` | ros_gz 桥的全部映射：clock、odom、`/tf_odom`→`/tf`、joint_states、`/cmd_vel`（ROS→gz）、两路点云。 |
+| `config/bridge.yaml` | ros_gz 桥的全部映射：clock、odom、`/tf_odom`→`/tf`、`/cmd_vel`（ROS→gz）、两路点云、两路 IMU。 |
 | `rviz/sentry.rviz` | RViz 布局（Fixed Frame = `odom`）。 |
 | `scripts/teleop` | `ros2 run sentry_gazebo teleop` 的入口。因为 colcon 把 ament_python 的 console_scripts 装到 `<prefix>/bin`（`ros2 run` 不查那里），所以按 `data_files` 装进 `lib/sentry_gazebo/`。 |
 
@@ -80,7 +83,7 @@ base_link
 
 ### 2.6 `setup.py` / `package.xml` / `resource/`
 
-`setup.py` 按数据文件安装 `launch/config/rviz/plugins/models`，并把 `scripts/teleop`
+`setup.py` 按数据文件安装 `launch/config/rviz/models`，并把 `scripts/teleop`
 装到 `lib/sentry_gazebo/`——那是 `ros2 run` 的查找路径。**没有用 `entry_points`**：
 colcon 会把 ament_python 的 console_scripts 放到 `<prefix>/bin`，`ros2 run` 找不到。
 
@@ -96,22 +99,25 @@ prepare_world.py
                                       │
         ┌──────────────────┬──────────┴──────────┬────────────────────┐
         │                  │                     │                    │
-   gpu_lidar          OdometryPublisher     JointStatePublisher   velocity plugin
-   (点云)             (/odom, /tf_odom)      (/joint_states)       (读 /cmd_vel)
+   gpu_lidar ×2         imu ×2          OdometryPublisher       MecanumDrive
+   (点云)            (雷达内置 IMU)      (/odom, /tf_odom)       (读 /cmd_vel)
         │                  │                     │                    │
         └──────────────────┴──────────┬──────────┴────────────────────┘
                                       │
                               ros_gz_bridge
                                       │
-                     /lidar_*  /odom  /tf  /joint_states
+                  /lidar_*/points  /lidar_*/imu  /odom  /tf
                                       │
-                          robot_state_publisher (URDF 正解)
+     joint_state_publisher (零位) ─> robot_state_publisher (URDF 正解)
                                       │
                       base_link -> yaw_link -> mid360_link / l2_link
 ```
 
 `/cmd_vel` 反向走：`teleop`（或你自己的节点）→ ROS `/cmd_vel` → bridge → gz
-`/cmd_vel` → 速度插件。
+`/cmd_vel` → `MecanumDrive`。
+
+定位（`src/z-localization`，入口 `ros2 launch bringup sim.launch.py lidar:=single|dual`）订阅
+`/lidar_*/points`、`/lidar_mid360/imu` 与 TF，详见 `src/z-localization/README.md`。
 
 ---
 

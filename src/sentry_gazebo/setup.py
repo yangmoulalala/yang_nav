@@ -24,8 +24,8 @@ def data_tree(src):
 setup(
     name=package_name,
     version='0.4.0',
-    # launch/ and plugins/ are not python packages: an __init__.py there would
-    # shadow ROS' own "launch" module (and gz-sim imports the plugins by name).
+    # launch/ is not a python package: an __init__.py there would shadow ROS'
+    # own "launch" module.
     packages=[package_name],
     package_dir={'': '.'},
     data_files=[
@@ -34,8 +34,6 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         (os.path.join('share', package_name, 'config'), glob('config/*')),
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*')),
-        # gz-sim Python system plugin + sitecustomize
-        (os.path.join('share', package_name, 'plugins'), glob('plugins/*.py')),
         # ros2 run searches lib/<pkg>; colcon installs ament_python console
         # scripts into <prefix>/bin instead, so the node launcher is a data
         # file (see the note in scripts/teleop).

@@ -1,0 +1,28 @@
+# 仿真用后端配置：继承默认配置，只覆盖与当前机器人和仿真相关的项。
+extends: ../../backend/config/backend.yaml
+common:
+  # Gazebo 已发布真值 odom -> base_link，LIO 的里程计系用 lio_odom 避免 TF 冲突。
+  odom_frame: lio_odom
+  sensor_frame: imu
+  body:
+    # sensor(mid360_link) -> body(base_link)，由 URDF 正解得到（yaw_joint=0）。
+    rotation:
+      roll_deg: 105.0
+      pitch_deg: 0.0
+      yaw_deg: 0.0
+    # sensor 原点指向 base_link 原点，在 body 系表达，单位米。
+    offset:
+      x: -0.05576
+      y: 0.16359
+      z: -0.13664
+    frame: body
+  scan_context:
+    # MID-360 离地高度：ROBOT_Z 0.062 + 0.137。
+    lidar_height: 0.2
+prior_map:
+  enabled: false
+  directory: /tmp/zloc_map
+trajectory:
+  save_directory: /tmp/zloc_map
+uwb:
+  enabled: false

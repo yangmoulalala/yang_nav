@@ -1,0 +1,28 @@
+# 真车后端配置：继承默认配置；外参与仿真相同，均由 URDF（yaw_joint=0）得到。
+extends: ../../backend/config/backend.yaml
+common:
+  odom_frame: lio_odom
+  sensor_frame: imu
+  body:
+    # sensor(mid360_link) -> body(base_link)，URDF 改动或重新标定后需同步。
+    rotation:
+      roll_deg: 105.0
+      pitch_deg: 0.0
+      yaw_deg: 0.0
+    # sensor 原点指向 base_link 原点，在 body 系表达，单位米。
+    offset:
+      x: -0.05576
+      y: 0.16359
+      z: -0.13664
+    frame: body
+  scan_context:
+    # MID-360 离地高度，m。
+    lidar_height: 0.2
+prior_map:
+  enabled: false
+  directory: maps/site
+trajectory:
+  save_directory: maps/runtime
+uwb:
+  # 接入 UWB 后改为 true，并按 backend/docs/parameters.md 的 UWB 参数配置话题、天线位置与零位。
+  enabled: false

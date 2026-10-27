@@ -123,7 +123,7 @@ void LocalizationNode::configureServices() {
         parameters_.services.save_map,
         std::bind(&LocalizationNode::saveMapService, this, std::placeholders::_1,
                   std::placeholders::_2),
-        rmw_qos_profile_services_default, map_callback_group_);
+        rclcpp::ServicesQoS(), map_callback_group_);
     relocalize_service_ = create_service<std_srvs::srv::Trigger>(
         parameters_.services.relocalize, std::bind(&LocalizationNode::relocalizeService, this,
                                                    std::placeholders::_1, std::placeholders::_2));

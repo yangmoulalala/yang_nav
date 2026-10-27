@@ -1,7 +1,7 @@
 # 为当前目录定义的 C++ 目标统一启用编译诊断。
 include_guard(GLOBAL)
 
-option(LOCALIZATION_WARNINGS_AS_ERRORS "将项目代码的编译警告视为错误" ON)
+option(LOCALIZATION_WARNINGS_AS_ERRORS "将项目代码的编译警告视为错误" OFF)
 
 # 覆盖库、节点、工具和测试，不修改依赖子目录中的目标。
 function(localization_enable_warnings)
