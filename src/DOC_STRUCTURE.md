@@ -46,6 +46,7 @@ base_link
 | --- | --- |
 | `arena_spec.py` | **唯一数据源**。机器人位姿（`ROBOT_SPAWN_XY_YAW` / `ROBOT_Z` / `ROBOT_MODEL_RPY`）、碰撞体尺寸、雷达参数与挂载表 `ROBOT_MOUNTS`、赛场盒体 `ARENA_BOXES`、话题名。常量都在这里改。 |
 | `sdf_builder.py` | **URDF + arena_spec → SDF world**。`Urdf` 类解析 URDF 并做 FK（`pose_of(link)` 直接给 root 系下的 xyz/rpy）；`robot_model_xml()` 写机器人（link 位姿与 joint origin/axis 全部来自 URDF）；`gpu_lidar_xml` 写传感器；`arena_model_xml()` 写赛场；`world_xml()` 拼整个 world。 |
+| `teleop.py` | 包内**唯一的 ROS 节点**：键盘遥控，20 Hz 发布 `geometry_msgs/Twist` 到 `/cmd_vel`。终端下按住即走；stdin 不是终端时每行一个按键、保持 `hold` 秒。速度上限取自 `arena_spec`。 |
 
 ### 2.2 入口 / 生成
 
@@ -62,12 +63,13 @@ base_link
 | `sentry_velocity_control.py` | gz Python system，**不依赖 rclpy**。订 gz 的 `/cmd_vel`（`gz.msgs.Twist`），积分成平面位姿后直接写模型世界位姿（只改 x/y/yaw，z 在第一条指令时锁定）。`/odom` 和 `/joint_states` 不在这里发，交给 gz 内置 system。 |
 | `sitecustomize.py` | 让 gz 的 Python 进程能找到本包的模块。 |
 
-### 2.4 配置 / 界面
+### 2.4 配置 / 界面 / 入口
 
 | 文件 | 作用 |
 | --- | --- |
 | `config/bridge.yaml` | ros_gz 桥的全部映射：clock、odom、`/tf_odom`→`/tf`、joint_states、`/cmd_vel`（ROS→gz）、两路点云。 |
 | `rviz/sentry.rviz` | RViz 布局（Fixed Frame = `odom`）。 |
+| `scripts/teleop` | `ros2 run sentry_gazebo teleop` 的入口。因为 colcon 把 ament_python 的 console_scripts 装到 `<prefix>/bin`（`ros2 run` 不查那里），所以按 `data_files` 装进 `lib/sentry_gazebo/`。 |
 
 ### 2.5 资源 `models/`
 
@@ -78,8 +80,9 @@ base_link
 
 ### 2.6 `setup.py` / `package.xml` / `resource/`
 
-`setup.py` 按数据文件安装 `launch/config/rviz/plugins/models`，**没有 ROS 节点可执行文件**
-（无 `entry_points`、无 `lib/sentry_gazebo`）。
+`setup.py` 按数据文件安装 `launch/config/rviz/plugins/models`，并把 `scripts/teleop`
+装到 `lib/sentry_gazebo/`——那是 `ros2 run` 的查找路径。**没有用 `entry_points`**：
+colcon 会把 ament_python 的 console_scripts 放到 `<prefix>/bin`，`ros2 run` 找不到。
 
 ---
 
@@ -107,7 +110,8 @@ prepare_world.py
                       base_link -> yaw_link -> mid360_link / l2_link
 ```
 
-`/cmd_vel` 反向走：ROS → bridge → gz `/cmd_vel` → 速度插件。
+`/cmd_vel` 反向走：`teleop`（或你自己的节点）→ ROS `/cmd_vel` → bridge → gz
+`/cmd_vel` → 速度插件。
 
 ---
 

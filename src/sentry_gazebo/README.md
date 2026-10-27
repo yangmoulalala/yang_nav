@@ -5,8 +5,8 @@
 雷达参数在 `sentry_gazebo/arena_spec.py`，`sentry_gazebo` 只负责把它们组装成一个
 可运行的 world。
 
-包内**没有任何自定义 ROS 节点**：位姿、TF、关节状态、点云全部由 gz 内置 system 或
-标准 ROS 2 包提供，自定义代码只有 URDF→SDF 生成和平面速度插件两处。
+位姿、TF、关节状态、点云全部由 gz 内置 system 或标准 ROS 2 包提供；自定义代码只有
+URDF→SDF 生成、平面速度插件和一个键盘遥控节点（`ros2 run sentry_gazebo teleop`）。
 
 ## 快速开始
 
@@ -35,6 +35,32 @@ ros2 launch sentry_gazebo sim.launch.py gui:=true rviz:=true
 | `generated_dir` | `$SENTRY_GAZEBO_GEN` 或 `/tmp/sentry_gazebo_generated` | 生成的 world 输出目录 |
 
 点云只由 Gazebo 内置的 `gpu_lidar` 产生（ogre2 光线投射），没有其他后端。
+
+### 键盘遥控
+
+另开一个终端：
+
+```bash
+ros2 run sentry_gazebo teleop
+```
+
+| 按键 | 动作 |
+| --- | --- |
+| `w` / `s` | 前进 / 后退 |
+| `a` / `d` | 左转 / 右转 |
+| `q` / `e` | 左平移 / 右平移（四轮全向底盘） |
+| `space` | 停止 |
+| `+` / `-` | 加速 / 减速 |
+| `x` | 退出 |
+
+参数：`-p linear_speed:=0.5 -p angular_speed:=1.0 -p cmd_vel_topic:=/cmd_vel`。
+节点以 20 Hz 重复发布，因为速度插件对指令有 0.4 s 超时，单条消息不会让车一直走。
+
+stdin 不是终端时（管道、launch）改为**每行一个按键、保持 `hold` 秒**，方便脚本化：
+
+```bash
+printf 'w\nw\na\n' | ros2 run sentry_gazebo teleop -p hold:=2.0
+```
 
 ### GPU 加速（WSL 必读）
 
@@ -205,15 +231,21 @@ RTF 直接看 Gazebo GUI 右下角的 World stats（`real time factor`），或
 
 ## 已知限制
 
-1. **雷达自遮挡**：按当前 URDF 挂载姿态，两个雷达的 +z 扫描轴都不是竖直的，
+1. **GUI 里的 `Float message and pointcloud are not of the same size` 警告**：
+   gz-gui 的 `PointCloud` 插件只读 `<point_cloud_topic>` 和 `<float_v_topic>`。
+   没配 float_v 时，它每帧拿**空的** `Float_V` 和点云比长度
+   （`PointCloud.cc` 的 `PublishMarkers`），于是每帧报一次。只影响 GUI 的点着色，
+   **ROS 话题上的点云数据完全不受影响**（`/lidar_*/points` 的 width、frame_id、
+   坐标都正常）。要彻底消掉只能关掉这两个 GUI 面板。
+2. **雷达自遮挡**：按当前 URDF 挂载姿态，两个雷达的 +z 扫描轴都不是竖直的，
    近场有大量车体回波（`p50 ≈ 0.15 m`，57% 射线有回波）。属模型侧问题，仿真如实
    复现，未做补偿。
-2. **非有限点**：gz 未命中的 ray 返回 `inf`（约 43%），ROS 侧用
+3. **非有限点**：gz 未命中的 ray 返回 `inf`（约 43%），ROS 侧用
    `point_cloud2.read_points(..., skip_nans=True)` 过滤即可。
-3. **`/odom` 协方差为零**：`OdometryPublisher` 的普通 odometry 话题不带协方差，
+4. **`/odom` 协方差为零**：`OdometryPublisher` 的普通 odometry 话题不带协方差，
    Nav2 里若配置了协方差阈值需要放宽，或用真值当 ground truth。
-4. `RMUL_2027` 包名触发 colcon 命名规范警告（大写），无害。
-5. WSL 下无 GPU 直通时会回退到软件渲染（`MESA-EGL ... kms_swrast`），此时 RTF
+5. `RMUL_2027` 包名触发 colcon 命名规范警告（大写），无害。
+6. WSL 下无 GPU 直通时会回退到软件渲染（`MESA-EGL ... kms_swrast`），此时 RTF
    约 0.5，话题频率按 RTF 等比下降（实测 `/odom` 约 27 Hz、`/clock` 约 126 Hz、
    雷达约 2.6–4.6 Hz），属环境限制。
 
@@ -223,7 +255,8 @@ RTF 直接看 Gazebo GUI 右下角的 World stats（`real time factor`），或
 sentry_gazebo/
 ├── sentry_gazebo/
 │   ├── arena_spec.py      # 单一数据源：赛场盒体、机器人位姿、雷达参数、话题名
-│   └── sdf_builder.py     # URDF + arena_spec -> SDF world
+│   ├── sdf_builder.py     # URDF + arena_spec -> SDF world
+│   └── teleop.py          # 键盘遥控节点（发布 /cmd_vel）
 ├── launch/
 │   ├── sim.launch.py      # 主入口（gz + bridge + robot_state_publisher + 帧别名）
 │   ├── prepare_world.py   # 每次启动重新生成 world + env.sh
@@ -231,6 +264,7 @@ sentry_gazebo/
 ├── plugins/
 │   ├── sentry_velocity_control.py   # gz Python system 插件（平面速度）
 │   └── sitecustomize.py
+├── scripts/teleop         # ros2 run 入口（装到 lib/sentry_gazebo）
 ├── config/bridge.yaml     # 全部 ROS <-> gz 话题
 ├── rviz/sentry.rviz
 └── models/rmul_2027/      # 官方 STEP 网格 + 贴图（仅视觉）

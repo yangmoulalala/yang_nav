@@ -36,6 +36,10 @@ setup(
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*')),
         # gz-sim Python system plugin + sitecustomize
         (os.path.join('share', package_name, 'plugins'), glob('plugins/*.py')),
+        # ros2 run searches lib/<pkg>; colcon installs ament_python console
+        # scripts into <prefix>/bin instead, so the node launcher is a data
+        # file (see the note in scripts/teleop).
+        (os.path.join('lib', package_name), ['scripts/teleop']),
     ] + data_tree('models'),
     install_requires=['setuptools'],
     zip_safe=True,

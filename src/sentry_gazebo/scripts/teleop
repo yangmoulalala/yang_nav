@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+"""``ros2 run sentry_gazebo teleop`` entry point.
+
+Installed as a data file into ``lib/sentry_gazebo`` (see ``setup.py``) because
+colcon puts ament_python console scripts into ``<prefix>/bin``, which
+``ros2 run`` does not search.
+"""
+import sys
+
+from sentry_gazebo.teleop import main
+
+sys.exit(main())
