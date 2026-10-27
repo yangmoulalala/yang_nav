@@ -5,7 +5,7 @@
     ros2 launch sentry_gazebo sim.launch.py gui:=true rviz:=true
 
 Topics
-    /cmd_vel               geometry_msgs/Twist          -> planar velocity
+    /cmd_vel               geometry_msgs/Twist          -> MecanumDrive
     /odom                  nav_msgs/Odometry            <- ground truth
     /lidar_mid360/points   sensor_msgs/PointCloud2      <- Livox MID-360
     /lidar_l2/points       sensor_msgs/PointCloud2      <- Unitree L2
@@ -21,8 +21,8 @@ Everything is stock ROS 2 / Gazebo:
   ``map -> lio_odom -> base_link`` as on the real robot; ``ground_truth_tf:=true``
   bridges gz's ``OdometryPublisher`` ``odom -> base_link`` instead, to view the
   simulation alone.  Never both: base_link would get two parents;
-* ``/cmd_vel`` is bridged to gz and consumed by the small planar velocity
-  plugin (gz's ``VelocityControl`` is world-frame, ROS cmd_vel is body-frame).
+* ``/cmd_vel`` is bridged to gz and consumed by the stock ``MecanumDrive``
+  system on the four omni wheels.
 """
 import os
 import shlex
