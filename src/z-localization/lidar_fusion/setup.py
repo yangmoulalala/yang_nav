@@ -16,5 +16,6 @@ setup(
     maintainer_email='yang@example.com',
     description='Single/dual LiDAR point cloud merge for ZLIO',
     license='Apache-2.0',
-    entry_points={'console_scripts': ['merge_node = lidar_fusion.merge_node:main']},
+    entry_points={'console_scripts': ['merge_node = lidar_fusion.merge_node:main',
+                                      'base_tf = lidar_fusion.base_tf:main']},
 )

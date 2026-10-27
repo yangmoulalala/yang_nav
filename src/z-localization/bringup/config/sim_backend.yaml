@@ -1,7 +1,7 @@
 # 仿真用后端配置：继承默认配置，只覆盖与当前机器人和仿真相关的项。
 extends: ../../backend/config/backend.yaml
 common:
-  # Gazebo 已发布真值 odom -> base_link，LIO 的里程计系用 lio_odom 避免 TF 冲突。
+  # LIO 的里程计系叫 lio_odom，与 Gazebo 真值 odom 区分；lio_odom -> base_link 由 lidar_fusion/base_tf 发布。
   odom_frame: lio_odom
   sensor_frame: imu
   body:

@@ -5,17 +5,22 @@
 
 Publishes ``geometry_msgs/Twist`` on ``/cmd_vel``; ``ros_gz_bridge`` forwards it
 to Gazebo's stock ``MecanumDrive`` system on the four omni wheels.
-The chassis is a four-wheel omni base, so ``q``/``e`` strafe sideways as well as
-``w``/``s``/``a``/``d`` drive -- MecanumDrive turns all three body-frame
-components into wheel speeds.
+The chassis is a four-wheel omni base, so ``w``/``a``/``s``/``d`` translate
+forward/left/backward/right and ``q``/``e`` turn -- MecanumDrive turns all
+three body-frame components into wheel speeds.
 
 Keys
     w / s    forward / backward
-    a / d    turn left / right
-    q / e    strafe left / right
+    a / d    strafe left / right
+    q / e    turn left / right
     space    stop
     + / -    faster / slower
     x        quit
+
+Motion keys only act while held down.  A terminal reports no key releases, so
+a key counts as released once its auto-repeat stops arriving: ``press_timeout``
+after the first press (covers the auto-repeat delay), ``repeat_timeout`` after
+a repeat.  The robot is then stopped.
 
 When stdin is not a TTY (a pipe, a launch file) one key per line is read and
 held for ``hold`` seconds, so the node can be scripted or used in a test:
@@ -39,17 +44,17 @@ from sentry_gazebo import arena_spec as A
 MOTION = {
     'w': (1.0, 0.0, 0.0),
     's': (-1.0, 0.0, 0.0),
-    'q': (0.0, 1.0, 0.0),
-    'e': (0.0, -1.0, 0.0),
-    'a': (0.0, 0.0, 1.0),
-    'd': (0.0, 0.0, -1.0),
+    'a': (0.0, 1.0, 0.0),
+    'd': (0.0, -1.0, 0.0),
+    'q': (0.0, 0.0, 1.0),
+    'e': (0.0, 0.0, -1.0),
 }
 
 HELP = """\
 sentry teleop
     w / s    forward / backward
-    a / d    turn left / right
-    q / e    strafe left / right
+    a / d    strafe left / right
+    q / e    turn left / right
     space    stop
     + / -    faster / slower
     x        quit
@@ -59,8 +64,8 @@ sentry teleop
 class Teleop(Node):
     """Holds one body-frame velocity and republishes it at ``rate`` Hz.
 
-    Republishing matters: the Gazebo plugin expires a command after
-    ``timeout`` (0.4 s), so a single latched message would stop the robot.
+    MecanumDrive has no command timeout and keeps executing the last
+    command, so the node itself must send zeros once a key is released.
     """
 
     def __init__(self):
@@ -69,6 +74,8 @@ class Teleop(Node):
         self.linear = float(self.declare_parameter('linear_speed', 0.5).value)
         self.angular = float(self.declare_parameter('angular_speed', 1.0).value)
         self.hold = float(self.declare_parameter('hold', 1.0).value)
+        self.press_timeout = float(self.declare_parameter('press_timeout', 0.6).value)
+        self.repeat_timeout = float(self.declare_parameter('repeat_timeout', 0.15).value)
         rate = float(self.declare_parameter('rate', 20.0).value)
 
         # limits come from arena_spec so the node cannot ask for more than the
@@ -139,18 +146,29 @@ class Teleop(Node):
     def _tty_loop(self):
         fd = sys.stdin.fileno()
         old = termios.tcgetattr(fd)
+        held = None         # motion key currently held down
+        deadline = 0.0      # it counts as released if no repeat arrives by then
         try:
             tty.setcbreak(fd)
             while rclpy.ok():
                 rclpy.spin_once(self, timeout_sec=0.02)
                 ready, _, _ = select.select([sys.stdin], [], [], 0)
                 if not ready:
+                    if held is not None and time.monotonic() > deadline:
+                        held = None
+                        self.stop()
                     continue
                 key = sys.stdin.read(1)
                 if key == '\x03':           # Ctrl-C, raw in cbreak mode
                     break
                 if not self.apply(key):
                     break
+                key = key.lower()
+                if key in MOTION:
+                    # the first repeat only comes after the auto-repeat delay
+                    wait = self.repeat_timeout if key == held else self.press_timeout
+                    held = key
+                    deadline = time.monotonic() + wait
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
 

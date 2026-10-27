@@ -48,15 +48,21 @@ ros2 run sentry_gazebo teleop
 | 按键 | 动作 |
 | --- | --- |
 | `w` / `s` | 前进 / 后退 |
-| `a` / `d` | 左转 / 右转 |
-| `q` / `e` | 左平移 / 右平移（四轮全向底盘） |
+| `a` / `d` | 左平移 / 右平移（四轮全向底盘） |
+| `q` / `e` | 左转 / 右转 |
 | `space` | 停止 |
 | `+` / `-` | 加速 / 减速 |
 | `x` | 退出 |
 
 参数：`-p linear_speed:=0.5 -p angular_speed:=1.0 -p cmd_vel_topic:=/cmd_vel`。
-节点以 20 Hz 重复发布。`MecanumDrive` 没有指令超时，会一直执行最后一条指令：按空格或
-`x` 退出时 teleop 会发 0，但强杀 teleop 进程车会继续走。
+节点以 20 Hz 重复发布。运动键**按住才动、松开即停**：终端收不到按键抬起事件，所以以键盘
+自动重复停止为准——首次按下后 `press_timeout`（默认 0.6 s，覆盖自动重复的起始延迟）、
+之后每次重复后 `repeat_timeout`（默认 0.15 s）内没有新的重复，就视为松开并发 0。
+若松手后停得慢或按住时断断续续，可用 `-p press_timeout:=... -p repeat_timeout:=...` 按本机
+键盘重复速率调整（`xset q` 可查看）。
+
+`MecanumDrive` 没有指令超时，会一直执行最后一条指令：松键、按空格或 `x` 退出时 teleop
+会发 0，但强杀 teleop 进程车会继续走。
 
 stdin 不是终端时（管道、launch）改为**每行一个按键、保持 `hold` 秒**，方便脚本化：
 
@@ -115,11 +121,18 @@ gz sim -r -v 3 /tmp/sentry_gazebo_generated/rmul_2027.sdf
 URDF 是 **z-up** 的，所以模型位姿里没有额外旋转（`ROBOT_MODEL_RPY = (0,0,0)`），
 `odom → base_link` 是纯平移 + yaw。
 
+机器人在世界中的位置默认**由定位给出**，与真车一致：`map → lio_odom → base_link`（`bringup`）。
+Gazebo 真值只走 `/odom` 话题，不进 TF。不起定位、单独看仿真时用 `ground_truth_tf:=true`
+把真值 `odom → base_link` 接回 TF，RViz 的 Fixed Frame 随之从 `map` 切到 `odom`。
+两者不要同时开：`base_link` 只能有一个父帧。
+
 TF 链完全由标准件产生：
 
 | 变换 | 发布者 | 来源 |
 | --- | --- | --- |
-| `odom → base_link` | `ros_gz_bridge` | gz 内置 `OdometryPublisher` 的 `/tf_odom`（`Pose_V`） |
+| `map → lio_odom` | `backend_node` | 定位后端 |
+| `lio_odom → base_link` | `lio_base_tf`（`lidar_fusion`） | ZLIO `/odometry`（`lio_odom → imu`）经 URDF 外参换算 |
+| `odom → base_link` | `gz_bridge_odom_tf` | 仅 `ground_truth_tf:=true`：gz `OdometryPublisher` 的 `/tf_odom`（`Pose_V`） |
 | `base_link → yaw_link → mid360_link / l2_link` | `robot_state_publisher` | URDF 正解 + `joint_state_publisher` 发布的零位 `/joint_states` |
 | `mid360_link → sentry/mid360_link/mid360_lidar` 等 | `tf2_ros static_transform_publisher` | 见下文 `frame_id` |
 
@@ -162,13 +175,13 @@ L2 的采样刻意按真机 64 000 点/s 的点数预算设置：在 10 倍稠�
 
 ## ROS 接口
 
-全部映射写在 `config/bridge.yaml`。
+映射写在 `config/bridge.yaml`；真值 TF 由 launch 按 `ground_truth_tf` 另起一个桥。
 
 | 话题 | 类型 | 方向 | 来源 |
 | --- | --- | --- | --- |
 | `/clock` | `rosgraph_msgs/Clock` | gz → ROS | gz |
 | `/odom` | `nav_msgs/Odometry` | gz → ROS | `OdometryPublisher` |
-| `/tf` | `tf2_msgs/TFMessage` | gz → ROS | `OdometryPublisher` 的 `/tf_odom` |
+| `/tf` | `tf2_msgs/TFMessage` | gz → ROS | `OdometryPublisher` 的 `/tf_odom`，仅 `ground_truth_tf:=true` |
 | `/joint_states` | `sensor_msgs/JointState` | ROS | `joint_state_publisher`（全部关节零位，不经 bridge） |
 | `/lidar_mid360/points` | `sensor_msgs/PointCloud2` | gz → ROS | `gpu_lidar` |
 | `/lidar_l2/points` | `sensor_msgs/PointCloud2` | gz → ROS | `gpu_lidar` |

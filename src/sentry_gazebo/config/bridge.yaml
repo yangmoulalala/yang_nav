@@ -4,7 +4,8 @@
 # gz -> ros
 #   /clock           sim time
 #   /odom            ground truth, gz::sim::systems::OdometryPublisher
-#   /tf              odom -> base_link (Pose_V from the same system)
+#   (/tf_odom -> /tf, odom -> base_link, is bridged by sim.launch.py only with
+#    ground_truth_tf:=true; by default the localization stack owns base_link)
 #   /lidar_*/points  the two gpu_lidar sensors (sensor topics set in the SDF)
 #   /lidar_*/imu     the built-in IMU of each LiDAR (gz imu sensor, same origin)
 #
@@ -20,14 +21,6 @@
   gz_topic_name: "/odom"
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"
-  direction: GZ_TO_ROS
-
-# OdometryPublisher publishes its TF as gz.msgs.Pose_V; the bridge maps the
-# pose header's frame_id / child_frame_id pairs straight onto TransformStamped.
-- ros_topic_name: "/tf"
-  gz_topic_name: "/tf_odom"
-  ros_type_name: "tf2_msgs/msg/TFMessage"
-  gz_type_name: "gz.msgs.Pose_V"
   direction: GZ_TO_ROS
 
 - ros_topic_name: "/cmd_vel"

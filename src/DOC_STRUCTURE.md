@@ -52,7 +52,7 @@ base_link
 
 | 文件 | 作用 |
 | --- | --- |
-| `launch/sim.launch.py` | 主入口。参数 `gui` / `rviz` / `generated_dir`；调 `prepare_world.generate()` 生成 world，然后起 gz、`ros_gz_bridge`、`robot_state_publisher`、`joint_state_publisher`（关节零位）、每个传感器一个 `static_transform_publisher`（帧别名），可选 RViz2。 |
+| `launch/sim.launch.py` | 主入口。参数 `gui` / `rviz` / `generated_dir` / `ground_truth_tf`；调 `prepare_world.generate()` 生成 world，然后起 gz、`ros_gz_bridge`、`robot_state_publisher`、`joint_state_publisher`（关节零位）、每个传感器一个 `static_transform_publisher`（帧别名），可选 RViz2。 |
 | `launch/prepare_world.py` | **每次启动重新生成** `rmul_2027.sdf`、`env.sh` 到 `/tmp/sentry_gazebo_generated`，并建 `model://sentry_description/meshes` 软链。**生成物不落仓库**。 |
 | `launch/launch_utils.py` | 路径解析（`generated_dir()`、`urdf_path()`）和 `gz_environment()`（`GZ_SIM_RESOURCE_PATH`）。 |
 
@@ -61,7 +61,7 @@ base_link
 | system | 作用 |
 | --- | --- |
 | `MecanumDrive` | 订 gz `/cmd_vel`，驱动四个全向轮关节（轮槽位、轴向、`fdir1` 由 `omni_wheel()` 从 URDF 算出）。 |
-| `OdometryPublisher` | 真值 `/odom` 与 `odom → base_link`（`/tf_odom`）。 |
+| `OdometryPublisher` | 真值 `/odom` 与 `odom → base_link`（`/tf_odom`，默认不进 ROS TF，见 `ground_truth_tf`）。 |
 | `Sensors` + `Imu` | 两个 `gpu_lidar` 与两个 `imu` 传感器。 |
 
 不再有自写 gz 插件（原 `plugins/sentry_velocity_control.py` 已删除：它直接写速度/位姿，IMU 运动中读数错误）。
@@ -70,7 +70,7 @@ base_link
 
 | 文件 | 作用 |
 | --- | --- |
-| `config/bridge.yaml` | ros_gz 桥的全部映射：clock、odom、`/tf_odom`→`/tf`、`/cmd_vel`（ROS→gz）、两路点云、两路 IMU。 |
+| `config/bridge.yaml` | ros_gz 桥映射：clock、odom、`/cmd_vel`（ROS→gz）、两路点云、两路 IMU。`/tf_odom`→`/tf` 只在 `ground_truth_tf:=true` 时由 launch 另起桥。 |
 | `rviz/sentry.rviz` | RViz 布局（Fixed Frame = `odom`）。 |
 | `scripts/teleop` | `ros2 run sentry_gazebo teleop` 的入口。因为 colcon 把 ament_python 的 console_scripts 装到 `<prefix>/bin`（`ros2 run` 不查那里），所以按 `data_files` 装进 `lib/sentry_gazebo/`。 |
 

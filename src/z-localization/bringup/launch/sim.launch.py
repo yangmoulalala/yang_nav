@@ -6,6 +6,10 @@
 
 IMU 用 MID-360 内置 IMU（与雷达同原点），合并点云位于 mid360_link 系；
 L2 到 MID-360 的外参只来自 tf2（URDF）。
+
+TF：map → lio_odom（后端）→ base_link（base_tf，由 /odometry 与 URDF 外参换算）→ URDF 树。
+ZLIO 不发 TF；它的 imu 系与 mid360_link 重合，用恒等静态 TF 挂进 URDF 树。
+Gazebo 须用默认的 ground_truth_tf:=false 启动，否则 base_link 会有两个父帧。
 """
 
 from launch import LaunchDescription
@@ -50,8 +54,20 @@ def generate_launch_description():
                 'world_frame': 'lio_odom',
                 'body_frame': 'imu',
                 'coordinated_reset': True,
+                # TF 由下面的 base_tf 发到 base_link，imu 已在 URDF 树上
+                'publish_tf': False,
                 'use_sim_time': True,
             }]),
+        # 仿真 IMU 位于雷达原点（sim_lio.yaml 外参为单位阵），imu 系即 mid360_link
+        Node(
+            package='tf2_ros', executable='static_transform_publisher', name='alias_imu',
+            output='screen',
+            arguments=['--frame-id', 'mid360_link', '--child-frame-id', 'imu'],
+            parameters=[{'use_sim_time': True}]),
+        Node(
+            package='lidar_fusion', executable='base_tf', name='lio_base_tf', output='screen',
+            parameters=[{'odometry_topic': '/odometry', 'base_frame': 'base_link',
+                         'use_sim_time': True}]),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([FindPackageShare('backend'), 'launch', 'backend.launch.py'])),

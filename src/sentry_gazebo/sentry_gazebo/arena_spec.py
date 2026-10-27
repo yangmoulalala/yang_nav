@@ -73,11 +73,16 @@ WHEEL_RADIUS = 0.065
 WHEEL_LENGTH = 0.04      # wheel_front_left.stl is 4 cm thick along its axis
 
 # Collision hull of the chassis: one box instead of the 1.29 M-triangle STL.
-# Values are the bounding box of base_link.stl after its URDF visual rotation
-# (0.594 x 0.594 x 0.170, centred 0.027 above the link origin), so the hull
-# follows the CAD without hand-tuned numbers.
-CHASSIS_HULL_CENTRE = (0.0, 0.0, 0.027)
-CHASSIS_HULL_SIZE = (0.594, 0.594, 0.170)
+# x/y and the top follow the bounding box of base_link.stl after its URDF
+# visual rotation (0.594 x 0.594 x 0.170, centred 0.027 above the link origin).
+# The bottom is cut to CHASSIS_GROUND_CLEARANCE above the floor: the raw bbox
+# reaches 4 mm above the floor, so the box snagged on the 10 mm centre plate,
+# which the 65 mm wheels climb easily.
+CHASSIS_GROUND_CLEARANCE = 0.03
+_HULL_TOP = 0.027 + 0.170 / 2.0                    # above the link origin
+_HULL_BOTTOM = CHASSIS_GROUND_CLEARANCE - ROBOT_Z   # link origin is ROBOT_Z up
+CHASSIS_HULL_CENTRE = (0.0, 0.0, (_HULL_TOP + _HULL_BOTTOM) / 2.0)
+CHASSIS_HULL_SIZE = (0.594, 0.594, _HULL_TOP - _HULL_BOTTOM)
 CHASSIS_MASS = 18.0
 TURRET_MASS = 4.0
 

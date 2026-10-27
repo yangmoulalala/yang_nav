@@ -77,7 +77,9 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 | `imu_acceleration_scale` | 1.0 | gz IMU 单位 m/s²（Livox 为 g） |
 | 逐点时间 | 帧头时间 | gpu_lidar 一帧同一时刻渲染 |
 
-LIO 的里程计系叫 `lio_odom`（Gazebo 真值占用了 `odom`）。
+LIO 的里程计系叫 `lio_odom`（与 Gazebo 真值 `odom` 区分）。仿真 TF 为 `map → lio_odom → base_link → URDF 树`：
+`lio_odom → base_link` 由 `lidar_fusion` 的 `base_tf` 用 `/odometry` 与 URDF 外参算出，ZLIO 自身 TF 关闭，
+`imu` 以恒等静态 TF 挂在 `mid360_link` 下。Gazebo 须以默认的 `ground_truth_tf:=false` 启动。
 
 ### 仿真实测（2026-10-27，RTX 4060 Ti，RTF 1.0）
 
