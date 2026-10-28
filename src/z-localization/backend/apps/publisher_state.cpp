@@ -36,14 +36,13 @@ void writeStateField(std::ostream& output, const std::string& value) {
 }
 }  // namespace
 
-/// 发布定位状态文本、兼容危险标志及按需启用的状态标记。
+/// 发布定位状态文本及按需启用的状态标记。
 void Publisher::publishLocalizationState(const LocalizationStatus status, const std::string& reason,
                                          const EstimatorFailureHistory& estimator_failures,
                                          const rclcpp::Time& stamp, const bool tf_published,
                                          const std::uint64_t epoch,
                                          const std::uint64_t state_generation,
                                          const std::uint64_t pose_revision) {
-    publishLegacyDanger(status);
     if (!state_pub_) {
         return;
     }

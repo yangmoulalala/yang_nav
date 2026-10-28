@@ -213,7 +213,7 @@ bool isFrameworkParameter(const std::string& name) {
 
 }  // namespace
 
-/// 读取可视化、服务、兼容接口和世界点云输出参数。
+/// 读取可视化、服务和世界点云输出参数。
 void ParameterReader::loadOutputs() {
     getParam("visualization/enabled", parameters_.visualization.enabled);
     getParam<bool>("visualization/publish_prior_map", parameters_.visualization.publish_prior_map,
@@ -233,19 +233,6 @@ void ParameterReader::loadOutputs() {
     getParam("services/save_map", parameters_.services.save_map);
     getParam("services/relocalize", parameters_.services.relocalize);
     getParam("services/reset", parameters_.services.reset);
-    getParam("output/legacy/enabled", parameters_.legacy.enabled);
-    getParam("output/legacy/publish_pose", parameters_.legacy.publish_pose);
-    getParam("output/legacy/publish_twist", parameters_.legacy.publish_twist);
-    getParam("output/legacy/publish_path", parameters_.legacy.publish_path);
-    getParam("output/legacy/publish_tf", parameters_.legacy.publish_tf);
-    getParam("output/legacy/publish_initializing", parameters_.legacy.publish_initializing);
-    getParam("output/legacy/publish_untrusted", parameters_.legacy.publish_untrusted);
-    getParam("output/legacy/pose_topic", parameters_.legacy.pose_topic);
-    getParam("output/legacy/twist_topic", parameters_.legacy.twist_topic);
-    getParam("output/legacy/path_topic", parameters_.legacy.path_topic);
-    getParam("output/legacy/danger_topic", parameters_.legacy.danger_topic);
-    getParam("output/legacy/path_period", parameters_.legacy.path_period);
-    getParam("output/legacy/path_max_size", parameters_.legacy.path_max_size);
     getParam("output/world_cloud/enabled", parameters_.world_cloud.enabled);
     getParam("output/world_cloud/publish_period", parameters_.world_cloud.publish_period);
     getParam("output/world_cloud/publish_initializing",

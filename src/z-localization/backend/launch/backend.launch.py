@@ -51,7 +51,8 @@ def generate_launch_description():
         'use_sim_time': 'false',
         'rviz': 'false',
         'mode': 'config',
-        'prior_map': ''
+        'prior_map': '',
+        'save_dir': ''
     }
 
     # 解析启动上下文，生成后端与可视化组件动作。
@@ -64,6 +65,8 @@ def generate_launch_description():
             params.setdefault('prior_map', {})['enabled'] = args['mode'] == 'localization'
         if args['prior_map']:
             params.setdefault('prior_map', {})['directory'] = args['prior_map']
+        if args['save_dir']:
+            params.setdefault('trajectory', {})['save_directory'] = args['save_dir']
         prior = bool(params.get('prior_map', {}).get('enabled', False))
         if prior and (not Path(params['prior_map'].get('directory', '')).is_dir()):
             raise ValueError(

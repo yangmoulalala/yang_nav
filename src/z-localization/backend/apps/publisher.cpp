@@ -82,23 +82,6 @@ void Publisher::configure() {
             "~/debug/target", rclcpp::QoS(1).transient_local());
     }
 
-    if (parameters_.legacy.enabled) {
-        if (parameters_.legacy.publish_pose) {
-            legacy_pose_pub_ = node_.create_publisher<geometry_msgs::msg::PoseStamped>(
-                parameters_.legacy.pose_topic, rclcpp::SensorDataQoS());
-        }
-        if (parameters_.legacy.publish_twist) {
-            legacy_twist_pub_ = node_.create_publisher<geometry_msgs::msg::TwistStamped>(
-                parameters_.legacy.twist_topic, rclcpp::SensorDataQoS());
-        }
-        if (parameters_.legacy.publish_path) {
-            legacy_path_pub_ = node_.create_publisher<nav_msgs::msg::Path>(
-                parameters_.legacy.path_topic, rclcpp::QoS(1));
-            legacy_path_.header.frame_id = parameters_.input.map_frame;
-        }
-        legacy_danger_pub_ = node_.create_publisher<std_msgs::msg::Int16>(
-            parameters_.legacy.danger_topic, rclcpp::QoS(2));
-    }
     if (parameters_.world_cloud.enabled) {
         world_cloud_pub_ = node_.create_publisher<sensor_msgs::msg::PointCloud2>(
             parameters_.world_cloud.topic, rclcpp::QoS(1).reliable());
@@ -185,7 +168,7 @@ void Publisher::publishFrame(const FrontendFrame& frame, const LocalizationProje
                         [&] { publishWorldCloud(frame, projection, cloud_stamp); });
 }
 
-/// 在同一发布边界内发送高频位姿、里程计和兼容输出。
+/// 在同一发布边界内发送高频位姿与里程计。
 void Publisher::publishPrediction(const nav_msgs::msg::Odometry& odom,
                                   const LocalizationProjection& projection) {
     std::lock_guard<std::mutex> lock(publication_mutex_);
@@ -195,14 +178,11 @@ void Publisher::publishPrediction(const nav_msgs::msg::Odometry& odom,
         publishPoseWithCovariance(projection, odom.header.stamp);
         publishOdometry(odom, projection);
     }
-    publishLegacyOutput(odom, projection);
 }
 
 /// 在前端代次边界清空依赖旧输入时间轴的输出缓存。
 void Publisher::resetInput() {
     std::lock_guard<std::mutex> lock(output_mutex_);
-    legacy_path_.poses.clear();
-    last_legacy_path_stamp_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
     last_world_cloud_stamp_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 }
 

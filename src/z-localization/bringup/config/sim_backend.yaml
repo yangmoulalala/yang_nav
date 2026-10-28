@@ -1,7 +1,7 @@
 # 仿真用后端配置：继承默认配置，只覆盖与当前机器人和仿真相关的项。
 extends: ../../backend/config/backend.yaml
 common:
-  # LIO 的里程计系叫 lio_odom，与 Gazebo 真值 odom 区分；lio_odom -> base_link 由 lidar_fusion/base_tf 发布。
+  # LIO 的里程计系叫 lio_odom；lio_odom -> base_link 由 lidar_fusion/base_tf 发布。
   odom_frame: lio_odom
   sensor_frame: imu
   body:
@@ -19,10 +19,8 @@ common:
   scan_context:
     # MID-360 离地高度：ROBOT_Z 0.062 + 0.137。
     lidar_height: 0.2
+# 地图保存与加载目录由 bringup/sim.launch.py 的 map_dir 给出（默认 <工作空间>/maps/sim）。
 prior_map:
   enabled: false
-  directory: /tmp/zloc_map
-trajectory:
-  save_directory: /tmp/zloc_map
 uwb:
   enabled: false

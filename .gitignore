@@ -22,6 +22,9 @@ __pycache__/
 # upstream checkouts used as reading material (they carry their own .git)
 /reference/
 
+# ---- maps saved by backend ~/save_map (bringup map_dir) -------------------
+/maps/
+
 # ---- scratch ---------------------------------------------------------------
 # created by a mistyped `gz sim --generated-dir ...`
 /--generated-dir/

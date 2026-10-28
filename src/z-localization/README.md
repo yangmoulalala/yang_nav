@@ -63,7 +63,8 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 | --- | --- | --- |
 | `lidar` | `dual` | `single` / `dual` |
 | `mode` | `mapping` | `mapping` / `localization` |
-| `prior_map` | 空 | 先验地图目录（`localization` 时必填） |
+| `prior_map` | 空 | 先验地图目录；`localization` 时留空则用 `map_dir` |
+| `map_dir` | `<工作空间>/maps/sim`（真车 `maps/real`） | `~/save_map` 的保存目录，已加入 `.gitignore` |
 | `rviz` | `false` | 后端 RViz |
 
 配置：`bringup/config/sim_lio.yaml`（ZLIO）、`bringup/config/sim_backend.yaml`（继承 `backend/config/backend.yaml`）。
@@ -77,9 +78,10 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 | `imu_acceleration_scale` | 1.0 | gz IMU 单位 m/s²（Livox 为 g） |
 | 逐点时间 | 帧头时间 | gpu_lidar 一帧同一时刻渲染 |
 
-LIO 的里程计系叫 `lio_odom`（与 Gazebo 真值 `odom` 区分）。仿真 TF 为 `map → lio_odom → base_link → URDF 树`：
+LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通的树 `map → lio_odom → base_link → URDF 树`：
 `lio_odom → base_link` 由 `lidar_fusion` 的 `base_tf` 用 `/odometry` 与 URDF 外参算出，ZLIO 自身 TF 关闭，
-`imu` 以恒等静态 TF 挂在 `mid360_link` 下。Gazebo 须以默认的 `ground_truth_tf:=false` 启动。
+`imu` 以静态 TF 挂在 `mid360_link` 下（仿真为恒等，真车为 `lio.yaml` 出厂外参）。后端只发布 `map → lio_odom`，
+不发 `map → body`。Gazebo 不发布真值 `/odom` / `odom` 帧。
 
 ### 仿真实测（2026-10-27，RTX 4060 Ti，RTF 1.0）
 
@@ -97,6 +99,7 @@ LIO 的里程计系叫 `lio_odom`（与 Gazebo 真值 `odom` 区分）。仿真 
 ```bash
 ros2 launch bringup real.launch.py lidar:=single
 ros2 launch bringup real.launch.py lidar:=dual driver_l2:=true l2_launch:=/abs/path/to/unilidar_sdk2/launch/xxx.launch.py
+ros2 launch bringup real.launch.py mode:=localization                 # 加载 ~/yang_nav/maps/real
 ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 ```
 
@@ -126,7 +129,7 @@ ros2 run lidar_calibration calibrate --ros-args -p use_sim_time:=true   # 真车
 ```
 
 流程：同步帧对 → 体素降采样 → PCL GICP（初值取 URDF）→ 质量门 → 多帧中值剔除 + 加权平均。
-质量门：只收静止帧（IMU 判定）；每帧须与已接受帧相距 ≥0.3 m 或 ≥20°（`/odom`）；重叠区法向信息矩阵
+质量门：只收静止帧（IMU 判定）；每帧须与已接受帧相距 ≥0.3 m 或 ≥20°（ZLIO `/odometry`）；重叠区法向信息矩阵
 最小特征值 ≥0.05（几何退化检测）；点到面 RMSE ≤0.05 m。
 
 采集方法：把车停到**墙角、台阶旁等结构丰富处**，换位置和朝向，每处静止 2 s 以上，收满 `frames`（默认 6，至少 3）。

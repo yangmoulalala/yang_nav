@@ -3,15 +3,22 @@
     ros2 launch sentry_gazebo sim.launch.py                    # 先启动仿真
     ros2 launch bringup sim.launch.py lidar:=single            # 仅 MID-360
     ros2 launch bringup sim.launch.py lidar:=dual rviz:=true   # MID-360 + L2
+    ros2 launch bringup sim.launch.py mode:=localization       # 用 map_dir 里保存的地图定位
+
+地图：建图时 ~/save_map 保存到 map_dir（默认 <工作空间>/maps/sim）；
+localization 未给 prior_map 时从 map_dir 加载。
 
 IMU 用 MID-360 内置 IMU（与雷达同原点），合并点云位于 mid360_link 系；
 L2 到 MID-360 的外参只来自 tf2（URDF）。
 
 TF：map → lio_odom（后端）→ base_link（base_tf，由 /odometry 与 URDF 外参换算）→ URDF 树。
 ZLIO 不发 TF；它的 imu 系与 mid360_link 重合，用恒等静态 TF 挂进 URDF 树。
-Gazebo 须用默认的 ground_truth_tf:=false 启动，否则 base_link 会有两个父帧。
+后端不发 map → body，整棵树只有 base_link 一个车体帧。
 """
 
+from pathlib import Path
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -27,10 +34,16 @@ def generate_launch_description():
     rviz = LaunchConfiguration('rviz')
     mode = LaunchConfiguration('mode')
     prior_map = LaunchConfiguration('prior_map')
+    map_dir = LaunchConfiguration('map_dir')
+    # <ws>/install/bringup/share/bringup -> <ws>
+    workspace = Path(get_package_share_directory('bringup')).parents[3]
     return LaunchDescription([
         DeclareLaunchArgument('lidar', default_value='dual', description='single 或 dual'),
         DeclareLaunchArgument('mode', default_value='mapping', description='mapping 或 localization'),
-        DeclareLaunchArgument('prior_map', default_value=''),
+        DeclareLaunchArgument('prior_map', default_value='',
+                              description='先验地图目录；localization 时留空则用 map_dir'),
+        DeclareLaunchArgument('map_dir', default_value=str(workspace / 'maps' / 'sim'),
+                              description='地图保存目录（绝对路径）'),
         DeclareLaunchArgument('rviz', default_value='false'),
         Node(
             package='lidar_fusion', executable='merge_node', name='lidar_merge', output='screen',
@@ -72,6 +85,10 @@ def generate_launch_description():
                 PathJoinSubstitution([FindPackageShare('backend'), 'launch', 'backend.launch.py'])),
             launch_arguments={
                 'config_file': PathJoinSubstitution([bringup, 'config', 'sim_backend.yaml']),
-                'use_sim_time': 'true', 'mode': mode, 'prior_map': prior_map, 'rviz': rviz,
+                'use_sim_time': 'true', 'mode': mode, 'rviz': rviz, 'save_dir': map_dir,
+                # 建图时不能把 map_dir 设为先验目录：后端拒绝保存到先验地图所在位置
+                'prior_map': PythonExpression(
+                    ["'", prior_map, "' or ('", map_dir, "' if '", mode,
+                     "' == 'localization' else '')"]),
             }.items()),
     ])

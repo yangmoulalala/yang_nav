@@ -47,7 +47,7 @@ private:
     void loadGraph();
     /// 读取 reset 事务和启动提示参数。
     void loadResetAndStartup();
-    /// 读取可视化、服务和兼容输出参数。
+    /// 读取可视化、服务和世界点云输出参数。
     void loadOutputs();
     /// 读取所选地点描述子的参数。
     void loadDescriptor();

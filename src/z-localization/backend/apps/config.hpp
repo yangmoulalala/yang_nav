@@ -73,23 +73,6 @@ struct ServiceParameters {
     std::string reset = "/localization_reset";
 };
 
-/// 兼容位姿、速度、路径、TF 和危险码的发布参数。
-struct LegacyOutputParameters {
-    bool enabled = false;
-    bool publish_pose = true;
-    bool publish_twist = true;
-    bool publish_path = false;
-    bool publish_tf = true;
-    bool publish_initializing = false;
-    bool publish_untrusted = true;
-    std::string pose_topic = "/tdt_lio_pose";
-    std::string twist_topic = "/tdt_lio_twist";
-    std::string path_topic = "/tdt_lio_path";
-    std::string danger_topic = "/LAM_danger_situation";
-    double path_period = 0.1;
-    int path_max_size = 2000;
-};
-
 /// 世界坐标系实时点云的发布参数。
 struct WorldCloudOutputParameters {
     bool enabled = false;
@@ -107,7 +90,6 @@ struct NodeConfig {
     MapStorageParameters maps;
     VisualizationParameters visualization;
     ServiceParameters services;
-    LegacyOutputParameters legacy;
     WorldCloudOutputParameters world_cloud;
 };
 

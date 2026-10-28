@@ -18,11 +18,9 @@ common:
   scan_context:
     # MID-360 离地高度，m。
     lidar_height: 0.2
+# 地图保存与加载目录由 bringup/real.launch.py 的 map_dir 给出（默认 <工作空间>/maps/real）。
 prior_map:
   enabled: false
-  directory: maps/site
-trajectory:
-  save_directory: maps/runtime
 uwb:
   # 接入 UWB 后改为 true，并按 backend/docs/parameters.md 的 UWB 参数配置话题、天线位置与零位。
   enabled: false

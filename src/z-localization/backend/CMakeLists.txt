@@ -130,7 +130,6 @@ add_executable(backend_node
     apps/publisher.cpp
     apps/publisher_state.cpp
     apps/publisher_view.cpp
-    apps/publisher_legacy.cpp
     apps/node.cpp
     apps/parameters.cpp
     apps/node_setup.cpp

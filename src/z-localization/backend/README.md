@@ -49,8 +49,9 @@ src/backend/
 ## 快速开始
 
 ```bash
-# 建图
-ros2 launch backend backend.launch.py config_file:=/absolute/path/to/backend.yaml mode:=mapping
+# 建图（save_dir 指定 ~/save_map 的保存目录）
+ros2 launch backend backend.launch.py config_file:=/absolute/path/to/backend.yaml mode:=mapping \
+  save_dir:=/absolute/path/to/map_bundle
 
 # 先验地图定位与可视化
 ros2 launch backend backend.launch.py config_file:=/absolute/path/to/backend.yaml \
@@ -105,13 +106,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `~/localization_status` | `visualization_msgs/msg/Marker` | reliable，1，transient local | 定位状态文字标记；由 `visualization.enabled` 控制 |
 | `~/debug/aligned_source` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准后的源点云；由 `visualization.publish_debug_registration` 控制 |
 | `~/debug/target` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准的目标点云；由 `visualization.publish_debug_registration` 控制 |
-| `/tdt_lio_pose` | `geometry_msgs/msg/PoseStamped` | SensorDataQoS | 兼容车体位姿；由 `output.legacy.publish_pose` 控制 |
-| `/tdt_lio_twist` | `geometry_msgs/msg/TwistStamped` | SensorDataQoS | 兼容车体速度，在 map 系表达；由 `output.legacy.publish_twist` 控制 |
-| `/tdt_lio_path` | `nav_msgs/msg/Path` | reliable，1 | 兼容路径；由 `output.legacy.publish_path` 控制 |
-| `/LAM_danger_situation` | `std_msgs/msg/Int16` | reliable，2 | 兼容危险码：可信状态为 `0`，其余为 `9` |
-| `/tf` | `tf2_msgs/msg/TFMessage` | tf2 默认 QoS | map → odom；兼容输出可另发布 map → body |
-
-兼容输出的总开关为 `output.legacy.enabled`，话题名通过 `output.legacy.*_topic` 配置。
+| `/tf` | `tf2_msgs/msg/TFMessage` | tf2 默认 QoS | map → odom |
 
 ### 标定与 ROS 通用话题
 
@@ -153,7 +148,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `LOST` | 定位丢失，等待或尝试重定位 | `false` |
 
 `localization_state` 使用分号分隔的 `key=value` 文本，包含定位状态、可信标记、重置代次和故障信息。
-进入 `SUSPECT` 或 `LOST` 后，若已有可信位姿，输出会冻结在该位姿；兼容话题和世界点云是否继续发布由各自开关决定。
+进入 `SUSPECT` 或 `LOST` 后，若已有可信位姿，输出会冻结在该位姿；世界点云是否继续发布由 `output.world_cloud.publish_untrusted` 决定。
 
 ## 地图与标定工具
 

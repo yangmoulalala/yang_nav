@@ -106,7 +106,7 @@
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `save_on_shutdown` | 布尔 | `false` | 是否在正常退出时保存运行地图；关闭时仍可调用保存服务，先验定位时不保存 |
-| `save_directory` | 路径 | `pcd/runtime_zlio` | 建图结果的保存目录，相对路径从运行目录算起 |
+| `save_directory` | 路径 | `pcd/runtime_zlio` | 建图结果的保存目录，相对路径从运行目录算起；可用 launch 参数 `save_dir` 覆盖，bringup 默认传入 `<工作空间>/maps/sim` 或 `maps/real` |
 | `save_global_pcd` | 布尔 | `true` | 保存地图包时是否额外生成全局 `map.pcd` |
 | `map_voxel_resolution` | 浮点，m | `0.15` | 运行地图显示及全局 PCD 导出的体素边长；须 `≥0`，`0` 不降采样 |
 | `keyframe.distance` | 浮点，m | `-1.0` | 相对上一关键帧移动超过此距离时插入关键帧；`≤0` 关闭此触发条件 |
@@ -333,24 +333,6 @@
 | `relocalize` | 字符串 | `~/relocalize` | 手动重定位服务名，仅在 `LOST` 状态接受请求 |
 | `reset` | 字符串 | `/localization_reset` | 对外提供的前后端协调重置服务名 |
 
-#### `output.legacy` · 兼容输出（13 项）
-
-| 键 | 类型 / 单位 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `enabled` | 布尔 | `true` | 是否启用本组兼容话题及 map → body TF |
-| `publish_pose` | 布尔 | `true` | 是否发布兼容车体位姿 |
-| `publish_twist` | 布尔 | `true` | 是否发布兼容车体速度，速度在 map 系表达 |
-| `publish_path` | 布尔 | `false` | 是否发布兼容车体轨迹 |
-| `publish_tf` | 布尔 | `true` | 是否发布 map → body TF |
-| `publish_initializing` | 布尔 | `false` | 是否允许初始化期间发布兼容位姿、速度和路径；TF 还需已有全局位姿 |
-| `publish_untrusted` | 布尔 | `false` | 是否允许 `SUSPECT` / `LOST` 时发布兼容运动输出；发布时位姿冻结、速度清零 |
-| `pose_topic` | 字符串 | `/tdt_lio_pose` | 兼容车体位姿话题名 |
-| `twist_topic` | 字符串 | `/tdt_lio_twist` | 兼容车体速度话题名 |
-| `path_topic` | 字符串 | `/tdt_lio_path` | 兼容车体轨迹话题名 |
-| `danger_topic` | 字符串 | `/LAM_danger_situation` | 危险码话题名；可信状态发 `0`，其余发 `9` |
-| `path_period` | 浮点，s | `0.1` | 兼容轨迹的最小发布间隔；`≤0` 每次有效更新都可发布 |
-| `path_max_size` | 整数，位姿 | `2000` | 兼容轨迹最多保留的位姿数；`≤0` 不限长度 |
-
 #### `output.world_cloud` · 世界点云输出（5 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
@@ -379,6 +361,7 @@
 | `config_file` | 路径 | `<backend share>/config/backend.yaml` | 后端 YAML 路径，支持 `extends` 继承 |
 | `mode` | 字符串 | `config` | `config` 沿用 YAML；`mapping` 关闭先验地图；`localization` 开启先验地图，均不改变 UWB 开关 |
 | `prior_map` | 路径 | `""` | 覆盖 YAML 中的先验地图目录；留空则沿用 YAML |
+| `save_dir` | 路径 | `""` | 覆盖 YAML 中的 `trajectory.save_directory`；留空则沿用 YAML |
 | `use_sim_time` | 布尔 | `false` | 后端和 RViz 是否使用 `/clock` 仿真时间 |
 | `rviz` | 布尔 | `false` | 是否启动 RViz，并开启当前地图、坐标轴、轨迹和配准点云显示 |
 

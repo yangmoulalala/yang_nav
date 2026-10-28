@@ -8,14 +8,12 @@
 #include <functional>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
 #include <memory>
 #include <mutex>
 #include <nav_msgs/msg/odometry.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <std_msgs/msg/int16.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <string>
 #include <tf2_ros/transform_broadcaster.hpp>
@@ -44,13 +42,13 @@ public:
     void configure();
     /// 查询运行地图发布器是否已创建，供节点决定是否启用地图定时器。
     bool runtimeMapEnabled() const { return static_cast<bool>(runtime_map_pub_); }
-    /// 清空旧前端代次的路径缓存及路径、点云发布水位。
+    /// 清空旧前端代次的点云发布水位。
     void resetInput();
     /// 复核同步帧投影身份，发布 TF、定位状态及可选世界点云。
     void publishFrame(const FrontendFrame& frame, const LocalizationProjection& projection,
                       const builtin_interfaces::msg::Time& stamp,
                       const builtin_interfaces::msg::Time& cloud_stamp);
-    /// 复核高频投影身份，发布传感器里程计、车体位姿及兼容输出。
+    /// 复核高频投影身份，发布传感器里程计与车体位姿。
     void publishPrediction(const nav_msgs::msg::Odometry& odom,
                            const LocalizationProjection& projection);
     /// 显示已接纳 UWB 观测经时空对齐与杆臂修正后的 map 系车体位置。
@@ -90,7 +88,7 @@ private:
     void publishStatusMarker(LocalizationStatus status, const std::string& reason,
                              const EstimatorFailureHistory& estimator_failures,
                              const rclcpp::Time& stamp, std::uint64_t epoch);
-    /// 将状态及其身份字段编码为诊断文本，并同步更新危险码和状态标记。
+    /// 将状态及其身份字段编码为诊断文本，并同步更新状态标记。
     void publishLocalizationState(const LocalizationStatus status, const std::string& reason,
                                   const EstimatorFailureHistory& estimator_failures,
                                   const rclcpp::Time& stamp, const bool tf_published,
@@ -99,17 +97,9 @@ private:
     /// 将传感器位姿及协方差按车体杆臂传播到车体原点后发布。
     void publishPoseWithCovariance(const LocalizationProjection& projection,
                                    const builtin_interfaces::msg::Time& stamp);
-    /// 按观测时间限频、裁剪路径缓存并发布兼容路径快照。
-    void publishLegacyPath(const geometry_msgs::msg::PoseStamped& pose,
-                           const builtin_interfaces::msg::Time& stamp_message);
-    /// 按兼容策略发布车体位姿、杆臂补偿速度、路径及 TF。
-    void publishLegacyOutput(const nav_msgs::msg::Odometry& odom,
-                             const LocalizationProjection& projection);
     /// 在发布锁外变换点云，发送前再次复核投影身份与限频水位。
     void publishWorldCloud(const FrontendFrame& frame, const LocalizationProjection& projection,
                            const builtin_interfaces::msg::Time& stamp);
-    /// 将定位可信性转换为兼容危险码：可信为 0，其余为 9。
-    void publishLegacyDanger(const LocalizationStatus status);
     /// 按开关构造地图系轨迹、回环连线及配准源和目标点云。
     void publishVisualizationImpl(const VisualizationSnapshot& visualization);
 
@@ -137,20 +127,14 @@ private:
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr status_marker_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr aligned_source_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr target_pub_;
-    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr legacy_pose_pub_;
-    rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr legacy_twist_pub_;
-    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr legacy_path_pub_;
-    rclcpp::Publisher<std_msgs::msg::Int16>::SharedPtr legacy_danger_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr world_cloud_pub_;
 
-    /// 保护路径、发布水位及状态标记的位置缓存。
+    /// 保护发布水位及状态标记的位置缓存。
     std::mutex output_mutex_;
     /// 串行化状态发布与投影最终复核，使消费者看到全序关系：旧投影要么在状态
     /// 转移前发布，要么在转移后被丢弃。
     std::mutex publication_mutex_;
-    nav_msgs::msg::Path legacy_path_;
     Eigen::Vector3d last_visualized_body_position_ = Eigen::Vector3d::Zero();
-    rclcpp::Time last_legacy_path_stamp_{0, 0, RCL_ROS_TIME};
     rclcpp::Time last_world_cloud_stamp_{0, 0, RCL_ROS_TIME};
 };
 }  // namespace backend::ros
