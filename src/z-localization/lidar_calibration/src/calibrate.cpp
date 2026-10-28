@@ -117,8 +117,8 @@ public:
                 if (std::sqrt(w.x * w.x + w.y * w.y + w.z * w.z) > stationary_gyro_)
                     last_motion_ = rclcpp::Time(m->header.stamp);
             });
-        // 采样位姿来源；为空时不检查位姿多样性（不推荐）。
-        const auto odom_topic = declare_parameter<std::string>("odom_topic", "/odom");
+        // 采样位姿来源（ZLIO 里程计，仿真与真车相同）；为空时不检查位姿多样性（不推荐）。
+        const auto odom_topic = declare_parameter<std::string>("odom_topic", "/odometry");
         if (!odom_topic.empty())
             odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
                 odom_topic, 10, [this](nav_msgs::msg::Odometry::ConstSharedPtr m) {

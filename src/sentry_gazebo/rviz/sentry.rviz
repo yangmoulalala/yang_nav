@@ -31,7 +31,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 30
-      Reference Frame: odom
+      Reference Frame: map
     - Class: rviz_default_plugins/TF
       Name: TF
       Enabled: true
@@ -101,41 +101,10 @@ Visualization Manager:
       Decay Time: 0
       Selectable: true
       Queue Size: 5
-    - Class: rviz_default_plugins/Odometry
-      Name: Odometry
-      Enabled: false
-      Topic:
-        Value: /odom
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-      Keep: 100
-      Shape:
-        Alpha: 1
-        Color: 255; 25; 0
-        Head Length: 0.1
-        Head Radius: 0.06
-        Shaft Length: 0.15
-        Shaft Radius: 0.03
-        Value: Axes
-      Covariance:
-        Alpha: 0.5
-        Position:
-          Alpha: 1
-          Color: 204; 51; 204
-          Scale: 1
-          Value: false
-        Orientation:
-          Alpha: 1
-          Color: 204; 51; 204
-          Scale: 1
-          Value: false
-        Value: false
   Enabled: true
   Global Options:
     Background Color: 30; 32; 36
-    Fixed Frame: odom
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:

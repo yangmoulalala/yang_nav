@@ -7,8 +7,8 @@
     RMUL 2027 sentry Gazebo Harmonic simulation: the arena (official STEP
     geometry as model://rmul_2027), the sentry robot built from
     sentry_description, MID-360 / Unitree L2 gpu_lidar sensors and the ROS 2
-    bridge.  Drive, odometry and TF are stock (gz MecanumDrive /
-    OdometryPublisher, robot_state_publisher, ros_gz_bridge); the only custom
+    bridge.  Drive and TF are stock (gz MecanumDrive, robot_state_publisher,
+    ros_gz_bridge); no ground-truth pose is published.  The only custom
     code is the URDF->SDF generator and a small keyboard teleop node.
   </description>
   <maintainer email="yang@example.com">yang</maintainer>
@@ -17,7 +17,6 @@
   <buildtool_depend>ament_python</buildtool_depend>
 
   <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>tf2_msgs</exec_depend>

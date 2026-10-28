@@ -154,9 +154,6 @@ ROBOT_MOUNTS = (
 
 # ROS topics (bridged from Gazebo)
 TOPIC_CMD_VEL = '/cmd_vel'
-TOPIC_ODOM = '/odom'
-# gz topic of the stock OdometryPublisher's Pose_V (odom -> base_link TF)
-GZ_TOPIC_ODOM_TF = '/tf_odom'
 
 # gz topic carrying the packed cloud: gz-sim appends "/points" to <topic>
 GZ_TOPIC_MID360_CLOUD = '/' + MID360_LIDAR['topic'] + '/points'

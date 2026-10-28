@@ -102,12 +102,6 @@ def mat_to_rpy(m):
     return math.atan2(m[2][1], m[2][2]), p, math.atan2(m[1][0], m[0][0])
 
 
-def inverse_rpy(rpy):
-    """ZYX Euler angles of ``R(rpy)^-1`` (for gz's ``<rpy_offset>``)."""
-    m = rpy_to_mat(*rpy)
-    return mat_to_rpy([[m[j][i] for j in range(3)] for i in range(3)])
-
-
 def _xyz(text):
     return tuple(float(v) for v in text.split()) if text else (0.0, 0.0, 0.0)
 
@@ -482,7 +476,7 @@ def robot_model_xml(w, indent, urdf):
         w(indent + 2, '</link>')
         joint_xml(w, indent + 2, urdf.parent_joint[link], 'fixed')
 
-    # ---- drive / ground truth ----------------------------------------------
+    # ---- drive -------------------------------------------------------------
     # Stock MecanumDrive: body-frame /cmd_vel -> omni wheel joint velocities.
     w(indent + 2, '<plugin filename="gz-sim-mecanum-drive-system" '
                   'name="gz::sim::systems::MecanumDrive">')
@@ -495,20 +489,8 @@ def robot_model_xml(w, indent, urdf):
     w(indent + 4, '<wheel_radius>%s</wheel_radius>' % n(math.sqrt(2) * A.WHEEL_RADIUS))
     w(indent + 4, '<topic>%s</topic>' % A.TOPIC_CMD_VEL)
     w(indent + 2, '</plugin>')
-
-    # Stock gz system: ground-truth odometry (+ odom -> base_link TF).
-    w(indent + 2, '<plugin filename="gz-sim-odometry-publisher-system" '
-                  'name="gz::sim::systems::OdometryPublisher">')
-    w(indent + 4, '<odom_topic>%s</odom_topic>' % A.TOPIC_ODOM)
-    w(indent + 4, '<tf_topic>%s</tf_topic>' % A.GZ_TOPIC_ODOM_TF)
-    w(indent + 4, '<odom_frame>odom</odom_frame>')
-    w(indent + 4, '<robot_base_frame>base_link</robot_base_frame>')
-    w(indent + 4, '<dimensions>3</dimensions>')
-    w(indent + 4, '<odom_publish_frequency>50</odom_publish_frequency>')
-    w(indent + 4, '<!-- cancel any model rotation so the TF base frame stays')
-    w(indent + 4, '     upright (derived from ROBOT_MODEL_RPY) -->')
-    w(indent + 4, '<rpy_offset>%s</rpy_offset>' % vec(inverse_rpy(A.ROBOT_MODEL_RPY)))
-    w(indent + 2, '</plugin>')
+    # No OdometryPublisher: the real robot has no ground-truth pose, so the
+    # simulation does not publish one either (no /odom, no odom frame).
     w(indent, '</model>')
 
 

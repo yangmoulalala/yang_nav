@@ -34,7 +34,6 @@ ros2 launch sentry_gazebo sim.launch.py gui:=true rviz:=true
 | `gui` | `false` | 是否打开 Gazebo GUI；`true` 时追加两路 PointCloud 面板 |
 | `rviz` | `false` | 是否同时启动 RViz2（`rviz/sentry.rviz`） |
 | `generated_dir` | `$SENTRY_GAZEBO_GEN` 或 `/tmp/sentry_gazebo_generated` | 生成的 world 输出目录 |
-| `ground_truth_tf` | `false` | 把 Gazebo 真值 `odom → base_link` 发进 TF；跑定位时保持 `false`，见“坐标系与外参” |
 
 点云只由 Gazebo 内置的 `gpu_lidar` 产生（ogre2 光线投射），没有其他后端。
 
@@ -121,10 +120,9 @@ gz sim -r -v 3 /tmp/sentry_gazebo_generated/rmul_2027.sdf
 
 URDF 是 **z-up** 的，所以模型位姿里没有额外旋转（`ROBOT_MODEL_RPY = (0,0,0)`）。
 
-机器人在世界中的位置默认**由定位给出**，与真车一致：`map → lio_odom → base_link`（`bringup`）。
-Gazebo 真值只走 `/odom` 话题，不进 TF。不起定位、单独看仿真时用 `ground_truth_tf:=true`
-把真值 `odom → base_link` 接回 TF，RViz 的 Fixed Frame 随之从 `map` 切到 `odom`。
-两者不要同时开：`base_link` 只能有一个父帧。
+机器人在世界中的位置**只由定位给出**，与真车一致：`map → lio_odom → base_link`（`bringup`）。
+仿真不发布任何真值位姿（没有 `/odom` 话题，也没有 `odom` 帧），因为真车上没有。
+不起定位时 TF 树只有 `base_link` 以下的 URDF 部分。
 
 TF 链完全由标准件产生：
 
@@ -132,7 +130,6 @@ TF 链完全由标准件产生：
 | --- | --- | --- |
 | `map → lio_odom` | `backend_node` | 定位后端 |
 | `lio_odom → base_link` | `lio_base_tf`（`lidar_fusion`） | ZLIO `/odometry`（`lio_odom → imu`）经 URDF 外参换算 |
-| `odom → base_link` | `gz_bridge_odom_tf` | 仅 `ground_truth_tf:=true`：gz `OdometryPublisher` 的 `/tf_odom`（`Pose_V`） |
 | `base_link → yaw_link → mid360_link / l2_link` | `robot_state_publisher` | URDF 正解 + `joint_state_publisher` 发布的零位 `/joint_states` |
 | `mid360_link → sentry/mid360_link/mid360_lidar` 等 | `tf2_ros static_transform_publisher` | 见下文 `frame_id` |
 | `mid360_link → imu` | `tf2_ros static_transform_publisher`（`bringup`） | 恒等：仿真 IMU 与雷达同原点，ZLIO 的 `imu` 系即 `mid360_link` |
@@ -176,13 +173,11 @@ L2 的采样刻意按真机 64 000 点/s 的点数预算设置：在 10 倍稠�
 
 ## ROS 接口
 
-映射写在 `config/bridge.yaml`；真值 TF 由 launch 按 `ground_truth_tf` 另起一个桥。
+映射写在 `config/bridge.yaml`。
 
 | 话题 | 类型 | 方向 | 来源 |
 | --- | --- | --- | --- |
 | `/clock` | `rosgraph_msgs/Clock` | gz → ROS | gz |
-| `/odom` | `nav_msgs/Odometry` | gz → ROS | `OdometryPublisher` |
-| `/tf` | `tf2_msgs/TFMessage` | gz → ROS | `OdometryPublisher` 的 `/tf_odom`，仅 `ground_truth_tf:=true` |
 | `/joint_states` | `sensor_msgs/JointState` | ROS | `joint_state_publisher`（全部关节零位，不经 bridge） |
 | `/lidar_mid360/points` | `sensor_msgs/PointCloud2` | gz → ROS | `gpu_lidar` |
 | `/lidar_l2/points` | `sensor_msgs/PointCloud2` | gz → ROS | `gpu_lidar` |
@@ -197,8 +192,6 @@ gz 侧的原始话题名是 `lidar_mid360/points` 与 `lidar_l2/points`（`<topi
 lidar_mid360/points          gz.msgs.LaserScan          （单线，仅可视化用）
 lidar_mid360/points/points   gz.msgs.PointCloudPacked   （桥接的就是这个）
 ```
-
-`/odom` 直接来自 `OdometryPublisher`，协方差矩阵为零（仿真真值，没有加噪声）。
 
 ### 关于 `frame_id`
 
@@ -247,8 +240,7 @@ l2_link     -> sentry/l2_link/l2_lidar
 ```bash
 ros2 topic hz /lidar_mid360/points     # 标称 10 Hz
 ros2 topic hz /lidar_l2/points         # 标称 10 Hz
-ros2 topic hz /odom                    # 标称 50 Hz
-ros2 run tf2_ros tf2_echo map base_link        # ground_truth_tf:=true 时用 odom
+ros2 run tf2_ros tf2_echo map base_link        # 需同时运行 bringup 定位
 ros2 run tf2_ros tf2_echo base_link mid360_link
 ros2 topic echo --once /clock
 ros2 topic echo --once /joint_states
@@ -269,10 +261,8 @@ RTF 直接看 Gazebo GUI 右下角的 World stats（`real time factor`），或
    侧倾 105°）。定位侧 `lidar_fusion` 丢弃 0.3 m 内的点。
 3. **非有限点**：gz 未命中的 ray 返回 `inf`（约 43%），ROS 侧用
    `point_cloud2.read_points(..., skip_nans=True)` 过滤即可。
-4. **`/odom` 协方差为零**：`OdometryPublisher` 的普通 odometry 话题不带协方差，
-   Nav2 里若配置了协方差阈值需要放宽，或用真值当 ground truth。
-5. WSL 下无 GPU 直通时会回退到软件渲染（`MESA-EGL ... kms_swrast`），此时 RTF
-   约 0.5，话题频率按 RTF 等比下降（实测 `/odom` 约 27 Hz、`/clock` 约 126 Hz、
+4. WSL 下无 GPU 直通时会回退到软件渲染（`MESA-EGL ... kms_swrast`），此时 RTF
+   约 0.5，话题频率按 RTF 等比下降（实测 `/clock` 约 126 Hz、
    雷达约 2.6–4.6 Hz），属环境限制。
 
 ## 目录结构
@@ -288,7 +278,7 @@ sentry_gazebo/
 │   ├── prepare_world.py   # 每次启动重新生成 world + env.sh
 │   └── launch_utils.py    # 路径/环境变量共享
 ├── scripts/teleop         # ros2 run 入口（装到 lib/sentry_gazebo）
-├── config/bridge.yaml     # ROS <-> gz 话题（真值 TF 桥由 launch 按 ground_truth_tf 另起）
+├── config/bridge.yaml     # ROS <-> gz 话题
 ├── rviz/sentry.rviz
 └── models/rmul_2027/      # 官方 STEP 网格 + 贴图（仅视觉）
 ```

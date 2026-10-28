@@ -3,9 +3,8 @@
 #
 # gz -> ros
 #   /clock           sim time
-#   /odom            ground truth, gz::sim::systems::OdometryPublisher
-#   (/tf_odom -> /tf, odom -> base_link, is bridged by sim.launch.py only with
-#    ground_truth_tf:=true; by default the localization stack owns base_link)
+#   (no ground-truth /odom: the real robot has none; the localization stack
+#    owns map -> lio_odom -> base_link)
 #   /lidar_*/points  the two gpu_lidar sensors (sensor topics set in the SDF)
 #   /lidar_*/imu     the built-in IMU of each LiDAR (gz imu sensor, same origin)
 #
@@ -15,12 +14,6 @@
   gz_topic_name: "/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
   gz_type_name: "gz.msgs.Clock"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/odom"
-  gz_topic_name: "/odom"
-  ros_type_name: "nav_msgs/msg/Odometry"
-  gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
 
 - ros_topic_name: "/cmd_vel"
