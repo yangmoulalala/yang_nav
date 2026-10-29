@@ -14,6 +14,7 @@
 import message_filters
 import numpy as np
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
@@ -144,7 +145,7 @@ def main():
     node = MergeNode()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()

@@ -12,6 +12,7 @@ import math
 
 import numpy as np
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from geometry_msgs.msg import Transform, TransformStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
@@ -78,7 +79,7 @@ def main():
     node = BaseTfNode()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()
