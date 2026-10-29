@@ -177,6 +177,11 @@ void ParameterReader::loadRecovery() {
     getParam("recovery/suspect_failures_before_lost",
              parameters_.runtime.recovery.suspect_failures_before_lost);
     getParam("recovery/automatic_when_lost", parameters_.runtime.recovery.automatic_when_lost);
+    getParam("recovery/confirmations", parameters_.runtime.recovery.confirmations);
+    getParam("recovery/confirm_translation", parameters_.runtime.recovery.confirm_translation);
+    double confirm_rotation_deg = parameters_.runtime.recovery.confirm_rotation_rad * 180.0 / M_PI;
+    getParam("recovery/confirm_rotation_deg", confirm_rotation_deg);
+    parameters_.runtime.recovery.confirm_rotation_rad = confirm_rotation_deg * M_PI / 180.0;
     getParam("recovery/source/min_frames", parameters_.runtime.recovery.source.min_frames);
     getParam("recovery/source/max_frames", parameters_.runtime.recovery.source.max_frames);
     getParam("recovery/source/max_time", parameters_.runtime.recovery.source.max_time);

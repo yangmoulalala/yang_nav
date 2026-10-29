@@ -202,6 +202,40 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
     return applied_correction;
 }
 
+/// 累计恢复候选；连续给出一致 map←odom 变换达到配置次数后返回 true。
+/// 相似场景下单帧匹配可能给出错误位姿，要求多帧一致可在提交前将其滤除。
+bool Localization::recoveryConfirmedLocked(const RecoveryWork& work,
+                                           const RecoveryResult& result) {
+    const int required = config_.recovery.confirmations;
+    if (required <= 1)
+        return true;
+    const Eigen::Matrix4d T_map_odom = result.pose * work.frame.odom_pose.inverse();
+    if (pending_recovery_ && pending_recovery_->epoch == work.identity.epoch) {
+        const Eigen::Matrix4d delta = pending_recovery_->T_map_odom.inverse() * T_map_odom;
+        const double translation = delta.block<3, 1>(0, 3).norm();
+        const double rotation = rotationAngleFromMatrix(delta);
+        if (delta.allFinite() && translation <= config_.recovery.confirm_translation &&
+            rotation <= config_.recovery.confirm_rotation_rad) {
+            if (++pending_recovery_->confirmations >= required) {
+                pending_recovery_.reset();
+                return true;
+            }
+            pending_recovery_->T_map_odom = T_map_odom;
+            BACKEND_INFO_STREAM("recovery candidate confirmed "
+                                << pending_recovery_->confirmations << "/" << required << " via "
+                                << result.source);
+            return false;
+        }
+        BACKEND_INFO_STREAM("recovery candidate inconsistent with previous: delta_t="
+                            << translation << "m, delta_r_deg=" << rotation * 180.0 / M_PI
+                            << "; restarting confirmation");
+    }
+    pending_recovery_ = PendingRecovery{T_map_odom, 1, work.identity.epoch};
+    BACKEND_INFO_STREAM("recovery candidate awaiting confirmation 1/" << required << " via "
+                                                                    << result.source);
+    return false;
+}
+
 /// 校验恢复任务身份并提交完整位姿锚或累计恢复失败。
 void Localization::commit(const RecoveryWork& work, const RecoveryResult& result) {
     if (result.outcome == RecoveryOutcome::Deferred)
@@ -220,9 +254,13 @@ void Localization::commit(const RecoveryWork& work, const RecoveryResult& result
                 return false;
             }
             if (matched) {
+                // 未获连续确认的候选只记录，不改变状态与输出。
+                if (!recoveryConfirmedLocked(work, result))
+                    return false;
                 applied_correction = applyRecoveryLocked(work, result, transition);
                 estimator_failed_ = false;
             } else {
+                pending_recovery_.reset();
                 if (work.identity.manual_request_id != 0)
                     clearManualRelocalizationRequestLocked();
                 transition = state_.onRecoveryRelocalizationFailure(

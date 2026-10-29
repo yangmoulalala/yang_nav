@@ -165,7 +165,7 @@
 | `rejection_probability` | 浮点，无量纲 | `0.001` | 观测与预测的卡方一致性检验 p 值低于此值时判为冲突；越大越严格，范围 `[1e-12,0.5]` |
 | `conflicts_before_suspect` | 整数，次 | `7` | 所有可用全局观测均冲突，连续达到多少次后进入 `SUSPECT`；须 `≥1` |
 
-#### `recovery` · 初始化与重定位（18 项）
+#### `recovery` · 初始化与重定位（21 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -175,6 +175,9 @@
 | `global_fallback_candidates` | 整数，候选 | `5` | 局部搜索失败后补充的全局描述子候选数；须 `≥0`，`0` 关闭全局补充 |
 | `suspect_failures_before_lost` | 整数，次 | `3` | `SUSPECT` 下连续重定位失败多少次后转为 `LOST`；须 `≥1` |
 | `automatic_when_lost` | 布尔 | `true` | 丢失后是否自动重定位；关闭则等待重定位服务请求 |
+| `confirmations` | 整数，次 | `2` | 提交恢复前要求连续多少次匹配给出一致的 map→odom 变换；`1` 首次匹配即提交，须 `≥1` |
+| `confirm_translation` | 浮点，m | `0.3` | 相邻恢复候选的 map→odom 平移差上限；超出则从头确认 |
+| `confirm_rotation_deg` | 浮点，° | `5.0` | 相邻恢复候选的 map→odom 旋转差上限；超出则从头确认 |
 | `source.min_frames` | 整数，帧 | `2` | 至少累积多少帧点云才尝试重定位；须在 `[1,source.max_frames]` |
 | `source.max_frames` | 整数，帧 | `5` | 重定位最多累积的同步观测帧数，含当前帧；须 `≥1` |
 | `source.max_time` | 浮点，s | `0.5` | 参与累积的历史帧与当前帧的最大时间差；须 `≥0`，`0` 不限 |

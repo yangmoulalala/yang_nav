@@ -193,6 +193,8 @@ private:
     /// 在已校验身份的事务内安装恢复锚、定位状态及当前可信输出。
     PoseCorrectionDelta applyRecoveryLocked(const RecoveryWork& work, const RecoveryResult& result,
                                             LocalizationTransition& transition);
+    /// 累计恢复候选；连续给出一致 map←odom 变换达到配置次数后返回 true。
+    bool recoveryConfirmedLocked(const RecoveryWork& work, const RecoveryResult& result);
     /// 将通过联合创新检验的回环写入图及可视化历史。
     LoopCommitSummary commit(const LoopWork& work, const LoopVerificationBatch& result);
 
@@ -324,6 +326,13 @@ private:
     EpochAnchor pending_epoch_anchor_;
 
     double last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
+    /// 等待连续确认的恢复候选。
+    struct PendingRecovery {
+        Eigen::Matrix4d T_map_odom = Eigen::Matrix4d::Identity();
+        int confirmations = 0;
+        std::uint64_t epoch = 0;
+    };
+    std::optional<PendingRecovery> pending_recovery_;
     int last_lidar_observation_runtime_index_ = -1;
     Timestamp last_global_observation_cycle_time_;
     Timestamp last_recovery_cycle_time_;

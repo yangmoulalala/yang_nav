@@ -194,6 +194,12 @@ recovery:
   suspect_failures_before_lost: 3
   # LOST 状态是否持续自动尝试全局恢复。
   automatic_when_lost: true
+  # 提交恢复前要求连续给出一致位姿的次数；1 表示首次匹配即提交。
+  confirmations: 2
+  # 相邻恢复候选 map 到 odom 变换允许的平移差，单位为米。
+  confirm_translation: 0.3
+  # 相邻恢复候选 map 到 odom 变换允许的旋转差，单位为度。
+  confirm_rotation_deg: 5.0
 uwb:
   # 是否接入 UWB 位置观测。
   enabled: true

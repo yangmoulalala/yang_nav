@@ -306,6 +306,7 @@ void Localization::rollbackRejectedResetLocked() {
     last_global_observation_cycle_time_ = Timestamp();
     last_recovery_cycle_time_ = Timestamp();
     last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
+    pending_recovery_.reset();
 }
 
 /// 从旧关键帧或尚未消费的连续边继承里程计参考，并组合新坐标边界。
@@ -458,6 +459,7 @@ void Localization::commitFrontendResetBoundaryLocked(const FrontendResetReply& r
     last_global_observation_cycle_time_ = Timestamp();
     last_recovery_cycle_time_ = Timestamp();
     last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
+    pending_recovery_.reset();
     target_cache_.clear();
     last_tracking_reference_index_ = -1;
     state_before_manual_reset_.reset();

@@ -228,6 +228,11 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
     source(c.recovery.source, d.recovery.source);
     source(c.loop.source, d.loop.source);
     c.recovery.global_fallback_candidates = std::max(0, c.recovery.global_fallback_candidates);
+    c.recovery.confirmations = std::max(1, c.recovery.confirmations);
+    c.recovery.confirm_translation =
+        std::max(0.0, finiteOr(c.recovery.confirm_translation, d.recovery.confirm_translation));
+    c.recovery.confirm_rotation_rad =
+        std::max(0.0, finiteOr(c.recovery.confirm_rotation_rad, d.recovery.confirm_rotation_rad));
 }
 
 /// 规范化 UWB 时空参数、位置协方差及依赖其数值的启动标定。

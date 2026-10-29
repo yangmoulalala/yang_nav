@@ -192,6 +192,12 @@ struct RecoveryConfig {
     int global_fallback_candidates = 8;
     int suspect_failures_before_lost = 3;
     bool automatic_when_lost = true;
+    /// 提交恢复前要求连续给出一致 map←odom 变换的次数；1 表示首次匹配即提交。
+    int confirmations = 1;
+    /// 相邻恢复候选 map←odom 变换允许的平移差，m。
+    double confirm_translation = 0.3;
+    /// 相邻恢复候选 map←odom 变换允许的旋转差，rad。
+    double confirm_rotation_rad = 5.0 * kPi / 180.0;
     SourceAccumulationConfig source;
 };
 

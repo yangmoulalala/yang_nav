@@ -149,6 +149,7 @@ void Localization::isolateEstimatorFailureLocked(const std::string& reason) {
     last_lidar_observation_runtime_index_ = -1;
     last_tracking_reference_index_ = -1;
     last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
+    pending_recovery_.reset();
     last_global_observation_cycle_time_ = Timestamp();
     last_recovery_cycle_time_ = Timestamp();
     last_loop_checked_index_ = -1;
@@ -221,6 +222,7 @@ void Localization::initialize() {
 void Localization::beginSuspectRecoveryLocked() {
     frames_.beginRecovery();
     last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
+    pending_recovery_.reset();
     last_recovery_cycle_time_ = Timestamp();
 
     if (!config_.prior_map_enabled && config_.uwb.enabled) {
