@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ZLIO 后端仿真回归测试：建图 + 回环 / 先验定位 + 绑架重定位。
 #   tools/sim_tests/zt_run.sh mapping      OUT_DIR MAP_DIR [laps]
-#   tools/sim_tests/zt_run.sh localization OUT_DIR MAP_DIR [laps]
+#   tools/sim_tests/zt_run.sh localization OUT_DIR MAP_DIR [laps] [driver_mode] [extra]
+#     driver_mode overrides mapping/localize (e.g. spin); extra=spin turns at every waypoint
 # 仿真与 bringup 在同一进程组中启动，驱动脚本结束后只停止该进程组。
 HERE=$(cd "$(dirname "$0")" && pwd)
 MODE=$1; OUT=$2; MAP=$3; LAPS=${4:-2}
@@ -16,5 +17,6 @@ PGID=$!
 trap 'kill -INT -- -$PGID 2>/dev/null; sleep 4; kill -KILL -- -$PGID 2>/dev/null' EXIT
 sleep 20
 if [ "$MODE" = mapping ]; then DMODE=mapping; else DMODE=localize; fi
-timeout 600 python3 "$HERE/zt_driver.py" $DMODE "$OUT/result.json" "$LAPS" > "$OUT/driver.log" 2>&1
+DMODE=${5:-$DMODE}
+timeout 600 python3 "$HERE/zt_driver.py" $DMODE "$OUT/result.json" "$LAPS" ${6:-} > "$OUT/driver.log" 2>&1
 echo "driver exit=$?"

@@ -1,4 +1,7 @@
-"""Evaluate result.json: SE2-align GT to map frame on reference samples, report errors per tag group."""
+"""Evaluate result.json: SE2-align GT to map frame, report errors per tag group.
+
+    zt_eval.py result.json [--align YAW_DEG TX TY]   (fixed GT->map alignment, e.g. from the mapping run)
+"""
 import json
 import math
 import sys
@@ -15,24 +18,31 @@ for s in res['services']:
 if 'kidnap_recovered' in res:
     print('kidnap_recovered', res['kidnap_recovered'])
 ref = [s for s in samples if s['tag'].startswith(('start', 'lap'))]
-if len(ref) < 3:
+if not ref and '--align' not in sys.argv:
     sys.exit('not enough reference samples')
+if '--align' in sys.argv:
+    i = sys.argv.index('--align')
+    dyaw = math.radians(float(sys.argv[i + 1]))
+    t = np.array([float(sys.argv[i + 2]), float(sys.argv[i + 3])])
+    R = np.array([[math.cos(dyaw), -math.sin(dyaw)], [math.sin(dyaw), math.cos(dyaw)]])
+    ref = []
 G = np.array([s['gt'][:2] for s in ref]); E = np.array([s['est'][:2] for s in ref])
-mg, me = G.mean(0), E.mean(0)
-H = (G - mg).T @ (E - me)
-U, _, Vt = np.linalg.svd(H)
-R = Vt.T @ U.T
-if np.linalg.det(R) < 0:
-    Vt[-1] *= -1; R = Vt.T @ U.T
-t = me - R @ mg
-dyaw = math.atan2(R[1, 0], R[0, 0])
+if ref:
+    mg, me = G.mean(0), E.mean(0)
+    H = (G - mg).T @ (E - me)
+    U, _, Vt = np.linalg.svd(H)
+    R = Vt.T @ U.T
+    if np.linalg.det(R) < 0:
+        Vt[-1] *= -1; R = Vt.T @ U.T
+    t = me - R @ mg
+    dyaw = math.atan2(R[1, 0], R[0, 0])
 print(f'alignment: yaw={math.degrees(dyaw):.2f}deg t=({t[0]:.3f},{t[1]:.3f})')
 groups = {}
 for s in samples:
     g = np.array(s['gt'][:2]); e = np.array(s['est'][:2])
     err = np.linalg.norm(R @ g + t - e)
     yerr = abs(math.degrees(math.atan2(math.sin(s['gt'][2] + dyaw - s['est'][2]), math.cos(s['gt'][2] + dyaw - s['est'][2]))))
-    key = s['tag'].rstrip('_end')
+    key = s['tag'].removesuffix('_end')
     groups.setdefault(key, []).append((err, yerr))
 for k, v in groups.items():
     a = np.array(v)

@@ -2,6 +2,8 @@
 
     zt_driver.py mapping  OUT.json [laps]
     zt_driver.py localize OUT.json [laps]   (drives laps, then kidnaps and watches recovery)
+    zt_driver.py spin     OUT.json 0        (spins in place at the spawn point, slow then fast)
+    append 'spin' to mapping/localize to turn one full circle at every waypoint
 """
 import json
 import math
@@ -54,6 +56,7 @@ class Driver(Node):
         self.gz.subscribe(Pose_V, f'/world/{WORLD}/pose/info', self.on_pose)
         self.samples = []
         self.t0 = time.monotonic()
+        self.heading = 0.0
 
     def on_state(self, msg):
         fields = dict(kv.split('=', 1) for kv in msg.data.split(';') if '=' in kv)
@@ -116,8 +119,28 @@ class Driver(Node):
                 t = Twist()
                 t.linear.x = c * vx_w + s * vy_w
                 t.linear.y = -s * vx_w + c * vy_w
-                t.angular.z = max(-1.0, min(1.0, -2.0 * wrap(yaw)))
+                t.angular.z = max(-1.0, min(1.0, -2.0 * wrap(yaw - self.heading)))
                 self.cmd.publish(t)
+        self.stop()
+
+    def spin(self, turns, tag, rate=0.8, timeout=120):
+        with self.lock:
+            last = self.gt[3] if self.gt else None
+        total = 0.0
+        end = time.monotonic() + timeout
+        while abs(total) < turns * 2 * math.pi and time.monotonic() < end:
+            rclpy.spin_once(self, timeout_sec=0.02)
+            with self.lock:
+                gt = self.gt
+            if gt is None:
+                continue
+            if last is not None:
+                total += wrap(gt[3] - last)
+            last = gt[3]
+            t = Twist()
+            t.angular.z = rate
+            self.cmd.publish(t)
+            self.record(tag)
         self.stop()
 
     def hold(self, seconds, tag):
@@ -162,6 +185,9 @@ class Driver(Node):
 def main():
     mode, out = sys.argv[1], sys.argv[2]
     laps = int(sys.argv[3]) if len(sys.argv) > 3 else 2
+    extra = sys.argv[4] if len(sys.argv) > 4 else ''
+    if mode == 'spin':
+        laps = 0
     rclpy.init()
     d = Driver()
     result = {'mode': mode, 'laps': laps, 'services': []}
@@ -171,10 +197,20 @@ def main():
     if ready:
         d.hold(3, 'start')
         for lap in range(laps):
-            d.drive(LAP, f'lap{lap}')
+            if extra == 'spin':
+                for wp in LAP:
+                    d.drive([wp], f'lap{lap}')
+                    d.spin(1, f'lap{lap}')
+            else:
+                d.drive(LAP, f'lap{lap}')
             d.hold(2, f'lap{lap}_end')
         if mode == 'mapping':
             result['services'].append(d.call('/backend_node/save_map'))
+        elif mode == 'spin':
+            d.spin(2, 'spin', 0.6)
+            d.hold(3, 'spin_end')
+            d.spin(2, 'spinfast', -1.5)
+            d.hold(3, 'spinfast_end')
         else:
             d.teleport(*KIDNAP)
             d.hold(1, 'kidnap')
