@@ -9,13 +9,13 @@
   <license>GPL-2.0-only</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>eigen</depend>
-  <depend>yaml-cpp</depend>
   <build_depend>libnanoflann-dev</build_depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>tf2</depend>
   <depend>tf2_ros</depend>
   <depend>localization_interfaces</depend>
   <depend>livox_ros_driver2</depend>

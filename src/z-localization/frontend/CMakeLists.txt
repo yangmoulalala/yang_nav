@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-find_package(yaml-cpp REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 find_path(NANOFLANN_INCLUDE_DIR nanoflann.hpp REQUIRED)
@@ -18,6 +17,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(localization_interfaces REQUIRED)
 find_package(livox_ros_driver2 REQUIRED)
@@ -50,12 +50,13 @@ target_include_directories(zlio
     PRIVATE ${NANOFLANN_INCLUDE_DIR}
 )
 target_compile_features(zlio PUBLIC cxx_std_17)
-target_link_libraries(zlio PUBLIC Eigen3::Eigen PRIVATE yaml-cpp Threads::Threads OpenMP::OpenMP_CXX)
+target_link_libraries(zlio PUBLIC Eigen3::Eigen PRIVATE Threads::Threads OpenMP::OpenMP_CXX)
 add_library(zlio::zlio ALIAS zlio)
 
-add_executable(zlio_node apps/main.cpp apps/node.cpp apps/input.cpp apps/ros.cpp)
+add_executable(zlio_node apps/main.cpp apps/node.cpp apps/parameters.cpp apps/input.cpp
+    apps/ros.cpp)
 target_link_libraries(zlio_node zlio Threads::Threads)
-ament_target_dependencies(zlio_node rclcpp sensor_msgs nav_msgs std_srvs tf2_ros
+ament_target_dependencies(zlio_node rclcpp sensor_msgs nav_msgs std_srvs tf2 tf2_ros
     localization_interfaces livox_ros_driver2)
 add_executable(zlio_visualizer apps/visualization.cpp)
 target_include_directories(zlio_visualizer PRIVATE include)
@@ -63,9 +64,9 @@ target_link_libraries(zlio_visualizer Eigen3::Eigen)
 ament_target_dependencies(zlio_visualizer rclcpp sensor_msgs nav_msgs geometry_msgs localization_interfaces)
 
 install(TARGETS zlio_node zlio_visualizer DESTINATION lib/${PROJECT_NAME})
-install(DIRECTORY launch rviz DESTINATION share/${PROJECT_NAME} PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY config launch rviz DESTINATION share/${PROJECT_NAME} PATTERN "__pycache__" EXCLUDE)
 ament_export_targets(zlioTargets HAS_LIBRARY_TARGET)
-ament_export_dependencies(Eigen3 yaml-cpp Threads OpenMP)
+ament_export_dependencies(Eigen3 Threads OpenMP)
 
 # 同时导出纯 C++ 核心目标，消费者无需链接 ROS 节点。
 include(CMakePackageConfigHelpers)
@@ -97,8 +98,6 @@ set(ZLIO_PUBLIC_HEADERS
     include/zlio/window.hpp
 )
 install(FILES ${ZLIO_PUBLIC_HEADERS} DESTINATION include/zlio)
-install(FILES LICENSE DESTINATION share/${PROJECT_NAME})
-install(FILES config/lio.yaml DESTINATION share/${PROJECT_NAME}/config)
 install(EXPORT zlioTargets NAMESPACE zlio:: DESTINATION share/zlio/cmake)
 
 localization_enable_warnings()

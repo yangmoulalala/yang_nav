@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
+#include "parameter_reader.hpp"
 #include "zlio/voxel.hpp"
 
 namespace zlio::ros {
@@ -132,15 +133,14 @@ sensor_msgs::msg::PointCloud2 registeredCloud(const Frame& frame) {
 class FrontendVisualizer final : public rclcpp::Node {
 public:
     /// 建立前端观测订阅和标准 ROS 可视化输出。
-    FrontendVisualizer() : Node("frontend_visualization") {
-        const auto limit = declare_parameter<int>("path_max_poses", 5000);
-        if (limit <= 0) {
-            throw std::invalid_argument("path_max_poses must be positive");
-        }
-        path_limit_ = static_cast<std::size_t>(limit);
-        const double map_resolution = declare_parameter<double>("map_voxel_size", 0.15);
-        const int map_capacity = declare_parameter<int>("map_max_voxels", 200000);
-        const double map_period = declare_parameter<double>("map_publish_period", 0.2);
+    FrontendVisualizer() : Node("frontend_visualization", parameterFileOptions()) {
+        // 全部参数必填，唯一来源是参数文件。
+        ParameterReader reader(*this);
+        path_limit_ = reader.count("path_max_poses");
+        const double map_resolution = reader.real("map_voxel_size");
+        const auto map_capacity = reader.integer("map_max_voxels");
+        const double map_period = reader.real("map_publish_period");
+        reader.rejectUnknown();
         if (!std::isfinite(map_resolution) || map_resolution <= 0 || map_capacity <= 0 ||
             !std::isfinite(map_period) || map_period < 0 || map_period > 60) {
             throw std::invalid_argument("invalid visualization map resolution, capacity or period");
@@ -229,7 +229,7 @@ private:
 
     bool has_session_ = false;
     std::uint64_t instance_ = 0, epoch_ = 0, sequence_ = 0;
-    std::size_t path_limit_ = 5000;
+    std::size_t path_limit_ = 0;
     nav_msgs::msg::Path path_;
     std::unique_ptr<DisplayMap> map_;
     std::optional<std::int64_t> last_map_stamp_;

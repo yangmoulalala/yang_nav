@@ -214,8 +214,6 @@ struct Config {
     WindowConfig window;
 };
 
-/// 从 YAML 读取并规范化算法配置。
-Config loadConfig(const std::string& path);
 /// 校验参数数值、资源上限和外参。
 void validateConfig(const Config& config);
 /// 校验配置并归一化外参四元数。

@@ -4,12 +4,19 @@
  */
 #include "node.hpp"
 
+#include <tf2/exceptions.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
 #include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
 #include <utility>
+
+#include "parameter_reader.hpp"
+#include "parameters.hpp"
 
 namespace zlio::ros {
 namespace {
@@ -36,13 +43,12 @@ void setResetBoundary(localization_interfaces::srv::ResetFrontend::Response& res
 }  // namespace
 
 /// 创建里程计对象和 ROS 传输接口。
-OdometryNode::OdometryNode() : Node("zlio") {
+OdometryNode::OdometryNode() : Node("zlio", parameterFileOptions()) {
     loadParameters();
     auto prepared = prepareInput();
     odometry_ = std::move(prepared.odometry);
     predictor_ = std::move(prepared.predictor);
     queue_ = std::move(prepared.queue);
-    cloud_format_.maximum_points = input_limits_.maximum_lidar_points;
     decoder_ = std::make_unique<PointCloudDecoder>(cloud_format_);
     setupPublishers();
     setupServices();
@@ -73,44 +79,77 @@ OdometryNode::PreparedInput OdometryNode::prepareInput() const {
     return prepared;
 }
 
-/// 读取算法文件与 ROS 传输参数。
+/// 从参数文件读取全部必填参数，再用 TF 外参完成算法配置的校验与规范化。
 void OdometryNode::loadParameters() {
-    const auto path = declare_parameter<std::string>("config_file", "");
-    if (path.empty())
-        throw std::invalid_argument("config_file is required");
-    config_ = loadConfig(path);
-    frames_.world = declare_parameter<std::string>("world_frame", "odom");
-    frames_.body = declare_parameter<std::string>("body_frame", "imu");
-    lidar_topic_ = declare_parameter<std::string>("lidar_topic", "/livox/lidar");
-    imu_topic_ = declare_parameter<std::string>("imu_topic", "/livox/imu");
-    input_type_ = declare_parameter<std::string>("input_type", "pointcloud2");
-    cloud_format_.time_field = declare_parameter<std::string>("point_time_field", "offset_time");
-    cloud_format_.time_scale = declare_parameter<double>("point_time_scale", 1e-9);
-    cloud_format_.absolute_time = declare_parameter<bool>("point_time_absolute", false);
-    livox_timebase_ = declare_parameter<bool>("livox_use_timebase", true);
-    input_limits_.imu_history.maximum_duration =
-        declare_parameter<double>("imu_history_seconds", 30);
-    input_limits_.imu_history.maximum_interval =
-        declare_parameter<double>("maximum_imu_interval", .1);
-    const auto count = [this](const char* name, std::size_t initial) {
-        const auto value =
-            declare_parameter<std::int64_t>(name, static_cast<std::int64_t>(initial));
-        if (value <= 0)
-            throw std::invalid_argument(std::string(name) + " must be positive");
-        return static_cast<std::size_t>(value);
-    };
-    input_limits_.imu_history.maximum_samples = count("maximum_imu_samples", 65536);
-    input_limits_.maximum_lidar_points = count("maximum_buffered_points", 1000000);
-    maximum_queue_events_ = count("maximum_queue_events", maximum_queue_events_);
-    output_resolution_ = declare_parameter<double>("output_resolution", .10);
-    imu_acceleration_scale_ = declare_parameter<double>("imu_acceleration_scale", 1.);
-    if (!std::isfinite(imu_acceleration_scale_) || imu_acceleration_scale_ <= 0)
-        throw std::invalid_argument("imu_acceleration_scale must be finite and positive");
-    armed_ = !declare_parameter<bool>("wait_for_start", false);
-    reset_mode_ = declare_parameter<std::string>("reset_mode", "warm");
-    coordinated_reset_ = declare_parameter<bool>("coordinated_reset", false);
-    if (reset_mode_ != "warm" && reset_mode_ != "cold")
-        throw std::invalid_argument("reset_mode must be warm or cold");
+    auto parameters = loadNodeParameters(*this);
+    frames_ = parameters.frames;
+    lidar_frame_ = parameters.lidar_frame;
+    input_type_ = parameters.input_type;
+    cloud_format_ = parameters.cloud_format;
+    livox_timebase_ = parameters.livox_timebase;
+    imu_acceleration_scale_ = parameters.imu_acceleration_scale;
+    input_limits_ = parameters.input_limits;
+    maximum_queue_events_ = parameters.maximum_queue_events;
+    output_resolution_ = parameters.output_resolution;
+    publish_tf_ = parameters.publish_tf;
+    base_frame_ = parameters.base_frame;
+    base_extrinsic_tolerance_ = parameters.base_extrinsic_tolerance;
+    armed_ = !parameters.wait_for_start;
+    reset_mode_ = parameters.reset_mode;
+    coordinated_reset_ = parameters.coordinated_reset;
+    // TF 监听器随节点存活：启动外参与运行中 imu ← base 查询共用。
+    // 不要在函数内临时创建带 spin_thread 的监听器：其析构在后台线程尚未开始 spin 时
+    // 会丢失 cancel 并永久阻塞 join（rclcpp executor 竞态），节点卡在启动阶段。
+    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());
+    tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_, this, true);
+    parameters.config.body_from_lidar = lookupBodyFromLidar();
+    config_ = normalizeConfig(std::move(parameters.config));
+    const auto& extrinsic = config_.body_from_lidar;
+    RCLCPP_INFO(get_logger(),
+                "extrinsic %s <- %s from TF: translation [%.6f, %.6f, %.6f] m, "
+                "rotation xyzw [%.6f, %.6f, %.6f, %.6f]",
+                frames_.body.c_str(), lidar_frame_.c_str(), extrinsic.position.x(),
+                extrinsic.position.y(), extrinsic.position.z(), extrinsic.rotation.x(),
+                extrinsic.rotation.y(), extrinsic.rotation.z(), extrinsic.rotation.w());
+}
+
+/// 用节点的 TF 缓存等待 imu ← lidar 变换；外参只在启动时读取一次。
+Pose OdometryNode::lookupBodyFromLidar() {
+    auto& buffer = *tf_buffer_;
+    rclcpp::Clock steady(RCL_STEADY_TIME);
+    std::string reason;
+    while (rclcpp::ok()) {
+        try {
+            // target=IMU、source=LiDAR：结果即雷达坐标系在 IMU 系中的位姿。
+            const auto stamped =
+                buffer.lookupTransform(frames_.body, lidar_frame_, tf2::TimePointZero);
+            const auto& t = stamped.transform;
+            Pose pose;
+            pose.position = Vec3(t.translation.x, t.translation.y, t.translation.z);
+            pose.rotation =
+                Eigen::Quaterniond(t.rotation.w, t.rotation.x, t.rotation.y, t.rotation.z);
+            return pose;
+        } catch (const tf2::TransformException& error) {
+            reason = error.what();
+        }
+        RCLCPP_WARN_THROTTLE(get_logger(), steady, 5000,
+                             "waiting for TF %s <- %s (LiDAR extrinsic): %s", frames_.body.c_str(),
+                             lidar_frame_.c_str(), reason.c_str());
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    throw std::runtime_error("shutdown while waiting for TF " + frames_.body + " <- " +
+                             lidar_frame_ + ": " + reason);
+}
+
+/// 输入 frame_id 与配置的雷达坐标系不一致时告警一次；点仍按 frames.lidar 解释。
+void OdometryNode::checkLidarFrame(const std::string& frame_id) {
+    if (lidar_frame_warned_ || frame_id == lidar_frame_)
+        return;
+    lidar_frame_warned_ = true;
+    RCLCPP_WARN(get_logger(),
+                "LiDAR message frame_id '%s' differs from frames.lidar '%s'; points are not "
+                "transformed and are interpreted in frames.lidar",
+                frame_id.c_str(), lidar_frame_.c_str());
 }
 
 /// 创建里程计和坐标变换发布器。
@@ -123,8 +162,55 @@ void OdometryNode::setupPublishers() {
         "frontend/odometry", rclcpp::QoS(200));
     session_pub_ = create_publisher<localization_interfaces::msg::FrontendSession>(
         "frontend/session", rclcpp::QoS(1).transient_local());
-    if (declare_parameter<bool>("publish_tf", true))
+    if (publish_tf_)
         broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+}
+
+/// 先按 stamp 查询（插值），失败时取最新变换；最新变换过旧则沿用上一次有效值。
+bool OdometryNode::imuFromBase(const builtin_interfaces::msg::Time& stamp, Pose& pose) {
+    const rclcpp::Time time(stamp, get_clock()->get_clock_type());
+    const auto convert = [](const geometry_msgs::msg::TransformStamped& stamped) {
+        const auto& t = stamped.transform;
+        Pose result;
+        result.position = Vec3(t.translation.x, t.translation.y, t.translation.z);
+        result.rotation =
+            Eigen::Quaterniond(t.rotation.w, t.rotation.x, t.rotation.y, t.rotation.z).normalized();
+        return result;
+    };
+    rclcpp::Clock steady(RCL_STEADY_TIME);
+    try {
+        pose = convert(tf_buffer_->lookupTransform(frames_.body, base_frame_, time));
+    } catch (const tf2::TransformException&) {
+        try {
+            const auto latest =
+                tf_buffer_->lookupTransform(frames_.body, base_frame_, tf2::TimePointZero);
+            const rclcpp::Time latest_time(latest.header.stamp, time.get_clock_type());
+            const double age = std::abs((time - latest_time).seconds());
+            if (latest_time.nanoseconds() != 0 && age > base_extrinsic_tolerance_) {
+                RCLCPP_WARN_THROTTLE(get_logger(), steady, 5000,
+                                     "TF %s <- %s is %.3f s from the odometry stamp (> "
+                                     "output.base_extrinsic_tolerance=%.3f s); keeping the last "
+                                     "good value",
+                                     frames_.body.c_str(), base_frame_.c_str(), age,
+                                     base_extrinsic_tolerance_);
+                if (!has_imu_from_base_)
+                    return false;
+                pose = last_imu_from_base_;
+                return true;
+            }
+            pose = convert(latest);
+        } catch (const tf2::TransformException& error) {
+            RCLCPP_WARN_THROTTLE(get_logger(), steady, 5000, "waiting for TF %s <- %s: %s",
+                                 frames_.body.c_str(), base_frame_.c_str(), error.what());
+            if (!has_imu_from_base_)
+                return false;
+            pose = last_imu_from_base_;
+            return true;
+        }
+    }
+    last_imu_from_base_ = pose;
+    has_imu_from_base_ = true;
+    return true;
 }
 
 /// 创建输入启用、停止和幂等重置服务。
@@ -172,7 +258,7 @@ void OdometryNode::setupSubscriptions() {
     const auto epoch = epoch_;
     rclcpp::SubscriptionOptions imu_options, cloud_options;
     imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
-        imu_topic_, rclcpp::SensorDataQoS().keep_last(4000),
+        "imu", rclcpp::SensorDataQoS().keep_last(4000),
         [this, epoch](sensor_msgs::msg::Imu::ConstSharedPtr message) {
             if (armed_ && epoch == epoch_)
                 onImu(message);
@@ -180,7 +266,7 @@ void OdometryNode::setupSubscriptions() {
         imu_options);
     if (input_type_ == "pointcloud2") {
         cloud_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-            lidar_topic_, rclcpp::SensorDataQoS().keep_last(200),
+            "lidar", rclcpp::SensorDataQoS().keep_last(200),
             [this, epoch](sensor_msgs::msg::PointCloud2::ConstSharedPtr message) {
                 if (armed_ && epoch == epoch_)
                     onCloud(message);
@@ -188,14 +274,14 @@ void OdometryNode::setupSubscriptions() {
             cloud_options);
     } else if (input_type_ == "livox") {
         livox_sub_ = create_subscription<livox_ros_driver2::msg::CustomMsg>(
-            lidar_topic_, rclcpp::SensorDataQoS().keep_last(200),
+            "lidar", rclcpp::SensorDataQoS().keep_last(200),
             [this, epoch](livox_ros_driver2::msg::CustomMsg::ConstSharedPtr message) {
                 if (armed_ && epoch == epoch_)
                     onLivox(message);
             },
             cloud_options);
     } else
-        throw std::invalid_argument("input_type must be pointcloud2 or livox");
+        throw std::invalid_argument("input.type must be pointcloud2 or livox");
 }
 
 /// 在新会话中建立输入准入与工作线程，并保证启动失败后仍可完成停止。
@@ -259,6 +345,7 @@ void OdometryNode::onCloud(sensor_msgs::msg::PointCloud2::ConstSharedPtr message
     if (!input)
         return;
     try {
+        checkLidarFrame(message->header.frame_id);
         queue_->push(decoder_->decode(*message));
     } catch (const std::exception& error) {
         fail(std::string("PointCloud2 input failed: ") + error.what());
@@ -271,6 +358,7 @@ void OdometryNode::onLivox(livox_ros_driver2::msg::CustomMsg::ConstSharedPtr mes
     if (!input)
         return;
     try {
+        checkLidarFrame(message->header.frame_id);
         if (message->point_num != message->points.size())
             throw std::invalid_argument("Livox point_num does not match the points array size");
         if (message->points.size() > input_limits_.maximum_lidar_points)
@@ -436,13 +524,30 @@ void OdometryNode::publish(const Estimate& estimate, const Vec3& angular_velocit
     message.odometry = odometry;
     prediction_pub_->publish(message);
     if (broadcaster_) {
+        // world → base = (world → imu) · (imu ← base)；IMU 系在 URDF 树上已有父帧，
+        // 故把里程计接到树根 base，而不是直接发 world → imu。
+        const auto& p = odometry.pose.pose.position;
+        const auto& q = odometry.pose.pose.orientation;
+        const Eigen::Quaterniond world_imu_rotation(q.w, q.x, q.y, q.z);
+        Vec3 position(p.x, p.y, p.z);
+        Eigen::Quaterniond rotation = world_imu_rotation;
+        if (base_frame_ != frames_.body) {
+            Pose imu_base;
+            if (!imuFromBase(odometry.header.stamp, imu_base))
+                return;
+            position += world_imu_rotation * imu_base.position;
+            rotation = (world_imu_rotation * imu_base.rotation).normalized();
+        }
         geometry_msgs::msg::TransformStamped transform;
         transform.header = odometry.header;
-        transform.child_frame_id = frames_.body;
-        transform.transform.translation.x = odometry.pose.pose.position.x;
-        transform.transform.translation.y = odometry.pose.pose.position.y;
-        transform.transform.translation.z = odometry.pose.pose.position.z;
-        transform.transform.rotation = odometry.pose.pose.orientation;
+        transform.child_frame_id = base_frame_;
+        transform.transform.translation.x = position.x();
+        transform.transform.translation.y = position.y();
+        transform.transform.translation.z = position.z();
+        transform.transform.rotation.x = rotation.x();
+        transform.transform.rotation.y = rotation.y();
+        transform.transform.rotation.z = rotation.z();
+        transform.transform.rotation.w = rotation.w();
         broadcaster_->sendTransform(transform);
     }
 }

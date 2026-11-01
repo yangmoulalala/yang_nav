@@ -4,7 +4,9 @@
  */
 #pragma once
 
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <atomic>
 #include <cstddef>
@@ -48,8 +50,14 @@ private:
     };
     /// 按当前配置构造完整替代资源，不改变运行会话。
     PreparedInput prepareInput() const;
-    /// 读取算法配置和 ROS 传输参数。
+    /// 从参数文件读取算法配置和 ROS 传输参数，并从 TF 取得雷达外参。
     void loadParameters();
+    /// 阻塞等待 TF 中的 imu ← lidar 变换，返回雷达在 IMU 系中的位姿。
+    Pose lookupBodyFromLidar();
+    /// 查询 stamp 时刻车体在 IMU 系中的位姿（含云台关节）；不可用时返回 false。
+    bool imuFromBase(const builtin_interfaces::msg::Time& stamp, Pose& pose);
+    /// 输入雷达消息的 frame_id 与 frames.lidar 不一致时告警一次，不做变换。
+    void checkLidarFrame(const std::string& frame_id);
     /// 建立后验、预测和会话发布接口。
     void setupPublishers();
     /// 为当前代次建立串行传感器回调。
@@ -92,16 +100,26 @@ private:
 
     Config config_;
     InputBufferLimits input_limits_;
-    std::size_t maximum_queue_events_ = 8192;
+    std::size_t maximum_queue_events_ = 0;
     std::unique_ptr<Odometry> odometry_;
     std::unique_ptr<OutputPredictor> predictor_;
     std::unique_ptr<InputQueue> queue_;
     std::unique_ptr<PointCloudDecoder> decoder_;
     OutputFrames frames_;
     PointCloudFormat cloud_format_;
-    std::string lidar_topic_, imu_topic_, input_type_, reset_mode_;
-    bool livox_timebase_ = true;
+    std::string lidar_frame_, base_frame_, input_type_, reset_mode_;
+    double base_extrinsic_tolerance_ = 0;
+    // 节点生命周期内唯一的 TF 缓存与监听器：启动时查 imu ← lidar，发布 world → base 时按时间查
+    // imu ← base（云台转动会改变它）；last_imu_from_base_ 仅由串行 IMU 回调访问。
+    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
+    Pose last_imu_from_base_;
+    bool has_imu_from_base_ = false;
+    bool livox_timebase_ = false;
+    bool publish_tf_ = false;
     bool coordinated_reset_ = false;
+    // 雷达 frame_id 不一致告警只输出一次；仅由串行传感器回调访问。
+    bool lidar_frame_warned_ = false;
     // 是否已提交首个后验；估计线程写入，控制回调在汇合旧线程后访问。
     bool has_posterior_ = false;
     // 串行控制回调维护并发布当前代次的协调重置需求。
@@ -115,8 +133,8 @@ private:
     bool failure_reported_ = false;
     // 一次性输入启动门，仅由串行 ROS 回调访问，跨重置保留。
     bool armed_ = true;
-    double output_resolution_ = .10;
-    double imu_acceleration_scale_ = 1.;
+    double output_resolution_ = 0;
+    double imu_acceleration_scale_ = 0;
     std::uint64_t epoch_ = 0, sequence_ = 0;
     localization_interfaces::ResetTransactionCache reset_cache_;
     std::mutex prediction_mutex_;
