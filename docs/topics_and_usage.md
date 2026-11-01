@@ -20,8 +20,8 @@
                  /odometry            /lidar_odometry  /frontend/frame /frontend/odometry  /frontend/session
                      │                                    └───────────────┴───────────────────────┤
                      ▼                                                                            ▼
-          lidar_fusion/base_tf                                                       backend/backend_node
-        TF: lio_odom → base_link                                          (全局定位 / 建图 / 回环 / 重定位)
+          lidar_calibration                                                          backend/backend_node
+        （标定，订阅 /odometry）                                          (全局定位 / 建图 / 回环 / 重定位)
                                                                                    │
             TF: map → lio_odom、/localization/odometry、~/localization_pose、~/localization_state、可视化话题 ...
 ```
@@ -29,12 +29,15 @@
 TF 树（仿真与真车一致）：
 
 ```
-map ──(backend_node)──▶ lio_odom ──(base_tf)──▶ base_link ──(robot_state_publisher, URDF)──▶ yaw_link ──▶ mid360_link ──(static)──▶ imu
+map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──(robot_state_publisher, URDF)──▶ yaw_link ──▶ mid360_link ──▶ mid360_imu_link
                                                                                                       └─▶ l2_link
 ```
 
-- ZLIO 本身**不发** TF（`publish_tf:=false`），否则 `imu` 会有两个父帧。
-- `base_tf` 用 `/odometry`（`lio_odom → imu`）与 URDF 外参（`base_link → imu`）推算 `lio_odom → base_link`。
+- 不再有手写的 `imu` 静态 TF：MID-360 内置 IMU 是 URDF 中的 `mid360_imu_link`（Livox 出厂外参）。
+  前端 IMU 坐标系 `frames.imu` 仿真为 `mid360_link`（gz IMU 与雷达同原点），真车为 `mid360_imu_link`；下文“`imu` 系”均指它。
+- `lio_odom → base_link` 由 ZLIO 直接发布（`output.publish_tf: true`、`frames.base: base_link`）：里程计 `lio_odom → frames.imu` 乘以按里程计时间戳从 TF 查到的 `frames.imu ← base_link`，云台 `yaw_joint` 转动也会跟随。
+  IMU 系在 URDF 里已有父帧，所以不直接发 `lio_odom → frames.imu`，否则 IMU 坐标系会有两个父帧。
+- 前端启动时从 TF 查一次 `frames.imu ← frames.lidar`，后端按消息时间戳查询 `common.sensor_frame ← base_link`，跟踪云台 `yaw_joint`（容差 `common.body_extrinsic_tolerance`）。
 - 后端不发布 `map → body`，树里只有 `base_link` 一个车体帧。
 
 ---
@@ -47,12 +50,11 @@ map ──(backend_node)──▶ lio_odom ──(base_tf)──▶ base_link �
 | `sentry_gazebo` | `sim.launch.py`、`gz_bridge`、`robot_state_publisher`、`joint_state_publisher` | Gazebo Harmonic 仿真（RMUL 场地），桥接雷达/IMU/时钟/`cmd_vel`；**不提供真值位姿** |
 | `livox_ros_driver2` | `livox_ros_driver2_node` | 真车 MID-360 驱动，输出 `/livox/lidar`、`/livox/imu` |
 | `lidar_fusion` | `merge_node`（节点名 `lidar_merge`） | 把 MID-360 与可选 L2 点云按 tf2 外参合并到 `mid360_link`，输出带逐点时间 `offset_time` 的 `/lidar/points` |
-| | `base_tf`（节点名 `lio_base_tf`） | 把 LIO 里程计换算到车体，发布 `lio_odom → base_link` TF |
-| `frontend` (ZLIO) | `zlio_node`、`zlio_visualizer` | 激光惯性里程计：IMU 预测 + 点面配准滤波，输出高频里程计和去畸变观测帧 |
+| `frontend` (ZLIO) | `zlio_node`、`zlio_visualizer` | 激光惯性里程计：IMU 预测 + 点面配准滤波，输出高频里程计和去畸变观测帧，并发布 TF `lio_odom → base_link` |
 | `backend` | `backend_node`、`body_calibration_node` | 全局定位后端：先验地图定位或在线建图、Scan Context 回环、位姿图优化、丢失恢复、可选 UWB 融合 |
 | `localization_interfaces` | — | 前后端协议消息：`FrontendFrame`、`FrontendOdometry`、`FrontendSession`、`ResetFrontend.srv` |
 | `lidar_calibration` | `calibrate` | 雷达/车体外参标定工具（订阅 `/odometry`） |
-| `bringup` | `sim.launch.py`、`real.launch.py` | 一键入口，组装融合 + ZLIO + base_tf + 后端；`config/` 下是仿真/真车专用配置 |
+| `bringup` | `localization.launch.py`、`sim.launch.py`、`real.launch.py` | `localization.launch.py` 组装融合 + ZLIO + 后端；`sim`/`real` 只管数据源；`config/{sim,real}/{lidar_fusion,frontend,backend}.yaml` 为完整参数文件 |
 
 ---
 
@@ -63,7 +65,7 @@ map ──(backend_node)──▶ lio_odom ──(base_tf)──▶ base_link �
 | 话题 | 类型 | 发布者 | 说明 |
 | --- | --- | --- | --- |
 | `/lidar_mid360/points` | `sensor_msgs/PointCloud2` | `gz_bridge` | 仿真 MID-360 点云，frame 为 gz 作用域名，由静态 TF 别名挂到 `mid360_link` |
-| `/lidar_mid360/imu` | `sensor_msgs/Imu` | `gz_bridge` | 仿真 MID-360 内置 IMU，单位 m/s²（真车 Livox 为 g，需 `imu_acceleration_scale:=9.81`） |
+| `/lidar_mid360/imu` | `sensor_msgs/Imu` | `gz_bridge` | 仿真 MID-360 内置 IMU，单位 m/s²（真车 Livox 为 g，`bringup/config/real/frontend.yaml` 中 `input.imu_acceleration_scale: 9.81`） |
 | `/lidar_l2/points` | `sensor_msgs/PointCloud2` | `gz_bridge` | 仿真宇树 L2 点云，`lidar:=dual` 时参与融合 |
 | `/lidar_l2/imu` | `sensor_msgs/Imu` | `gz_bridge` | L2 内置 IMU，当前流程未使用 |
 | `/lidar/points` | `sensor_msgs/PointCloud2` | `lidar_merge` | 合并点云，`mid360_link` 系，字段 `x y z offset_time(uint32 ns)`，ZLIO 的雷达输入 |
@@ -75,15 +77,15 @@ map ──(backend_node)──▶ lio_odom ──(base_tf)──▶ base_link �
 | 话题 | 发布者 | 说明 |
 | --- | --- | --- |
 | `/robot_description` | `robot_state_publisher` | URDF 字符串（transient local），RViz RobotModel 使用 |
-| `/joint_states` | `joint_state_publisher` | 关节角；仿真中云台固定，发零位。真车应由底盘通信节点发布（此时 `zero_joint_states:=false`） |
-| `/tf` | `robot_state_publisher`、`lio_base_tf`、`backend_node` | 动态 TF：URDF 可动关节、`lio_odom → base_link`、`map → lio_odom` |
-| `/tf_static` | `robot_state_publisher`、各 `static_transform_publisher` | 固定外参与 frame 别名（`mid360_link → imu`、gz 传感器帧别名等） |
+| `/joint_states` | `joint_state_publisher` | 关节角；仿真中云台固定，发零位。真车从 `/chassis/joint_states`（底盘通信节点）取云台角，没有时发 0 |
+| `/tf` | `robot_state_publisher`、`zlio`、`backend_node` | 动态 TF：URDF 可动关节、`lio_odom → base_link`、`map → lio_odom` |
+| `/tf_static` | `robot_state_publisher`、各 `static_transform_publisher` | 固定外参（含 `mid360_link → mid360_imu_link`）与驱动/gz 传感器帧别名 |
 
 ### 3.3 前端 ZLIO（`zlio_node`）
 
 | 话题 | 类型 | 说明 |
 | --- | --- | --- |
-| `/odometry` | `nav_msgs/Odometry` | **随 IMU 更新的高频预测**位姿/速度/协方差，pose 在 `lio_odom`，twist 在 `imu` 系；`base_tf` 与标定工具订阅 |
+| `/odometry` | `nav_msgs/Odometry` | **随 IMU 更新的高频预测**位姿/速度/协方差，pose 在 `lio_odom`，twist 在 `imu` 系；标定工具订阅 |
 | `/lidar_odometry` | `nav_msgs/Odometry` | 每次激光观测更新后的后验估计（频率≈雷达帧率） |
 | `/frontend/frame` | `localization_interfaces/FrontendFrame` | 一次已提交观测：位姿 + 去畸变到 `imu` 系的点云 + 匹配数，含 `instance_id/epoch/sequence`；后端主输入 |
 | `/frontend/odometry` | `localization_interfaces/FrontendOdometry` | 带进程身份和代次的高频预测，后端据此高频外推输出 |
@@ -142,7 +144,7 @@ map ──(backend_node)──▶ lio_odom ──(base_tf)──▶ base_link �
 
 | 用途 | 话题 / TF | 类型 | 坐标系 | 说明 |
 | --- | --- | --- | --- | --- |
-| **车体全局位姿（首选）** | TF `map → base_link` | tf2 | `map` | 由 `map → lio_odom`（后端）+ `lio_odom → base_link`（base_tf）组成；Nav2 的 `global_frame: map`、`robot_base_frame: base_link` 直接可用 |
+| **车体全局位姿（首选）** | TF `map → base_link` | tf2 | `map` | 由 `map → lio_odom`（后端）+ `lio_odom → base_link`（ZLIO）组成；Nav2 的 `global_frame: map`、`robot_base_frame: base_link` 直接可用 |
 | 车体全局位姿（话题） | `/backend_node/localization_pose` | `geometry_msgs/PoseWithCovarianceStamped` | `map` | 带协方差，适合不用 TF 的上层模块（决策、裁判系统通信） |
 | 传感器全局里程计 | `/localization/odometry` | `nav_msgs/Odometry` | pose 在 `map`，twist 在 `imu` | 高频（随 IMU）；注意描述的是 **imu**，不是车体 |
 | 局部里程计 / 速度 | `/odometry` | `nav_msgs/Odometry` | pose 在 `lio_odom`，twist 在 `imu` | 高频、连续不跳变；局部规划、控制器的速度反馈用它，`odom_frame` 设为 `lio_odom` |
@@ -250,14 +252,15 @@ ros2 launch bringup real.launch.py mode:=localization
 ```
 
 真车话题名与仿真不同：MID-360 为 `/livox/lidar`、`/livox/imu`，L2 为 `/unilidar/cloud`。
-标注“待真车确认”的参数（`mid360_topic`、`*_frame`、`*_time_field` 等）上车后先核对：
+标注“待真车确认”的参数上车后先核对：launch 参数 `mid360_topic`、`imu_topic`、`l2_topic`、`l2_frame`，以及 `bringup/config/real/lidar_fusion.yaml` 的逐点时间键 `primary.*`、`secondary.*`：
 
 ```bash
 ros2 topic echo --once /livox/lidar --field fields
 ros2 topic echo --once /livox/lidar --field header.frame_id
 ```
 
-不一致时改 launch 参数即可，无需改代码。真车已有底盘发布 `/joint_states` 时加 `zero_joint_states:=false`。
+不一致时改 launch 参数或该 yaml 即可，无需改代码。驱动参数在 `bringup/config/real/livox_driver.yaml`，IP 在 `bringup/config/real/MID360_config.json`。
+云台角由底盘发布到 `/chassis/joint_states`，`joint_state_publisher` 合并后输出 `/joint_states`，没收到的关节发 0。
 
 ### 5.5 服务
 
@@ -281,7 +284,7 @@ ros2 service call /localization_reset std_srvs/srv/Trigger
 ros2 launch backend body_calibration.launch.py odom_frame:=lio_odom use_sim_time:=true
 ```
 
-按提示原地旋转（偏航跨度 ≥180°），终端会输出可直接粘贴进 `common.body` 的 YAML 片段。
+按提示原地旋转（偏航跨度 ≥180°），终端会输出标定结果。外参只在 URDF（`sentry_description/urdf/sentry_robot.urdf`）中维护，结果应写入 URDF 对应关节，而不是 yaml。
 
 ---
 
@@ -315,6 +318,6 @@ rqt_graph
 | `/lidar/points` 无数据 | 原始雷达话题是否有数据；`lidar_merge` 日志中 tf2 查找是否失败（`robot_state_publisher` 是否在运行） |
 | `/odometry` 无数据 | IMU 话题与 `imu_acceleration_scale` 是否正确；ZLIO 日志中初始化是否通过（仿真出生点几何单一时已调低 `minimum_directional_support`） |
 | 状态一直 `INITIALIZING` | 定位模式：`prior_map` 路径和出生点是否在地图范围内；可调 `/backend_node/relocalize` |
-| `SUSPECT`/`LOST` 频繁 | 对比 `debug/aligned_source` 与 `debug/target` 的重合度；检查 `common.body` 外参与 `scan_context.lidar_height` |
-| RViz 中车模不动/错位 | `ros2 run tf2_ros tf2_echo map base_link`；确认没有多个节点发布 `imu` 或 `base_link` 的父帧 |
+| `SUSPECT`/`LOST` 频繁 | 对比 `debug/aligned_source` 与 `debug/target` 的重合度；检查 URDF 中传感器到 `base_link` 的外参与 `scan_context.lidar_height` |
+| RViz 中车模不动/错位 | `ros2 run tf2_ros tf2_echo map base_link`；确认没有多个节点发布 IMU 坐标系或 `base_link` 的父帧 |
 | 仿真时间相关警告 | 所有节点是否都 `use_sim_time:=true`，`/clock` 是否在发布 |

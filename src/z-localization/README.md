@@ -17,17 +17,22 @@ MID-360 内置 IMU ────────────────────�
 
 | 包 | 来源 | 作用 |
 | --- | --- | --- |
-| `frontend` | 上游，原样 | ZLIO 激光惯性里程计（`zlio_node`） |
-| `backend` | 上游，两行编译修正 | 因子图后端：建图、回环、先验地图定位、UWB 辅助（保留，默认关闭） |
+| `frontend` | 上游，改参数与 TF 接口 | ZLIO 激光惯性里程计（`zlio_node`），发布 `lio_odom → base_link` |
+| `backend` | 上游，改参数与 TF 接口 | 因子图后端：建图、回环、先验地图定位、UWB 辅助（保留，默认关闭） |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
-| `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2；`base_tf` 把 `/odometry` 换算为 `lio_odom → base_link` TF |
+| `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
 | `lidar_calibration` | 新增，核心移植自 navi_minco_bit | L2 → MID-360 外参标定（PCL GICP） |
-| `bringup` | 重写 | `sim.launch.py`、`real.launch.py` 与配置 |
+| `bringup` | 重写 | `localization.launch.py`（共用管线：融合 + 前端 + 后端）、`sim.launch.py` / `real.launch.py`（只管数据源）与 `config/{sim,real}/` |
 
-对上游代码的改动只有：`backend/src/keyframe_map.cpp`（nanoflann 1.5 的 `ResultItem`）、
-`backend/apps/node_setup.cpp`（`rclcpp::ServicesQoS()` 替代已弃用的 `rmw_qos_profile`），
-以及各 `cmake/Warnings.cmake` 中 `LOCALIZATION_WARNINGS_AS_ERRORS` 默认改为 `OFF`（GCC 13 对 Eigen 误报）。
+对上游代码的改动：
+
+- 编译修正：`backend/src/keyframe_map.cpp`（nanoflann 1.5 的 `ResultItem`）、`rclcpp::ServicesQoS()`、
+  各 `cmake/Warnings.cmake` 中 `LOCALIZATION_WARNINGS_AS_ERRORS` 默认 `OFF`（GCC 13 对 Eigen 误报）。
+- 参数：前端不再读自定义 `lio.yaml`，前后端都只读标准 ROS 参数文件，代码无默认值，缺失/未知参数启动即失败；
+  话题改为固定相对名由 launch remap。
+- 外参：前端 `sensor.body_from_lidar`、后端 `common.body.*` 删除，改为从 TF（URDF）查询；
+  前端自己发布 `world → base`（替代原 `lidar_fusion/base_tf` 节点），后端按消息时间查车体外参。
 
 ## 依赖与编译（Ubuntu 24.04 / ROS 2 Jazzy）
 
@@ -61,27 +66,35 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 
 | 参数 | 默认 | 说明 |
 | --- | --- | --- |
-| `lidar` | `dual` | `single` / `dual` |
+| `lidar` | `dual`（真车 `single`） | `single` / `dual` |
 | `mode` | `mapping` | `mapping` / `localization` |
 | `prior_map` | 空 | 先验地图目录；`localization` 时留空则用 `map_dir` |
 | `map_dir` | `<工作空间>/maps/sim`（真车 `maps/real`） | `~/save_map` 的保存目录，已加入 `.gitignore` |
 | `rviz` | `false` | 后端 RViz |
 
-配置：`bringup/config/sim_lio.yaml`（ZLIO）、`bringup/config/sim_backend.yaml`（继承 `backend/config/backend.yaml`）。
+配置：`bringup/config/sim/{lidar_fusion,frontend,backend}.yaml`（真车为 `bringup/config/real/`），各为完整参数文件，
+见下文[参数规则](#参数规则)。
 
-与真车配置不同的地方：
+仿真与真车配置不同的地方（均为 yaml 取值）：
 
-| 项 | 仿真值 | 原因 |
-| --- | --- | --- |
-| `initialization.minimum_directional_support` | 5（真车 15） | 出生点补给区静止视野几何单一，15 时初始化报最弱方向支撑不足 |
-| `body_from_lidar.translation` | 0 | 仿真 IMU 与雷达同原点 |
-| `imu_acceleration_scale` | 1.0 | gz IMU 单位 m/s²（Livox 为 g） |
-| 逐点时间 | 帧头时间 | gpu_lidar 一帧同一时刻渲染 |
+| 文件 / 键 | 仿真 | 真车 | 原因 |
+| --- | --- | --- | --- |
+| `frontend.yaml` `frames.imu` / `frames.lidar` | `mid360_link` / `mid360_link` | `mid360_imu_link` / `mid360_link` | 仿真 IMU 与雷达同原点（外参为单位阵）；真车为 Livox 内置 IMU |
+| `backend.yaml` `common.sensor_frame` | `mid360_link` | `mid360_imu_link` | 与前端 `frames.imu` 一致 |
+| `frontend.yaml` `imu_acceleration_scale` | 1.0 | 9.81 | gz IMU 单位 m/s²（Livox 为 g） |
+| `frontend.yaml` `initialization.minimum_directional_support` | 5 | 15 | 出生点补给区静止视野几何单一，15 时初始化报最弱方向支撑不足 |
+| `frontend.yaml` `minimum_range` / `maximum_range` | 0.3 / 40 m | 0.5 / 100 m | 仿真场地小、无近距离噪声 |
+| `lidar_fusion.yaml` `primary.*` / `secondary.*` 逐点时间 | 帧头时间 | 驱动时间字段 | gpu_lidar 一帧同一时刻渲染 |
 
 LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通的树 `map → lio_odom → base_link → URDF 树`：
-`lio_odom → base_link` 由 `lidar_fusion` 的 `base_tf` 用 `/odometry` 与 URDF 外参算出，ZLIO 自身 TF 关闭，
-`imu` 以静态 TF 挂在 `mid360_link` 下（仿真为恒等，真车为 `lio.yaml` 出厂外参）。后端只发布 `map → lio_odom`，
-不发 `map → body`。Gazebo 不发布真值 `/odom` / `odom` 帧。
+`lio_odom → base_link` 由 ZLIO 直接发布（`output.publish_tf: true`、`frames.base: base_link`）：里程计 `lio_odom → frames.imu`
+乘以按里程计时间戳从 TF 查到的 `frames.imu ← base_link`，云台 `yaw_joint` 转动也会跟随。IMU 系在 URDF 里已有父帧，
+所以里程计接在树根 `base_link` 上，而不是直接发 `lio_odom → frames.imu`。
+不再有手写的 `imu` 静态 TF：MID-360 内置 IMU 是 URDF 中的 `mid360_imu_link`（Livox 出厂外参），
+前端启动时从 TF 查一次 `frames.imu ← frames.lidar`（同在雷达上，固定）；后端按每条消息的时间戳查
+`common.sensor_frame ← common.body_frame`（`base_link`），超过 `common.body_extrinsic_tolerance` 时沿用上次有效值并告警，
+所以云台 `yaw_joint` 转动时车体位姿与 UWB 杆臂也跟随（启动位姿提示仍用启动时外参）。后端只发布 `map → lio_odom`，
+不发 `map → base_link`。Gazebo 不发布真值 `/odom` / `odom` 帧。
 
 ### 仿真实测（2026-10-27，RTX 4060 Ti，RTF 1.0）
 
@@ -103,49 +116,80 @@ ros2 launch bringup real.launch.py mode:=localization                 # 加载 ~
 ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 ```
 
-- MID-360：`livox_ros_driver2`，`xfer_format=0`（PointCloud2），网络配置在 `livox_ros_driver2/config/MID360_config.json`。
-- L2：宇树 `unilidar_sdk2`（需另行安装）。
-- IMU：MID-360 内置 IMU，`imu_acceleration_scale=9.81`，`body_from_lidar` 用 `frontend/config/lio.yaml` 的 Livox 出厂值。
-- TF：本文件启动 `robot_state_publisher`（URDF），驱动的 `frame_id` 用恒等静态 TF 挂到 `mid360_link` / `l2_link`。
-  云台 `yaw_joint` 若由底盘通信节点发布 `/joint_states`，设 `zero_joint_states:=false`。
-- 后端：`bringup/config/real_backend.yaml`。接 UWB 时在这里打开 `uwb.enabled` 并按
+- MID-360：`livox_ros_driver2`，参数在 `bringup/config/real/livox_driver.yaml`（`xfer_format=0` PointCloud2，`frame_id: mid360_link`，无需别名 TF）。
+  **雷达与主机 IP 改 `bringup/config/real/MID360_config.json`**，不要改驱动包里的那份。
+- L2：宇树 `unilidar_sdk2`（需另行安装）；其 launch 不归本仓库管，故保留 `l2_frame` → `l2_link` 的恒等静态 TF。
+- IMU：MID-360 内置 IMU，`imu_acceleration_scale=9.81`，外参是 URDF 中 `mid360_imu_link` 的 Livox 出厂值。
+- TF：本文件启动 `robot_state_publisher`（URDF）和 `joint_state_publisher`（`bringup/config/real/robot_state.yaml`）。
+  云台 `yaw_joint` 取自底盘发布的 `/chassis/joint_states`；该话题没有数据时，所有关节发 0。
+- 后端：`bringup/config/real/backend.yaml`。接 UWB 时在这里打开 `uwb.enabled` 并按
   `backend/docs/parameters.md` 配置。
 
-**以下默认值未在真车验证（本机无硬件），上车先核对**，改启动参数即可，不用改代码：
+**以下取值未在真车验证（本机无硬件），上车先核对**，改启动参数或 yaml 即可，不用改代码：
 
-| 参数 | 默认 | 核对方法 |
-| --- | --- | --- |
-| `mid360_topic` / `mid360_frame` / `imu_topic` | `/livox/lidar` / `livox_frame` / `/livox/imu` | `ros2 topic list` |
-| `mid360_time_field` / `_scale` / `_absolute` | `timestamp` / `1e-9` / `true` | `ros2 topic echo --once /livox/lidar --field fields`，看 `timestamp` 是绝对时间还是帧内偏移 |
-| `l2_topic` / `l2_frame` | `/unilidar/cloud` / `unilidar_lidar` | 同上 |
-| `l2_time_field` / `_scale` / `_absolute` | `time` / `1.0` / `false` | 同上 |
+| 位置 | 参数 / 键 | 当前值 | 核对方法 |
+| --- | --- | --- | --- |
+| launch 参数 | `mid360_topic` / `imu_topic` | `/livox/lidar` / `/livox/imu` | `ros2 topic list` |
+| `config/real/MID360_config.json` | 雷达 / 主机 IP | 驱动包原值 | 按车上网络修改 |
+| 底盘节点 | `/chassis/joint_states` 中的 `yaw_joint` | 未接入时为 0 | `ros2 topic echo /joint_states` |
+| `config/real/lidar_fusion.yaml` | `primary.time_field` / `primary.time_scale` / `primary.time_absolute` | `timestamp` / `1.0e-9` / `true` | `ros2 topic echo --once /livox/lidar --field fields`，看 `timestamp` 是绝对时间还是帧内偏移 |
+| launch 参数 | `l2_topic` / `l2_frame` | `/unilidar/cloud` / `unilidar_lidar` | 同上 |
+| `config/real/lidar_fusion.yaml` | `secondary.time_field` / `secondary.time_scale` / `secondary.time_absolute` | `time` / `1.0` / `false` | 同上 |
 
 逐点时间写错会让 ZLIO 去畸变出错甚至发散，务必确认。
+
+## 参数规则
+
+- **参数只有一个来源**：每个节点参数都来自 ROS 参数文件，代码中没有默认值；缺失参数或未知参数都会使启动失败。
+  参数文件不支持继承或合并。外参不是参数，只在 URDF 中维护。
+- **模块 example 与 bringup 配置**：`lidar_fusion`、`frontend`、`backend`、`lidar_calibration` 各有 `config/example.yaml`，只用于单独启动该模块和测试；
+  完整系统只读 `bringup/config/<platform>/{lidar_fusion,frontend,backend,lidar_calibration}.yaml`（`<platform>` 为 `sim` 或 `real`），
+  它们是完整副本，不引用 example。
+- **键集合检查**：增删或改名参数后，在工作空间根目录运行 `python3 tools/check_bringup_params.py`，
+  检查 bringup 各配置的键集合与对应模块 example 完全一致。
+- **launch 参数与 yaml 的分工**：launch 只提供 `params_file`、`use_sim_time`、话题 remap 和运行时选择
+  （`lidar`、`mode`、`prior_map`、`map_dir`、`rviz`，真车另有驱动与话题/frame 参数），这些不在 yaml 中出现；
+  其余调参项只写 yaml。后端的 `prior_map.enabled`、`prior_map.directory`、`trajectory.save_directory`
+  属于 launch 侧。
 
 ## 双雷达外参标定
 
 ```bash
-ros2 run lidar_calibration calibrate --ros-args -p use_sim_time:=true   # 真车去掉 use_sim_time
+# 仿真：先启动 sentry_gazebo sim.launch.py 与 bringup sim.launch.py lidar:=dual（提供 TF 与 /odometry）
+ros2 launch bringup calibration.launch.py platform:=sim
+# 真车：驱动、URDF TF 与前端须已在运行（如 real.launch.py lidar:=dual driver_l2:=true ...）
+ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar_extrinsic.yaml
 ```
 
-流程：同步帧对 → 体素降采样 → PCL GICP（初值取 URDF）→ 质量门 → 多帧中值剔除 + 加权平均。
-质量门：只收静止帧（IMU 判定）；每帧须与已接受帧相距 ≥0.3 m 或 ≥20°（ZLIO `/odometry`）；重叠区法向信息矩阵
-最小特征值 ≥0.05（几何退化检测）；点到面 RMSE ≤0.05 m。
+| launch 参数 | 默认 | 说明 |
+| --- | --- | --- |
+| `platform` | `sim` | `sim` / `real`；选择 `bringup/config/<platform>/lidar_calibration.yaml`，仿真时 `use_sim_time=true` |
+| `output_file` | `/tmp/lidar_extrinsic.yaml` | 结果文件 |
+| `primary_topic` / `secondary_topic` / `imu_topic` / `odometry_topic` | 空（取平台默认） | 仿真 `/lidar_mid360/points`、`/lidar_l2/points`、`/lidar_mid360/imu`、`/odometry`；真车 `/livox/lidar`、`/unilidar/cloud`、`/livox/imu`、`/odometry` |
 
-采集方法：把车停到**墙角、台阶旁等结构丰富处**，换位置和朝向，每处静止 2 s 以上，收满 `frames`（默认 6，至少 3）。
+标定入口只启动标定节点，不启动驱动、URDF 或前端：初值、点云帧变换与结果换算都要 TF，位姿多样性检查要 ZLIO `/odometry`。
+参数、质量门与输出格式详见 [lidar_calibration/README.md](lidar_calibration/README.md)。
+
+流程：同步帧对 → 体素降采样 → PCL GICP（初值取 URDF，`initial_guess_from_tf`）→ 质量门 → 多帧中值剔除 + 加权平均。
+质量门：只收静止帧（IMU 角速度与里程计线速度都低于阈值）；每帧须与已接受帧相距 ≥0.3 m 或 ≥20°
+（ZLIO `/odometry`，`require_distinct_poses`）；重叠区法向信息矩阵最小特征值 ≥0.09（几何退化检测）；点到面 RMSE ≤0.05 m。
+
+采集方法：把车停到**墙角、台阶旁等结构丰富处**，换位置和朝向，每处静止 2 s 以上，收满 `frames`（真车 6、仿真 4，至少 3）。
 只看得到地面的位置会被判为 `degenerate_geometry` 拒收，这是故意的：单位置标定曾得出平移错 0.72 m 但帧间高度一致的结果。
 
-输出 `/tmp/lidar_extrinsic.yaml`，含 L2→MID-360 变换和可直接填回 URDF 的 `l2_joint` origin。
-仿真实测（3 帧）：平移误差 2.8 mm，旋转误差 0.078°。
+输出 `output_file`，含 L2→MID-360 变换和可直接填回 URDF 的 `l2_joint` origin。
+仿真实测（2026-10-31，4 帧，`tools/sim_tests` 的 `calib` 模式）：平移误差约 1 cm（标准差 1.4 cm），旋转误差 < 1°。
 
 ## 已知问题
 
 - 后端偶尔打印 `invalid ZLIO observation frame/time/point layout`（一次运行 0–2 条），原因未查，未见对精度的影响。
-- 仿真出生点附近结构少，标定接受率低（实测约 5%）。
-- 真车路径只验证了编译和 launch 展开。
+- 仿真出生点附近结构少，标定在该处全部因 `degenerate_geometry` 拒收，需开到拐角采集。
+- 单雷达仿真：前端在出生点初始化失败（最弱方向支撑不足），待查。
+- 绑架后后端可能接受错误的 Scan Context 匹配并保持 NORMAL 数秒（场地中心对称）；`recovery.confirmations` 改为 3 无改善。
+- 真车路径只验证了编译、launch 展开与无驱动启动（外参、云台关节跟随）。
 
 ## 上游文档
 
 地图制作（保存、清理、CloudCompare 精修、生成先验地图包）沿用上游流程，见
-`reference/z-localization/README.md`；参数说明见 `frontend/docs/parameters.md`、`backend/docs/parameters.md`，
+`reference/z-localization/README.md`；参数说明见 `frontend/docs/parameters.md`、`backend/docs/parameters.md`（取值以本仓库 yaml 为准），
 设计说明见 `reference/z-localization/docs/design.md`。

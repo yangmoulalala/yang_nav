@@ -12,7 +12,7 @@
 
 ## 1. 后端做什么
 
-前端 ZLIO 只给出局部里程计（`lio_odom → imu`），会慢慢漂移。后端负责把它放进全局地图坐标系 `map`：
+前端 ZLIO 只给出局部里程计（`lio_odom →` 前端 `frames.imu`，仿真 `mid360_link`、真车 `mid360_imu_link`），会慢慢漂移。后端负责把它放进全局地图坐标系 `map`：
 
 | 模式 | 做什么 | 输出 |
 | --- | --- | --- |
@@ -25,9 +25,9 @@
 
 | 输出 | 说明 |
 | --- | --- |
-| TF `map → lio_odom` | 与 `base_tf` 发的 `lio_odom → base_link` 组成 `map → base_link`，导航首选 |
+| TF `map → lio_odom` | 与 ZLIO 发的 `lio_odom → base_link` 组成 `map → base_link`，导航首选 |
 | `/backend_node/localization_pose` | map 系车体位姿 + 协方差 |
-| `/localization/odometry` | map 系传感器（imu）位姿，高频 |
+| `/localization/odometry` | map 系传感器（`common.sensor_frame`）位姿，高频 |
 | `/backend_node/localization_state` | 状态文本，含 `pose_trusted`（transient local） |
 | `/localization/lio_world_cloud` | map 系实时点云 |
 
@@ -53,29 +53,22 @@ ros2 launch bringup real.launch.py lidar:=single mode:=mapping
 | `mode` | `mapping` | `mapping` 建图；`localization` 加载先验地图 |
 | `map_dir` | `~/yang_nav/maps/sim`（真车 `maps/real`） | `save_map` 写入的目录；`localization` 且未给 `prior_map` 时从这里加载 |
 | `prior_map` | 空 | 指定其他先验地图目录（绝对路径） |
-| `rviz` | `false` | 启动后端 RViz，并打开地图、轨迹、回环、配准调试等可视化话题 |
+| `rviz` | `false` | 启动后端 RViz；可视化话题开关只由参数文件的 `visualization.*` 决定 |
 | `lidar` | 仿真 `dual`，真车 `single` | 是否融合 L2 |
-| `platform` | `sim` | `localization.launch.py` / 各模块用；`sim.launch.py`、`real.launch.py` 已固定 |
 
-配置文件：仿真 `bringup/config/sim/backend.yaml`，真车 `bringup/config/real/backend.yaml`，二者都 `extends` 包内默认的 `backend/config/backend.yaml`，只覆盖坐标系名、车体外参、`lidar_height`、关闭 UWB 等少数项。
+配置文件：仿真 `bringup/config/sim/backend.yaml`，真车 `bringup/config/real/backend.yaml`。二者都是完整参数文件（不再继承，键集合须与 `backend/config/example.yaml` 一致，用 `python3 tools/check_bringup_params.py` 检查），由 `localization.launch.py` 作为 `params_file` 传入。车体外参不在其中，运行期间按消息时间戳从 TF（URDF + `joint_state_publisher`）查询 `common.sensor_frame ← common.body_frame`，容差由 `common.body_extrinsic_tolerance` 给出。
 
 ### 2.2 单独启动后端
 
-前端已在运行时，可以只启动/重启后端模块（配置和 `map_dir` 按 `platform` 自动选择）：
+前端已在运行时，可以只启动/重启 backend 包的 launch（调参时只重启它）。用 bringup 的参数文件即可与全套启动一致：
 
 ```bash
-ros2 launch bringup frontend.launch.py                               # 终端 A：融合 + 前端
-ros2 launch bringup backend.launch.py mode:=localization rviz:=true  # 终端 B：后端，调参时只重启它
+ros2 launch backend backend.launch.py \
+  params_file:=$(ros2 pkg prefix bringup)/share/bringup/config/sim/backend.yaml use_sim_time:=true \
+  mode:=localization prior_map:=/abs/map save_dir:=/abs/save rviz:=true
 ```
 
-脱离 bringup 直接用 backend 包的 launch：
-
-```bash
-ros2 launch backend backend.launch.py config_file:=/abs/backend.yaml \
-  mode:=localization prior_map:=/abs/map rviz:=true use_sim_time:=false
-```
-
-`backend.launch.py` 的 `mode` 多一个取值 `config`（默认）：完全按 YAML 的 `prior_map.enabled`。另有 `save_dir` 覆盖 `trajectory.save_directory`。
+`backend.launch.py` 参数：`params_file`（默认包内 `config/example.yaml`）、`use_sim_time`、`mode`（只有 `mapping` / `localization`）、`prior_map`（`localization` 必填）、`save_dir`（写入 `trajectory.save_directory`，留空不可保存）、`rviz`。`prior_map.enabled`、`prior_map.directory`、`trajectory.save_directory` 只由 launch 提供，不写入 yaml。单独运行时 TF 中须已有 `common.sensor_frame ← common.body_frame`。
 
 ### 2.3 建图 → 保存 → 定位
 
@@ -97,7 +90,7 @@ ros2 launch bringup sim.launch.py mode:=localization rviz:=true
 上一次 launch 若被强制关闭，Python 节点可能残留，导致 `/lidar/points` 有两个发布者，前端收到重复帧、定位明显变差。启动前先确认：
 
 ```bash
-pgrep -af 'merge_node|base_tf|zlio_node|backend_node'   # 应为空
+pgrep -af 'merge_node|zlio_node|backend_node'           # 应为空
 ros2 topic info /lidar/points                            # 启动后 Publisher count 应为 1
 ```
 
@@ -236,15 +229,15 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ## 6. 主要参数速查
 
-只列常调的，括号内为当前默认值（bringup 未覆盖时）。完整列表见 `backend/docs/parameters.md`。
+只列常调的，括号内为 `bringup/config/<platform>/backend.yaml` 中的当前值。完整列表见 `backend/docs/parameters.md`。
 
 ### 6.1 坐标与外参 `common`
 
 | 参数 | 说明 |
 | --- | --- |
 | `odom_frame` | 前端里程计帧；bringup 设为 `lio_odom` |
-| `sensor_frame` | 前端位姿/点云所在帧，`imu` |
-| `body.rotation.*`、`body.offset.*` | 传感器到车体外参。bringup 用 URDF 正解（roll 105°，offset (-0.056, 0.164, -0.137)）。URDF 改动或重新标定后必须同步；可用 `body_calibration.launch.py` 标定 |
+| `sensor_frame` | 前端位姿/点云所在帧，与前端 `frames.imu` 一致（仿真 `mid360_link`，真车 `mid360_imu_link`） |
+| `body_frame` | 车体帧（`base_link`）。传感器到车体外参不在 yaml 中：按消息时间戳从 TF（URDF）查询 `sensor_frame ← body_frame`，云台 `yaw_joint` 变化被跟踪（位姿输出与 UWB 杆臂）。重新标定（`body_calibration.launch.py`）后把结果写入 URDF |
 | `scan_context.lidar_height` | 雷达离地高度（0.2 m），影响描述子 |
 | `descriptor_type` | `scan_context`（默认）或 `gprobe` |
 
@@ -252,8 +245,8 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 | 参数 | 说明 |
 | --- | --- |
-| `prior_map.enabled` / `directory` | bringup 由 `mode`、`map_dir`、`prior_map` 覆盖 |
-| `trajectory.save_directory` | 由 `map_dir`（bringup）或 `save_dir`（backend.launch）覆盖 |
+| `prior_map.enabled` / `directory` | 仅 launch：由 `mode`、`prior_map`（bringup 另有 `map_dir` 兜底）提供，不在 yaml 中 |
+| `trajectory.save_directory` | 仅 launch：由 `map_dir`（bringup）或 `save_dir`（backend.launch）提供 |
 | `trajectory.save_on_shutdown` | 正常退出时自动保存（false） |
 | `trajectory.map_voxel_resolution` | 保存的 `map.pcd` 体素（0.15 m） |
 

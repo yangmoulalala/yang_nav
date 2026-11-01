@@ -14,7 +14,8 @@ ZLIO 是激光惯性里程计（LIO）：用 IMU 做高频运动预测，用 LiD
 ```
 /lidar_mid360/points ─┐
 /lidar_l2/points ─────┴─▶ lidar_merge ──/lidar/points──┐
-/lidar_mid360/imu（真车 /livox/imu）────────────────────┴─▶ /zlio ─┬─ /odometry          ─▶ lio_base_tf（TF lio_odom→base_link）、标定工具
+/lidar_mid360/imu（真车 /livox/imu）────────────────────┴─▶ /zlio ─┬─ /odometry          ─▶ 标定工具
+                                                                   ├─ /tf                ─▶ lio_odom → base_link（frames.base）
                                                                    ├─ /lidar_odometry
                                                                    ├─ /frontend/frame    ─▶ backend_node（观测）
                                                                    ├─ /frontend/odometry ─▶ backend_node（高频预测）
@@ -29,7 +30,7 @@ ZLIO 是激光惯性里程计（LIO）：用 IMU 做高频运动预测，用 LiD
 | `/frontend/odometry` | ≈ IMU 频率 | `/odometry` 加上进程身份和代次，供后端区分新旧数据 |
 | `/frontend/session` | 事件触发 | transient local；启动、重置、输入中断（`reset_required`）、处理失败（`failed`）时发布 |
 
-在 bringup 中 ZLIO **不发 TF**（`publish_tf: false`）：`imu` 已经通过静态 TF 挂在 URDF 的 `mid360_link` 下，`lio_odom → base_link` 由 `lio_base_tf` 根据 `/odometry` 和 URDF 外参换算发布，否则 `imu` 会有两个父帧。
+在 bringup 中 ZLIO 直接发布 `lio_odom → base_link` TF（`output.publish_tf: true`、`frames.base: base_link`）：IMU 坐标系（`frames.imu`，仿真 `mid360_link`，真车 `mid360_imu_link`）在 URDF 树上已有父帧，直接发 `lio_odom → frames.imu` 会让它有两个父帧，所以 ZLIO 把里程计乘以按里程计时间戳从 TF 查到的 `frames.imu ← base_link`，接到树根 `base_link`，云台 `yaw_joint` 转动也会跟随。下文的“`imu` 系”均指 `frames.imu`。
 
 ---
 
@@ -37,7 +38,7 @@ ZLIO 是激光惯性里程计（LIO）：用 IMU 做高频运动预测，用 LiD
 
 ### 2.1 随 bringup 启动（推荐）
 
-`bringup` 总入口会同时拉起雷达融合、ZLIO、`base_tf` 和后端（`sim.launch.py` / `real.launch.py` 等同 `localization.launch.py platform:=sim|real`）：
+`bringup` 总入口会同时拉起雷达融合、ZLIO 和后端（`sim.launch.py` / `real.launch.py` 只管数据源，共用管线在 `localization.launch.py`，参数目录为 `bringup/config/sim|real`）：
 
 ```bash
 ros2 launch sentry_gazebo sim.launch.py            # 仿真
@@ -46,49 +47,45 @@ ros2 launch bringup sim.launch.py lidar:=dual
 ros2 launch bringup real.launch.py lidar:=single   # 真车
 ```
 
-bringup（`frontend.launch.py`）传给 `/zlio` 的参数，平台差异来自 `bringup_common.py` 的 `PLATFORMS`：
+bringup 的 `localization.launch.py` include `frontend/launch/frontend.launch.py`，参数文件为 `bringup/config/<platform>/frontend.yaml`（节点参数唯一来源），话题由 launch 重映射：
 
-| 参数 | 仿真 | 真车 | 说明 |
+| 参数 / 键 | 仿真 | 真车 | 说明 |
 | --- | --- | --- | --- |
-| `config_file` | `bringup/config/sim/lio.yaml` | `bringup/config/real/lio.yaml` | 算法 YAML（启动参数 `lio_config` 可覆盖） |
-| `input_type` | `pointcloud2` | `pointcloud2` | 两路雷达先由 `lidar_merge` 合并成 PointCloud2 |
-| `lidar_topic` | `/lidar/points` | `/lidar/points` | 合并点云，`mid360_link` 系，逐点时间字段 `offset_time`（uint32 ns，相对帧头） |
-| `imu_topic` | `/lidar_mid360/imu` | `/livox/imu` | MID-360 内置 IMU |
-| `imu_acceleration_scale` | `1.0`（gz 输出 m/s²） | `9.81`（Livox 输出 g） | 填错会导致初始化失败或漂移 |
-| `world_frame` / `body_frame` | `lio_odom` / `imu` | 同左 | 与后端 `common.odom_frame` / `sensor_frame` 一致 |
-| `coordinated_reset` | `true` | `true` | 输入中断由后端协调重置（第 4 节） |
-| `publish_tf` | `false` | `false` | 见第 1 节 |
+| launch `params_file` | `bringup/config/sim/frontend.yaml` | `bringup/config/real/frontend.yaml` | 完整参数文件 |
+| `input.type` | `pointcloud2` | `pointcloud2` | 两路雷达先由 `lidar_merge` 合并成 PointCloud2 |
+| launch `lidar_topic` | `/lidar/points` | `/lidar/points` | 合并点云，`mid360_link` 系，逐点时间字段 `offset_time`（uint32 ns，相对帧头） |
+| launch `imu_topic` | `/lidar_mid360/imu` | `/livox/imu` | MID-360 内置 IMU |
+| `input.imu_acceleration_scale` | `1.0`（gz 输出 m/s²） | `9.81`（Livox 输出 g） | 填错会导致初始化失败或漂移 |
+| `frames.world` / `frames.imu` / `frames.lidar` | `lio_odom` / `mid360_link` / `mid360_link` | `lio_odom` / `mid360_imu_link` / `mid360_link` | `world`、`imu` 与后端 `common.odom_frame` / `common.sensor_frame` 一致 |
+| `session.coordinated_reset` | `true` | `true` | 输入中断由后端协调重置（第 4 节） |
+| `frames.base` | `base_link` | `base_link` | TF 输出子坐标系（URDF 树根），见第 1 节 |
+| `output.publish_tf` | `true` | `true` | 发布 `lio_odom → base_link`，见第 1 节 |
+| `output.base_extrinsic_tolerance` | `0.2` | `0.2` | 按时间戳查不到 `frames.imu ← base_link` 时，最新变换允许的最大时差（s）；超过则沿用上次有效值并告警 |
 
-`point_time_field` 等逐点时间参数保持默认（`offset_time`、`1e-9`、相对时间），正好对应 `lidar_merge` 的输出格式。各雷达原始的时间字段约定在 `lidar_merge` 里处理（真车的 `mid360_time_*`、`l2_time_*`，见 `PLATFORMS`）。
+`input.point_time_*` 为 `offset_time`、`1e-9`、相对时间，正好对应 `lidar_merge` 的输出格式。各雷达原始的时间字段约定在 `lidar_merge` 里处理（`bringup/config/<platform>/lidar_fusion.yaml` 的 `primary.*`、`secondary.*`）。
 
 ### 2.2 单独启动前端
 
-推荐用 bringup 的前端模块，参数与全套启动完全一致（话题、`lio_odom`、不发 TF、imu 静态 TF、base_tf）：
+frontend 包只有一个 launch：`frontend.launch.py`，参数为 `params_file`、`use_sim_time`、`lidar_topic`、`imu_topic`、`visualization`：
 
 ```bash
-ros2 launch bringup frontend.launch.py                    # 仿真：融合 + 前端
-ros2 launch bringup frontend.launch.py fusion:=false      # 只前端，融合用 fusion.launch.py 另起
-ros2 launch bringup frontend.launch.py platform:=real     # 真车（还需 sensors.launch.py）
-```
+# 只启动里程计（默认 params_file 为包内 config/example.yaml，订阅 Livox CustomMsg：/livox/lidar、/livox/imu）
+ros2 launch frontend frontend.launch.py params_file:=/abs/frontend.yaml
 
-模块划分和平台参数见 `src/z-localization/bringup/README.md`。
-
-下面是 frontend 包自带的 launch，脱离本机器人单独使用时才用：
-
-```bash
-# 只启动里程计（默认直接订阅 Livox CustomMsg：/livox/lidar、/livox/imu）
-ros2 launch frontend lio.launch.py config:=/abs/lio.yaml
+# 用本机器人的仿真参数单独跑前端（融合另起：ros2 launch lidar_fusion merge.launch.py ...）
+ros2 launch frontend frontend.launch.py params_file:=$(ros2 pkg prefix bringup)/share/bringup/config/sim/frontend.yaml \
+  use_sim_time:=true lidar_topic:=/lidar/points imu_topic:=/lidar_mid360/imu
 
 # 里程计 + 可视化节点 + 前端 RViz
-ros2 launch frontend frontend.launch.py config:=/abs/lio.yaml
+ros2 launch frontend frontend.launch.py params_file:=/abs/frontend.yaml visualization:=true
 ```
 
-单独启动时默认 `world_frame=odom`、`publish_tf=true`，与 bringup 不同；不要和 bringup 同时运行。可视化节点额外发布 `/frontend/cloud_registered`、`/frontend/cloud_map`、`/frontend/path`，只用于显示。
+前端启动时从 TF 查一次 `frames.imu ← frames.lidar`，该变换须已由 URDF（`robot_state_publisher`）或手动 `static_transform_publisher` 发布。`config/example.yaml` 为 `frames.world=odom`、`frames.base=imu`（直接发布 `odom → imu`），与 bringup 不同；不要和 bringup 同时运行。可视化节点额外发布 `/frontend/cloud_registered`、`/frontend/cloud_map`、`/frontend/path`，只用于显示。
 
 ### 2.3 启动前检查
 
 ```bash
-pgrep -af 'merge_node|base_tf|zlio_node|backend_node'   # 启动前应为空
+pgrep -af 'merge_node|zlio_node|backend_node'           # 启动前应为空
 ros2 topic info /lidar/points                            # 启动后 Publisher count 必须为 1
 ```
 
@@ -112,7 +109,7 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 4. 检查几何约束：有效平面数 ≥ `minimum_planes`（10），最弱方向的平面约束 ≥ `minimum_directional_support`；
 5. 恢复初始协方差；失败且 `uncertainty.allow_configured_fallback: true` 时改用 `state_variance`。
 
-任一步不满足就清空重来（同一代次）。仿真出生点在补给区角落，静止视野几何单一，所以 `config/sim/lio.yaml` 把 `minimum_directional_support` 从 15 降到 5；真车仍为 15。
+任一步不满足就清空重来（同一代次）。仿真出生点在补给区角落，静止视野几何单一，所以 `bringup/config/sim/frontend.yaml` 把 `minimum_directional_support` 从 15 降到 5；真车仍为 15。
 
 ### 3.3 在线滤波
 
@@ -174,9 +171,9 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 
 | 项 | 约定 |
 | --- | --- |
-| `sensor.body_from_lidar` | LiDAR → IMU 的外参。输入点云的 `frame_id` 不会触发 TF 转换，完全按这个外参处理 |
-| 仿真 | 合并点云在 `mid360_link`，gz IMU 与雷达同原点，外参为单位阵（`config/sim/lio.yaml`）；`imu` 用恒等静态 TF 挂在 `mid360_link` 下 |
-| 真车 | 外参用 Livox 出厂值：旋转单位阵，平移 `[-0.011, -0.02329, 0.04412]`（`bringup/config/real/lio.yaml`）；`frontend.launch.py` 用 `imu_offset`（反向平移）把 `imu` 挂在 `mid360_link` 下。改外参时两处要同步 |
+| LiDAR → IMU 外参 | 不在参数文件中。启动时从 TF 查一次 `frames.imu ← frames.lidar` 并固定使用；输入点云的 `frame_id` 不会逐帧触发 TF 转换 |
+| 仿真 | 合并点云在 `mid360_link`，gz IMU 与雷达同原点：`frames.imu = frames.lidar = mid360_link`，外参为单位阵 |
+| 真车 | `frames.imu = mid360_imu_link`（URDF 中的 Livox 出厂外参，平移 `[-0.011, -0.02329, 0.04412]`），`frames.lidar = mid360_link`。外参只在 URDF 一处维护 |
 | IMU | 角速度 rad/s；加速度乘 `imu_acceleration_scale` 后为 m/s²（含重力）；不使用消息里的 orientation 和协方差 |
 | 导出点云 | float32 XYZ，统一到观测结束时刻的 IMU 系，不含强度和时间字段 |
 
@@ -186,7 +183,7 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 
 ## 6. 主要参数速查
 
-仿真值来自 `config/sim/lio.yaml`，真车值来自 `bringup/config/real/lio.yaml`；未标注时两者相同。完整列表见 `frontend/docs/parameters.md`。
+仿真值来自 `bringup/config/sim/frontend.yaml`，真车值来自 `bringup/config/real/frontend.yaml`；未标注时两者相同。完整列表见 `frontend/docs/parameters.md`。
 
 ### 6.1 传感器 `sensor`
 
@@ -195,7 +192,6 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 | `gravity` | 9.81 | 必填，范围 [9.6, 10.0] |
 | `minimum_range` | 0.3 / 0.5 m | 近距回波过滤，用于去掉车体自身点 |
 | `maximum_range` | 40 / 100 m | 远距回波过滤；RMUL 场地 12 m × 8 m，40 m 足够 |
-| `body_from_lidar.*` | 见第 5 节 | 必填 |
 
 ### 6.2 初始化 `initialization`
 
@@ -247,7 +243,7 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 
 ### 7.1 重复的雷达融合节点
 
-上一次 launch 被强制关闭时，`merge_node`、`base_tf` 可能残留。`/lidar/points` 出现两个发布者后，ZLIO 收到重复、乱序的帧，日志出现 `IMU input interrupted`，后端随之频繁 `SUSPECT`/`LOST`。启动前按 2.3 检查。（正常 Ctrl-C 退出时的报错已在 `f14c083` 修复。）
+上一次 launch 被强制关闭时，`merge_node` 可能残留。`/lidar/points` 出现两个发布者后，ZLIO 收到重复、乱序的帧，日志出现 `IMU input interrupted`，后端随之频繁 `SUSPECT`/`LOST`。启动前按 2.3 检查。（正常 Ctrl-C 退出时的报错已在 `f14c083` 修复。）
 
 ### 7.2 仿真性能
 
@@ -286,6 +282,6 @@ ros2 topic echo --once /lidar_mid360/imu --field linear_acceleration   # 单位�
 | `/odometry` 一直没有输出 | 初始化未通过 | 车是否静止、视野是否有足够平面；`imu_acceleration_scale` 是否正确；仿真可看 `minimum_directional_support` |
 | `IMU input interrupted` | IMU 断流、时间回退、重复节点 | `ros2 topic hz` IMU；按 2.3 检查重复节点；RTF 是否过低 |
 | `/frontend/session` 的 `failed=true` | 处理错误（数值、地图容量） | 前端日志 ERROR；需要通过后端 `/localization_reset` 重置 |
-| 静止时位姿漂移 | IMU 单位或零偏错误、外参错误 | `imu_acceleration_scale`、`body_from_lidar` |
+| 静止时位姿漂移 | IMU 单位或零偏错误、外参错误 | `imu_acceleration_scale`、URDF 中 `frames.imu ← frames.lidar` 外参 |
 | `lidar_updated=false` 频繁 | 点面匹配不足 | 场景退化、`sampling.minimum_points`、`minimum_range` 是否把有效点滤掉 |
 | 转弯时轨迹扭曲 | 逐点时间错误，去畸变失效 | `point_time_*` / `lidar_merge` 时间字段配置 |

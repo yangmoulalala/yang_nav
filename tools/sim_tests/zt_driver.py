@@ -3,6 +3,7 @@
     zt_driver.py mapping  OUT.json [laps]
     zt_driver.py localize OUT.json [laps]   (drives laps, then kidnaps and watches recovery)
     zt_driver.py spin     OUT.json 0        (spins in place at the spawn point, slow then fast)
+    zt_driver.py calib    OUT.json 0        (parks at structured spots with varied headings for dual-LiDAR calibration)
     append 'spin' to mapping/localize to turn one full circle at every waypoint
 """
 import json
@@ -30,6 +31,9 @@ from tf2_ros import Buffer, TransformListener
 WORLD = 'rmul_2027'
 LAP = [(1.25, 1.5), (6.5, 1.5), (6.5, 2.5), (1.25, 2.5), (1.25, 6.75)]
 KIDNAP = (6.0, 1.5, math.pi / 2)
+# 标定采集点：路线上的拐角与中央，每处四个航向，静止采集；仿真中只有部分航向的几何能通过 support 门。
+CALIB_SPOTS = [(x, y, h) for x, y in ((1.25, 1.5), (6.5, 1.5), (6.5, 2.5), (1.25, 2.5), (1.25, 6.75))
+               for h in (0.0, 1.6, 3.1, -1.6)]
 
 
 def yaw_of(q):
@@ -143,6 +147,24 @@ class Driver(Node):
             self.record(tag)
         self.stop()
 
+    def turn_to(self, heading, tag, timeout=30):
+        end = time.monotonic() + timeout
+        while time.monotonic() < end:
+            rclpy.spin_once(self, timeout_sec=0.02)
+            with self.lock:
+                gt = self.gt
+            if gt is None:
+                continue
+            err = wrap(heading - gt[3])
+            if abs(err) < 0.03:
+                break
+            t = Twist()
+            t.angular.z = max(-0.8, min(0.8, 2.0 * err))
+            self.cmd.publish(t)
+            self.record(tag)
+        self.heading = heading
+        self.stop()
+
     def hold(self, seconds, tag):
         end = time.monotonic() + seconds
         while time.monotonic() < end:
@@ -186,7 +208,7 @@ def main():
     mode, out = sys.argv[1], sys.argv[2]
     laps = int(sys.argv[3]) if len(sys.argv) > 3 else 2
     extra = sys.argv[4] if len(sys.argv) > 4 else ''
-    if mode == 'spin':
+    if mode in ('spin', 'calib'):
         laps = 0
     rclpy.init()
     d = Driver()
@@ -206,6 +228,11 @@ def main():
             d.hold(2, f'lap{lap}_end')
         if mode == 'mapping':
             result['services'].append(d.call('/backend_node/save_map'))
+        elif mode == 'calib':
+            for x, y, heading in CALIB_SPOTS:
+                d.drive([(x, y)], 'calib_move')
+                d.turn_to(heading, 'calib_move')
+                d.hold(6, 'calib_hold')
         elif mode == 'spin':
             d.spin(2, 'spin', 0.6)
             d.hold(3, 'spin_end')

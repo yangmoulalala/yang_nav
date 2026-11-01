@@ -12,11 +12,18 @@ cd ~/yang_nav
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
-setsid bash -c "ros2 launch sentry_gazebo sim.launch.py > $OUT/sim.log 2>&1 & sleep 12; ros2 launch bringup sim.launch.py lidar:=dual mode:=$MODE map_dir:=$MAP rviz:=false > $OUT/bringup.log 2>&1; wait" &
+# LIDAR=single|dual（默认 dual）；CALIB=1 时同时启动双雷达标定，结果写 $OUT/extrinsic.yaml
+LIDAR=${LIDAR:-dual}
+CALIB_CMD=""
+if [ "${CALIB:-0}" = 1 ]; then
+  CALIB_CMD="(sleep 15; ros2 launch bringup calibration.launch.py platform:=sim output_file:=$OUT/extrinsic.yaml > $OUT/calib.log 2>&1) &"
+fi
+setsid bash -c "ros2 launch sentry_gazebo sim.launch.py > $OUT/sim.log 2>&1 & sleep 12; $CALIB_CMD ros2 launch bringup sim.launch.py lidar:=$LIDAR mode:=$MODE map_dir:=$MAP rviz:=false > $OUT/bringup.log 2>&1; wait" &
 PGID=$!
 trap 'kill -INT -- -$PGID 2>/dev/null; sleep 4; kill -KILL -- -$PGID 2>/dev/null' EXIT
 sleep 20
 if [ "$MODE" = mapping ]; then DMODE=mapping; else DMODE=localize; fi
+[ "${CALIB:-0}" = 1 ] && DMODE=calib
 DMODE=${5:-$DMODE}
 timeout 600 python3 "$HERE/zt_driver.py" $DMODE "$OUT/result.json" "$LAPS" ${6:-} > "$OUT/driver.log" 2>&1
 echo "driver exit=$?"
