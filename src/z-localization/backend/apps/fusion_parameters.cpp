@@ -16,7 +16,6 @@ namespace backend::ros {
 void ParameterReader::loadUwb() {
     getParam("uwb/enabled", parameters_.runtime.uwb.enabled);
     getParam("uwb/use_z", parameters_.runtime.uwb.use_z);
-    getParam("uwb/topic", parameters_.input.uwb_topic);
     getParam("uwb/frame", parameters_.input.uwb_frame);
     if (parameters_.input.uwb_frame.empty()) {
         throw std::invalid_argument("uwb.frame must not be empty");
@@ -42,10 +41,10 @@ void ParameterReader::loadUwbFrameCalibration() {
     getParam("uwb/estimate_zero_pose_online", parameters_.runtime.uwb.estimate_zero_pose_online);
     Eigen::Vector3d uwb_zero_position = Eigen::Vector3d::Zero();
     double uwb_zero_yaw_deg = 0.0;
-    getParam<double>("uwb/zero_pose/x", uwb_zero_position.x(), 0.0);
-    getParam<double>("uwb/zero_pose/y", uwb_zero_position.y(), 0.0);
-    getParam<double>("uwb/zero_pose/z", uwb_zero_position.z(), 0.0);
-    getParam<double>("uwb/zero_pose/yaw_deg", uwb_zero_yaw_deg, 0.0);
+    getParam("uwb/zero_pose/x", uwb_zero_position.x());
+    getParam("uwb/zero_pose/y", uwb_zero_position.y());
+    getParam("uwb/zero_pose/z", uwb_zero_position.z());
+    getParam("uwb/zero_pose/yaw_deg", uwb_zero_yaw_deg);
     if (!uwb_zero_position.allFinite() || !std::isfinite(uwb_zero_yaw_deg)) {
         throw std::invalid_argument("uwb.zero_pose calibration contains a non-finite value");
     }
@@ -53,21 +52,18 @@ void ParameterReader::loadUwbFrameCalibration() {
         yawGuess(degreesToRadians(uwb_zero_yaw_deg), uwb_zero_position);
 }
 
-/// 读取天线机体位置并传播到传感器坐标系，同时构造位置测量协方差。
+/// 读取天线机体位置并构造位置测量协方差；换算到传感器系由 applyBodyExtrinsic() 完成。
 void ParameterReader::loadUwbMeasurementModel() {
-    Eigen::Vector3d antenna_body = Eigen::Vector3d::Zero();
-    getParam<double>("uwb/antenna_position_body/x", antenna_body.x(), 0.0);
-    getParam<double>("uwb/antenna_position_body/y", antenna_body.y(), 0.0);
-    getParam<double>("uwb/antenna_position_body/z", antenna_body.z(), 0.0);
-    parameters_.runtime.uwb.T_sensor_body =
-        parameters_.input.body_transform.bodyPoseFromSensorPose(Eigen::Matrix4d::Identity());
-    parameters_.runtime.uwb.antenna_position_sensor =
-        parameters_.runtime.uwb.T_sensor_body.block<3, 3>(0, 0) * antenna_body +
-        parameters_.runtime.uwb.T_sensor_body.block<3, 1>(0, 3);
+    getParam("uwb/antenna_position_body/x", parameters_.input.antenna_position_body.x());
+    getParam("uwb/antenna_position_body/y", parameters_.input.antenna_position_body.y());
+    getParam("uwb/antenna_position_body/z", parameters_.input.antenna_position_body.z());
+    if (!parameters_.input.antenna_position_body.allFinite()) {
+        throw std::invalid_argument("uwb.antenna_position_body contains a non-finite value");
+    }
     double uwb_xy_std = 0.2;
     double uwb_z_std = 0.3;
-    getParam<double>("uwb/position_std_xy", uwb_xy_std, 0.2);
-    getParam<double>("uwb/position_std_z", uwb_z_std, 0.3);
+    getParam("uwb/position_std_xy", uwb_xy_std);
+    getParam("uwb/position_std_z", uwb_z_std);
     if (!std::isfinite(uwb_xy_std) || uwb_xy_std <= 0.0) {
         RCLCPP_WARN(node_.get_logger(),
                     "uwb.position_std_xy must be finite and positive; using "
@@ -93,17 +89,17 @@ void ParameterReader::loadUwbBootstrap() {
     getParam("uwb/bootstrap/inlier_threshold", parameters_.runtime.uwb.bootstrap.inlier_threshold);
     getParam("uwb/bootstrap/max_rmse", parameters_.runtime.uwb.bootstrap.max_rmse);
     double bootstrap_max_yaw_std_deg = 10.0;
-    getParam<double>("uwb/bootstrap/max_yaw_std_deg", bootstrap_max_yaw_std_deg, 10.0);
+    getParam("uwb/bootstrap/max_yaw_std_deg", bootstrap_max_yaw_std_deg);
     parameters_.runtime.uwb.bootstrap.max_yaw_std_rad = degreesToRadians(bootstrap_max_yaw_std_deg);
     getParam("uwb/bootstrap/stable_solutions", parameters_.runtime.uwb.bootstrap.stable_solutions);
     getParam("uwb/bootstrap/stable_translation_delta",
              parameters_.runtime.uwb.bootstrap.stable_translation_delta);
     double bootstrap_stable_yaw_delta_deg = 3.0;
-    getParam<double>("uwb/bootstrap/stable_yaw_delta_deg", bootstrap_stable_yaw_delta_deg, 3.0);
+    getParam("uwb/bootstrap/stable_yaw_delta_deg", bootstrap_stable_yaw_delta_deg);
     parameters_.runtime.uwb.bootstrap.stable_yaw_delta_rad =
         degreesToRadians(bootstrap_stable_yaw_delta_deg);
     double bootstrap_gravity_std_deg = 1.0;
-    getParam<double>("uwb/bootstrap/gravity_alignment_std_deg", bootstrap_gravity_std_deg, 1.0);
+    getParam("uwb/bootstrap/gravity_alignment_std_deg", bootstrap_gravity_std_deg);
     parameters_.runtime.uwb.bootstrap.gravity_alignment_std_rad =
         degreesToRadians(bootstrap_gravity_std_deg);
 }
@@ -120,11 +116,11 @@ void ParameterReader::loadLoopAndGraph() {
     getParam("loop/source/max_time", parameters_.runtime.loop.source.max_time);
     getParam("loop/source/max_translation", parameters_.runtime.loop.source.max_translation);
     double loop_source_max_rotation_deg = 0.0;
-    getParam<double>("loop/source/max_rotation_deg", loop_source_max_rotation_deg, 0.0);
+    getParam("loop/source/max_rotation_deg", loop_source_max_rotation_deg);
     parameters_.runtime.loop.source.max_rotation_rad =
         degreesToRadians(loop_source_max_rotation_deg);
     int loop_target_keyframes = 16;
-    getParam<int>("loop/target_keyframes", loop_target_keyframes, 16);
+    getParam("loop/target_keyframes", loop_target_keyframes);
     getParam("loop/target_radius", parameters_.runtime.loop.target_radius);
     parameters_.runtime.loop.target_keyframes =
         static_cast<std::size_t>(std::max(1, loop_target_keyframes));
@@ -133,25 +129,23 @@ void ParameterReader::loadLoopAndGraph() {
     getParam("loop/history_size", parameters_.runtime.loop.history_size);
 
     LoopClosureConfig& loop_validation = parameters_.runtime.loop.verification;
-    getParam<double>("loop/validation/max_translation", loop_validation.translation_max, 7.0);
-    getParam<double>("loop/validation/max_z", loop_validation.z_max, 1.0);
+    getParam("loop/validation/max_translation", loop_validation.translation_max);
+    getParam("loop/validation/max_z", loop_validation.z_max);
     double loop_roll_pitch_deg = 15.0;
     double loop_yaw_deg = 45.0;
-    getParam<double>("loop/validation/max_roll_pitch_deg", loop_roll_pitch_deg, 15.0);
-    getParam<double>("loop/validation/max_yaw_residual_deg", loop_yaw_deg, 45.0);
+    getParam("loop/validation/max_roll_pitch_deg", loop_roll_pitch_deg);
+    getParam("loop/validation/max_yaw_residual_deg", loop_yaw_deg);
     loop_validation.roll_pitch_max_rad = degreesToRadians(loop_roll_pitch_deg);
     loop_validation.yaw_residual_max_rad = degreesToRadians(loop_yaw_deg);
-    getParam<double>("loop/validation/overlap_distance", loop_validation.overlap_distance, 0.5);
-    getParam<double>("loop/validation/min_overlap_ratio", loop_validation.min_overlap_ratio, 0.25);
-    getParam<bool>("loop/pcm/enabled", loop_validation.enable_pcm, true);
-    getParam<double>("loop/pcm/translation_threshold", loop_validation.pcm_translation_threshold,
-                     1.5);
+    getParam("loop/validation/overlap_distance", loop_validation.overlap_distance);
+    getParam("loop/validation/min_overlap_ratio", loop_validation.min_overlap_ratio);
+    getParam("loop/pcm/enabled", loop_validation.enable_pcm);
+    getParam("loop/pcm/translation_threshold", loop_validation.pcm_translation_threshold);
     double pcm_rotation_deg = 20.0;
-    getParam<double>("loop/pcm/rotation_threshold_deg", pcm_rotation_deg, 20.0);
+    getParam("loop/pcm/rotation_threshold_deg", pcm_rotation_deg);
     loop_validation.pcm_rotation_threshold_rad = degreesToRadians(pcm_rotation_deg);
-    getParam<int>("loop/pcm/min_consistent_loops", loop_validation.min_consistent_loops, 1);
-    getParam<int>("loop/pcm/min_candidate_clique_size", loop_validation.min_candidate_clique_size,
-                  1);
+    getParam("loop/pcm/min_consistent_loops", loop_validation.min_consistent_loops);
+    getParam("loop/pcm/min_candidate_clique_size", loop_validation.min_candidate_clique_size);
 
     loadGraph();
 }
@@ -161,8 +155,8 @@ void ParameterReader::loadGraph() {
     PoseGraphConfig& graph = parameters_.runtime.graph;
     double prior_rotation_variance = 1.0e-4;
     double prior_translation_variance = 1.0e-2;
-    getParam<double>("graph/prior_rotation_variance", prior_rotation_variance, 1.0e-4);
-    getParam<double>("graph/prior_translation_variance", prior_translation_variance, 1.0e-2);
+    getParam("graph/prior_rotation_variance", prior_rotation_variance);
+    getParam("graph/prior_translation_variance", prior_translation_variance);
     getParam("graph/odom_noise/rotation_variance_per_second",
              graph.odom_noise.rotation_variance_per_second);
     getParam("graph/odom_noise/translation_variance_per_second",
@@ -187,14 +181,13 @@ void ParameterReader::loadGraph() {
 
 /// 读取幂等 reset、纯里程计 gauge 及 epoch 0 启动提示。
 void ParameterReader::loadResetAndStartup() {
-    getParam<std::string>("reset/service", parameters_.services.frontend_reset,
-                          "/pointlio/reset_internal");
+    getParam("reset/service", parameters_.services.frontend_reset);
     getParam("reset/min_gap", parameters_.runtime.reset.min_gap_sec);
     getParam("reset/response_timeout", parameters_.runtime.reset.response_timeout_sec);
     getParam("reset/stationary_translation_std",
              parameters_.runtime.reset.stationary_translation_std);
     double reset_stationary_rotation_std_deg = 1.0;
-    getParam<double>("reset/stationary_rotation_std_deg", reset_stationary_rotation_std_deg, 1.0);
+    getParam("reset/stationary_rotation_std_deg", reset_stationary_rotation_std_deg);
     parameters_.runtime.reset.stationary_rotation_std_rad =
         degreesToRadians(reset_stationary_rotation_std_deg);
 
@@ -203,21 +196,22 @@ void ParameterReader::loadResetAndStartup() {
 
     bool startup_hint_enabled = false;
     Eigen::Vector3d startup_position = Eigen::Vector3d::Zero();
-    getParam<bool>("startup_hint/enabled", startup_hint_enabled, false);
+    getParam("startup_hint/enabled", startup_hint_enabled);
     getParam("startup_hint/force_until_matched",
              parameters_.runtime.startup_hint.force_until_matched);
-    getParam<double>("startup_hint/x", startup_position.x(), 0.0);
-    getParam<double>("startup_hint/y", startup_position.y(), 0.0);
-    getParam<double>("startup_hint/z", startup_position.z(), 0.0);
+    getParam("startup_hint/x", startup_position.x());
+    getParam("startup_hint/y", startup_position.y());
+    getParam("startup_hint/z", startup_position.z());
     double startup_yaw_deg = 0.0;
-    getParam<double>("startup_hint/yaw_deg", startup_yaw_deg, 0.0);
+    getParam("startup_hint/yaw_deg", startup_yaw_deg);
+    // 启动提示描述 body 位姿；换算为 T_map_sensor 依赖 TF 外参，由 applyBodyExtrinsic() 完成。
     if (startup_hint_enabled) {
-        const Eigen::Matrix4d T_map_body =
-            yawGuess(degreesToRadians(startup_yaw_deg), startup_position);
-        parameters_.runtime.startup_hint.T_map_sensor =
-            parameters_.input.body_transform.sensorPoseFromBodyPose(T_map_body);
+        if (!startup_position.allFinite() || !std::isfinite(startup_yaw_deg)) {
+            throw std::invalid_argument("startup_hint contains a non-finite value");
+        }
+        startup_T_map_body_ = yawGuess(degreesToRadians(startup_yaw_deg), startup_position);
     } else {
-        parameters_.runtime.startup_hint.T_map_sensor.reset();
+        startup_T_map_body_.reset();
     }
 }
 

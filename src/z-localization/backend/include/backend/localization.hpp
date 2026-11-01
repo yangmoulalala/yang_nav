@@ -60,7 +60,9 @@ public:
                      const Eigen::Vector3d& angular_velocity_sensor);
     /// 接入 UWB 天线位置；只有新的物理解返回 true。无效、乱序和保持重发返回
     /// false，避免诊断输出用新时间戳重标旧解。
-    bool ingestUwbPosition(double timestamp, const Eigen::Vector3d& position_uwb_antenna);
+    /// extrinsic 为适配层在测量时刻查得的 T_sensor_body 与传感器系杆臂；空值使用配置固定值。
+    bool ingestUwbPosition(double timestamp, const Eigen::Vector3d& position_uwb_antenna,
+                           const std::optional<UwbMeasurementExtrinsic>& extrinsic = std::nullopt);
     /// 返回最新原始 UWB 解所代表的物理时刻；在线估计开启时使用当前共享 dt
     /// 后验。
     std::optional<double> latestUwbMotionTimestamp() const;

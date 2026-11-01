@@ -161,8 +161,11 @@ void Publisher::publishPoseWithCovariance(const LocalizationProjection& projecti
     if (!pose_covariance_pub_) {
         return;
     }
-    const Eigen::Matrix4d T_map_body =
-        parameters_.input.body_transform.bodyPoseFromSensorPose(projection.T_map_sensor);
+    // 外参取输出时刻值：T_map_body = T_map_sensor * T_sensor_body(stamp)。
+    const Eigen::Matrix4d T_sensor_body =
+        body_extrinsic_ ? body_extrinsic_->at(rclcpp::Time(stamp).seconds())
+                        : parameters_.runtime.uwb.T_sensor_body;
+    const Eigen::Matrix4d T_map_body = projection.T_map_sensor * T_sensor_body;
     PoseCovariance6d covariance = projection.pose_covariance_valid
                                       ? projection.pose_covariance
                                       : fallbackFrontendPoseCovariance();

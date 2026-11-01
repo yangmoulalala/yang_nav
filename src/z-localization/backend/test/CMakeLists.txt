@@ -4,6 +4,11 @@ find_package(launch_testing_ament_cmake REQUIRED)
 
 ament_add_gtest(backend_fusion_test unit/fusion_test.cpp)
 ament_add_gtest(backend_measurement_test unit/measurement_test.cpp)
+ament_add_gtest(backend_body_test unit/body_test.cpp)
+# 时间索引外参解析逻辑位于适配层，直接编译其源文件并链接 tf2。
+ament_add_gtest(backend_body_extrinsic_test unit/body_extrinsic_test.cpp ../apps/body_extrinsic.cpp)
+target_include_directories(backend_body_extrinsic_test PRIVATE ..)
+ament_target_dependencies(backend_body_extrinsic_test rclcpp tf2 tf2_ros tf2_eigen geometry_msgs)
 ament_add_gtest(backend_lifecycle_test unit/lifecycle_test.cpp unit/frontend_session_test.cpp
     ../apps/frontend_session.cpp)
 ament_add_gtest(backend_graph_test integration/graph_test.cpp)
@@ -22,7 +27,8 @@ ament_add_gtest(backend_calibration_test tools/body_calibration_test.cpp
 ament_add_gtest(backend_storage_test integration/storage_test.cpp)
 target_link_options(backend_storage_test PRIVATE "LINKER:--wrap=fsync")
 ament_add_gtest(backend_cleanup_test tools/cleanup_test.cpp)
-foreach(target backend_fusion_test backend_measurement_test backend_lifecycle_test backend_graph_test
+foreach(target backend_fusion_test backend_measurement_test backend_body_test backend_body_extrinsic_test
+               backend_lifecycle_test backend_graph_test
                backend_storage_test backend_cleanup_test backend_innovation_test backend_uwb_factor_test
                backend_relocalization_test backend_localization_test backend_descriptor_test
                backend_calibration_test)
@@ -48,6 +54,8 @@ add_launch_test(ros/test_calibration_launch.py TARGET backend_calibration_launch
     TIMEOUT 60 LABELS "ros")
 add_launch_test(ros/test_map_service.py TARGET backend_map_service_test TIMEOUT 90
     ARGS "node:=$<TARGET_FILE:backend_node>" LABELS "ros")
+add_launch_test(ros/test_example_config.py TARGET backend_example_config_test TIMEOUT 60
+    LABELS "ros")
 
 # 大数据验收需显式启用，指定数据文件缺失时配置失败。
 ament_add_pytest_test(backend_evaluation_metrics_test evaluation/test_metrics.py TIMEOUT 30)
@@ -69,7 +77,8 @@ endif()
 
 localization_enable_warnings()
 
-set_tests_properties(backend_map_service_test backend_calibration_launch_test PROPERTIES
+set_tests_properties(backend_map_service_test backend_example_config_test
+    backend_calibration_launch_test PROPERTIES
     ENVIRONMENT "ROS_LOG_DIR=${CMAKE_CURRENT_BINARY_DIR}/ros_logs")
 
 # pytest 和动态导入的 launch 文件不在源码树生成字节码。

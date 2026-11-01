@@ -6,12 +6,16 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
+#include "apps/body_extrinsic.hpp"
 #include "apps/config.hpp"
 #include "apps/node.hpp"
 #include "apps/parameters.hpp"
+#include "backend/math.hpp"
 
 namespace backend::ros {
 namespace {
@@ -75,7 +79,13 @@ void LocalizationNode::finish() {
 
 /// 读取有效参数并构造描述子、先验地图及运行时控制器。
 void LocalizationNode::initializeRuntime() {
-    parameters_ = ParameterReader(*this).load();
+    // 外参来源在运行期间持续监听 TF；启动时阻塞到首个外参可用（云台等可动关节随时间跟踪）。
+    parameters_ = ParameterReader(*this).load([this](const RosInputParameters& input) {
+        body_extrinsic_ = std::make_unique<BodyExtrinsicProvider>(
+            *this, input.sensor_frame, input.body_frame, input.body_extrinsic_tolerance);
+        return body_extrinsic_->waitForInitial();
+    });
+    publisher_.bindBodyExtrinsic(body_extrinsic_.get());
     descriptor_ = makePlaceDescriptor(parameters_.descriptor);
     EffectiveConfig effective_config = resolveConfig(parameters_.runtime, descriptor_->enabled());
     parameters_.runtime = effective_config.values;
@@ -159,10 +169,12 @@ void LocalizationNode::completeStartup() {
             << ", uwb_zero_pose="
             << (parameters_.runtime.uwb.estimate_zero_pose_online ? "online" : "fixed")
             << ", uwb_frame=" << parameters_.input.uwb_frame
-            << ", frontend=" << parameters_.input.frontend << ", atomic_frame="
-            << (parameters_.input.frontend == "zlio" ? parameters_.input.frame_topic : "unused")
-            << ", odom=" << parameters_.input.odom_topic << ", sync_odom="
-            << parameters_.input.sync_odom_topic << ", cloud=" << parameters_.input.cloud_topic);
+            << ", frontend=" << parameters_.input.frontend
+            << (parameters_.input.frontend == "zlio"
+                    ? std::string()
+                    : ", odom=" + parameters_.input.odom_topic +
+                          ", sync_odom=" + parameters_.input.sync_odom_topic +
+                          ", cloud=" + parameters_.input.cloud_topic));
 }
 
 }  // namespace backend::ros

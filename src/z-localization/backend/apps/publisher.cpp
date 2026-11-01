@@ -84,7 +84,7 @@ void Publisher::configure() {
 
     if (parameters_.world_cloud.enabled) {
         world_cloud_pub_ = node_.create_publisher<sensor_msgs::msg::PointCloud2>(
-            parameters_.world_cloud.topic, rclcpp::QoS(1).reliable());
+            "localization/lio_world_cloud", rclcpp::QoS(1).reliable());
     }
 }
 

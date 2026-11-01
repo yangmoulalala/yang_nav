@@ -383,9 +383,10 @@ void Localization::runMaintenanceCycle() {
 }
 /// 接收新的 UWB 物理解，拒绝无效时间及传输重发。
 bool Localization::ingestUwbPosition(const double timestamp,
-                                     const Eigen::Vector3d& position_uwb_antenna) {
+                                     const Eigen::Vector3d& position_uwb_antenna,
+                                     const std::optional<UwbMeasurementExtrinsic>& extrinsic) {
     std::lock_guard<std::mutex> lock(mutex_);
-    return uwb_.ingest(timestamp, position_uwb_antenna);
+    return uwb_.ingest(timestamp, position_uwb_antenna, extrinsic);
 }
 
 }  // namespace backend

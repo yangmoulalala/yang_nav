@@ -4,8 +4,12 @@
  */
 #pragma once
 
+#include <Eigen/Dense>
 #include <algorithm>
+#include <functional>
+#include <optional>
 #include <rclcpp/rclcpp.hpp>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
@@ -15,18 +19,25 @@
 
 namespace backend::ros {
 
-/// 负责参数声明、类型兼容和统一 schema 校验。
+/// 按输入参数（sensor_frame、body_frame、容差）建立外参来源，阻塞等待并返回启动时的
+/// T_sensor_body，即 body 在传感器系中的位姿。
+using BodyExtrinsicLookup = std::function<Eigen::Matrix4d(const RosInputParameters& input)>;
+
+/// 负责参数读取、类型兼容和统一 schema 校验。
 class ParameterReader {
 public:
-    /// 绑定参数声明、读取和日志所使用的 ROS 节点。
+    /// 绑定参数读取和日志所使用的 ROS 节点。
     explicit ParameterReader(rclcpp::Node& node) : node_(node) {}
 
-    /// 加载并校验完整参数树；未知或已废弃参数会抛出异常。
-    NodeConfig load();
+    /// 加载并校验完整参数树；缺失、未知或已废弃参数会抛出异常。
+    /// 参数全部通过校验后才调用 lookup 获取 body 外参，再派生依赖外参的配置。
+    NodeConfig load(const BodyExtrinsicLookup& lookup);
 
 private:
-    /// 读取输入传输、坐标系和 body 外参。
+    /// 读取输入传输与坐标系名称。
     void loadCommonInput();
+    /// 以启动时 T_sensor_body 派生启动提示位姿及 UWB 外参的回退值。
+    void applyBodyExtrinsic(const Eigen::Matrix4d& T_sensor_body);
     /// 读取地图、关键帧和统一配准参数。
     void loadMapTrajectoryAndRegistration();
     /// 读取连续跟踪与联合创新参数。
@@ -56,20 +67,15 @@ private:
     /// 拒绝未被 schema 消费的未知参数。
     void validateParameterSchema() const;
 
-    /// 结构体初始化值是默认值的唯一来源；只有有意覆盖或依赖其他参数时传第三参。
-    template <class T>
-    void getParam(const std::string& path, T& value) {
-        getParam(path, value, value);
-    }
-
-    /// 读取一个参数并记录其 schema 所有权；兼容整数和浮点 YAML 写法。
+    /// 读取一个必填参数并记录其 schema 所有权；兼容整数和浮点 YAML 写法。
+    /// 节点按覆盖值自动声明参数，因此未由参数文件或 launch 提供即视为缺失，不使用任何代码默认值。
     template <typename T>
-    void getParam(const std::string& path, T& value, const T& default_value) {
+    void getParam(const std::string& path, T& value) {
         std::string name = path;
         std::replace(name.begin(), name.end(), '/', '.');
         consumed_parameter_names_.insert(name);
         if (!node_.has_parameter(name)) {
-            node_.declare_parameter<T>(name, default_value);
+            throw std::invalid_argument("missing required backend parameter: " + name);
         }
         const rclcpp::Parameter parameter = node_.get_parameter(name);
         if constexpr (std::is_same_v<T, double>) {
@@ -94,6 +100,8 @@ private:
 
     rclcpp::Node& node_;
     NodeConfig parameters_;
+    /// 启用时的 epoch 0 启动提示 T_map_body，用启动时外参换算为 T_map_sensor。
+    std::optional<Eigen::Matrix4d> startup_T_map_body_;
     std::unordered_set<std::string> consumed_parameter_names_;
 };
 

@@ -1,116 +1,108 @@
-"""启动定位后端，并应用配置、地图和可视化选项。"""
+"""启动定位后端：参数文件提供全部调参项，launch 只提供运行模式与地图目录。
+
+每个节点参数只有一个来源：
+- params_file：除下列三项外的全部后端参数（ROS 参数文件格式，不支持继承或合并）；
+- launch：prior_map.enabled、prior_map.directory、trajectory.save_directory 与 use_sim_time。
+"""
 
 import os
 from pathlib import Path
 
-import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
+MODES = ('mapping', 'localization')
 
-# 解析启动参数中的布尔值并拒绝非法输入。
+
 def launch_bool(value):
-    if str(value).lower() not in ('true', 'false', '1', '0', 'yes', 'no', 'on', 'off'):
+    """解析启动参数中的布尔值并拒绝非法输入。"""
+    text = str(value).lower()
+    if text not in ('true', 'false', '1', '0', 'yes', 'no', 'on', 'off'):
         raise ValueError(f'Invalid boolean: {value}')
-    return str(value).lower() in ('true', '1', 'yes', 'on')
+    return text in ('true', '1', 'yes', 'on')
 
 
-# 递归合并配置映射，以覆盖值替换对应叶参数。
-def merge(base, overrides):
-    for key, value in overrides.items():
-        if isinstance(value, dict) and isinstance(base.get(key), dict):
-            merge(base[key], value)
-        else:
-            base[key] = value
-    return base
+def resolve(args):
+    """校验启动参数，返回 (params_file, launch 侧参数, use_sim_time, rviz, prior)；非法输入抛 ValueError。"""
+    params_file = Path(args['params_file'])
+    if not params_file.is_file():
+        raise ValueError(f'params_file does not exist: {params_file}')
+    mode = args['mode']
+    if mode not in MODES:
+        raise ValueError(f'mode must be mapping or localization, got {mode!r}')
+    use_sim_time = launch_bool(args['use_sim_time'])
+    rviz = launch_bool(args['rviz'])
+    prior = mode == 'localization'
+    prior_map = ''
+    if prior:
+        if not args['prior_map']:
+            raise ValueError('mode:=localization requires prior_map:=/absolute/map_bundle')
+        if not Path(args['prior_map']).is_dir():
+            raise ValueError(f'prior_map does not exist: {args["prior_map"]}')
+        prior_map = args['prior_map']
+    overrides = {
+        'prior_map.enabled': prior,
+        'prior_map.directory': prior_map,
+        'trajectory.save_directory': args['save_dir'],
+        'use_sim_time': use_sim_time,
+    }
+    return str(params_file), overrides, use_sim_time, rviz, prior
 
 
-# 读取单父继承配置并检查循环引用。
-def load_params(path, ancestors=()):
-    path = Path(path).resolve()
-    if path in ancestors:
-        raise ValueError(f'Configuration inheritance cycle: {path}')
-    with path.open(encoding='utf-8') as stream:
-        params = yaml.safe_load(stream) or {}
-    if not isinstance(params, dict):
-        raise ValueError(f'Configuration must be a mapping: {path}')
-    parent = params.pop('extends', None)
-    if parent:
-        params = merge(load_params(path.parent / parent, ancestors=(*ancestors, path)), params)
-    return params
-
-
-# 声明启动参数并构造节点启动描述。
 def generate_launch_description():
+    """声明启动参数并构造后端及可选 RViz 节点。"""
     share = get_package_share_directory('backend')
     defaults = {
-        'config_file': os.path.join(share, 'config', 'backend.yaml'),
+        'params_file': os.path.join(share, 'config', 'example.yaml'),
         'use_sim_time': 'false',
-        'rviz': 'false',
-        'mode': 'config',
+        'mode': 'mapping',
         'prior_map': '',
-        'save_dir': ''
+        'save_dir': '',
+        'rviz': 'false',
+    }
+    descriptions = {
+        'params_file': '后端 ROS 参数文件（backend_node: ros__parameters:）',
+        'use_sim_time': '后端与 RViz 是否使用 /clock',
+        'mode': 'mapping：无先验建图；localization：加载 prior_map 定位',
+        'prior_map': '先验地图包目录；localization 必填且须存在，mapping 忽略',
+        'save_dir': '~/save_map 与退出保存的目标目录；留空则不可保存',
+        'rviz': '是否启动 RViz；可视化话题开关只由参数文件的 visualization.* 决定',
     }
 
-    # 解析启动上下文，生成后端与可视化组件动作。
     def setup(context):
+        """先完成参数校验，再创建后端与可选 RViz 动作。"""
         args = {key: LaunchConfiguration(key).perform(context) for key in defaults}
-        params = load_params(args['config_file'])
-        if args['mode'] not in ('config', 'mapping', 'localization'):
-            raise ValueError('mode must be config, mapping or localization')
-        if args['mode'] != 'config':
-            params.setdefault('prior_map', {})['enabled'] = args['mode'] == 'localization'
-        if args['prior_map']:
-            params.setdefault('prior_map', {})['directory'] = args['prior_map']
-        if args['save_dir']:
-            params.setdefault('trajectory', {})['save_directory'] = args['save_dir']
-        prior = bool(params.get('prior_map', {}).get('enabled', False))
-        if prior and (not Path(params['prior_map'].get('directory', '')).is_dir()):
-            raise ValueError(
-                'Prior map does not exist; set prior_map:=/absolute/map or mode:=mapping'
-            )
-        if launch_bool(args['rviz']):
-            params.setdefault('visualization', {}).update(
-                enabled=True,
-                publish_prior_map=prior,
-                publish_runtime_map=not prior,
-                publish_map_axes=True,
-                publish_paths=True,
-                publish_debug_registration=True
-            )
+        params_file, overrides, use_sim_time, rviz, prior = resolve(args)
         actions = [
             Node(
                 package='backend',
                 executable='backend_node',
                 name='backend_node',
                 output='screen',
-                parameters=[params, {'use_sim_time': launch_bool(args['use_sim_time'])}]
+                parameters=[params_file, overrides],
             )
         ]
-        if launch_bool(args['rviz']):
+        if rviz:
             actions.append(
                 Node(
                     package='rviz2',
                     executable='rviz2',
                     name='backend_rviz',
-                    parameters=[{'use_sim_time': launch_bool(args['use_sim_time'])}],
+                    parameters=[{'use_sim_time': use_sim_time}],
                     arguments=['-d', os.path.join(share, 'rviz', 'backend.rviz')],
-                    remappings=[
-                        (
-                            '/backend_node/rviz_map',
-                            '/backend_node/prior_map' if prior else '/backend_node/runtime_map'
-                        )
-                    ]
+                    remappings=[(
+                        '/backend_node/rviz_map',
+                        '/backend_node/prior_map' if prior else '/backend_node/runtime_map',
+                    )],
                 )
             )
         return actions
 
-    return LaunchDescription(
-        [
-            *(DeclareLaunchArgument(key, default_value=value) for key, value in defaults.items()),
-            OpaqueFunction(function=setup)
-        ]
-    )
+    return LaunchDescription([
+        *(DeclareLaunchArgument(key, default_value=value, description=descriptions[key])
+          for key, value in defaults.items()),
+        OpaqueFunction(function=setup),
+    ])

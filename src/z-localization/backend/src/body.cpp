@@ -16,6 +16,14 @@ void BodyTransform::configure(const Eigen::Vector3d& offset, const Eigen::Vector
         rpyDegreesToRotation(rpy_degrees.x(), rpy_degrees.y(), rpy_degrees.z());
 }
 
+/// 由 T_sensor_body 设置外参：R_body_sensor = R_sb^T，
+/// body 原点相对传感器原点的位移在 body 系表达为 R_sb^T * t_sb。
+void BodyTransform::configure(const Eigen::Matrix4d& T_sensor_body) {
+    const Eigen::Matrix3d R_sensor_body = T_sensor_body.block<3, 3>(0, 0);
+    sensor_to_body_rotation_ = R_sensor_body.transpose();
+    offset_ = R_sensor_body.transpose() * T_sensor_body.block<3, 1>(0, 3);
+}
+
 /// 将父坐标系中的传感器位姿转换为车体位姿。
 Eigen::Matrix4d BodyTransform::bodyPoseFromSensorPose(
     const Eigen::Matrix4d& T_parent_sensor) const {

@@ -124,8 +124,10 @@ std::optional<UwbFactorBuilder::TimingProjection> UwbFactorBuilder::projectMeasu
     TimingProjection projection;
     projection.keyframe_time_offset = keyframe_time_offset;
     projection.T_keyframe_measurement = context.keyframe.odom_pose.inverse() * *timed_odom_pose;
+    // 杆臂取测量时刻值；云台转动时各测量的传感器系天线位置不同。
+    projection.antenna_position_sensor = antennaPositionSensor(context.observation);
     projection.antenna_in_keyframe =
-        projection.T_keyframe_measurement.block<3, 3>(0, 0) * config_.antenna_position_sensor +
+        projection.T_keyframe_measurement.block<3, 3>(0, 0) * projection.antenna_position_sensor +
         projection.T_keyframe_measurement.block<3, 1>(0, 3);
 
     const bool model_timing_jitter = config_.time_jitter_std_seconds > 0.0;
@@ -140,7 +142,8 @@ std::optional<UwbFactorBuilder::TimingProjection> UwbFactorBuilder::projectMeasu
     UwbTimeOffsetSupport support;
     support.measurement_timestamp = context.observation.timestamp;
     support.keyframe_odom_pose = context.keyframe.odom_pose;
-    support.antenna_position_sensor = config_.antenna_position_sensor;
+    // 时间偏置求导在小时间窗内把该测量的杆臂视为常量（忽略云台角速度对天线速度的贡献）。
+    support.antenna_position_sensor = projection.antenna_position_sensor;
     support.odometry.reserve(context.odometry.size());
     for (const auto& [timestamp, pose] : context.odometry.samples()) {
         support.odometry.push_back({timestamp, pose});
@@ -181,7 +184,7 @@ std::optional<double> UwbFactorBuilder::propagatedPositionVariance(
     const double translation_variance = covariance.diagonal().head<3>().maxCoeff();
     const double rotation_variance = covariance.diagonal().tail<3>().maxCoeff();
     const double result =
-        translation_variance + rotation_variance * config_.antenna_position_sensor.squaredNorm();
+        translation_variance + rotation_variance * projection.antenna_position_sensor.squaredNorm();
     if (!std::isfinite(result) || result < 0.0) {
         return std::nullopt;
     }

@@ -4,9 +4,9 @@
  */
 #pragma once
 
+#include <Eigen/Core>
 #include <string>
 
-#include "backend/body.hpp"
 #include "backend/config.hpp"
 #include "backend/gprobe.hpp"
 #include "backend/scan_context.hpp"
@@ -14,26 +14,28 @@
 namespace backend::ros {
 
 /// 前端消息、坐标系、同步器和维护周期参数。
+/// 全部由参数文件提供；legacy 专用字段仅在 common.frontend=legacy 时读取，其余情况不使用。
+/// ZLIO 与 UWB 输入话题为固定相对名，部署时通过 ROS remap 改名。
 struct RosInputParameters {
-    std::string frontend = "legacy";
-    std::string frame_topic = "/frontend/frame";
-    std::string prediction_topic = "/frontend/odometry";
-    std::string session_topic = "/frontend/session";
-    std::string sensor_frame = "imu";
-    std::string uwb_topic = "/uwb_pose";
-    std::string uwb_frame = "uwb";
-    std::string map_frame = "map";
-    std::string odom_frame = "camera_init";
-    std::string body_frame = "body";
-    std::string odom_topic = "/Odometry";
-    std::string sync_odom_topic = "/Odometry_scan_end";
-    std::string cloud_topic = "/cloud_registered";
+    std::string frontend;
+    std::string sensor_frame;
+    std::string uwb_frame;
+    std::string map_frame;
+    std::string odom_frame;
+    std::string body_frame;
+    std::string odom_topic;
+    std::string sync_odom_topic;
+    std::string cloud_topic;
     bool cloud_in_local_frame = false;
-    int subscription_queue = 50;
-    int synchronizer_queue = 20;
-    double synchronizer_max_interval = 0.05;
-    double maintenance_period = 0.2;
-    BodyTransform body_transform;
+    int subscription_queue = 1;
+    int synchronizer_queue = 1;
+    double synchronizer_max_interval = 0.0;
+    double maintenance_period = 0.0;
+    /// sensor <- body 外参按消息时间戳从 TF 查询；精确时刻不可用时允许使用的
+    /// 最新变换与请求时刻的最大时间差，s（common.body_extrinsic_tolerance）。
+    double body_extrinsic_tolerance = 0.0;
+    /// UWB 天线相位中心在 body 系中的固定位置，m；按测量时刻外参换算到传感器系。
+    Eigen::Vector3d antenna_position_body = Eigen::Vector3d::Zero();
 };
 
 /// 描述子类型、姿态整平及各实现的参数。
@@ -79,7 +81,6 @@ struct WorldCloudOutputParameters {
     double publish_period = 0.0;
     bool publish_initializing = false;
     bool publish_untrusted = false;
-    std::string topic = "/localization/lio_world_cloud";
 };
 
 /// 汇集后端核心参数与 ROS 接口配置。

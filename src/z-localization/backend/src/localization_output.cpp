@@ -121,15 +121,17 @@ std::optional<Eigen::Vector3d> Localization::latestUwbBodyPositionMap() const {
 
     const Eigen::Matrix4d T_map_sensor = poses_.transform() * *timed_odom_pose;
     const Eigen::Matrix3d R_map_sensor = T_map_sensor.block<3, 3>(0, 0);
-    const Eigen::Vector3d body_origin_sensor = config_.uwb.T_sensor_body.block<3, 1>(0, 3);
+    // 外参与杆臂均取该 UWB 测量时刻的值。
+    const Eigen::Matrix4d T_sensor_body = uwb_.sensorBody(*latest_uwb);
+    const Eigen::Vector3d body_origin_sensor = T_sensor_body.block<3, 1>(0, 3);
     const Eigen::Vector3d body_to_antenna_sensor =
-        config_.uwb.antenna_position_sensor - body_origin_sensor;
+        uwb_.antennaPositionSensor(*latest_uwb) - body_origin_sensor;
     Eigen::Vector3d position_map_body =
         uwb_.positionMap(*latest_uwb) - R_map_sensor * body_to_antenna_sensor;
 
     if (!config_.uwb.use_z) {
         // 平面 UWB 不提供高度；调试点沿用同一时刻前后端位姿的 body 高度。
-        const Eigen::Matrix4d T_map_body = T_map_sensor * config_.uwb.T_sensor_body;
+        const Eigen::Matrix4d T_map_body = T_map_sensor * T_sensor_body;
         position_map_body.z() = T_map_body(2, 3);
     }
     return position_map_body;

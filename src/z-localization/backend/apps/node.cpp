@@ -152,7 +152,7 @@ void LocalizationNode::configureInputs() {
     }
     if (parameters_.runtime.uwb.enabled) {
         uwb_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
-            parameters_.input.uwb_topic, rclcpp::QoS(10),
+            "uwb_pose", rclcpp::QoS(10),
             std::bind(&LocalizationNode::uwbCallback, this, std::placeholders::_1));
     }
 }
@@ -251,7 +251,14 @@ void LocalizationNode::uwbCallback(const geometry_msgs::msg::PoseStamped::ConstS
         if (!parameters_.runtime.uwb.use_z) {
             position.z() = 0.0;
         }
-        if (!controller_->ingestUwbPosition(stamp.seconds(), position)) {
+        // 天线固定在 body 系；按测量运动时刻（消息时间 + 配置时间偏置）的外参换算到传感器系。
+        std::optional<UwbMeasurementExtrinsic> extrinsic;
+        if (body_extrinsic_) {
+            extrinsic = uwbExtrinsicFromBody(
+                body_extrinsic_->at(stamp.seconds() + parameters_.runtime.uwb.time_offset_seconds),
+                parameters_.input.antenna_position_body);
+        }
+        if (!controller_->ingestUwbPosition(stamp.seconds(), position, extrinsic)) {
             return;
         }
         publisher_.publishUwb(*pose);
@@ -262,6 +269,9 @@ void LocalizationNode::uwbCallback(const geometry_msgs::msg::PoseStamped::ConstS
 void LocalizationNode::maintenanceCallback() {
     invoke("maintenance", [&] {
         frontend_.maintain(parameters_.runtime.reset.response_timeout_sec);
+        // 周期采样外参，使云台变化与 TF 过期在无输入时也能进入日志。
+        if (body_extrinsic_)
+            body_extrinsic_->at(now().seconds());
         if (controller_)
             controller_->runMaintenanceCycle();
     });

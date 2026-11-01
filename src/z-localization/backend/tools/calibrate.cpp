@@ -103,7 +103,8 @@ public:
                 << " (frontend odom->sensor), tf_lookup_timeout=" << tf_lookup_timeout_ << "s.");
         RCLCPP_INFO_STREAM(get_logger(),
                            "Stage 1: keep the robot body facing map +X. The result printed "
-                           "below is body.rotation (R_body_sensor).");
+                           "below is R_body_sensor; write the sensor<-body extrinsic into "
+                           "the URDF (backend reads it from TF).");
     }
 
 private:
@@ -197,10 +198,12 @@ private:
                               << "# equivalent yaw_deg_negative_wrap: " << yaw_negative_wrap << "\n"
                               << "# convention: R_body_sensor = Rz(yaw)*Ry(pitch)*Rx(roll)\n"
                               << "# backend: R_map_body = R_map_sensor * R_body_sensor^T\n"
+                              << "# put this extrinsic into the URDF (sensor <- body); "
+                                 "backend reads it from TF\n"
                               << "============================================");
         RCLCPP_INFO_STREAM(get_logger(),
                            "Stage 2: rotate the robot around its own center. I will print "
-                           "body.offset.x/y continuously.");
+                           "the body offset x/y continuously.");
     }
 
     /// 输出当前杆臂估计及其覆盖范围和残差诊断。
@@ -239,7 +242,9 @@ private:
                                              << "# center_map_x: " << estimate.center_map.x()
                                              << ", center_map_y: " << estimate.center_map.y()
                                              << "\n# fit model: p_map_sensor.xy = center_map - "
-                                                "R_map_body.xy * body_offset.xy"
+                                                "R_map_body.xy * body_offset.xy\n"
+                                             << "# put this extrinsic into the URDF (sensor <- body); "
+                                                "backend reads it from TF"
                                              << warn.str() << "\n"
                                              << "==========================================");
     }

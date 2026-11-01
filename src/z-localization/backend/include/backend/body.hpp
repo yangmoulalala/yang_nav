@@ -12,6 +12,8 @@ class BodyTransform {
 public:
     /// 设置车体系偏移，并由度数欧拉角预计算传感器到车体旋转。
     void configure(const Eigen::Vector3d& offset, const Eigen::Vector3d& rpy_degrees);
+    /// 由 T_sensor_body（body 在传感器系中的位姿，如 TF sensor_frame <- body_frame）设置外参。
+    void configure(const Eigen::Matrix4d& T_sensor_body);
 
     /// 将父坐标系中的传感器位姿转换为车体位姿。
     Eigen::Matrix4d bodyPoseFromSensorPose(const Eigen::Matrix4d& T_parent_sensor) const;

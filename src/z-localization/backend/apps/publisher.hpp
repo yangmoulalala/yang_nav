@@ -20,6 +20,7 @@
 #include <utility>
 #include <visualization_msgs/msg/marker.hpp>
 
+#include "apps/body_extrinsic.hpp"
 #include "apps/config.hpp"
 #include "backend/ports.hpp"
 
@@ -38,6 +39,8 @@ public:
               const KeyframeMap& prior, const std::atomic<bool>& failed, FailureHandler failure);
     /// 装配后绑定只读输出查询；控制器寿命覆盖所有发布调用。
     void bind(const Localization& controller) { controller_ = &controller; }
+    /// 绑定时间索引外参来源；空值时使用启动外参。来源寿命覆盖所有发布调用。
+    void bindBodyExtrinsic(BodyExtrinsicProvider* provider) { body_extrinsic_ = provider; }
     /// 根据有效能力一次性创建发布资源。
     void configure();
     /// 查询运行地图发布器是否已创建，供节点决定是否启用地图定时器。
@@ -111,6 +114,7 @@ private:
     const std::atomic<bool>& failed_;
     FailureHandler failure_;
     const Localization* controller_ = nullptr;
+    BodyExtrinsicProvider* body_extrinsic_ = nullptr;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 

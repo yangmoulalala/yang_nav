@@ -58,8 +58,10 @@ std::optional<RelocalizationPositionPrior> Localization::makeUwbRecoveryPriorLoc
         return std::nullopt;
     }
 
+    // 外参与杆臂取该 UWB 测量时刻的值（与源帧相差不超过 max_age）。
+    const Eigen::Matrix4d T_sensor_body = uwb_.sensorBody(*latest_uwb);
     const Eigen::Matrix3d R_odom_sensor = frame.odom_pose.block<3, 3>(0, 0);
-    const Eigen::Matrix3d R_odom_body = R_odom_sensor * config_.uwb.T_sensor_body.block<3, 3>(0, 0);
+    const Eigen::Matrix3d R_odom_body = R_odom_sensor * T_sensor_body.block<3, 3>(0, 0);
     const double body_yaw = yawFromRotation(R_odom_body);
 
     RelocalizationPositionPrior prior;
@@ -69,13 +71,14 @@ std::optional<RelocalizationPositionPrior> Localization::makeUwbRecoveryPriorLoc
     prior.R_yawless_sensor =
         yawGuess(-body_yaw, Eigen::Vector3d::Zero()).block<3, 3>(0, 0) * R_odom_sensor;
     const Eigen::Vector3d antenna_odom =
-        timed_odom_pose->block<3, 3>(0, 0) * config_.uwb.antenna_position_sensor +
+        timed_odom_pose->block<3, 3>(0, 0) * uwb_.antennaPositionSensor(*latest_uwb) +
         timed_odom_pose->block<3, 1>(0, 3);
     prior.runtime_sensor_point = frame.odom_pose.block<3, 3>(0, 0).transpose() *
                                  (antenna_odom - frame.odom_pose.block<3, 1>(0, 3));
     // 初始代次的启动提示提供 UWB 分支航向初值，仍需通过恢复验收；后续代次使用当前观测。
     if (state_.status() == LocalizationStatus::Initializing && frame.epoch == 0 &&
         config_.startup_hint.T_map_sensor.has_value()) {
+        // 启动提示的 T_map_sensor 在启动时由启动外参换算，故用同一启动外参还原 body 航向。
         const Eigen::Matrix3d R_map_body = config_.startup_hint.T_map_sensor->block<3, 3>(0, 0) *
                                            config_.uwb.T_sensor_body.block<3, 3>(0, 0);
         prior.yaw_seed_rad = yawFromRotation(R_map_body);

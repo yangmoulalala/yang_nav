@@ -52,6 +52,7 @@ set(BACKEND_ROS_DEPS
     visualization_msgs
     tf2
     tf2_ros
+    tf2_eigen
     pcl_conversions
     message_filters
     localization_interfaces
@@ -133,6 +134,7 @@ add_executable(backend_node
     apps/node.cpp
     apps/parameters.cpp
     apps/node_setup.cpp
+    apps/body_extrinsic.cpp
 )
 target_include_directories(backend_node PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 ament_target_dependencies(backend_node ${BACKEND_ROS_DEPS})
@@ -169,13 +171,13 @@ endforeach()
 ament_target_dependencies(body_calibration_node rclcpp geometry_msgs nav_msgs tf2 tf2_ros tf2_eigen)
 install(TARGETS backend_node ${BACKEND_TOOLS}
     RUNTIME DESTINATION lib/${PROJECT_NAME})
-install(FILES config/backend.yaml
+install(FILES config/example.yaml
     DESTINATION share/${PROJECT_NAME}/config)
 install(DIRECTORY rviz docs DESTINATION share/${PROJECT_NAME}
     PATTERN "__pycache__" EXCLUDE PATTERN "*.pyc" EXCLUDE)
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}
     FILES_MATCHING PATTERN "*.launch.py" PATTERN "__pycache__" EXCLUDE)
-install(FILES README.md LICENSE DESTINATION share/${PROJECT_NAME})
+install(FILES README.md DESTINATION share/${PROJECT_NAME})
 
 localization_enable_warnings()
 if(BUILD_TESTING)

@@ -17,6 +17,7 @@ import launch_testing
 import launch_testing.actions
 import launch_testing.asserts
 from launch.actions import IncludeLaunchDescription
+from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from localization_interfaces.msg import FrontendFrame, FrontendOdometry
 from nav_msgs.msg import Odometry
@@ -28,6 +29,20 @@ import yaml
 
 _resources = ExitStack()
 atexit.register(_resources.close)
+PACKAGE = Path(__file__).resolve().parents[2]
+
+
+def backend_parameters(overrides):
+    """以示例配置为完整参数集，按点分键替换测试所需的叶值。"""
+    data = yaml.safe_load((PACKAGE / 'config/example.yaml').read_text(encoding='utf-8'))
+    tree = data['backend_node']['ros__parameters']
+    for name, value in overrides.items():
+        node = tree
+        *parents, leaf = name.split('.')
+        for key in parents:
+            node = node.setdefault(key, {})
+        node[leaf] = value
+    return tree
 
 
 def generate_test_description():
@@ -40,24 +55,28 @@ def generate_test_description():
     parent = root / 'maps'
     parent.mkdir()
     parameters = {
-        'common.frontend': 'zlio', 'common.odom_frame': 'odom',
-        'common.input_cloud_in_local_frame': True,
-        'prior_map.enabled': False, 'uwb.enabled': False, 'loop.enabled': False,
-        'trajectory.save_directory': str(parent / 'saved'),
+        'common.frontend': 'zlio', 'common.odom_frame': 'odom', 'common.sensor_frame': 'imu',
+        'common.body_frame': 'body', 'common.input_cloud_in_local_frame': True,
+        'uwb.enabled': False, 'loop.enabled': False,
         'trajectory.save_on_shutdown': False, 'trajectory.map_voxel_resolution': 0.0,
         'trajectory.keyframe.min_interval': 0.0, 'trajectory.keyframe.max_interval': 0.1,
         'visualization.enabled': False,
     }
     config = root / 'parameters.yaml'
-    launch_parameters = dict(parameters)
-    launch_parameters.pop('prior_map.enabled')
-    config.write_text(yaml.safe_dump(launch_parameters), encoding='utf-8')
-    entry = Path(__file__).resolve().parents[2] / 'launch/backend.launch.py'
+    config.write_text(yaml.safe_dump({'backend_node': {
+        'ros__parameters': backend_parameters(parameters)}}), encoding='utf-8')
+    entry = PACKAGE / 'launch/backend.launch.py'
     backend = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(str(entry)), launch_arguments={
-            'config_file': str(config), 'mode': 'mapping', 'rviz': 'false',
+            'params_file': str(config), 'mode': 'mapping', 'rviz': 'false',
+            'save_dir': str(parent / 'saved'),
         }.items())
-    return launch.LaunchDescription([backend, launch_testing.actions.ReadyToTest()]), {
+    # 后端启动时从 TF 读取 imu <- body 外参；非平凡外参同时覆盖车体位姿换算路径。
+    extrinsic = Node(
+        package='tf2_ros', executable='static_transform_publisher', name='imu_body_tf',
+        arguments=['--x', '0.1', '--y', '-0.05', '--z', '0.0', '--yaw', '0.3',
+                   '--frame-id', 'imu', '--child-frame-id', 'body'])
+    return launch.LaunchDescription([extrinsic, backend, launch_testing.actions.ReadyToTest()]), {
         'root': root, 'parameters': parameters}
 
 
@@ -158,19 +177,20 @@ class TestMapService(unittest.TestCase):
             self.assertNotEqual(fingerprint(destination), before)
             before = fingerprint(destination)
             # 第二个实际节点只读加载刚保存的包；服务可用意味着启动校验已完成。
-            reload_parameters = dict(parameters, **{
+            reload_parameters = backend_parameters(dict(parameters, **{
                 'prior_map.enabled': True, 'prior_map.directory': str(destination),
-                'common.frame_topic': '/reload/unused_frames',
-                'common.session_topic': '/reload/unused_sessions',
-                'common.prediction_topic': '/reload/unused_predictions',
-                'services.reset': '/reload/reset',
-            })
+                'trajectory.save_directory': '', 'services.reset': '/reload/reset',
+            }))
             config = root / 'reload.yaml'
             config.write_text(
                 yaml.safe_dump({'/**': {'ros__parameters': reload_parameters}}), encoding='utf-8')
             with (root / 'reload.log').open('w', encoding='utf-8') as log:
+                # 话题为固定相对名，第二个节点通过 remap 与被测节点的输入隔离。
                 child = subprocess.Popen(
                     [executable, '--ros-args', '-r', '__node:=reload_backend',
+                     '-r', 'frontend/frame:=/reload/unused_frames',
+                     '-r', 'frontend/session:=/reload/unused_sessions',
+                     '-r', 'frontend/odometry:=/reload/unused_predictions',
                      '--params-file', str(config)], stdout=log, stderr=subprocess.STDOUT)
                 reload_client = self.node.create_client(Trigger, '/reload_backend/save_map')
                 try:

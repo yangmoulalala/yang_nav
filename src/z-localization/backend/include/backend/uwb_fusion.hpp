@@ -28,7 +28,25 @@ struct UwbObservation {
     /// 原始消息时间戳；用于顺序、保持样本去重和因子唯一性。
     double timestamp = 0.0;
     Eigen::Vector3d position_uwb = Eigen::Vector3d::Zero();
+    /// 测量时刻的 T_sensor_body（云台等可动关节使外参随时间变化）；空值使用配置中的固定外参。
+    std::optional<Eigen::Matrix4d> T_sensor_body;
+    /// 测量时刻天线相位中心在传感器系中的位置；空值使用配置中的固定杆臂。
+    std::optional<Eigen::Vector3d> antenna_position_sensor;
 };
+
+/// 单次 UWB 测量的时变外参：由适配层在测量时刻查询并随观测传入核心。
+struct UwbMeasurementExtrinsic {
+    Eigen::Matrix4d T_sensor_body = Eigen::Matrix4d::Identity();
+    Eigen::Vector3d antenna_position_sensor = Eigen::Vector3d::Zero();
+};
+
+/// 由 body 系固定天线位置和某时刻的 T_sensor_body 求传感器系杆臂。
+inline UwbMeasurementExtrinsic uwbExtrinsicFromBody(const Eigen::Matrix4d& T_sensor_body,
+                                                    const Eigen::Vector3d& antenna_position_body) {
+    return {T_sensor_body,
+            T_sensor_body.block<3, 3>(0, 0) * antenna_position_body +
+                T_sensor_body.block<3, 1>(0, 3)};
+}
 
 /// 将高频传输重发收敛为按物理解更新的最新值流。
 class UwbObservationStream {
@@ -37,7 +55,9 @@ public:
     explicit UwbObservationStream(const UwbObservationStreamConfig& config) : config_(config) {}
 
     /// 接受一个新的物理解；无效、明显乱序或过快重复的保持样本返回 false。
-    bool ingest(double timestamp, const Eigen::Vector3d& position_uwb_antenna);
+    /// extrinsic 为测量时刻的外参与杆臂；空值时使用配置中的固定值。
+    bool ingest(double timestamp, const Eigen::Vector3d& position_uwb_antenna,
+                const std::optional<UwbMeasurementExtrinsic>& extrinsic = std::nullopt);
 
     /// 清除最新原始物理解及其去重身份。
     void clear() { latest_.reset(); }
@@ -91,12 +111,18 @@ public:
                                 const Eigen::Matrix4d& T_map_uwb) const;
     /// 将 UWB 解算坐标系中的位置协方差旋转到地图坐标系。
     Eigen::Matrix3d positionCovarianceMap(const Eigen::Matrix4d& T_map_uwb) const;
+    /// 返回该测量时刻的传感器系杆臂；观测未携带时使用固定配置。
+    Eigen::Vector3d antennaPositionSensor(const UwbObservation& observation) const {
+        return observation.antenna_position_sensor.value_or(config_.antenna_position_sensor);
+    }
 
 private:
     /// 因果查询 UWB 物理时刻，并把天线均值和速度投影到关键帧局部系。
     struct TimingProjection {
         Eigen::Matrix4d T_keyframe_measurement = Eigen::Matrix4d::Identity();
         Eigen::Vector3d antenna_in_keyframe = Eigen::Vector3d::Zero();
+        /// 测量时刻的传感器系杆臂。
+        Eigen::Vector3d antenna_position_sensor = Eigen::Vector3d::Zero();
         Eigen::Vector3d residual_velocity = Eigen::Vector3d::Zero();
         std::optional<UwbTimeOffsetSupport> time_support;
         double keyframe_time_offset = 0.0;
@@ -134,8 +160,17 @@ public:
     void restartBootstrap(const Eigen::Matrix4d& initial_guess);
     /// 设置 UWB 启动对齐的数值初值，不改变观测消费水位。
     void seedBootstrap(const Eigen::Matrix4d& seed) { uwb_bootstrap_.setInitialGuess(seed); }
-    /// 验收新的 UWB 物理解，保留原始时间戳用于唯一性判断。
-    bool ingest(double stamp, const Eigen::Vector3d& position);
+    /// 验收新的 UWB 物理解，保留原始时间戳用于唯一性判断；extrinsic 为测量时刻外参。
+    bool ingest(double stamp, const Eigen::Vector3d& position,
+                const std::optional<UwbMeasurementExtrinsic>& extrinsic = std::nullopt);
+    /// 返回该观测时刻的传感器系杆臂（未携带时为固定配置）。
+    Eigen::Vector3d antennaPositionSensor(const UwbObservation& observation) const {
+        return uwb_factor_builder_.antennaPositionSensor(observation);
+    }
+    /// 返回该观测时刻的 T_sensor_body（未携带时为固定配置）。
+    Eigen::Matrix4d sensorBody(const UwbObservation& observation) const {
+        return observation.T_sensor_body.value_or(config_.uwb.T_sensor_body);
+    }
     /// 返回最新原始物理解的只读输入流。
     const UwbObservationStream& observations() const { return uwb_observations_; }
     /// 返回已完成统计评估或被启动估计概括的物理解时间水位。

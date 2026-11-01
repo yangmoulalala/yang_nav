@@ -6,46 +6,52 @@
 
 ### YAML 参数
 
-运行配置见 [backend.yaml](../../../config/backend.yaml)。完整参数名为“小节名.键名”，如 `common.frontend`。
-默认值以仓库 YAML 为准；其中未列出的参数使用节点默认值。删减 YAML 或直接运行节点时，默认值可能不同。
-数值须有限。参数在启动时读取，修改后需重启。
+每个参数只有一个来源：ROS 参数文件（`backend_node: ros__parameters:`）。单独启动 backend 使用
+[config/example.yaml](../config/example.yaml)，完整系统使用 `bringup/config/<platform>/backend.yaml`。
+完整参数名为“小节名.键名”，如 `common.frontend`。下表“默认值”列为 `config/example.yaml` 中的取值；
+代码中没有默认值，参数文件不支持继承或合并，缺失参数与未知参数都会使启动失败。
+标为“仅 launch”的键由 `backend.launch.py` 传入，不得写入参数文件；标为“仅 legacy”的键只在
+`common.frontend=legacy` 时提供，`zlio` 时写入会被当作未知参数拒绝。数值须有限。参数在启动时读取，修改后需重启。
 
-| 键 | 类型 | 默认值 | 含义 |
-| --- | --- | --- | --- |
-| `extends` | 路径 | 未设置 | 继承另一个 YAML；相对路径从当前文件所在目录算起，同名参数以当前文件为准，由 launch 解析 |
+输入输出话题不再通过参数配置：`frontend/frame`、`frontend/odometry`、`frontend/session`、`uwb_pose`、
+`localization/lio_world_cloud` 为节点内固定的相对名，需要改名时在 launch 中使用 ROS remap。
 
-#### `common` · 坐标与输入（16 项）
+#### `common` · 坐标与输入（14 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `frontend` | 字符串 | `zlio` | 前端接口：`zlio` 接收打包的观测、预测和会话消息；`legacy` 分别接收里程计与点云 |
 | `map_frame` | 字符串 | `map` | 全局地图坐标系名称，也是全局位姿输出的参考系 |
 | `odom_frame` | 字符串 | `odom` | 前端里程计父坐标系名称，须与输入消息一致 |
-| `sensor_frame` | 字符串 | `imu` | 前端位姿所描述的传感器坐标系，须与里程计子坐标系一致 |
-| `frame_topic` | 字符串 | `/frontend/frame` | ZLIO 同步观测话题，一条消息包含位姿和局部去畸变点云 |
-| `prediction_topic` | 字符串 | `/frontend/odometry` | ZLIO 高频里程计预测话题 |
-| `session_topic` | 字符串 | `/frontend/session` | ZLIO 会话通知话题，用于识别进程、重置代次和输入故障 |
-| `odom_topic` | 字符串 | `/Odometry` | `legacy` 高频里程计话题，用于输出实时位姿 |
-| `sync_odom_topic` | 字符串 | `/Odometry_scan_end` | `legacy` 扫描末端里程计话题，用于与点云配对 |
-| `cloud_topic` | 字符串 | `/cloud_registered` | `legacy` 去畸变点云输入话题 |
+| `sensor_frame` | 字符串 | `imu` | 前端位姿所描述的传感器坐标系，须与里程计子坐标系一致；完整系统中为前端 `frames.imu` |
+| `body_frame` | 字符串 | `body` | 车体坐标系名称，用于车体位姿输出；完整系统为 `base_link`。外参从 TF 读取，见下文 |
+| `odom_topic` | 字符串 | 仅 legacy | `legacy` 高频里程计话题，用于输出实时位姿 |
+| `sync_odom_topic` | 字符串 | 仅 legacy | `legacy` 扫描末端里程计话题，用于与点云配对 |
+| `cloud_topic` | 字符串 | 仅 legacy | `legacy` 去畸变点云输入话题 |
 | `input_cloud_in_local_frame` | 布尔 | `true` | 输入点云是否在传感器系；关闭时按 odom 系读取并转回传感器系，ZLIO 必须开启 |
-| `odom_cloud_sync.subscription_queue_depth` | 整数，消息 | `50` | 同步输入订阅最多缓存的消息数，也用于 ZLIO 观测订阅；须 `≥1` |
-| `odom_cloud_sync.synchronizer_queue_depth` | 整数，组 | `20` | `legacy` 时间同步器最多缓存的待配对消息数；须 `≥1` |
-| `odom_cloud_sync.max_interval` | 浮点，s | `0.05` | `legacy` 里程计与点云允许的最大时间戳差；须 `≥0.001` |
+| `observation_queue_depth` | 整数，消息 | `50` | 观测订阅最多缓存的消息数，ZLIO 原子观测与 legacy 里程计/点云订阅共用；须 `≥1`（原 `odom_cloud_sync.subscription_queue_depth`） |
+| `odom_cloud_sync.synchronizer_queue_depth` | 整数，组 | 仅 legacy | `legacy` 时间同步器最多缓存的待配对消息数；须 `≥1` |
+| `odom_cloud_sync.max_interval` | 浮点，s | 仅 legacy | `legacy` 里程计与点云允许的最大时间戳差；须 `≥0.001` |
+| `body_extrinsic_tolerance` | 浮点，s | `0.2` | 车体外参按消息时间戳查询；该时刻不在 TF 缓存范围内时，允许使用的最新 TF 与请求时刻的最大时间差；超出时节流告警并沿用上次有效外参。须 `≥0`，应大于关节状态发布周期与传输延迟之和；全静态变换链不受影响 |
 | `maintenance_period` | 浮点，s | `0.2` | 检查重置事务、调度跟踪与恢复任务的周期；须 `≥0.01` |
 | `descriptor_type` | 字符串 | `scan_context` | 地点识别方法：`scan_context` 高度栅格，`gprobe` 概率占据；须与地图包中的描述子类型一致 |
 
-#### `common.body` · 车体外参（7 项）
+#### `common.body_frame` · 车体外参
 
-| 键 | 类型 / 单位 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `frame` | 字符串 | `body` | 车体坐标系名称，用于车体位姿和 TF 输出 |
-| `rotation.roll_deg` | 浮点，° | `-14.94` | 将传感器坐标转到车体系的横滚角；按 Z-Y-X 欧拉角组合旋转 |
-| `rotation.pitch_deg` | 浮点，° | `0.523` | 将传感器坐标转到车体系的俯仰角 |
-| `rotation.yaw_deg` | 浮点，° | `-150.6` | 将传感器坐标转到车体系的偏航角 |
-| `offset.x` | 浮点，m | `-0.098` | 从传感器原点到车体原点的位移，在车体系中的 X 分量 |
-| `offset.y` | 浮点，m | `0.094` | 从传感器原点到车体原点的位移，在车体系中的 Y 分量 |
-| `offset.z` | 浮点，m | `0.0` | 从传感器原点到车体原点的位移，在车体系中的 Z 分量 |
+参数文件不再包含车体外参（原 `common.body.*` 已删除）。后端持续监听 TF，按消息时间戳查询
+`common.sensor_frame` ← `common.body_frame` 的变换；启动时阻塞等待该变换首次可用（节流告警）。
+完整系统中该变换由 URDF（`src/sentry_description/urdf/sentry_robot.urdf`）经 `robot_state_publisher` 提供，
+外参只在 URDF 中维护。云台 `yaw_joint` 等可动关节由 `joint_state_publisher` 发布到 TF，后端按时间跟踪：
+
+- `~/localization_pose` 的车体位姿使用输出时间戳处的外参（`T_map_body = T_map_sensor · T_sensor_body(t)`）；
+- UWB 天线固定在 body 系，每条 UWB 测量按其运动时刻（消息时间 + `uwb.time_offset_seconds`）的外参换算传感器系杆臂，
+  该杆臂随测量进入因子、启动对齐与恢复先验；在线时间偏置估计的小时间窗内把该杆臂视为常量；
+- `startup_hint` 描述启动时刻的车体位姿，用**启动时**的外参换算为传感器位姿（启动到首帧期间应保持云台不动）；
+- 关键帧、配准、描述子整平与 map → odom TF 均在传感器系中计算，不依赖车体外参。
+
+精确时刻不在 TF 缓存中时使用最新变换；其时间戳与请求时刻相差超过 `common.body_extrinsic_tolerance` 时节流告警并沿用上次有效外参。
+外参变化超过约 2° 或 1 cm 时节流输出 `body extrinsic changed` 信息日志。单独运行时可用 `static_transform_publisher`
+发布该变换，见 [README](../README.md#快速开始)。
 
 #### `common.scan_context` · Scan Context（14 项）
 
@@ -71,7 +77,8 @@
 
 #### `common.gprobe` · G-PROBE（17 项）
 
-仅在 `common.descriptor_type=gprobe` 时使用。以下为节点默认值，离线工具的部分默认值不同。
+仅在 `common.descriptor_type=gprobe` 时使用，此时须删去 `common.scan_context` 参数组并提供本组全部键。
+`config/example.yaml` 选用 Scan Context，不含本组；以下为参考取值，离线工具的部分默认值不同。
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -97,8 +104,8 @@
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `enabled` | 布尔 | `true` | 是否加载固定先验地图定位；开启后关闭回环、退出保存和运行地图显示，关闭则维护建图轨迹 |
-| `directory` | 路径 | `pcd/rmuc` | 先验关键帧地图包目录；启用先验时必填，相对路径从运行目录算起 |
+| `enabled` | 布尔 | 仅 launch | 是否加载固定先验地图定位；开启后关闭回环、退出保存和运行地图显示，关闭则维护建图轨迹；由 launch 参数 `mode` 决定（`localization` 为 `true`） |
+| `directory` | 路径 | 仅 launch | 先验关键帧地图包目录；由 launch 参数 `prior_map` 提供，`mode:=localization` 时必填且须存在 |
 | `voxel_resolution` | 浮点，m | `0.15` | 先验地图显示点云的体素边长，不影响配准；须 `≥0`，`0` 不降采样 |
 
 #### `trajectory` · 运行地图与关键帧（8 项）
@@ -106,7 +113,7 @@
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `save_on_shutdown` | 布尔 | `false` | 是否在正常退出时保存运行地图；关闭时仍可调用保存服务，先验定位时不保存 |
-| `save_directory` | 路径 | `pcd/runtime_zlio` | 建图结果的保存目录，相对路径从运行目录算起；可用 launch 参数 `save_dir` 覆盖，bringup 默认传入 `<工作空间>/maps/sim` 或 `maps/real` |
+| `save_directory` | 路径 | 仅 launch | 建图结果的保存目录；由 launch 参数 `save_dir` 提供，留空则不可保存 |
 | `save_global_pcd` | 布尔 | `true` | 保存地图包时是否额外生成全局 `map.pcd` |
 | `map_voxel_resolution` | 浮点，m | `0.15` | 运行地图显示及全局 PCD 导出的体素边长；须 `≥0`，`0` 不降采样 |
 | `keyframe.distance` | 浮点，m | `-1.0` | 相对上一关键帧移动超过此距离时插入关键帧；`≤0` 关闭此触发条件 |
@@ -191,13 +198,12 @@
 | `target_keyframes` | 整数，帧 | `11` | 为一个恢复候选拼接目标子图时，最多使用的先验关键帧数；须 `≥1` |
 | `target_radius` | 浮点，m | `8.0` | 围绕恢复候选关键帧拼接目标子图的半径；须 `≥0`，`0` 不限半径 |
 
-#### `uwb` · 输入与时空标定（23 项）
+#### `uwb` · 输入与时空标定（22 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `enabled` | 布尔 | `true` | 是否订阅并融合 UWB 位置 |
 | `use_z` | 布尔 | `false` | 是否使用 UWB 高度；关闭时输入、标定和融合均只使用 XY |
-| `topic` | 字符串 | `/uwb_pose` | UWB 原始天线位置话题，消息类型为 `PoseStamped` |
 | `frame` | 字符串 | `uwb` | UWB 原始位置的坐标系，须非空且与消息 `frame_id` 一致；填 map 时须无坐标变换且关闭在线空间标定 |
 | `estimate_zero_pose_online` | 布尔 | `true` | 是否用先验定位结果估计 UWB 到 map 的坐标变换；需启用 UWB 和先验地图，关闭则使用 `zero_pose` |
 | `zero_pose.x` | 浮点，m | `0.0` | UWB 原点在 map 系中的 X 坐标；在线标定完成前也用于恢复初值 |
@@ -320,7 +326,7 @@
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `enabled` | 布尔 | `false` | 是否发布 UWB 位置和状态标记；其他可视化开关未填写时继承此值 |
+| `enabled` | 布尔 | `false` | 是否发布 UWB 位置和状态标记；其他可视化开关须单独填写 |
 | `publish_prior_map` | 布尔 | `false` | 是否发布先验地图显示点云；需启用先验地图 |
 | `publish_runtime_map` | 布尔 | `false` | 是否发布当前建图结果的显示点云；先验定位时关闭 |
 | `publish_map_axes` | 布尔 | `false` | 是否显示地图关键帧坐标轴 |
@@ -336,7 +342,7 @@
 | `relocalize` | 字符串 | `~/relocalize` | 手动重定位服务名，仅在 `LOST` 状态接受请求 |
 | `reset` | 字符串 | `/localization_reset` | 对外提供的前后端协调重置服务名 |
 
-#### `output.world_cloud` · 世界点云输出（5 项）
+#### `output.world_cloud` · 世界点云输出（4 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -344,7 +350,6 @@
 | `publish_period` | 浮点，s | `0.0` | 实时世界点云的最小发布间隔；须 `≥0`，`0` 每个有效帧都可发布 |
 | `publish_initializing` | 布尔 | `false` | 是否允许初始定位尚未完成时发布世界点云 |
 | `publish_untrusted` | 布尔 | `false` | 是否允许 `SUSPECT` / `LOST` 时发布世界点云；此时使用最后可信位姿变换 |
-| `topic` | 字符串 | `/localization/lio_world_cloud` | 实时世界点云的话题名 |
 
 #### `storage` · 点云缓存（2 项）
 
@@ -361,12 +366,14 @@
 
 | 参数 | 类型 | 默认值 | 含义 |
 | --- | --- | --- | --- |
-| `config_file` | 路径 | `<backend share>/config/backend.yaml` | 后端 YAML 路径，支持 `extends` 继承 |
-| `mode` | 字符串 | `config` | `config` 沿用 YAML；`mapping` 关闭先验地图；`localization` 开启先验地图，均不改变 UWB 开关 |
-| `prior_map` | 路径 | `""` | 覆盖 YAML 中的先验地图目录；留空则沿用 YAML |
-| `save_dir` | 路径 | `""` | 覆盖 YAML 中的 `trajectory.save_directory`；留空则沿用 YAML |
+| `params_file` | 路径 | `<backend share>/config/example.yaml` | 后端 ROS 参数文件（`backend_node: ros__parameters:`）；须存在，不支持继承或合并 |
 | `use_sim_time` | 布尔 | `false` | 后端和 RViz 是否使用 `/clock` 仿真时间 |
-| `rviz` | 布尔 | `false` | 是否启动 RViz，并开启当前地图、坐标轴、轨迹和配准点云显示 |
+| `mode` | 字符串 | `mapping` | `mapping` 无先验建图；`localization` 加载 `prior_map` 定位；决定 `prior_map.enabled`，不改变 UWB 开关 |
+| `prior_map` | 路径 | `""` | 先验地图包目录，写入 `prior_map.directory`；`localization` 必填且须存在，`mapping` 忽略 |
+| `save_dir` | 路径 | `""` | `~/save_map` 与退出保存的目标目录，写入 `trajectory.save_directory`；留空则不可保存 |
+| `rviz` | 布尔 | `false` | 是否启动 RViz；可视化话题开关只由参数文件的 `visualization.*` 决定 |
+
+bringup 的 `localization.launch.py` 包含本文件，并传入 `bringup/config/<platform>/backend.yaml` 与话题 remap。
 
 #### `body_calibration.launch.py`
 
@@ -554,8 +561,8 @@
 | 参数 | 范围 / 当前值 | 作用 | 设置建议 |
 | --- | --- | --- | --- |
 | `common.descriptor_type` | `scan_context` / `gprobe`；当前 `scan_context` | 地点识别与重定位使用的描述子类型 | Mid-360 可优先选 Scan Context；Avia、奥丁之眼可优先选 G-PROBE，再比较实际重定位成功率和耗时。切换时只保留对应参数组，并使用匹配的地图描述子；见 [地图加载](../apps/node_map.cpp) |
-| `common.body.rotation.roll_deg`、`common.body.rotation.pitch_deg`、`common.body.rotation.yaw_deg` | 有限角度，°；当前依次为 `-14.94`、`0.523`、`-150.6` | 前端传感器坐标系到车体坐标系的固定旋转 | 用已知车体姿态运行 [标定工具](#body_calibrationlaunchpy)，更改安装后重新标定；检查输出朝向、横滚和俯仰是否符合实物 |
-| `common.body.offset.x`、`common.body.offset.y`、`common.body.offset.z` | 有限位移，m；当前依次为 `-0.098`、`0.094`、`0.0` | 从传感器原点指向车体原点、在车体系表达的位移 | XY 可通过绕固定车体中心旋转标定，Z 按安装尺寸测量；标定后检查原地旋转时车体位置是否稳定。方向见 [外参实现](../src/body.cpp) |
+| 传感器到车体旋转（URDF 关节 `origin rpy`） | 有限角度；只在 [sentry_robot.urdf](../../../sentry_description/urdf/sentry_robot.urdf) 中维护 | `common.sensor_frame` ← `common.body_frame` 的安装旋转，后端按消息时间戳从 TF 查询 | 用已知车体姿态运行 [标定工具](#body_calibrationlaunchpy)，将结果写入 URDF；更改安装后重新标定，检查输出朝向、横滚和俯仰是否符合实物 |
+| 传感器到车体平移（URDF 关节 `origin xyz`） | 有限位移，m；只在 URDF 中维护 | `common.sensor_frame` ← `common.body_frame` 的固定平移 | XY 可通过绕固定车体中心旋转标定，Z 按安装尺寸测量，结果写入 URDF；标定后检查原地旋转时车体位置是否稳定。云台关节角由 `/joint_states` 经 TF 按时间跟踪 |
 | `uwb.antenna_position_body.x`、`uwb.antenna_position_body.y`、`uwb.antenna_position_body.z` | 有限坐标，m；当前依次为 `-0.245`、`0.0`、`0.0` | UWB 天线相位中心在车体坐标系中的位置 | 按车体原点和坐标轴测量，移动天线后更新；转弯时若偏差随朝向变化，应检查此项。见 [天线位置换算](../apps/fusion_parameters.cpp) |
 
 使用 Scan Context 时，`common.scan_context.lidar_height` 按安装高度设置；使用 G-PROBE 时，
@@ -573,9 +580,9 @@
 
 | 参数 | 范围 / 当前值 | 作用 | 设置建议 |
 | --- | --- | --- | --- |
-| `prior_map.directory` | 可读的地图包目录；当前 `pcd/rmuc` | 当前场地的全局定位参考地图 | 换场地时更换地图包，并核对坐标方向、覆盖范围和描述子配置。先验定位开启 `prior_map.enabled`，重新建图时关闭；见 [地图加载](../apps/node_map.cpp) |
+| `prior_map.directory`（仅 launch） | 可读的地图包目录；由 `prior_map` 提供 | 当前场地的全局定位参考地图 | 换场地时更换地图包，并核对坐标方向、覆盖范围和描述子配置。先验定位用 `mode:=localization`，重新建图用 `mode:=mapping`；见 [地图加载](../apps/node_map.cpp) |
 | `common.scan_context.distance_threshold`、`recovery.initial_max_descriptor_distance`、`recovery.descriptor_distance_limit` | 非负描述子距离；当前均为 `0.8` | 分别控制 SC 回环、初始定位和恢复时的候选筛选，越大越宽松 | 根据描述子质量和环境调整：正确候选常被过滤时增大，重复结构多、错误候选过多时减小；结合召回效果和几何验证耗时确认 |
-| `trajectory.save_directory` | 可写目录；当前 `pcd/runtime_zlio` | 本次建图结果的保存位置 | 按场地和采集批次分目录保存，与先验地图目录分开，便于比较不同建图结果；见 [保存入口](../apps/node_map.cpp) |
+| `trajectory.save_directory`（仅 launch） | 可写目录；由 `save_dir` 提供 | 本次建图结果的保存位置 | 按场地和采集批次分目录保存，与先验地图目录分开，便于比较不同建图结果；见 [保存入口](../apps/node_map.cpp) |
 | `trajectory.keyframe.distance`、`trajectory.keyframe.angle_deg` | 有限距离 m、角度 °；当前均为 `-1`；`≤0` 关闭对应触发 | 相对上一关键帧的平移、转角触发门限 | 建图时按速度和扫描重叠设置较小正值，保证转弯处有足够关键帧。先验定位可设为 `-1`，改按时间选帧；见 [选帧逻辑](../src/keyframe_map.cpp) |
 | `trajectory.keyframe.min_interval`、`trajectory.keyframe.max_interval` | `min_interval ≥0` s；`max_interval >0` 时启用定时触发；当前为 `0`、`0.5 s` | 关键帧的最小插入间隔与定时触发间隔 | `max_interval` 补充定时关键帧，`min_interval` 限制插入频率。当前 `0.5 s` 在输入充足时约为 `2 Hz`；结合匹配连续性和耗时调整，见 [选帧逻辑](../src/keyframe_map.cpp) |
 | `registration.voxel_resolution` | `≥0` m；当前 `0.4 m`；`0` 保留原始点密度 | 参与配准的点云空间采样尺度 | 细节不足时减小，计算过慢时增大；在同一数据上比较误差、匹配连续性和耗时。见 [配准实现](../src/registration.cpp) |

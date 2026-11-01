@@ -13,11 +13,12 @@
 #include <vector>
 
 #include "backend/math.hpp"
+#include "backend/uwb_fusion.hpp"
 
 namespace backend::ros {
 
-/// 读取全部后端参数并在返回前校验能力关系及未知字段。
-NodeConfig ParameterReader::load() {
+/// 读取全部后端参数，校验能力关系及未知字段后再查询 body 外参并派生相关配置。
+NodeConfig ParameterReader::load(const BodyExtrinsicLookup& lookup) {
     loadCommonInput();
     loadMapTrajectoryAndRegistration();
     loadTracking();
@@ -29,83 +30,97 @@ NodeConfig ParameterReader::load() {
     validateRelationships();
     loadDescriptor();
     validateParameterSchema();
+    // 参数集合完整后才等待 TF，拼写错误等配置问题不会被外参等待掩盖。
+    applyBodyExtrinsic(lookup(parameters_.input));
     return std::move(parameters_);
 }
 
-/// 读取坐标系、话题、同步器和 body 外参。
+/// 读取前端协议、坐标系名称及输入队列；legacy 专用的话题与同步器参数仅在 legacy 下读取。
 void ParameterReader::loadCommonInput() {
     getParam("common/frontend", parameters_.input.frontend);
-    getParam("common/frame_topic", parameters_.input.frame_topic);
-    getParam("common/prediction_topic", parameters_.input.prediction_topic);
-    getParam("common/session_topic", parameters_.input.session_topic);
-    getParam("common/sensor_frame", parameters_.input.sensor_frame);
     if (parameters_.input.frontend != "legacy" && parameters_.input.frontend != "zlio")
         throw std::invalid_argument("common.frontend must be legacy or zlio");
+    getParam("common/sensor_frame", parameters_.input.sensor_frame);
     getParam("common/map_frame", parameters_.input.map_frame);
     getParam("common/odom_frame", parameters_.input.odom_frame);
-    getParam("common/odom_topic", parameters_.input.odom_topic);
-    getParam("common/sync_odom_topic", parameters_.input.sync_odom_topic);
-    getParam("common/cloud_topic", parameters_.input.cloud_topic);
+    getParam("common/body_frame", parameters_.input.body_frame);
+    if (parameters_.input.sensor_frame.empty() || parameters_.input.body_frame.empty())
+        throw std::invalid_argument("common.sensor_frame and common.body_frame must not be empty");
+    getParam("common/body_extrinsic_tolerance", parameters_.input.body_extrinsic_tolerance);
+    if (!std::isfinite(parameters_.input.body_extrinsic_tolerance) ||
+        parameters_.input.body_extrinsic_tolerance < 0.0)
+        throw std::invalid_argument("common.body_extrinsic_tolerance must be finite and >= 0");
     getParam("common/input_cloud_in_local_frame", parameters_.input.cloud_in_local_frame);
     if (parameters_.input.frontend == "zlio" && !parameters_.input.cloud_in_local_frame)
         throw std::invalid_argument(
             "ZLIO observations require common.input_cloud_in_local_frame=true");
-    getParam("common/odom_cloud_sync/subscription_queue_depth",
-             parameters_.input.subscription_queue);
+    // ZLIO 观测订阅与 legacy 里程计/点云订阅共用该队列深度。
+    getParam("common/observation_queue_depth", parameters_.input.subscription_queue);
+    getParam("common/maintenance_period", parameters_.input.maintenance_period);
+    parameters_.input.subscription_queue = std::max(1, parameters_.input.subscription_queue);
+    parameters_.input.maintenance_period = std::max(0.01, parameters_.input.maintenance_period);
+    if (parameters_.input.frontend != "legacy") {
+        return;
+    }
+    getParam("common/odom_topic", parameters_.input.odom_topic);
+    getParam("common/sync_odom_topic", parameters_.input.sync_odom_topic);
+    getParam("common/cloud_topic", parameters_.input.cloud_topic);
     getParam("common/odom_cloud_sync/synchronizer_queue_depth",
              parameters_.input.synchronizer_queue);
     getParam("common/odom_cloud_sync/max_interval", parameters_.input.synchronizer_max_interval);
-    getParam("common/maintenance_period", parameters_.input.maintenance_period);
-    parameters_.input.subscription_queue = std::max(1, parameters_.input.subscription_queue);
     parameters_.input.synchronizer_queue = std::max(1, parameters_.input.synchronizer_queue);
     parameters_.input.synchronizer_max_interval =
         std::max(1.0e-3, parameters_.input.synchronizer_max_interval);
-    parameters_.input.maintenance_period = std::max(0.01, parameters_.input.maintenance_period);
+}
 
-    getParam("common/body/frame", parameters_.input.body_frame);
-    Eigen::Vector3d body_offset = Eigen::Vector3d::Zero();
-    Eigen::Vector3d body_rpy = Eigen::Vector3d::Zero();
-    getParam<double>("common/body/offset/x", body_offset.x(), 0.0);
-    getParam<double>("common/body/offset/y", body_offset.y(), 0.0);
-    getParam<double>("common/body/offset/z", body_offset.z(), 0.0);
-    getParam<double>("common/body/rotation/roll_deg", body_rpy.x(), 0.0);
-    getParam<double>("common/body/rotation/pitch_deg", body_rpy.y(), 0.0);
-    getParam<double>("common/body/rotation/yaw_deg", body_rpy.z(), 0.0);
-    if (!body_offset.allFinite() || !body_rpy.allFinite()) {
-        throw std::invalid_argument("common.body calibration contains a non-finite value");
+/// 用启动时的 T_sensor_body 换算启动提示，并给出 UWB 外参与杆臂的回退值。
+/// 运行期间每条 UWB 测量和每次位姿输出都使用各自时刻的外参；这里的值只用于
+/// 未携带时变外参的路径（如启动提示航向还原）。
+void ParameterReader::applyBodyExtrinsic(const Eigen::Matrix4d& T_sensor_body) {
+    if (!T_sensor_body.allFinite()) {
+        throw std::invalid_argument("body extrinsic from TF contains a non-finite value");
     }
-    parameters_.input.body_transform.configure(body_offset, body_rpy);
+    const UwbMeasurementExtrinsic startup =
+        uwbExtrinsicFromBody(T_sensor_body, parameters_.input.antenna_position_body);
+    parameters_.runtime.uwb.T_sensor_body = startup.T_sensor_body;
+    parameters_.runtime.uwb.antenna_position_sensor = startup.antenna_position_sensor;
+    if (startup_T_map_body_) {
+        // 启动提示描述启动时刻的 body 位姿；以启动时外参换算为 T_map_sensor。
+        parameters_.runtime.startup_hint.T_map_sensor =
+            *startup_T_map_body_ * T_sensor_body.inverse();
+    } else {
+        parameters_.runtime.startup_hint.T_map_sensor.reset();
+    }
 }
 
 /// 读取地图持久化、关键帧和唯一点到面配准参数。
 void ParameterReader::loadMapTrajectoryAndRegistration() {
     int cloud_cache_mb = 64, submap_cache_mb = 64;
-    getParam<int>("storage/cloud_cache_mb", cloud_cache_mb, 64);
-    getParam<int>("storage/submap_cache_mb", submap_cache_mb, 64);
+    getParam("storage/cloud_cache_mb", cloud_cache_mb);
+    getParam("storage/submap_cache_mb", submap_cache_mb);
     parameters_.runtime.storage.cloud_cache_bytes =
         static_cast<std::size_t>(std::max(0, cloud_cache_mb)) * 1024U * 1024U;
     parameters_.runtime.storage.submap_cache_bytes =
         static_cast<std::size_t>(std::max(0, submap_cache_mb)) * 1024U * 1024U;
     getParam("prior_map/enabled", parameters_.runtime.prior_map_enabled);
-    getParam<std::string>("prior_map/directory", parameters_.maps.prior_directory, "pcd/prior_map");
+    getParam("prior_map/directory", parameters_.maps.prior_directory);
     getParam("prior_map/voxel_resolution", parameters_.maps.prior_voxel);
 
     getParam("trajectory/save_on_shutdown", parameters_.maps.save_on_shutdown);
-    getParam<std::string>("trajectory/save_directory", parameters_.maps.save_directory,
-                          "pcd/runtime_map");
+    getParam("trajectory/save_directory", parameters_.maps.save_directory);
     getParam("trajectory/save_global_pcd", parameters_.maps.save_global_pcd);
     getParam("trajectory/map_voxel_resolution", parameters_.maps.runtime_voxel);
     getParam("trajectory/keyframe/distance", parameters_.runtime.keyframes.distance);
     double keyframe_angle_deg = 12.0;
-    getParam<double>("trajectory/keyframe/angle_deg", keyframe_angle_deg, 12.0);
+    getParam("trajectory/keyframe/angle_deg", keyframe_angle_deg);
     parameters_.runtime.keyframes.angle_rad = degreesToRadians(keyframe_angle_deg);
     getParam("trajectory/keyframe/min_interval", parameters_.runtime.keyframes.min_interval);
     getParam("trajectory/keyframe/max_interval", parameters_.runtime.keyframes.max_interval);
     RegistrationConfig& registration = parameters_.runtime.relocalization.point_to_plane_config;
     getParam("registration/voxel_resolution", registration.voxel_resolution);
-    getParam<int>("registration/max_iterations", registration.max_iterations, 10);
+    getParam("registration/max_iterations", registration.max_iterations);
     getParam("registration/max_correspondence_distance", registration.max_correspondence_distance);
-    getParam<int>("registration/plane_knn", registration.plane_knn, 10);
+    getParam("registration/plane_knn", registration.plane_knn);
     getParam("registration/max_plane_eigenvalue_ratio", registration.max_plane_eigenvalue_ratio);
     getParam("registration/min_plane_middle_eigenvalue_ratio",
              registration.min_plane_middle_eigenvalue_ratio);
@@ -120,8 +135,7 @@ void ParameterReader::loadMapTrajectoryAndRegistration() {
     getParam("registration/measurement_translation_std_floor",
              registration.measurement_translation_std_floor);
     double measurement_rotation_std_floor_deg = 0.0;
-    getParam<double>("registration/measurement_rotation_std_floor_deg",
-                     measurement_rotation_std_floor_deg, 0.0);
+    getParam("registration/measurement_rotation_std_floor_deg", measurement_rotation_std_floor_deg);
     registration.measurement_rotation_std_floor_rad =
         degreesToRadians(measurement_rotation_std_floor_deg);
     getParam("registration/min_coverage_sectors", registration.min_coverage_sectors);
@@ -133,7 +147,7 @@ void ParameterReader::loadMapTrajectoryAndRegistration() {
 void ParameterReader::loadTracking() {
     getParam("tracking/correction_period", parameters_.runtime.tracking.correction_period);
     int tracking_target_keyframes = 16;
-    getParam<int>("tracking/target_keyframes", tracking_target_keyframes, 16);
+    getParam("tracking/target_keyframes", tracking_target_keyframes);
     parameters_.runtime.tracking.target_keyframes =
         static_cast<std::size_t>(std::max(1, tracking_target_keyframes));
     getParam("tracking/target_radius", parameters_.runtime.tracking.target_radius);
@@ -147,13 +161,13 @@ void ParameterReader::loadTracking() {
     getParam("tracking/source/max_translation",
              parameters_.runtime.tracking.source.max_translation);
     double tracking_source_max_rotation_deg = 0.0;
-    getParam<double>("tracking/source/max_rotation_deg", tracking_source_max_rotation_deg, 0.0);
+    getParam("tracking/source/max_rotation_deg", tracking_source_max_rotation_deg);
     parameters_.runtime.tracking.source.max_rotation_rad =
         degreesToRadians(tracking_source_max_rotation_deg);
     getParam("tracking/max_translation_correction",
              parameters_.runtime.tracking.max_translation_correction);
     double max_rotation_correction_deg = 15.0;
-    getParam<double>("tracking/max_rotation_correction_deg", max_rotation_correction_deg, 15.0);
+    getParam("tracking/max_rotation_correction_deg", max_rotation_correction_deg);
     parameters_.runtime.tracking.max_rotation_correction_rad =
         degreesToRadians(max_rotation_correction_deg);
     getParam("tracking/suspicious_linear_speed",
@@ -188,7 +202,7 @@ void ParameterReader::loadRecovery() {
     getParam("recovery/source/max_translation",
              parameters_.runtime.recovery.source.max_translation);
     double recovery_source_max_rotation_deg = 0.0;
-    getParam<double>("recovery/source/max_rotation_deg", recovery_source_max_rotation_deg, 0.0);
+    getParam("recovery/source/max_rotation_deg", recovery_source_max_rotation_deg);
     parameters_.runtime.recovery.source.max_rotation_rad =
         degreesToRadians(recovery_source_max_rotation_deg);
     getParam("recovery/initial_max_descriptor_distance",
@@ -221,15 +235,10 @@ bool isFrameworkParameter(const std::string& name) {
 /// 读取可视化、服务和世界点云输出参数。
 void ParameterReader::loadOutputs() {
     getParam("visualization/enabled", parameters_.visualization.enabled);
-    getParam<bool>("visualization/publish_prior_map", parameters_.visualization.publish_prior_map,
-                   parameters_.visualization.enabled);
-    getParam<bool>("visualization/publish_runtime_map",
-                   parameters_.visualization.publish_runtime_map,
-                   parameters_.visualization.enabled);
-    getParam<bool>("visualization/publish_map_axes", parameters_.visualization.publish_map_axes,
-                   parameters_.visualization.enabled);
-    getParam<bool>("visualization/publish_paths", parameters_.visualization.publish_paths,
-                   parameters_.visualization.enabled);
+    getParam("visualization/publish_prior_map", parameters_.visualization.publish_prior_map);
+    getParam("visualization/publish_runtime_map", parameters_.visualization.publish_runtime_map);
+    getParam("visualization/publish_map_axes", parameters_.visualization.publish_map_axes);
+    getParam("visualization/publish_paths", parameters_.visualization.publish_paths);
     getParam("visualization/publish_debug_registration",
              parameters_.visualization.publish_registration);
     parameters_.runtime.registration_debug_enabled = parameters_.visualization.publish_registration;
@@ -243,7 +252,6 @@ void ParameterReader::loadOutputs() {
     getParam("output/world_cloud/publish_initializing",
              parameters_.world_cloud.publish_initializing);
     getParam("output/world_cloud/publish_untrusted", parameters_.world_cloud.publish_untrusted);
-    getParam("output/world_cloud/topic", parameters_.world_cloud.topic);
     parameters_.world_cloud.publish_period = std::max(0.0, parameters_.world_cloud.publish_period);
 }
 
@@ -329,9 +337,8 @@ void ParameterReader::loadDescriptor() {
         getParam("common/gprobe/max_range", descriptor_config.max_range);
         getParam("common/gprobe/voxel_size", descriptor_config.voxel_size);
         getParam("common/gprobe/sigma_t", descriptor_config.sigma_t);
-        getParam<double>("common/gprobe/query_fov_deg", descriptor_config.query_fov_deg, 360.0);
-        getParam<double>("common/gprobe/query_fov_center_deg",
-                         descriptor_config.query_fov_center_deg, 0.0);
+        getParam("common/gprobe/query_fov_deg", descriptor_config.query_fov_deg);
+        getParam("common/gprobe/query_fov_center_deg", descriptor_config.query_fov_center_deg);
         getParam("common/gprobe/branch_top_k", descriptor_config.branch_top_k);
         getParam("common/gprobe/verification_top_k", descriptor_config.verification_top_k);
         getParam("common/gprobe/spatial_nms_radius", descriptor_config.spatial_nms_radius);

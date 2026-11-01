@@ -25,7 +25,12 @@ constexpr double kIntervalToleranceSeconds = 1.0e-6;
 
 /// 验收新的 UWB 物理解，保留原始时间戳用于唯一性判断。
 bool UwbObservationStream::ingest(const double timestamp,
-                                  const Eigen::Vector3d& position_uwb_antenna) {
+                                  const Eigen::Vector3d& position_uwb_antenna,
+                                  const std::optional<UwbMeasurementExtrinsic>& extrinsic) {
+    if (extrinsic.has_value() && (!extrinsic->T_sensor_body.allFinite() ||
+                                  !extrinsic->antenna_position_sensor.allFinite())) {
+        return false;
+    }
     const bool position_finite = config_.use_z ? position_uwb_antenna.allFinite()
                                                : position_uwb_antenna.head<2>().allFinite();
     if (!config_.enabled || !std::isfinite(timestamp) || !position_finite) {
@@ -51,7 +56,14 @@ bool UwbObservationStream::ingest(const double timestamp,
         }
     }
 
-    latest_ = UwbObservation{timestamp, observation};
+    UwbObservation accepted;
+    accepted.timestamp = timestamp;
+    accepted.position_uwb = observation;
+    if (extrinsic.has_value()) {
+        accepted.T_sensor_body = extrinsic->T_sensor_body;
+        accepted.antenna_position_sensor = extrinsic->antenna_position_sensor;
+    }
+    latest_ = std::move(accepted);
     return true;
 }
 
@@ -100,8 +112,10 @@ void UwbFusion::restartBootstrap(const Eigen::Matrix4d& seed) {
     uwb_bootstrap_.setInitialGuess(seed);
 }
 /// 验收新的 UWB 物理解，保留原始时间戳用于唯一性判断。
-bool UwbFusion::ingest(double stamp, const Eigen::Vector3d& position) {
-    return std::isfinite(stamp + timeOffset()) && uwb_observations_.ingest(stamp, position);
+bool UwbFusion::ingest(double stamp, const Eigen::Vector3d& position,
+                       const std::optional<UwbMeasurementExtrinsic>& extrinsic) {
+    return std::isfinite(stamp + timeOffset()) &&
+           uwb_observations_.ingest(stamp, position, extrinsic);
 }
 /// 重置仅依赖本代里程计的启动配对。
 void UwbFusion::clearBootstrapWindow() {
@@ -400,8 +414,9 @@ std::optional<UwbAlignmentEstimate> UwbFusion::bootstrap(const FrontendFrame& fr
         return std::nullopt;
     }
 
+    // 每个配对使用其测量时刻的杆臂；对齐求解只消费 odom 系天线点，不假设杆臂恒定。
     const Eigen::Vector3d antenna_odom =
-        timed_odom_pose->block<3, 3>(0, 0) * config_.uwb.antenna_position_sensor +
+        timed_odom_pose->block<3, 3>(0, 0) * antennaPositionSensor(*latest_uwb) +
         timed_odom_pose->block<3, 1>(0, 3);
     last_uwb_bootstrap_timestamp_ = latest_uwb->timestamp;
     const std::optional<UwbAlignmentEstimate> estimate =

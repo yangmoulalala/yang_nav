@@ -32,7 +32,9 @@ src/backend/
 └── package.xml
 ```
 
-运行参数在 [backend.yaml](../../config/backend.yaml) 中配置。
+运行参数只来自 ROS 参数文件：单独启动 backend 时使用 [config/example.yaml](config/example.yaml)；
+完整系统使用 [bringup/config/&lt;platform&gt;/backend.yaml](../bringup/config/)（`sim` 或 `real`），由 bringup 的 launch 传入。
+代码中没有默认值，缺失参数或未知参数都会使节点启动失败。
 
 ## 环境与依赖
 
@@ -50,16 +52,32 @@ src/backend/
 
 ```bash
 # 建图（save_dir 指定 ~/save_map 的保存目录）
-ros2 launch backend backend.launch.py config_file:=/absolute/path/to/backend.yaml mode:=mapping \
+ros2 launch backend backend.launch.py params_file:=/absolute/path/to/backend.yaml mode:=mapping \
   save_dir:=/absolute/path/to/map_bundle
 
 # 先验地图定位与可视化
-ros2 launch backend backend.launch.py config_file:=/absolute/path/to/backend.yaml \
+ros2 launch backend backend.launch.py params_file:=/absolute/path/to/backend.yaml \
   mode:=localization prior_map:=/absolute/path/to/map_bundle rviz:=true
 
 # 车体外参标定
 ros2 launch backend body_calibration.launch.py
 ```
+
+省略 `params_file` 时使用包内 `config/example.yaml`。`prior_map.enabled`、`prior_map.directory` 与
+`trajectory.save_directory` 只由 `mode`、`prior_map`、`save_dir` 提供，不写入参数文件。
+
+后端持续监听 TF，按消息时间戳查询 `common.sensor_frame` ← `common.body_frame` 外参（跟踪云台等可动关节），
+启动时阻塞到该变换首次可用。精确时刻不可用时使用最新变换，超过 `common.body_extrinsic_tolerance` 则告警并沿用上次有效值，
+见 [参数说明](docs/parameters.md#commonbody_frame--车体外参)。
+完整系统由 URDF 经 `robot_state_publisher` 发布；单独运行时可手动发布静态变换，例如：
+
+```bash
+ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --yaw 0 --pitch 0 --roll 0 \
+  --frame-id imu --child-frame-id body
+```
+
+上例的 `imu`、`body` 对应 `config/example.yaml` 中的 `common.sensor_frame` 与 `common.body_frame`，
+请按实际参数文件和真实外参替换。
 
 ## 参数配置
 
@@ -69,18 +87,19 @@ ros2 launch backend body_calibration.launch.py
 
 ### 输入话题
 
-下表列出默认话题名。`common.frontend` 决定使用哪组接口，话题名可分别配置。ZLIO 消息定义见
+`common.frontend` 决定使用哪组接口。ZLIO 与 UWB 话题为节点内固定的相对名，在默认命名空间下解析为表中名称，
+需要改名时在 launch 中使用 ROS remap；legacy 话题名由 legacy 专用参数配置。ZLIO 消息定义见
 [localization_interfaces](../localization_interfaces/README.md)。
 
 | 话题 | 类型 | QoS | 内容 / 条件 |
 | --- | --- | --- | --- |
-| `/frontend/frame` | `localization_interfaces/msg/FrontendFrame` | reliable，50 | `zlio` 模式下，同一次观测的位姿与局部去畸变点云 |
-| `/frontend/odometry` | `localization_interfaces/msg/FrontendOdometry` | reliable，200 | `zlio` 模式的高频预测 |
-| `/frontend/session` | `localization_interfaces/msg/FrontendSession` | reliable，1，transient local | `zlio` 模式的进程身份、代次、恢复请求与处理失败通知 |
-| `/Odometry_scan_end` | `nav_msgs/msg/Odometry` | best effort，50 | `legacy` 模式用于同步的里程计 |
-| `/cloud_registered` | `sensor_msgs/msg/PointCloud2` | best effort，50 | `legacy` 模式用于同步的点云 |
-| `/Odometry` | `nav_msgs/msg/Odometry` | SensorDataQoS | `legacy` 模式的高频里程计 |
-| `/uwb_pose` | `geometry_msgs/msg/PoseStamped` | reliable，10 | UWB 天线在 `uwb.frame` 坐标系中的原始位置；由 `uwb.enabled` 启用 |
+| `frontend/frame` | `localization_interfaces/msg/FrontendFrame` | reliable，50 | `zlio` 模式下，同一次观测的位姿与局部去畸变点云 |
+| `frontend/odometry` | `localization_interfaces/msg/FrontendOdometry` | reliable，200 | `zlio` 模式的高频预测 |
+| `frontend/session` | `localization_interfaces/msg/FrontendSession` | reliable，1，transient local | `zlio` 模式的进程身份、代次、恢复请求与处理失败通知 |
+| `common.sync_odom_topic` | `nav_msgs/msg/Odometry` | best effort，50 | `legacy` 模式用于同步的里程计 |
+| `common.cloud_topic` | `sensor_msgs/msg/PointCloud2` | best effort，50 | `legacy` 模式用于同步的点云 |
+| `common.odom_topic` | `nav_msgs/msg/Odometry` | SensorDataQoS | `legacy` 模式的高频里程计 |
+| `uwb_pose` | `geometry_msgs/msg/PoseStamped` | reliable，10 | UWB 天线在 `uwb.frame` 坐标系中的原始位置；由 `uwb.enabled` 启用 |
 
 输入位姿以 `common.odom_frame` 为参考，描述 `common.sensor_frame` 的位置和姿态。
 ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计一致。
@@ -119,7 +138,8 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `/parameter_events` | `rcl_interfaces/msg/ParameterEvent` | ROS 参数事件 |
 | `/rosout` | `rcl_interfaces/msg/Log` | 节点日志 |
 
-标定结果会在终端显示，并给出可填入 YAML 的配置片段。
+标定结果会在终端显示。传感器到车体的外参只在 URDF（`src/sentry_description/urdf/sentry_robot.urdf`）中维护，
+标定结果应写入 URDF 对应关节，而不是参数文件。
 
 ### 服务
 
@@ -182,6 +202,3 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 
 mozihe · [zhujunheng2005@gmail.com](mailto:zhujunheng2005@gmail.com)
 
-## 许可证
-
-见 [LICENSE](../../LICENSE)。第三方组件保留各自许可证。

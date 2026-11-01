@@ -36,7 +36,7 @@ void LocalizationNode::configureZlioInputs(std::uint64_t subscription_epoch) {
     using Prediction = localization_interfaces::msg::FrontendOdometry;
     using Session = localization_interfaces::msg::FrontendSession;
     zlio_identity_ = create_subscription<Session>(
-        parameters_.input.session_topic, rclcpp::QoS(1).transient_local(),
+        "frontend/session", rclcpp::QoS(1).transient_local(),
         [this, subscription_epoch](Session::ConstSharedPtr m) {
             invoke("front-end session", [&] {
                 if (subscription_epoch == frontend_.epoch())
@@ -45,7 +45,7 @@ void LocalizationNode::configureZlioInputs(std::uint64_t subscription_epoch) {
             });
         });
     zlio_frames_ = create_subscription<Frame>(
-        parameters_.input.frame_topic, rclcpp::QoS(parameters_.input.subscription_queue),
+        "frontend/frame", rclcpp::QoS(parameters_.input.subscription_queue),
         // 同时验收帧布局、坐标系、时间和会话身份后交给同步帧入口。
         [this, subscription_epoch](Frame::ConstSharedPtr m) {
             invoke("front-end frame", [&] {
@@ -73,7 +73,7 @@ void LocalizationNode::configureZlioInputs(std::uint64_t subscription_epoch) {
     rclcpp::SubscriptionOptions options;
     options.callback_group = high_rate_callback_group_;
     zlio_predictions_ = create_subscription<Prediction>(
-        parameters_.input.prediction_topic, rclcpp::QoS(200),
+        "frontend/odometry", rclcpp::QoS(200),
         // 高频预测经过相同会话屏障，保持其独立发布回调组。
         [this, subscription_epoch](Prediction::ConstSharedPtr m) {
             invoke("front-end prediction", [&] {

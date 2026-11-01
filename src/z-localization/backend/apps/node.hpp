@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include "apps/body_extrinsic.hpp"
 #include "apps/config.hpp"
 #include "apps/frontend_connection.hpp"
 #include "apps/publisher.hpp"
@@ -146,6 +147,8 @@ private:
     void handleFailure(const char* name, std::exception_ptr error);
 
     NodeConfig parameters_;
+    /// 时间索引的 sensor <- body 外参；先于订阅和发布器构造、后于其销毁。
+    std::unique_ptr<BodyExtrinsicProvider> body_extrinsic_;
 
     KeyframeMap trajectory_;
     KeyframeMap prior_map_;
