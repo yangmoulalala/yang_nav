@@ -88,6 +88,10 @@ void Registration::reconfigure(const RegistrationConfig& config) {
     config_.degeneracy_condition_threshold = std::max(
         1.0 + 1.0e-6,
         finiteOr(config_.degeneracy_condition_threshold, defaults.degeneracy_condition_threshold));
+    config_.convergence_translation = std::max(
+        1.0e-6, finiteOr(config_.convergence_translation, defaults.convergence_translation));
+    config_.convergence_rotation_rad = std::max(
+        1.0e-8, finiteOr(config_.convergence_rotation_rad, defaults.convergence_rotation_rad));
     invalidateCache();
 }
 

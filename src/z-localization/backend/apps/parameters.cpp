@@ -139,6 +139,13 @@ void ParameterReader::loadMapTrajectoryAndRegistration() {
     registration.measurement_rotation_std_floor_rad =
         degreesToRadians(measurement_rotation_std_floor_deg);
     getParam("registration/min_coverage_sectors", registration.min_coverage_sectors);
+    getParam("registration/convergence_translation", registration.convergence_translation);
+    double convergence_rotation_deg = 0.0;
+    getParam("registration/convergence_rotation_deg", convergence_rotation_deg);
+    if (!(registration.convergence_translation > 0.0) || !(convergence_rotation_deg > 0.0))
+        throw std::invalid_argument(
+            "registration.convergence_translation and convergence_rotation_deg must be > 0");
+    registration.convergence_rotation_rad = convergence_rotation_deg * M_PI / 180.0;
     getParam("registration/degeneracy_condition_threshold",
              registration.degeneracy_condition_threshold);
 }
@@ -322,6 +329,12 @@ void ParameterReader::loadDescriptor() {
         getParam("common/scan_context/exclude_recent", descriptor_config.exclude_recent);
         getParam("common/scan_context/candidates", descriptor_config.candidates);
         getParam("common/scan_context/distance_threshold", descriptor_config.distance_threshold);
+        std::string normalization;
+        getParam("common/scan_context/similarity_normalization", normalization);
+        if (normalization != "overlap" && normalization != "union")
+            throw std::invalid_argument(
+                "common.scan_context.similarity_normalization must be overlap or union");
+        descriptor_config.union_normalization = normalization == "union";
         getParam("common/scan_context/level_with_odom_roll_pitch", parameters_.descriptor.leveling);
         descriptor_config.level_with_odom_roll_pitch = parameters_.descriptor.leveling;
         return;

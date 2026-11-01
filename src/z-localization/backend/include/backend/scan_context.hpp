@@ -28,6 +28,9 @@ struct ScanContextDescriptorConfig {
     int exclude_recent = 15;
     int candidates = 15;
     double distance_threshold = 0.6;
+    /// 列相似度平均方式：false 为 overlap（只按两者都有效的列平均，上游行为），
+    /// true 为 union（按任一有效的列平均，适合单侧视野的侧装单雷达）。不影响描述子编码与地图文件。
+    bool union_normalization = false;
 };
 
 struct ScanContextYawEstimate {

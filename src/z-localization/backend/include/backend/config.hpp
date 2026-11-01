@@ -70,6 +70,10 @@ struct RegistrationConfig {
     int min_coverage_sectors = 6;
     /// Schur 子空间退化判定与预条件器使用的条件数阈值。
     double degeneracy_condition_threshold = 10.0;
+    /// 收敛判据：在最终对应集上再解一步，平移步长不超过该值，m。
+    double convergence_translation = 5.0e-3;
+    /// 收敛判据：最终一步的旋转步长上限，rad。
+    double convergence_rotation_rad = 0.1 * M_PI / 180.0;
 };
 
 /// 重定位候选检索、航向搜索和目标子图参数。

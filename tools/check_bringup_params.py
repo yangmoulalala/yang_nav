@@ -20,6 +20,8 @@ MODULES = {
     'lidar_calibration': ROOT / 'lidar_calibration' / 'config' / 'example.yaml',
 }
 PLATFORMS = ('sim', 'real')
+# 同一模块按运行选择使用的多份完整配置（如单/双雷达后端），每份都须与 example 键集合一致。
+VARIANTS = {'backend': ('backend.yaml', 'backend_single.yaml')}
 # 没有模块 example 可比的平台专属配置（第三方驱动等）：只检查存在且格式正确。
 PLATFORM_ONLY = {'real': ('livox_driver.yaml', 'robot_state.yaml')}
 
@@ -53,8 +55,9 @@ def main():
             failed = True
             continue
         reference = flat(example)
-        for platform in PLATFORMS:
-            target = ROOT / 'bringup' / 'config' / platform / f'{module}.yaml'
+        for platform, filename in ((p, f) for p in PLATFORMS
+                                   for f in VARIANTS.get(module, (f'{module}.yaml',))):
+            target = ROOT / 'bringup' / 'config' / platform / filename
             if not target.is_file():
                 print(f'MISSING {target}')
                 failed = True

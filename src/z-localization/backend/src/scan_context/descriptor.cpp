@@ -289,8 +289,11 @@ std::pair<double, int> ScanContextDescriptor::descriptorDistance(
     const auto similarity = [&](int shift, bool exact) {
         double sum = 0;
         int engaged = 0;
+        int occupied = 0;
         for (int sector = 0; sector < sectors; ++sector) {
             const int q = (sector + shift) % sectors;
+            if (query_norm[q] > 0 || candidate_norm[sector] > 0)
+                ++occupied;
             if (query_norm[q] <= 0 || candidate_norm[sector] <= 0)
                 continue;
             double dot = 0;
@@ -303,7 +306,9 @@ std::pair<double, int> ScanContextDescriptor::descriptorDistance(
             sum += dot / (query_norm[q] * candidate_norm[sector]);
             ++engaged;
         }
-        return engaged ? sum / engaged : 0.0;
+        // union：按两者任一有效的列求平均。只按重叠列平均（overlap）时，单侧视野
+        // （侧装单雷达）可在仅一两列重叠的列移下得到满分，所有候选距离都退化为 0。
+        return engaged ? sum / (config_.union_normalization ? occupied : engaged) : 0.0;
     };
     /// 将搜索偏移映射到以粗航向为中心的环形列索引。
     const auto shiftAt = [&](int offset) { return (init + offset + sectors) % sectors; };

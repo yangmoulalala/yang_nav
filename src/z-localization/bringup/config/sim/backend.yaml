@@ -53,6 +53,9 @@ backend_node:
         distance_threshold: 0.8
         # 构造描述子前是否用前端 roll/pitch 整平点云。
         level_with_odom_roll_pitch: true
+        # 列相似度平均方式：overlap 只按两帧都有点的扇区平均（上游行为）；union 按任一帧有点的扇区平均，
+        # 单侧视野（侧装单雷达）用 union，否则所有候选距离退化为 0。不影响已保存的地图。
+        similarity_normalization: overlap
       # 全局地图坐标系名称。
       map_frame: map
       # 后端维护调度周期，单位为秒。
@@ -80,7 +83,11 @@ backend_node:
       # 共享点到面配准的输入体素边长，单位为米。
       voxel_resolution: 0.4
       # 每个配准层允许的最大求解迭代次数。
-      max_iterations: 16
+      max_iterations: 30
+      # 收敛判据：在最终对应集上再解一步，平移步长上限，单位为米（上游固定 0.005）。
+      convergence_translation: 0.02
+      # 收敛判据：最终一步的旋转步长上限，单位为度（上游固定 0.1）。
+      convergence_rotation_deg: 0.5
       # 点到目标平面锚点的最大对应距离，单位为米。
       max_correspondence_distance: 1.0
       # 平面邻域最远点允许的最大距离，单位为米；0 表示不限制。

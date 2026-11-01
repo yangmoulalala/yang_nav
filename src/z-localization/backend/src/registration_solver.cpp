@@ -193,8 +193,10 @@ Registration::LevelRun Registration::runLevel(
     if (final_step_solved) {
         // 达到最大迭代数不代表收敛；在重建的最终对应集上用略宽阈值确认数值稳定。
         // 早期小步长不作依据，因为重新关联对应点后最终线性化仍可能明显移动。
-        constexpr double kAcceptedFinalTranslationStep = 5.0e-3;
-        const double kAcceptedFinalRotationStep = degreesToRadians(0.1);
+        const double kAcceptedFinalTranslationStep = config_.convergence_translation;
+        const double kAcceptedFinalRotationStep = config_.convergence_rotation_rad;
+        run.final_step_translation = final_step.block<3, 1>(0, 3).norm();
+        run.final_step_rotation = rotationAngleFromMatrix(final_step);
         run.converged = final_step.block<3, 1>(0, 3).norm() <= kAcceptedFinalTranslationStep &&
                         rotationAngleFromMatrix(final_step) <= kAcceptedFinalRotationStep;
     }
@@ -392,6 +394,8 @@ RegistrationResult Registration::align(const Cloud& source, const Eigen::Matrix4
     result.hessian_analysis = fine.hessian_analysis;
     result.linear_solve = fine.linear_solve;
     result.converged = fine.converged;
+    result.final_step_translation = fine.final_step_translation;
+    result.final_step_rotation = fine.final_step_rotation;
     return result;
 }
 
