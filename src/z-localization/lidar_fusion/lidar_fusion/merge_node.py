@@ -1,21 +1,27 @@
 """把主雷达与可选副雷达点云合并为带逐点时间的单一 PointCloud2。
 
-    primary_topic    主雷达点云（输出坐标系默认取其所在 link）
-    secondary_topic  副雷达点云；为空时单雷达直通
-    output_topic     合并点云，字段 x y z offset_time(uint32, ns，相对合并帧头)
+话题（固定相对名，由 launch 重映射接线）：
+    primary/points    主雷达点云（订阅）
+    secondary/points  副雷达点云（订阅，仅 dual=true）
+    lidar/points      合并点云（发布），字段 x y z offset_time(uint32, ns，相对合并帧头)
 
+参数全部必填、无默认值：dual 由 launch 给出，其余来自参数文件。
 外参只从 tf2 读取（即 URDF / robot_state_publisher），本节点不保存任何数值。
 
-逐点时间（每路单独配置 <prefix>_time_field / _time_scale / _time_absolute）：
+逐点时间（每路单独配置 <prefix>.time_field / .time_scale / .time_absolute）：
   - time_field 为空：整帧点都取帧头时间（Gazebo gpu_lidar 同一时刻渲染）；
   - 否则读该字段，乘 time_scale 换算为秒，time_absolute=false 时再加上帧头时间。
 输出帧头取所有输入点中最早的时刻，保证 offset_time 非负。
 """
+import sys
+
 import message_filters
 import numpy as np
 import rclpy
 from rclpy.executors import ExternalShutdownException
+from rclpy.logging import get_logger
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from sensor_msgs.msg import PointCloud2, PointField
@@ -33,6 +39,41 @@ DTYPE = np.dtype([('x', np.float32), ('y', np.float32), ('z', np.float32),
 # 大点云在 best-effort 下会因 UDP 分片丢帧：ros_gz_bridge 发布端为 RELIABLE，
 # 这里订阅/发布都用 RELIABLE，深度 5 保证只积压最新几帧。
 QOS = QoSProfile(depth=5, reliability=ReliabilityPolicy.RELIABLE)
+
+
+class MissingParameter(RuntimeError):
+    pass
+
+
+def required(node, name, ptype):
+    """声明一个无默认值的必填参数；参数文件 / launch 未给出时报错退出。
+
+    按类型声明（而非按默认值推断），因此 yaml 里的空字符串 '' 也能被接受。
+    """
+    value = node.declare_parameter(name, ptype).value
+    if value is None:
+        raise MissingParameter(
+            '%s: required parameter %r (%s) is not set; supply it via the params file '
+            '(--ros-args --params-file ...) or launch' % (node.get_name(), name, ptype.name))
+    return value
+
+
+def run(node_class):
+    """节点入口：缺参数时打印清晰错误并以非零码退出。"""
+    rclpy.init()
+    try:
+        node = node_class()
+    except MissingParameter as error:
+        get_logger(node_class.__name__).fatal(str(error))
+        rclpy.try_shutdown()
+        sys.exit(1)
+    try:
+        rclpy.spin(node)
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
 
 
 def stamp_ns(stamp):
@@ -54,11 +95,11 @@ def matrix_of(transform):
 class Input:
     """一路输入的逐点时间约定。"""
 
-    def __init__(self, node, prefix, topic):
-        self.topic = node.declare_parameter(prefix + '_topic', topic).value
-        self.time_field = node.declare_parameter(prefix + '_time_field', '').value
-        self.time_scale = node.declare_parameter(prefix + '_time_scale', 1e-9).value
-        self.time_absolute = node.declare_parameter(prefix + '_time_absolute', False).value
+    def __init__(self, node, prefix):
+        self.topic = prefix + '/points'
+        self.time_field = required(node, prefix + '.time_field', Parameter.Type.STRING)
+        self.time_scale = required(node, prefix + '.time_scale', Parameter.Type.DOUBLE)
+        self.time_absolute = required(node, prefix + '.time_absolute', Parameter.Type.BOOL)
 
     def read(self, cloud):
         """返回有限点的 N×3 坐标与绝对时间（ns，int64）。"""
@@ -83,18 +124,17 @@ class Input:
 class MergeNode(Node):
     def __init__(self):
         super().__init__('lidar_merge')
-        self.inputs = [Input(self, 'primary', '/lidar_mid360/points')]
-        secondary = Input(self, 'secondary', '')
-        if secondary.topic:
-            self.inputs.append(secondary)
-        self.output_frame = self.declare_parameter('output_frame', 'mid360_link').value
-        self.min_range = self.declare_parameter('min_range', 0.3).value
-        slop = self.declare_parameter('sync_slop', 0.05).value
+        dual = required(self, 'dual', Parameter.Type.BOOL)
+        # secondary.* 总是必填（参数文件对单/双雷达一致），单雷达时只是不订阅
+        primary, secondary = Input(self, 'primary'), Input(self, 'secondary')
+        self.inputs = [primary, secondary] if dual else [primary]
+        self.output_frame = required(self, 'output_frame', Parameter.Type.STRING)
+        self.min_range = required(self, 'min_range', Parameter.Type.DOUBLE)
+        slop = required(self, 'sync_slop', Parameter.Type.DOUBLE)
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.pub = self.create_publisher(PointCloud2, self.declare_parameter(
-            'output_topic', '/lidar/points').value, QOS)
+        self.pub = self.create_publisher(PointCloud2, 'lidar/points', QOS)
 
         if len(self.inputs) == 2:
             subs = [message_filters.Subscriber(self, PointCloud2, i.topic, qos_profile=QOS)
@@ -103,8 +143,9 @@ class MergeNode(Node):
             self.sync.registerCallback(self.on_clouds)
         else:
             self.create_subscription(PointCloud2, self.inputs[0].topic, self.on_clouds, QOS)
-        self.get_logger().info('merging %s -> %s' % (
-            ' + '.join(i.topic for i in self.inputs), self.output_frame))
+        self.get_logger().info('merging %s -> %s (frame %s)' % (
+            ' + '.join(self.resolve_topic_name(i.topic) for i in self.inputs),
+            self.pub.topic_name, self.output_frame))
 
     def in_output_frame(self, source, cloud):
         """按 tf2 把点云变换到输出坐标系，并剔除近距离车体点。"""
@@ -141,12 +182,4 @@ class MergeNode(Node):
 
 
 def main():
-    rclpy.init()
-    node = MergeNode()
-    try:
-        rclpy.spin(node)
-    except (KeyboardInterrupt, ExternalShutdownException):
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.try_shutdown()
+    run(MergeNode)

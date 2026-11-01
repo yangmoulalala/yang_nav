@@ -1,0 +1,51 @@
+# lidar_calibration 示例参数（单独启动本模块时使用，取值为仿真值）。
+# 完整系统使用 bringup/config/<platform>/lidar_calibration.yaml，本文件不参与。
+# 所有参数必填、节点内无默认值，未知参数会使启动失败。
+# output_file 与 use_sim_time 由 launch 给出，话题由 launch 重映射，都不写在这里。
+
+calibrate:
+  ros__parameters:
+    # 主雷达坐标系（配准目标）；主雷达点云按 tf2 变换到此系。
+    primary_frame: mid360_link
+    # 副雷达坐标系（待标定）；副雷达点云按 tf2 变换到此系。
+    secondary_frame: l2_link
+    # URDF 中副雷达关节的父坐标系；输出中的 urdf_joint origin 相对此系。
+    secondary_parent_frame: yaw_link
+    # true：GICP 初值取 tf2（URDF）中 primary_frame <- secondary_frame；false：取 initial_xyz_rpy。
+    initial_guess_from_tf: true
+    # 手动初值 [x, y, z, roll, pitch, yaw]（m, rad，URDF 固定轴约定，secondary -> primary）。
+    # 必须恰好 6 个数；initial_guess_from_tf=true 时不使用。
+    initial_xyz_rpy: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    # 需要接受的帧数（>= 3）；满后聚合输出并退出。
+    frames: 6
+    # 两次配准的最小时间间隔，s。
+    min_frame_period: 0.5
+    # 双雷达近似时间同步允许的最大时间差，s。
+    sync_tolerance: 0.05
+    # 角速度模长超过该值视为运动，rad/s；最后一次运动后 0.5 s 内的帧丢弃。
+    stationary_gyro_threshold: 0.03
+    # 里程计线速度模长超过该值视为运动，m/s；匀速直线时陀螺接近 0，须同时检查线速度。
+    stationary_speed_threshold: 0.02
+    # 剔除距离小于该值的点（车体自身回波），m，在各自传感器系中计算。
+    min_range: 0.3
+    # 体素降采样边长，m。
+    voxel_size: 0.1
+    # GICP 与内点判定的最大对应距离，m。
+    max_correspondence_distance: 0.5
+    # 质量门：内点数 / 副雷达点数 的下限。
+    min_overlap_ratio: 0.3
+    # 质量门：降采样后点数与内点数下限。
+    min_inliers: 300
+    # 质量门：点到面残差 RMSE 上限，m。
+    max_rmse: 0.05
+    # 质量门：重叠区法向信息矩阵（按点数归一化）最小特征值下限；三个正交平面各占 1/3 时约 0.33。
+    # 0.05 时仿真中 support≈0.05–0.06 的帧沿最弱方向滑动 10–17 cm，故取 0.09。
+    min_normal_support: 0.09
+    # 法向估计的近邻点数（>= 3）。
+    normal_k: 10
+    # true：订阅 odometry，每帧须与已接受帧的位姿拉开距离或转角；false：不检查位姿多样性（不推荐）。
+    require_distinct_poses: true
+    # 位姿多样性：平移间隔下限，m（与转角条件满足其一即可）。
+    min_pose_translation: 0.3
+    # 位姿多样性：航向间隔下限，rad（0.35 rad ≈ 20°）。
+    min_pose_rotation: 0.35

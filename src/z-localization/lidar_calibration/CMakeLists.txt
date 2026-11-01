@@ -19,4 +19,7 @@ target_link_libraries(calibrate ${PCL_LIBRARIES} Eigen3::Eigen)
 ament_target_dependencies(calibrate rclcpp sensor_msgs tf2_ros tf2_eigen pcl_conversions message_filters nav_msgs)
 
 install(TARGETS calibrate DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}
+    FILES_MATCHING PATTERN "*.launch.py" PATTERN "__pycache__" EXCLUDE)
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 ament_package()

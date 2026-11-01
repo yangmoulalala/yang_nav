@@ -3,7 +3,7 @@
 <package format="3">
   <name>lidar_fusion</name>
   <version>0.1.0</version>
-  <description>将 MID-360 与 Unitree L2 点云按 tf2 外参合并为 ZLIO 可用的单一 PointCloud2；base_tf 把 LIO 里程计换算为 base_link 的 TF。</description>
+  <description>将 MID-360 与 Unitree L2 点云按 tf2 外参合并为 ZLIO 可用的单一 PointCloud2。</description>
   <maintainer email="yang@example.com">yang</maintainer>
   <license>Apache-2.0</license>
 

@@ -1,0 +1,22 @@
+# lidar_fusion 示例参数（单独启动本模块时使用）。
+# 完整系统使用 bringup/config/<platform>/lidar_fusion.yaml，本文件不参与。
+# 所有参数必填、节点内无默认值；dual 由 launch 给出，不写在这里。
+
+lidar_merge:
+  ros__parameters:
+    # 主雷达逐点时间字段名；空字符串表示整帧取帧头时间（Gazebo gpu_lidar）。
+    primary.time_field: ""
+    # 时间字段乘该倍率换算为秒。
+    primary.time_scale: 1.0e-9
+    # true：字段为绝对时间；false：相对帧头的偏移。
+    primary.time_absolute: false
+    # 副雷达逐点时间约定，含义同上；单雷达时不订阅但仍须给出。
+    secondary.time_field: ""
+    secondary.time_scale: 1.0e-9
+    secondary.time_absolute: false
+    # 合并点云的坐标系；各路点云按 tf2 变换到此系。
+    output_frame: mid360_link
+    # 剔除距离小于该值的点（车体自身回波），m。
+    min_range: 0.3
+    # 双雷达近似时间同步允许的最大时间差，s。
+    sync_slop: 0.05
