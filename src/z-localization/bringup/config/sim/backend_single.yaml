@@ -2,6 +2,7 @@
 # 与同目录 backend.yaml（双雷达）只差单雷达专用取值，改共用参数时两份都要改；
 # 当前差异：common.scan_context.similarity_normalization = union（双雷达为 overlap）；
 # tracking.source 累积 15 帧 / 1.5 s（双雷达 5 帧 / 0.5 s，侧装单雷达单帧点数不足）。
+# registration.voxel_resolution 0.25（双雷达 0.4）：仿真单雷达累积后 0.4 m 体素只剩约 136 点。
 # 仿真后端参数（bringup sim.launch.py 使用）。sensor_frame 与前端 frames.imu 一致；
 # sensor_frame <- base_link 外参由 URDF 经 TF 读取。
 # 全部参数必填；键集合须与 backend/config/example.yaml 完全一致（tools/check_bringup_params.py 检查）。
@@ -85,7 +86,7 @@ backend_node:
       map_voxel_resolution: 0.15
     registration:
       # 共享点到面配准的输入体素边长，单位为米。
-      voxel_resolution: 0.4
+      voxel_resolution: 0.25
       # 每个配准层允许的最大求解迭代次数。
       max_iterations: 30
       # 收敛判据：在最终对应集上再解一步，平移步长上限，单位为米（上游固定 0.005）。

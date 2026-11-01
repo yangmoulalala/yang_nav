@@ -1,7 +1,7 @@
 # 单雷达（lidar:=single）真车后端参数：由 localization.launch.py 按 lidar 选择。
 # 与同目录 backend.yaml（双雷达）只差单雷达专用取值，改共用参数时两份都要改；
 # 当前差异：common.scan_context.similarity_normalization = union（双雷达为 overlap）；
-# tracking.source / recovery.source 累积 15 帧 / 1.5 s（双雷达 5 帧 / 0.5 s，侧装单雷达单帧点数不足）。
+# tracking.source 累积 15 帧 / 1.5 s（双雷达 5 帧 / 0.5 s，侧装单雷达单帧点数不足）。
 # 真车后端参数（bringup real.launch.py 使用）。sensor_frame 与前端 frames.imu 一致；
 # sensor_frame <- base_link 外参由 URDF 经 TF 读取。接 UWB 时打开 uwb.enabled 并按 backend/docs/parameters.md 配置。
 # 全部参数必填；键集合须与 backend/config/example.yaml 完全一致（tools/check_bringup_params.py 检查）。
@@ -161,9 +161,9 @@ backend_node:
         # 一次观测成立所需的最少因果点云帧数。
         min_frames: 2
         # 一次观测最多累计的因果点云帧数。
-        max_frames: 15
+        max_frames: 5
         # 累计窗口允许的最大时间跨度，单位为秒；0 表示不限制。
-        max_time: 1.5
+        max_time: 0.5
         # 累计窗口允许的最大相对平移，单位为米；0 表示不限制。
         max_translation: 1.5
         # 累计窗口允许的最大相对旋转，单位为度；0 表示不限制。

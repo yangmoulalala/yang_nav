@@ -116,6 +116,13 @@ void TrackingMatcher::classifyObservation(const GlobalObservationWork& work,
                << ", iterations=" << reg.iterations << (reg.used_coarse_level ? "(coarse)" : "")
                << ", final_step=" << reg.final_step_translation << "m/"
                << reg.final_step_rotation * 180.0 / M_PI << "deg";
+        if (reg.source_to_target.allFinite()) {
+            // 配准结果相对预测位姿的偏移：大偏移说明预测（SUSPECT/LOST 期间的外推）已经漂移。
+            const Eigen::Matrix4d offset = work.predicted_map_pose.inverse() *
+                                           (work.reference.optimized_pose * reg.source_to_target);
+            reason << ", pred_offset=" << offset.block<3, 1>(0, 3).norm() << "m/"
+                   << rotationAngleFromMatrix(offset) * 180.0 / M_PI << "deg";
+        }
         const std::string& invalid_reason =
             observation.registration.measurement_information.invalid_reason;
         if (!invalid_reason.empty()) {
