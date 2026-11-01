@@ -112,7 +112,8 @@ def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max,
         'update_rate': rate,
         'topic': topic or '/%s/points' % name,
         # built-in IMU of the device (both MID-360 and L2 have one), mounted at
-        # the LiDAR origin so body_from_lidar is the identity in the LIO config
+        # the LiDAR origin, so the frontend uses mid360_link as both frames.imu and
+        # frames.lidar (identity extrinsic from TF)
         'imu_name': name.replace('_lidar', '_imu'),
         'imu_topic': '/%s/imu' % base,
         'imu_rate': 200.0,

@@ -1,0 +1,10 @@
+# 真车 URDF 关节状态参数（bringup real.launch.py 使用）。
+# robot_description 来自 URDF 文件，由 launch 传入，不在本文件。
+
+joint_state_publisher:
+  ros__parameters:
+    # 订阅这些 JointState 话题：收到的关节（云台 yaw_joint）用收到的值；
+    # 从未收到的关节（如未接入底盘时的 yaw_joint、四个轮子）发布 0。
+    source_list: ["/chassis/joint_states"]
+    # /joint_states 发布频率，Hz；云台角经此进入 TF，前后端按时间查询。
+    rate: 50

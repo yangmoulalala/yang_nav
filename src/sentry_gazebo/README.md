@@ -129,10 +129,10 @@ TF 链完全由标准件产生：
 | 变换 | 发布者 | 来源 |
 | --- | --- | --- |
 | `map → lio_odom` | `backend_node` | 定位后端 |
-| `lio_odom → base_link` | `lio_base_tf`（`lidar_fusion`） | ZLIO `/odometry`（`lio_odom → imu`）经 URDF 外参换算 |
+| `lio_odom → base_link` | `zlio`（`frontend`） | ZLIO 里程计（`lio_odom → imu`）乘以按时间戳从 TF 查到的 `imu ← base_link` |
 | `base_link → yaw_link → mid360_link / l2_link` | `robot_state_publisher` | URDF 正解 + `joint_state_publisher` 发布的零位 `/joint_states` |
+| `mid360_link → mid360_imu_link` | `robot_state_publisher` | URDF 固定关节（真车 Livox 出厂 IMU 外参）；仿真 IMU 位于 `mid360_link` 原点，前端 `frames.imu` 直接用 `mid360_link` |
 | `mid360_link → sentry/mid360_link/mid360_lidar` 等 | `tf2_ros static_transform_publisher` | 见下文 `frame_id` |
-| `mid360_link → imu` | `tf2_ros static_transform_publisher`（`bringup`） | 恒等：仿真 IMU 与雷达同原点，ZLIO 的 `imu` 系即 `mid360_link` |
 
 雷达外参（`tf2_echo base_link mid360_link` 等，即 URDF 关节链的正解结果）：
 

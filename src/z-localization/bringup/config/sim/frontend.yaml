@@ -1,0 +1,239 @@
+# 仿真 ZLIO 前端参数（bringup sim.launch.py 使用）。
+# 输入为 lidar_fusion 合并点云（mid360_link 系，offset_time ns）；Gazebo IMU 位于 mid360_link 原点，外参为单位阵。
+# 全部参数必填；键集合须与模块 config/example.yaml 完全一致（tools/check_bringup_params.py 检查）。
+
+# 激光惯性里程计节点。
+zlio:
+  ros__parameters:
+    # 坐标系。
+    frames:
+      # 里程计父坐标系。
+      world: lio_odom
+      # IMU 坐标系，即里程计子坐标系和导出点云坐标系。
+      imu: mid360_link
+      # LiDAR 坐标系，用于从 TF 查询 imu ← lidar 外参。
+      lidar: mid360_link
+      # TF 输出的子坐标系：发布 world → base = (world → imu)·(imu ← base)，imu ← base 按里程计时间从 TF 查（云台转动也跟随）。
+      # 与 imu 相同时直接发布 world → imu；完整系统填 URDF 树根 base_link（IMU 系在 URDF 里已有父帧）。
+      base: base_link
+
+    # 传感器输入；话题固定为相对名 lidar、imu，由 launch 重映射。
+    input:
+      # LiDAR 消息类型：pointcloud2 或 livox。
+      type: pointcloud2
+      # PointCloud2 逐点时间字段名；Livox 输入不使用。
+      point_time_field: offset_time
+      # PointCloud2 时间字段换算为秒的倍率。
+      point_time_scale: 1.0e-9
+      # PointCloud2 时间字段是否为绝对时间。
+      point_time_absolute: false
+      # Livox 逐点时间以 timebase 为起点；关闭则用 header.stamp。
+      livox_use_timebase: true
+      # 加速度换算为 m/s² 的倍率；MID-360 内置 IMU 以 g 为单位。
+      # gz IMU 单位已是 m/s²。
+      imu_acceleration_scale: 1.0
+      # IMU 历史最长保留时长，s。
+      imu_history_seconds: 30.0
+      # 相邻 IMU 采样允许的最大间隔，s。
+      maximum_imu_interval: 0.1
+      # IMU 历史最多保留的样本数。
+      maximum_imu_samples: 65536
+      # 单包、待处理队列及核心点云缓存的点数上限。
+      maximum_buffered_points: 1000000
+      # ROS 待处理队列的消息数上限。
+      maximum_queue_events: 8192
+
+    # 输出参数。
+    output:
+      # 导出去畸变点云的采样体素边长，m；0 输出空点云。
+      resolution: 0.10
+      # 是否发布 frames.world → frames.base 的高频预测 TF。
+      publish_tf: true
+      # 按时间查不到 imu ← base 时，最新变换与里程计时间允许的最大差，s；超过则沿用上次有效值并告警。
+      base_extrinsic_tolerance: 0.2
+
+    # 会话与重置参数。
+    session:
+      # 是否等待 /localization_start 的 data=true 请求后再接收输入。
+      wait_for_start: false
+      # 重置模式：warm 保留速度、倾角与零偏，cold 始终重新初始化。
+      reset_mode: warm
+      # 运行中输入中断是否交由后端协调重置。
+      coordinated_reset: true
+
+    # 传感器参数。
+    sensor:
+      # 固定重力模长，m/s²。
+      gravity: 9.81
+      # 有效测距下限，m。
+      minimum_range: 0.3
+      # 有效测距上限，m。
+      maximum_range: 40.0
+
+    # 初始化参数。
+    initialization:
+      # IMU 系加速度偏置初值及先验中心，m/s²。
+      accel_bias: [0.0, 0.0, 0.0]
+      # 加速度偏置先验各轴标准差，m/s²。
+      accel_bias_std: [0.3, 0.3, 0.3]
+      # 参与启动联合估计的扫描帧数。
+      window_frames: 20
+      # 重力方向初猜所需的 IMU 样本数。
+      seed_imu_samples: 31
+      # 重去畸变与优化的交替轮数上限。
+      maximum_refinements: 15
+      # 原始回波采样体素边长，m。
+      sample_size: 0.1
+      # 支持不足时的采样体素边长，m。
+      fallback_sample_size: 0.05
+      # 触发细采样的点数界限。
+      minimum_sampled_points: 1000
+      # 最弱方向的平面法向支撑下限，无量纲。
+      # 仿真出生点（补给区）静止视野几何单一，15 时初始化报最弱方向支撑不足；真车为 15。
+      minimum_directional_support: 5.0
+      # 粗／细阶段的相对代价变化收敛限值。
+      relative_cost_tolerance: [0.05, 0.01]
+      # 启动粗配准与临时惯性传播参数。
+      registration:
+        # 配准质心网格边长，m。
+        voxel_size: 0.5
+        # 局部平面拟合的最近邻点数。
+        neighbors: 5
+        # 开始粗配准所需的地图点数。
+        minimum_map_points: 100
+        # 每帧粗配准迭代上限。
+        maximum_iterations: 4
+        # 平面方程 A·n=-1 的无量纲拟合残差限值。
+        plane_residual_tolerance: 0.1
+        # 粗配准先验协方差的放大系数。
+        prior_covariance_scale: 1000.0
+        # 旋转增量收敛限值，rad。
+        rotation_tolerance: 0.00017452006980802793
+        # 位置增量收敛限值，m。
+        position_tolerance: 0.00015
+        # 粗传播角速度有效方差，rad²/s²。
+        gyro_variance: 0.1
+        # 粗传播比力有效方差，m²/s⁴。
+        accel_variance: 1.0
+        # 原始 IMU 区间内两偏置变化率的有效方差。
+        bias_variance: 0.0001
+        # 粗启动状态及暖重置新位置、航向的各轴先验方差，使用各自 SI 单位。
+        initial_state_variance: 0.0001
+        # 粗启动两偏置的各轴先验方差，使用各自 SI 单位。
+        initial_bias_variance: 0.00001
+      # 启动窗口的几何与惯性优化参数。
+      optimization:
+        # 联合优化根体素边长，m。
+        voxel_size: 1.0
+        # 平面体素最大细分深度。
+        maximum_depth: 2
+        # 超过该支持点数后拟面。
+        minimum_points: 5
+        # 启动优化所需的平面数下限。
+        minimum_planes: 10
+        # 粗／细阶段的法向散布方差上限，m²。
+        plane_variance: [0.02, 0.0025]
+        # 最小／最大散布特征值比例上限。
+        plane_eigenvalue_ratio: 0.25
+        # 最小／中间散布特征值比例上限。
+        plane_middle_ratio: 0.12
+        # IMU 代价相对几何代价的有效权重。
+        imu_weight: 0.0001
+        # 启动几何求解线程数。
+        thread_count: 5
+        # 单次联合优化的下降步数上限。
+        maximum_iterations: 3
+        # 预积分角速度有效方差，rad²/s²。
+        gyro_variance: 0.01
+        # 预积分比力有效方差，m²/s⁴。
+        accel_variance: 1.0
+        # 预积分陀螺偏置随机游走强度，rad²/s³。
+        gyro_bias_psd: 0.0001
+        # 预积分加速度偏置随机游走强度，m²/s⁵。
+        accel_bias_psd: 0.0001
+      # 初始状态不确定度参数。
+      uncertainty:
+        # 联合信息通过验收后，允许协方差数值恢复失败时使用配置方差。
+        allow_configured_fallback: true
+        # 位置、左旋转、速度及两偏置的各轴配置方差，使用对应 SI 单位。
+        state_variance: [1.0, 1.0, 1.0, 0.0001, 0.001]
+
+    # 运行滤波参数。
+    filter:
+      # 点面关联线程数，包含主线程。
+      association_threads: 2
+      # 单次观测更新的最大迭代次数。
+      maximum_iterations: 5
+      # 导航状态变化的收敛限值，使用对应 SI 单位。
+      convergence_tolerance: 0.001
+      # 原始 IMU 区间的角速度有效方差，rad²/s²。
+      gyro_variance: 0.25
+      # 原始 IMU 区间的比力有效方差，m²/s⁴。
+      accel_variance: 0.5
+      # 陀螺偏置随机游走强度，rad²/s³。
+      gyro_bias_psd: 0.00000133
+      # 加速度偏置随机游走强度，m²/s⁵。
+      accel_bias_psd: 0.0000215
+
+    # 平面地图参数。
+    map:
+      # 地图根体素边长，m。
+      voxel_size: 0.5
+      # 地图根体素数量上限。
+      maximum_roots: 1000000
+      # 径向测距标准差，m。
+      range_sigma: 0.02
+      # 切向角度标准差，度。
+      angle_sigma_degrees: 0.05
+
+    # 自适应采样参数。
+    sampling:
+      # 初始采样体素边长，m。
+      initial_size: 0.25
+      # 采样体素边长下限，m。
+      minimum_size: 0.02
+      # 采样体素边长上限，m。
+      maximum_size: 1.0
+      # 场景尺度平滑所用的历史观测数。
+      history_size: 5
+      # 目标采样点数下限。
+      minimum_points: 1000.0
+      # 目标采样点数上限。
+      maximum_points: 4000.0
+      # 距离中位数的尺度归一化长度，m。
+      scale_threshold: 30.0
+      # 场景尺度到目标点数的映射指数。
+      exponent: 2.0
+      # 比例项的相对点数误差尺度。
+      proportional_scale: 0.1
+      # 微分项的相对误差变化尺度。
+      derivative_scale: 0.2
+      # 比例增益下限，m/点。
+      proportional_minimum: 0.000001
+      # 比例增益上限，m/点。
+      proportional_maximum: 0.0001
+      # 微分增益下限，m·s/点。
+      derivative_minimum: 0.000000001
+      # 微分增益上限，m·s/点。
+      derivative_maximum: 0.0000001
+
+    # 观测间隔调度参数。
+    window:
+      # 观测间隔及采样历史跨度上限，s。
+      maximum_interval: 0.12
+      # 观测间隔下限，s。
+      minimum_interval: 0.03
+      # 点面噪声归一化后的局部运动外推 RMS 预算。
+      normalized_error: 2.0
+
+# 前端可视化节点。
+frontend_visualization:
+  ros__parameters:
+    # 显示轨迹最多保留的位姿数。
+    path_max_poses: 5000
+    # 累计显示点云的体素边长，m。
+    map_voxel_size: 0.15
+    # 累计显示点云最多保留的体素数。
+    map_max_voxels: 200000
+    # 累计显示点云的最小发布间隔，s。
+    map_publish_period: 0.2

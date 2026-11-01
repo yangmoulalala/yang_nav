@@ -1,0 +1,24 @@
+# 真车 lidar_fusion 参数（bringup real.launch.py 使用）。逐点时间字段待真车用
+#   ros2 topic echo --once <topic> --field fields 核对。
+# 全部参数必填；键集合须与模块 config/example.yaml 完全一致（tools/check_bringup_params.py 检查）。
+
+lidar_merge:
+  ros__parameters:
+    # 主雷达逐点时间字段名；空字符串表示整帧取帧头时间（Gazebo gpu_lidar）。
+    # livox_ros_driver2 xfer_format=0 的 timestamp 字段为绝对时间 ns（lddc.cpp），待真车确认。
+    primary.time_field: timestamp
+    # 时间字段乘该倍率换算为秒。
+    primary.time_scale: 1.0e-9
+    # true：字段为绝对时间；false：相对帧头的偏移。
+    primary.time_absolute: true
+    # 副雷达逐点时间约定，含义同上；单雷达时不订阅但仍须给出。
+    # Unitree L2（unilidar_sdk2）逐点时间，待真车确认。
+    secondary.time_field: time
+    secondary.time_scale: 1.0
+    secondary.time_absolute: false
+    # 合并点云的坐标系；各路点云按 tf2 变换到此系。
+    output_frame: mid360_link
+    # 剔除距离小于该值的点（车体自身回波），m。
+    min_range: 0.3
+    # 双雷达近似时间同步允许的最大时间差，s。
+    sync_slop: 0.05

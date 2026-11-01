@@ -104,4 +104,15 @@
     <origin xyz="-0.176070 -0.157491 -0.042617" rpy="-1.570796 -1.178097 1.570796"/>
   </joint>
 
+  <!-- MID-360 内置 IMU：Livox 出厂外参，雷达原点在 IMU 系为 (-0.011, -0.02329, 0.04412)、旋转为单位阵，
+       故 IMU 原点在雷达系为其相反数。真车前端按 TF 查 mid360_imu_link <- mid360_link 得到外参；
+       仿真的 IMU 位于 mid360_link 原点，不使用此 link。 -->
+  <link name="mid360_imu_link"/>
+
+  <joint name="mid360_imu_joint" type="fixed">
+    <parent link="mid360_link"/>
+    <child link="mid360_imu_link"/>
+    <origin xyz="0.011 0.02329 -0.04412" rpy="0 0 0"/>
+  </joint>
+
 </robot>

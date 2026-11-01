@@ -1,0 +1,22 @@
+# 真车 MID-360 驱动参数（livox_ros_driver2，bringup real.launch.py 使用）。
+# 这是驱动节点参数的唯一来源；user_config_path 依赖安装路径，由 launch 指向
+# bringup/config/real/MID360_config.json（车上雷达与主机 IP 在那份 json 里改）。
+
+livox_lidar_publisher:
+  ros__parameters:
+    # 点云消息格式：0 = sensor_msgs/PointCloud2（含逐点 timestamp），1 = livox CustomMsg。
+    xfer_format: 0
+    # 0：所有雷达共用一个话题；1：每台雷达单独话题。
+    multi_topic: 0
+    # 数据来源：0 = 实时雷达。
+    data_src: 0
+    # 点云发布频率，Hz（驱动内部限制在 0.5–100）。
+    publish_freq: 10.0
+    # 输出目标：0 = ROS 话题。
+    output_data_type: 0
+    # 点云与 IMU 的 frame_id；直接用 URDF link 名，无需别名静态 TF。
+    frame_id: mid360_link
+    # 广播码（仅命令行连接模式使用，上游默认值）。
+    cmdline_input_bd_code: "000000000000001"
+    # lvx 回放文件（data_src 为文件时使用，上游默认值）。
+    lvx_file_path: /home/livox/livox_test.lvx

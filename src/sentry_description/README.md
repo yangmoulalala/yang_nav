@@ -16,6 +16,7 @@ base_link
 ├── wheel_{front,rear}_{left,right}   4 × continuous
 └── yaw_link                          continuous（云台偏航，joint origin rpy = (-π/2, 0, -π/2)）
     ├── mid360_link                   fixed  xyz 0.164 -0.132 0.056
+    │   └── mid360_imu_link           fixed  xyz 0.011 0.02329 -0.04412（Livox 出厂 IMU 外参，无网格）
     └── l2_link                       fixed  xyz -0.176 -0.157 -0.043
 ```
 
