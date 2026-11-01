@@ -460,6 +460,14 @@ void OdometryNode::commit(const Estimate& estimate) {
 
 /// 处理可用观测并发布后验结果。
 void OdometryNode::collect(bool flush) {
+    if (const auto& init = odometry_->initializationStatus(); init.attempts != logged_attempts_) {
+        logged_attempts_ = init.attempts;
+        if (odometry_->initialized())
+            RCLCPP_INFO(get_logger(), "initialization complete after %d attempt(s)", init.attempts);
+        else
+            RCLCPP_WARN(get_logger(), "initialization attempt %d rejected: %s", init.attempts,
+                        init.reason.c_str());
+    }
     if (odometry_->initialized() && !has_posterior_) {
         commit(odometry_->estimate());
         has_posterior_ = true;

@@ -54,10 +54,20 @@ for s in samples:
         false_trust.append((s['tag'], s['t'], err))
     yerr = abs(math.degrees(math.atan2(math.sin(s['gt'][2] + dyaw - s['est'][2]), math.cos(s['gt'][2] + dyaw - s['est'][2]))))
     key = s['tag'].removesuffix('_end')
-    groups.setdefault(key, []).append((err, yerr))
+    trusted = s.get('state') in (None, 'NORMAL', 'OBS_DEGRADED')
+    groups.setdefault(key, []).append((err, yerr, trusted))
 for k, v in groups.items():
-    a = np.array(v)
-    print(f'{k:16s} n={len(a):4d} rmse={math.sqrt((a[:,0]**2).mean()):.3f}m max={a[:,0].max():.3f}m last={a[-1,0]:.3f}m yaw_max={a[:,1].max():.2f}deg')
+    a = np.array(v, dtype=float)
+    line = (f'{k:16s} n={len(a):4d} rmse={math.sqrt((a[:,0]**2).mean()):.3f}m max={a[:,0].max():.3f}m '
+            f'last={a[-1,0]:.3f}m yaw_max={a[:,1].max():.2f}deg')
+    # SUSPECT/LOST 时后端冻结输出为最后可信位姿，误差随行驶距离增长；分开统计才能看出定位精度。
+    tr, un = a[a[:, 2] > 0], a[a[:, 2] == 0]
+    if len(un):
+        line += f' | trusted n={len(tr)}'
+        if len(tr):
+            line += f' rmse={math.sqrt((tr[:,0]**2).mean()):.3f}m max={tr[:,0].max():.3f}m'
+        line += f'; untrusted n={len(un)} max={un[:,0].max():.3f}m'
+    print(line)
 # 瞬移后的前几个样本本就来不及恢复，只按定位自报可信的样本统计。
 if false_trust:
     tags = sorted({tag for tag, _, _ in false_trust})

@@ -4,7 +4,11 @@
     zt_driver.py localize OUT.json [laps]   (drives laps, then kidnaps and watches recovery)
     zt_driver.py spin     OUT.json 0        (spins in place at the spawn point, slow then fast)
     zt_driver.py calib    OUT.json 0        (parks at structured spots with varied headings for dual-LiDAR calibration)
-    append 'spin' to mapping/localize to turn one full circle at every waypoint
+    optional 4th argument (zt_run.sh 6th): comma-separated flags
+      spin       turn one full circle at every waypoint
+      initspin   after ZLIO initializes, spin slowly until the backend is localized
+      earlyspin  hold 2 s, then spin slowly during ZLIO initialization until the backend is localized
+      spawnspin  one slow full turn at the spawn point before the laps (mapping with a side-mounted LiDAR)
 """
 import json
 import math
@@ -15,6 +19,7 @@ import time
 import numpy as np
 import rclpy
 from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
 from gz.msgs10.boolean_pb2 import Boolean
 from gz.msgs10.pose_pb2 import Pose
 from gz.msgs10.pose_v_pb2 import Pose_V
@@ -54,6 +59,9 @@ class Driver(Node):
         self.create_subscription(String, '/backend_node/localization_state', self.on_state, qos)
         self.state = None
         self.states = []
+        self.odom_seen = False
+        self.init_timing = {}
+        self.create_subscription(Odometry, '/odometry', self.on_odom, 10)
         self.gt = None
         self.lock = threading.Lock()
         self.gz = GzNode()
@@ -71,6 +79,49 @@ class Driver(Node):
                      'reason': fields.get('reason', '')}
             self.states.append(entry)
             print('STATE', entry, flush=True)
+
+    def on_odom(self, _msg):
+        self.odom_seen = True
+
+    def spin_until_ready(self, wanted, rate=0.3, timeout=150, early=False, still_seconds=2.0):
+        """等 ZLIO 初始化（收到 /odometry），再慢转直到后端进入 wanted，最后转回航向 0。
+
+        early=True 时前端初始化期间就慢转：侧装雷达静止时只看一侧，初始化窗口缺少某个方向的平面支撑。
+        """
+        end = time.monotonic() + timeout
+        if early:
+            # 先静止 still_seconds 再转：首次尝试的重力初猜取自静止 IMU；静止期间就收到 /odometry 说明前端已静止初始化。
+            still_end = time.monotonic() + still_seconds
+            while not self.odom_seen and time.monotonic() < still_end:
+                rclpy.spin_once(self, timeout_sec=0.02)
+                self.cmd.publish(Twist())
+            self.init_timing['initialized_while_still'] = self.odom_seen
+        self.init_timing['spin_start'] = round(time.monotonic() - self.t0, 2)
+        self.init_timing['spin_start_wall'] = time.time()
+        while not self.odom_seen and time.monotonic() < end:
+            rclpy.spin_once(self, timeout_sec=0.02 if early else 0.05)
+            if early:
+                t = Twist()
+                t.angular.z = rate
+                self.cmd.publish(t)
+        print('ODOM', self.odom_seen, round(time.monotonic() - self.t0, 2), flush=True)
+        self.init_timing['odom_seen'] = self.odom_seen
+        self.init_timing['odom'] = round(time.monotonic() - self.t0, 2)
+        ready = self.state in wanted
+        while not ready and time.monotonic() < end:
+            rclpy.spin_once(self, timeout_sec=0.02)
+            t = Twist()
+            t.angular.z = rate
+            self.cmd.publish(t)
+            self.record('init_spin')
+            ready = self.state in wanted
+        self.stop()
+        with self.lock:
+            yaw = self.gt[3] if self.gt else None
+        print('INIT_SPIN ready', ready, 'yaw', yaw, round(time.monotonic() - self.t0, 2), flush=True)
+        if ready:
+            self.turn_to(0.0, 'init_spin')
+        return ready
 
     def on_pose(self, msg):
         for p in msg.pose:
@@ -207,19 +258,26 @@ class Driver(Node):
 def main():
     mode, out = sys.argv[1], sys.argv[2]
     laps = int(sys.argv[3]) if len(sys.argv) > 3 else 2
-    extra = sys.argv[4] if len(sys.argv) > 4 else ''
+    extras = set(sys.argv[4].split(',')) if len(sys.argv) > 4 else set()
     if mode in ('spin', 'calib'):
         laps = 0
     rclpy.init()
     d = Driver()
     result = {'mode': mode, 'laps': laps, 'services': []}
-    ready = d.wait_state({'NORMAL', 'OBS_DEGRADED'}, 120)
+    if extras & {'initspin', 'earlyspin'}:  # 启动时慢转：雷达侧装只看一侧，转动让源点云覆盖更多方向
+        ready = d.spin_until_ready({'NORMAL', 'OBS_DEGRADED'}, early='earlyspin' in extras)
+    else:
+        ready = d.wait_state({'NORMAL', 'OBS_DEGRADED'}, 120)
     result['ready'] = ready
     print('READY', ready, d.state, flush=True)
     if ready:
         d.hold(3, 'start')
+        if 'spawnspin' in extras:  # 只在出生点慢转一圈：侧装雷达各航向视野不同，补齐出生点各航向的关键帧
+            d.spin(1, 'start_spin', rate=0.3, timeout=60)
+            d.turn_to(0.0, 'start_spin')
+            d.hold(2, 'start_spin_end')
         for lap in range(laps):
-            if extra == 'spin':
+            if 'spin' in extras:
                 for wp in LAP:
                     d.drive([wp], f'lap{lap}')
                     d.spin(1, f'lap{lap}')
@@ -262,6 +320,7 @@ def main():
     d.spin_for(1.0)
     d.attach_estimates()
     result['states'] = d.states
+    result['init_timing'] = d.init_timing
     result['samples'] = d.samples
     with open(out, 'w') as f:
         json.dump(result, f)

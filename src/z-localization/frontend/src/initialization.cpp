@@ -227,12 +227,13 @@ private:
     std::size_t mean_count_ = 0;
     Vec3 mean_acc_ = Vec3::Zero();
     InitializationStatus status_;
+    mutable double last_minimum_support_ = 0.0;
     /// 更新初始化状态及其说明。
     void setStatus(InitializationState state, const char* detail = nullptr) {
         std::string reason = initializationReason(state);
         if (detail && *detail)
             reason += ": " + std::string(detail);
-        status_ = {std::move(reason), state};
+        status_ = {std::move(reason), state, status_.attempts};
     }
     /// 按配置恢复粗状态、偏置初值、重力模长及粗协方差。
     void resetCoarse() {
@@ -293,6 +294,7 @@ private:
         const Mat3 support = optimizer.normalSupport();
         const double minimum_support =
             Eigen::SelfAdjointEigenSolver<Mat3>(support).eigenvalues()[0];
+        last_minimum_support_ = minimum_support;
         return minimum_support >= config_.initialization.minimum_directional_support;
     }
     /// 保存本次交替细化的阶段及几何接受条件。
@@ -312,7 +314,10 @@ private:
             setStatus(InitializationState::NonfiniteState);
         else if (progress.aligned && !progress.geometry_supported &&
                  status_.state == InitializationState::NotConverged)
-            setStatus(InitializationState::WeakGeometry);
+            setStatus(InitializationState::WeakGeometry,
+                      ("minimum support " + std::to_string(last_minimum_support_) + " < " +
+                       std::to_string(config_.initialization.minimum_directional_support))
+                          .c_str());
         return finite && progress.refined && progress.geometry_supported && progress.enough_planes;
     }
     /// 交替重去畸变与粗细阶段优化，并执行有限性和几何接受检查。
@@ -461,6 +466,7 @@ std::optional<InitializationResult> Initializer::Impl::add(const Scan& scan, Tim
         if (frames_.size() < config_.initialization.window_frames)
             return std::nullopt;
         auto result = optimize();
+        ++status_.attempts;
         if (!result)
             restart(imus);
         else

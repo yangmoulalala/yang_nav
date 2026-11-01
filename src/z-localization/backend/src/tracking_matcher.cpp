@@ -111,6 +111,11 @@ void TrackingMatcher::classifyObservation(const GlobalObservationWork& work,
             reason << "prior scan-to-map cannot construct a pose likelihood: ";
         }
         reason << qualitySummary(observation.registration.quality);
+        const auto& reg = observation.registration;
+        reason << ", converged=" << (reg.converged ? "true" : "false")
+               << ", iterations=" << reg.iterations << (reg.used_coarse_level ? "(coarse)" : "")
+               << ", final_step=" << reg.final_step_translation << "m/"
+               << reg.final_step_rotation * 180.0 / M_PI << "deg";
         const std::string& invalid_reason =
             observation.registration.measurement_information.invalid_reason;
         if (!invalid_reason.empty()) {

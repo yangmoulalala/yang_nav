@@ -25,6 +25,9 @@ struct RegistrationResult {
     bool used_coarse_level = false;
     /// 细层与粗层的总迭代次数。
     int iterations = 0;
+    /// 细层最终对应集上再解一步的平移、旋转步长（收敛判据诊断），m / rad。
+    double final_step_translation = 0.0;
+    double final_step_rotation = 0.0;
     /// 源点云坐标系到目标点云坐标系的变换。
     Eigen::Matrix4d source_to_target = Eigen::Matrix4d::Identity();
     /// 局部配准观测模型的有效 RMSE 上限，m。

@@ -40,6 +40,8 @@ enum class InitializationState {
 struct InitializationStatus {
     std::string reason = "collecting initialization data";
     InitializationState state = InitializationState::Collecting;
+    /// 已完成的窗口优化尝试次数（含成功的一次）。
+    int attempts = 0;
 };
 
 /// 管理同步启动数据、窗口优化及状态交接。

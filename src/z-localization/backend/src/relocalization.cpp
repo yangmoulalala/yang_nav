@@ -268,6 +268,7 @@ std::string Search::qualitySummary(const ObservabilityQuality& quality) {
     oss << "residual_ok=" << (quality.residual_ok ? "true" : "false")
         << ", support_ok=" << (quality.correspondences_ok ? "true" : "false")
         << ", observable=" << (quality.observable ? "true" : "false")
+        << ", corr=" << quality.correspondences << "/" << quality.source_points
         << ", corr_ratio=" << quality.correspondence_ratio
         << ", sectors=" << quality.coverage_sectors << ", rmse=" << quality.rmse
         << ", min_eig=" << quality.min_eigenvalue << ", cond=" << quality.condition_number;

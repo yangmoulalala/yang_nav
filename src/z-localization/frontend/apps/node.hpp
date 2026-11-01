@@ -154,6 +154,7 @@ private:
     rclcpp::Service<localization_interfaces::srv::ResetFrontend>::SharedPtr reset_service_;
     rclcpp::TimerBase::SharedPtr recovery_timer_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> broadcaster_;
+    int logged_attempts_ = 0;
 };
 
 }  // namespace zlio::ros

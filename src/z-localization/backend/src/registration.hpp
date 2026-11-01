@@ -42,6 +42,9 @@ struct Registration::LevelRun {
     std::vector<PlaneCorrespondence> correspondences;
     int iterations = 0;
     bool converged = false;
+    /// 最终对应集上再解一步的平移、旋转步长（诊断用），m / rad。
+    double final_step_translation = 0.0;
+    double final_step_rotation = 0.0;
 };
 
 struct Registration::TargetCache::Impl {
