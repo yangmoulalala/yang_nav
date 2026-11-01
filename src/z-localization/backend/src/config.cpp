@@ -219,6 +219,24 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
         std::clamp(finiteOr(c.innovation.rejection_probability, d.innovation.rejection_probability),
                    1e-12, 0.5);
     c.innovation.conflicts_before_suspect = std::max(1, c.innovation.conflicts_before_suspect);
+    c.innovation.severe_rejection_probability =
+        std::clamp(finiteOr(c.innovation.severe_rejection_probability,
+                            d.innovation.severe_rejection_probability),
+                   0.0, c.innovation.rejection_probability);
+    c.innovation.severe_min_support_ratio = std::clamp(
+        finiteOr(c.innovation.severe_min_support_ratio, d.innovation.severe_min_support_ratio), 0.0,
+        1.0);
+    c.innovation.severe_conflicts_before_suspect =
+        std::max(1, c.innovation.severe_conflicts_before_suspect);
+    c.recovery.probation_observations = std::max(0, c.recovery.probation_observations);
+    c.relocalization.ambiguity_rmse_ratio = std::max(
+        0.0, finiteOr(c.relocalization.ambiguity_rmse_ratio, d.relocalization.ambiguity_rmse_ratio));
+    c.relocalization.ambiguity_translation =
+        std::max(0.0, finiteOr(c.relocalization.ambiguity_translation,
+                               d.relocalization.ambiguity_translation));
+    c.relocalization.ambiguity_rotation_rad =
+        std::max(0.0, finiteOr(c.relocalization.ambiguity_rotation_rad,
+                               d.relocalization.ambiguity_rotation_rad));
     c.recovery.suspect_failures_before_lost = std::max(1, c.recovery.suspect_failures_before_lost);
     fields(c.recovery, d.recovery,
            {&RecoveryConfig::period, &RecoveryConfig::suspect_search_radius,

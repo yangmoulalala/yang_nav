@@ -196,6 +196,14 @@ backend_node:
       confirm_translation: 0.3
       # 相邻恢复候选 map 到 odom 变换允许的旋转差，单位为度。
       confirm_rotation_deg: 5.0
+      # 恢复提交后的试用期（全局观测次数）；期间一次严重冲突即重新进入 SUSPECT；0 关闭。
+      probation_observations: 5
+      # 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复；0 关闭；初始化不检验。
+      ambiguity_rmse_ratio: 1.15
+      # 歧义检验中判定两解不同的平移差，单位为米。
+      ambiguity_translation: 1.0
+      # 歧义检验中判定两解不同的旋转差，单位为度。
+      ambiguity_rotation_deg: 30.0
     uwb:
       # 是否接入 UWB 位置观测。
       enabled: true
@@ -368,6 +376,12 @@ backend_node:
       rejection_probability: 0.001
       # 从 OBS_DEGRADED 升级到 SUSPECT 所需的连续冲突次数。
       conflicts_before_suspect: 7
+      # 严重冲突的卡方上尾概率上限；先验图观测低于该值或触发物理校正上限、且配准支撑充分时计为严重冲突。
+      severe_rejection_probability: 1.0e-8
+      # 严重冲突要求的最小配准对应比例。
+      severe_min_support_ratio: 0.6
+      # 连续冲突中累计多少次严重冲突即进入 SUSPECT（不必等 conflicts_before_suspect）。
+      severe_conflicts_before_suspect: 2
     pure_odometry:
       # 纯 odom 时 odom 原点在 map 中的 X 坐标，单位为米。
       origin_x: 0.0

@@ -81,6 +81,8 @@ struct RelocalizationResult {
     PoseCovariance6d covariance = PoseCovariance6d::Zero();
     /// 恢复位姿协方差是否有效。
     bool covariance_valid = false;
+    /// 存在残差相近但位姿明显不同的候选，结果不可用，应推迟恢复。
+    bool ambiguous = false;
 };
 
 /// 分批执行的对称航向采样序列，偏移值为采样角间隔的整数倍。

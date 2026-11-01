@@ -71,6 +71,12 @@ bool RecoveryMatcher::match(const RecoveryWork& work,
 
     const RelocalizationResult result =
         runRelocalization(prior_map_, descriptor_, target_cache_, request);
+    if (result.ambiguous) {
+        // 歧义不计为恢复失败：等待车辆移动后的新视野再试。
+        out.outcome = RecoveryOutcome::Deferred;
+        out.source = "ambiguous";
+        return false;
+    }
     if (!result.success || !result.covariance_valid) {
         if (result.success) {
             BACKEND_WARN_STREAM(
@@ -135,6 +141,10 @@ RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     if (match(work, nullptr, result)) {
         result.outcome = RecoveryOutcome::Matched;
         result.source = (result.source.empty() ? "descriptor" : result.source) + " + scan-to-map";
+        return result;
+    }
+    if (result.source == "ambiguous") {
+        result.outcome = RecoveryOutcome::Deferred;
         return result;
     }
     result.outcome = RecoveryOutcome::Failed;

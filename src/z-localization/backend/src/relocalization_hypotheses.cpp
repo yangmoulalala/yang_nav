@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "backend/logger.hpp"
+#include "backend/math.hpp"
 #include "search.hpp"
 
 namespace backend::relocalization_detail {
@@ -214,8 +215,38 @@ void Search::acceptBestRelocalization(const char* suffix) const {
 }
 
 /// 将最佳候选转换为可提交的完整恢复结果。
+bool Search::bestIsAmbiguous() const {
+    if (!best_.found || initializing_ || config_.ambiguity_rmse_ratio <= 0.0)
+        return false;
+    const double limit = best_.residual_score * config_.ambiguity_rmse_ratio;
+    for (const auto& other : solutions_) {
+        if (other.residual_score > limit)
+            continue;
+        const Eigen::Matrix4d delta = best_.T_map_odom.inverse() * other.T_map_odom;
+        if (!delta.allFinite())
+            continue;
+        const double translation = delta.block<3, 1>(0, 3).norm();
+        const double rotation = rotationAngleFromMatrix(delta);
+        if (translation > config_.ambiguity_translation ||
+            rotation > config_.ambiguity_rotation_rad) {
+            BACKEND_WARN_STREAM("tryRelocalization: ambiguous result, deferring recovery (best KF "
+                                << best_.index << " residual=" << best_.residual_score
+                                << ", rival KF " << other.index
+                                << " residual=" << other.residual_score << ", delta_t="
+                                << translation << "m, delta_r_deg=" << rotation * 180.0 / M_PI
+                                << ")");
+            return true;
+        }
+    }
+    return false;
+}
+
 RelocalizationResult Search::makeResult() const {
     RelocalizationResult result;
+    if (bestIsAmbiguous()) {
+        result.ambiguous = true;
+        return result;
+    }
     result.success = best_.found;
     result.T_map_odom = best_.T_map_odom;
     result.prior_index = best_.index;

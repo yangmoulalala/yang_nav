@@ -48,6 +48,54 @@ TEST(LocalizationLifecycle, RegularObservationCannotUnfreezeLostState) {
     EXPECT_GT(state.generation(), generation);
 }
 
+/// 严重冲突累计达到阈值即进入 SUSPECT，不必等普通冲突计数。
+TEST(LocalizationLifecycle, SevereConflictsEscalateBeforeRegularThreshold) {
+    LocalizationStateMachine state;
+    state.onTrustedCorrection("anchor", TrustedCorrectionSource::Relocalization);
+    state.onCorrectionConflict("mild", 7, false, 2);
+    EXPECT_EQ(state.status(), LocalizationStatus::ObsDegraded);
+    state.onCorrectionConflict("severe", 7, true, 2);
+    EXPECT_EQ(state.status(), LocalizationStatus::ObsDegraded);
+    state.onCorrectionConflict("severe", 7, true, 2);
+    EXPECT_EQ(state.status(), LocalizationStatus::Suspect);
+}
+
+/// 被接受的普通观测清空严重冲突计数。
+TEST(LocalizationLifecycle, AcceptedObservationResetsSevereCount) {
+    LocalizationStateMachine state;
+    state.onTrustedCorrection("anchor", TrustedCorrectionSource::Relocalization);
+    state.onCorrectionConflict("severe", 7, true, 2);
+    state.onTrustedCorrection("accepted", TrustedCorrectionSource::RegularObservation);
+    EXPECT_EQ(state.status(), LocalizationStatus::Normal);
+    state.onCorrectionConflict("severe", 7, true, 2);
+    EXPECT_EQ(state.status(), LocalizationStatus::ObsDegraded);
+}
+
+/// 恢复试用期内一次严重冲突即进入 SUSPECT，即使关闭了累计升级。
+TEST(LocalizationLifecycle, ProbationEscalatesOnFirstSevereConflict) {
+    LocalizationStateMachine state;
+    state.onTrustedCorrection("recovered", TrustedCorrectionSource::Relocalization);
+    state.beginProbation(2);
+    state.onCorrectionConflict("mild", 7, false, 0);
+    EXPECT_EQ(state.status(), LocalizationStatus::ObsDegraded);
+    state.onCorrectionConflict("severe", 7, true, 0);
+    EXPECT_EQ(state.status(), LocalizationStatus::Suspect);
+    EXPECT_EQ(state.probationRemaining(), 0);
+}
+
+/// 试用期在接受的普通观测后耗尽，之后单次严重冲突不再直接升级。
+TEST(LocalizationLifecycle, ProbationExpiresAfterAcceptedObservations) {
+    LocalizationStateMachine state;
+    state.onTrustedCorrection("recovered", TrustedCorrectionSource::Relocalization);
+    state.beginProbation(2);
+    state.onTrustedCorrection("ok", TrustedCorrectionSource::RegularObservation);
+    EXPECT_EQ(state.probationRemaining(), 1);
+    state.onTrustedCorrection("ok", TrustedCorrectionSource::RegularObservation);
+    EXPECT_EQ(state.probationRemaining(), 0);
+    state.onCorrectionConflict("severe", 7, true, 0);
+    EXPECT_EQ(state.status(), LocalizationStatus::ObsDegraded);
+}
+
 /// 超时重试沿用事务身份，终态回复只完成一次事务并启动冷却。
 TEST(ResetCoordinator, TimeoutRetriesSameIdentityAndTerminalReplyClosesOnce) {
     ResetCoordinator coordinator;

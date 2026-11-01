@@ -278,6 +278,9 @@ CandidateVerificationResult Search::runCandidateVerification(
         if (!result.success) {
             continue;
         }
+        out.solutions.push_back({entry.T_map_prior * result.measured *
+                                     request_.runtime_kf.odom_pose.inverse(),
+                                 result.residual_score, input.hit.index});
         recordIfBest(out.best, input, entry, result);
     }
 
@@ -310,6 +313,7 @@ bool Search::runCandidateSet(const std::vector<CandidateVerificationInput>& inpu
 
     for (const auto& result : results) {
         tried_verifications_ += result.tried;
+        solutions_.insert(solutions_.end(), result.solutions.begin(), result.solutions.end());
         if (result.best_failed_residual_score < best_failed_residual_score_) {
             best_failed_residual_score_ = result.best_failed_residual_score;
             best_failed_quality_ = result.best_failed_quality;

@@ -186,6 +186,12 @@ void ParameterReader::loadTracking() {
              parameters_.runtime.innovation.rejection_probability);
     getParam("innovation/conflicts_before_suspect",
              parameters_.runtime.innovation.conflicts_before_suspect);
+    getParam("innovation/severe_rejection_probability",
+             parameters_.runtime.innovation.severe_rejection_probability);
+    getParam("innovation/severe_min_support_ratio",
+             parameters_.runtime.innovation.severe_min_support_ratio);
+    getParam("innovation/severe_conflicts_before_suspect",
+             parameters_.runtime.innovation.severe_conflicts_before_suspect);
 }
 
 /// 读取 INITIALIZING、SUSPECT 和 LOST 共用的恢复参数。
@@ -203,6 +209,17 @@ void ParameterReader::loadRecovery() {
     double confirm_rotation_deg = parameters_.runtime.recovery.confirm_rotation_rad * 180.0 / M_PI;
     getParam("recovery/confirm_rotation_deg", confirm_rotation_deg);
     parameters_.runtime.recovery.confirm_rotation_rad = confirm_rotation_deg * M_PI / 180.0;
+    getParam("recovery/probation_observations",
+             parameters_.runtime.recovery.probation_observations);
+    getParam("recovery/ambiguity_rmse_ratio",
+             parameters_.runtime.relocalization.ambiguity_rmse_ratio);
+    getParam("recovery/ambiguity_translation",
+             parameters_.runtime.relocalization.ambiguity_translation);
+    double ambiguity_rotation_deg =
+        parameters_.runtime.relocalization.ambiguity_rotation_rad * 180.0 / M_PI;
+    getParam("recovery/ambiguity_rotation_deg", ambiguity_rotation_deg);
+    parameters_.runtime.relocalization.ambiguity_rotation_rad =
+        degreesToRadians(ambiguity_rotation_deg);
     getParam("recovery/source/min_frames", parameters_.runtime.recovery.source.min_frames);
     getParam("recovery/source/max_frames", parameters_.runtime.recovery.source.max_frames);
     getParam("recovery/source/max_time", parameters_.runtime.recovery.source.max_time);

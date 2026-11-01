@@ -85,6 +85,13 @@ struct RelocalizationConfig {
     int relocalization_max_candidates = 10;
     int relocalization_submap_keyframes = 12;
     double relocalization_submap_radius = 12.0;
+    /// SUSPECT/LOST 恢复的歧义检验：存在与最佳解位姿明显不同（超过下面两个阈值）且
+    /// 残差不超过最佳残差该倍数的解时，判为歧义并推迟恢复；0 关闭。初始化不检验。
+    double ambiguity_rmse_ratio = 0.0;
+    /// 判定两个恢复解为不同位姿的平移差，m。
+    double ambiguity_translation = 1.0;
+    /// 判定两个恢复解为不同位姿的旋转差，rad。
+    double ambiguity_rotation_rad = 30.0 * kPi / 180.0;
     RegistrationConfig point_to_plane_config;
 };
 
@@ -184,6 +191,13 @@ struct InnovationConfig {
     double rejection_probability = 1.0e-3;
     /// 连续校正冲突进入 SUSPECT 的次数阈值。
     int conflicts_before_suspect = 7;
+    /// 严重冲突的卡方上尾概率上限；先验图观测低于该值（或触发物理校正上限）且
+    /// 配准支撑充分时，按严重冲突另行计数。
+    double severe_rejection_probability = 1.0e-8;
+    /// 严重冲突要求的最小配准对应比例。
+    double severe_min_support_ratio = 0.6;
+    /// 连续冲突中累计多少次严重冲突即进入 SUSPECT。
+    int severe_conflicts_before_suspect = 2;
 };
 
 /// 恢复调度、候选搜索和失败升级参数。
@@ -202,6 +216,8 @@ struct RecoveryConfig {
     double confirm_translation = 0.3;
     /// 相邻恢复候选 map←odom 变换允许的旋转差，rad。
     double confirm_rotation_rad = 5.0 * kPi / 180.0;
+    /// 恢复提交后的试用期（全局观测周期数）；期间一次严重冲突即进入 SUSPECT，0 关闭。
+    int probation_observations = 5;
     SourceAccumulationConfig source;
 };
 

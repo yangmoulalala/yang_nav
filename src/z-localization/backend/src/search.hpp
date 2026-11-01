@@ -56,7 +56,15 @@ struct CandidateVerificationInput {
     Cloud::ConstPtr target;
 };
 
+/// 一次通过验收的候选解，用于歧义检验。
+struct VerifiedSolution {
+    Eigen::Matrix4d T_map_odom = Eigen::Matrix4d::Identity();
+    double residual_score = std::numeric_limits<double>::max();
+    int index = -1;
+};
+
 struct CandidateVerificationResult {
+    std::vector<VerifiedSolution> solutions;
     int tried = 0;
     double best_failed_residual_score = std::numeric_limits<double>::max();
     ObservabilityQuality best_failed_quality;
@@ -147,6 +155,8 @@ private:
     void acceptBestRelocalization(const char* suffix) const;
     /// 将最佳候选转换为可提交的完整恢复结果。
     RelocalizationResult makeResult() const;
+    /// SUSPECT/LOST 时检查是否存在与最佳解位姿不同而残差相近的解。
+    bool bestIsAmbiguous() const;
 
     const KeyframeMap& keyframes_;
     const PlaceDescriptor& descriptor_;
@@ -171,6 +181,7 @@ private:
     Cloud::ConstPtr source_ds_;
     std::vector<int> subset_;
     std::vector<LoopCandidate> candidates_;
+    std::vector<VerifiedSolution> solutions_;
     RelocalizationBest best_;
 };
 

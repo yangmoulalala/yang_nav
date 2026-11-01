@@ -86,7 +86,14 @@ void LocalizationStateMachine::restoreAfterResetRejected(const LocalizationState
 /// 清空连续观测冲突和恢复失败计数。
 void LocalizationStateMachine::clearEvidence() {
     consecutive_correction_conflicts_ = 0;
+    consecutive_severe_conflicts_ = 0;
+    probation_remaining_ = 0;
     consecutive_suspect_relocalization_failures_ = 0;
+}
+
+/// 恢复提交后开始试用期。
+void LocalizationStateMachine::beginProbation(const int observations) {
+    probation_remaining_ = std::max(0, observations);
 }
 
 /// 将可信状态转为可疑状态并记录速度异常原因。
@@ -104,8 +111,7 @@ LocalizationTransition LocalizationStateMachine::onVelocitySpike(const double li
         << " rad/s";
     status_ = LocalizationStatus::Suspect;
     reason_ = oss.str();
-    consecutive_correction_conflicts_ = 0;
-    consecutive_suspect_relocalization_failures_ = 0;
+    clearEvidence();
 
     transition.current = status_;
     transition.reason = reason_;
@@ -151,7 +157,13 @@ LocalizationTransition LocalizationStateMachine::onTrustedCorrection(
         return transition;
     }
     consecutive_correction_conflicts_ = 0;
+    consecutive_severe_conflicts_ = 0;
     consecutive_suspect_relocalization_failures_ = 0;
+    if (source == TrustedCorrectionSource::Relocalization) {
+        probation_remaining_ = 0;  // 由调用方按配置重新开始试用期。
+    } else if (probation_remaining_ > 0) {
+        --probation_remaining_;
+    }
     status_ = LocalizationStatus::Normal;
     reason_ = reason;
 
@@ -166,7 +178,8 @@ LocalizationTransition LocalizationStateMachine::onTrustedCorrection(
 
 /// 累计校正冲突，按阈值进入观测降级或可疑状态。
 LocalizationTransition LocalizationStateMachine::onCorrectionConflict(
-    const std::string& reason, const int conflicts_before_suspect) {
+    const std::string& reason, const int conflicts_before_suspect, const bool severe,
+    const int severe_conflicts_before_suspect) {
     LocalizationTransition transition;
     transition.previous = status_;
     transition.current = status_;
@@ -176,14 +189,31 @@ LocalizationTransition LocalizationStateMachine::onCorrectionConflict(
     }
 
     ++consecutive_correction_conflicts_;
+    if (severe)
+        ++consecutive_severe_conflicts_;
     consecutive_suspect_relocalization_failures_ = 0;
     const int threshold = std::max(1, conflicts_before_suspect);
+    const bool on_probation = probation_remaining_ > 0;
+    const bool severe_escalation =
+        severe && (on_probation || (severe_conflicts_before_suspect > 0 &&
+                                    consecutive_severe_conflicts_ >= severe_conflicts_before_suspect));
     std::ostringstream oss;
-    oss << "correction conflict " << consecutive_correction_conflicts_ << "/" << threshold << ": "
-        << reason;
+    oss << "correction conflict " << consecutive_correction_conflicts_ << "/" << threshold;
+    if (severe) {
+        oss << " (severe " << consecutive_severe_conflicts_;
+        if (severe_conflicts_before_suspect > 0)
+            oss << "/" << severe_conflicts_before_suspect;
+        if (on_probation)
+            oss << ", during recovery probation";
+        oss << ")";
+    }
+    oss << ": " << reason;
     reason_ = oss.str();
-    status_ = consecutive_correction_conflicts_ >= threshold ? LocalizationStatus::Suspect
-                                                             : LocalizationStatus::ObsDegraded;
+    status_ = consecutive_correction_conflicts_ >= threshold || severe_escalation
+                  ? LocalizationStatus::Suspect
+                  : LocalizationStatus::ObsDegraded;
+    if (status_ == LocalizationStatus::Suspect)
+        probation_remaining_ = 0;
 
     transition.current = status_;
     transition.reason = reason_;
@@ -198,8 +228,7 @@ LocalizationTransition LocalizationStateMachine::onCorrectionConflict(
 LocalizationTransition LocalizationStateMachine::forceLost(const std::string& reason) {
     LocalizationTransition transition;
     transition.previous = status_;
-    consecutive_correction_conflicts_ = 0;
-    consecutive_suspect_relocalization_failures_ = 0;
+    clearEvidence();
     status_ = LocalizationStatus::Lost;
     reason_ = reason;
 

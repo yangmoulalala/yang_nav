@@ -57,6 +57,8 @@ struct GlobalObservationTransaction {
     PoseSqrtInformation prior_information_right;
     ObservationBatch observations;
     bool publish_state = false;
+    /// 先验图观测为高支撑的极端冲突（触发物理校正上限或 NIS 极小）。
+    bool severe_conflict = false;
 };
 
 namespace {
@@ -92,6 +94,21 @@ bool reportDiscardedObservation(const GlobalObservationWork& work,
         return true;
     }
     return false;
+}
+
+/// 高支撑配准给出的极端修正：配准本身可靠而与预测严重不符，典型于绑架或错误恢复，
+/// 而不是单次坏观测。
+bool severePriorConflict(const PriorMapObservation& prior, const GlobalObservationCommit& commit,
+                         const InnovationConfig& config) {
+    if (!prior.evidence.configured || commit.prior_accepted ||
+        prior.registration.quality.correspondence_ratio < config.severe_min_support_ratio) {
+        return false;
+    }
+    if (prior.evidence.disposition == ObservationDisposition::Conflict)
+        return true;  // 物理校正上限
+    return prior.evidence.disposition == ObservationDisposition::Measurement &&
+           commit.prior_innovation.valid &&
+           commit.prior_innovation.upper_tail_probability < config.severe_rejection_probability;
 }
 
 }  // namespace
@@ -272,8 +289,9 @@ void Localization::updateGlobalObservationStateLocked(GlobalObservationTransacti
         transaction.publish_state = true;
         return;
     }
-    commit.transition =
-        state_.onCorrectionConflict(conclusion.reason, config_.innovation.conflicts_before_suspect);
+    commit.transition = state_.onCorrectionConflict(
+        conclusion.reason, config_.innovation.conflicts_before_suspect,
+        transaction.severe_conflict, config_.innovation.severe_conflicts_before_suspect);
     transaction.publish_state = true;
     if (commit.transition.changed && commit.transition.current == LocalizationStatus::Suspect) {
         beginSuspectRecoveryLocked();
@@ -315,6 +333,8 @@ GlobalObservationCommit Localization::commit(const GlobalObservationWork& work,
                 collectGlobalInnovationsLocked(work, prior_observation, transaction);
                 assessGlobalInnovationsLocked(work, transaction, commit);
                 applyGlobalObservationFactorsLocked(work, prior_observation, transaction, commit);
+                transaction.severe_conflict =
+                    severePriorConflict(prior_observation, commit, config_.innovation);
                 updateGlobalObservationStateLocked(transaction, commit);
             }
         }

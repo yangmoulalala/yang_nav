@@ -81,8 +81,15 @@ public:
                                                TrustedCorrectionSource source);
     /// 一个图更新事务至少拥有一条合法外部观测，但所有观测都与更新前系统预测
     /// 冲突。每个事务只累计一次；冲突因子不会写入图。
+    /// severe 表示高支撑配准给出的极端修正（典型于绑架或错误恢复）：连续冲突中累计
+    /// severe_conflicts_before_suspect 次（0 关闭）或恢复试用期内出现一次，即进入 SUSPECT。
     LocalizationTransition onCorrectionConflict(const std::string& reason,
-                                                int conflicts_before_suspect);
+                                                int conflicts_before_suspect, bool severe = false,
+                                                int severe_conflicts_before_suspect = 0);
+    /// 恢复提交后开始试用期：接下来 observations 次普通观测内的严重冲突直接进入 SUSPECT。
+    void beginProbation(int observations);
+    /// 返回剩余试用期观测次数。
+    int probationRemaining() const { return probation_remaining_; }
     /// 强制建立新的 LOST 工作代次，由调用方按可用能力执行恢复或协调重置。
     LocalizationTransition forceLost(const std::string& reason);
     /// 累计估计器故障诊断并建立新的 LOST 工作代次。
@@ -99,6 +106,8 @@ private:
     void advanceGeneration();
 
     int consecutive_correction_conflicts_ = 0;
+    int consecutive_severe_conflicts_ = 0;
+    int probation_remaining_ = 0;
     int consecutive_suspect_relocalization_failures_ = 0;
     LocalizationStatus status_ = LocalizationStatus::Initializing;
     std::string reason_ = "waiting for first correction";

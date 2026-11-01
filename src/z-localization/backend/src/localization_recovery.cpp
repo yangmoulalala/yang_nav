@@ -194,6 +194,8 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
     clearManualRelocalizationRequestLocked();
     transition = state_.onTrustedCorrection("recovered via " + result.source,
                                             TrustedCorrectionSource::Relocalization);
+    // 恢复可能锁到对称或偏移位姿：试用期内一次严重冲突即重新进入 SUSPECT。
+    state_.beginProbation(config_.recovery.probation_observations);
     // 将匹配期间到达的里程计运动传播到最新同步帧，并提交可信输出。
     commitCurrentTrustedPoseLocked();
     const Eigen::Matrix4d output_pose_after = poses_.transform() * frames_.latest().odom_pose;
