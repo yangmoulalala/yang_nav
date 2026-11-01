@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # ZLIO 后端仿真回归测试：建图 + 回环 / 先验定位 + 绑架重定位。
 #   tools/sim_tests/zt_run.sh mapping      OUT_DIR MAP_DIR [laps]
-#   tools/sim_tests/zt_run.sh localization OUT_DIR MAP_DIR [laps] [driver_mode] [extra]
-#     driver_mode overrides mapping/localize (e.g. spin); extra=spin turns at every waypoint
+#   tools/sim_tests/zt_run.sh localization OUT_DIR MAP_DIR [laps] [driver_mode] [flags]
+#     driver_mode overrides mapping/localize (e.g. spin); flags: comma-separated
+#     spin / initspin / earlyspin / spawnspin (see zt_driver.py); flags require driver_mode
 # 仿真与 bringup 在同一进程组中启动，驱动脚本结束后只停止该进程组。
 HERE=$(cd "$(dirname "$0")" && pwd)
 MODE=$1; OUT=$2; MAP=$3; LAPS=${4:-2}

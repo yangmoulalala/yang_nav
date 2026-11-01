@@ -73,7 +73,25 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 | `rviz` | `false` | 后端 RViz |
 
 配置：`bringup/config/sim/{lidar_fusion,frontend,backend}.yaml`（真车为 `bringup/config/real/`），各为完整参数文件，
-见下文[参数规则](#参数规则)。
+见下文[参数规则](#参数规则)。`lidar:=single` 时后端改读同目录的 `backend_single.yaml`。
+
+### 单雷达操作
+
+MID-360 侧装（`mid360_joint` 俯仰约 90°），静止时只看到一侧，单雷达要转车补视野（仅仿真验证）：
+
+1. **启动**：`zlio_node` 开始收数据后先静止约 2 s，再以约 0.3 rad/s 原地慢转，直到后端进入 NORMAL。静止时 ZLIO 初始化最弱方向支撑只有 2–4.8（门槛 5），会反复重来甚至几分钟不完成；转动后 3 s 内完成。
+2. **建图**：先在出生点慢转一圈再正常跑图，其余路段不要原地转（全程转圈会把建图误差拉到约 27 cm）。地图在出生点缺少其他航向的关键帧时，启动慢转会让重定位锁到对称位置。
+3. 真车可考虑转云台 `yaw_joint` 代替转底盘（未验证）。
+
+`tools/sim_tests` 的 `earlyspin` / `spawnspin` 标志按上述流程驾驶。
+
+单雷达与双雷达后端配置差异（`backend_single.yaml` 开头也有记录）：
+
+| 键 | 双雷达 | 单雷达 | 原因 |
+| --- | --- | --- | --- |
+| `common.scan_context.similarity_normalization` | `overlap` | `union` | 单侧视野下 `overlap` 让所有候选描述子距离为 0；`union` 用在双雷达会使恢复变差 |
+| `tracking.source.max_frames` / `max_time` | 5 / 0.5 s | 15 / 1.5 s | 单帧在 0.4 m 体素下只剩约 90 点，不够 `min_correspondences: 80` |
+| `registration.voxel_resolution` | 0.4 | 0.25（仅仿真） | 累积后 0.4 m 体素只剩约 136 点；代价是绑架后错误恢复更严重，见[已知问题](#已知问题) |
 
 仿真与真车配置不同的地方（均为 yaml 取值）：
 
@@ -85,6 +103,8 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 | `frontend.yaml` `initialization.minimum_directional_support` | 5 | 15 | 出生点补给区静止视野几何单一，15 时初始化报最弱方向支撑不足 |
 | `frontend.yaml` `minimum_range` / `maximum_range` | 0.3 / 40 m | 0.5 / 100 m | 仿真场地小、无近距离噪声 |
 | `lidar_fusion.yaml` `primary.*` / `secondary.*` 逐点时间 | 帧头时间 | 驱动时间字段 | gpu_lidar 一帧同一时刻渲染 |
+| `backend*.yaml` `registration.convergence_translation` / `convergence_rotation_deg` | 0.02 m / 0.5° | 0.005 m / 0.1°（上游值） | 仿真中 5 mm / 0.1° 使配准常判未收敛、跟踪频繁 SUSPECT；真车未验证，保持上游 |
+| `backend*.yaml` `registration.max_iterations` | 30 | 16 | 同上 |
 
 LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通的树 `map → lio_odom → base_link → URDF 树`：
 `lio_odom → base_link` 由 ZLIO 直接发布（`output.publish_tf: true`、`frames.base: base_link`）：里程计 `lio_odom → frames.imu`
@@ -105,7 +125,9 @@ LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通�
 | single | 10 Hz | 1.13 m | 7.3 cm | 1.0 cm | 0.43° |
 | dual | 10 Hz | 1.08 m | 1.9 cm | 0.4 cm | 0.16° |
 
-只是短路线、各一次，说明链路工作正常，不代表全场长时间精度。
+只是短路线、各一次，说明链路工作正常，不代表全场长时间精度。最新回归结果见 [`tools/sim_tests/README.md`](../../tools/sim_tests/README.md)。
+
+注意：后端 SUSPECT/LOST 时输出冻结在最后可信位姿，行驶中短暂 SUSPECT 也会带来 0.3–0.5 m 的瞬时误差，评估时应分开看可信样本。
 
 ## 真车
 
@@ -122,7 +144,7 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 - IMU：MID-360 内置 IMU，`imu_acceleration_scale=9.81`，外参是 URDF 中 `mid360_imu_link` 的 Livox 出厂值。
 - TF：本文件启动 `robot_state_publisher`（URDF）和 `joint_state_publisher`（`bringup/config/real/robot_state.yaml`）。
   云台 `yaw_joint` 取自底盘发布的 `/chassis/joint_states`；该话题没有数据时，所有关节发 0。
-- 后端：`bringup/config/real/backend.yaml`。接 UWB 时在这里打开 `uwb.enabled` 并按
+- 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。接 UWB 时在这里打开 `uwb.enabled` 并按
   `backend/docs/parameters.md` 配置。
 
 **以下取值未在真车验证（本机无硬件），上车先核对**，改启动参数或 yaml 即可，不用改代码：
@@ -143,7 +165,7 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 - **参数只有一个来源**：每个节点参数都来自 ROS 参数文件，代码中没有默认值；缺失参数或未知参数都会使启动失败。
   参数文件不支持继承或合并。外参不是参数，只在 URDF 中维护。
 - **模块 example 与 bringup 配置**：`lidar_fusion`、`frontend`、`backend`、`lidar_calibration` 各有 `config/example.yaml`，只用于单独启动该模块和测试；
-  完整系统只读 `bringup/config/<platform>/{lidar_fusion,frontend,backend,lidar_calibration}.yaml`（`<platform>` 为 `sim` 或 `real`），
+  完整系统只读 `bringup/config/<platform>/{lidar_fusion,frontend,backend,lidar_calibration}.yaml`（`<platform>` 为 `sim` 或 `real`；单雷达后端为 `backend_single.yaml`），
   它们是完整副本，不引用 example。
 - **键集合检查**：增删或改名参数后，在工作空间根目录运行 `python3 tools/check_bringup_params.py`，
   检查 bringup 各配置的键集合与对应模块 example 完全一致。
@@ -184,8 +206,12 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 
 - 后端偶尔打印 `invalid ZLIO observation frame/time/point layout`（一次运行 0–2 条），原因未查，未见对精度的影响。
 - 仿真出生点附近结构少，标定在该处全部因 `degenerate_geometry` 拒收，需开到拐角采集。
-- 单雷达仿真：前端在出生点初始化失败（最弱方向支撑不足），待查。
-- 绑架后后端可能接受错误的 Scan Context 匹配并保持 NORMAL 数秒（场地中心对称）；`recovery.confirmations` 改为 3 无改善。
+- 绑架后后端可能接受对称位置的错误匹配并保持 NORMAL 数秒（场地中心对称）：双雷达 0.6–14 s；单雷达（体素 0.25）12–17 s、最大偏 10.5 m。`recovery.confirmations` 改为 3 无改善。
+- 跟踪与恢复/重定位共用 `registration.voxel_resolution`：单雷达跟踪需要 0.25，恢复用 0.25 更易误匹配，暂无法分开设置。
+- 单雷达跟踪时配准偶尔把航向拉偏 1–10°（预测航向是准的），推测侧装单雷达偏航约束弱，未单独验证。
+- 单雷达先验定位起点偶尔偏约 22 cm（2 次），原因未查。
+- ZLIO 初始化失败重来时会在转动中重新估计重力；纯原地慢转影响很小，人手推车可能偏差较大，未处理。
+- SUSPECT/LOST 时后端输出冻结在最后可信位姿（`backend/src/pose_output.cpp`），行驶中误差随距离增长；是否改为里程计外推待定。
 - 真车路径只验证了编译、launch 展开与无驱动启动（外参、云台关节跟随）。
 
 ## 上游文档

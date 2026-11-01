@@ -13,17 +13,24 @@ clean() {  # 清掉上一场可能残留的仿真/定位进程，避免 /clock �
   sleep 3
 }
 
-run() {  # run NAME LIDAR MODE MAP LAPS [driver_mode] [CALIB]
-  local name=$1 lidar=$2 mode=$3 map=$4 laps=$5 dmode=${6:-} calib=${7:-0}
+run() {  # run NAME LIDAR MODE MAP LAPS [driver_mode] [CALIB] [flags]
+  local name=$1 lidar=$2 mode=$3 map=$4 laps=$5 dmode=${6:-} calib=${7:-0} flags=${8:-}
   clean
-  echo "=== $name (lidar=$lidar mode=$mode)"
-  LIDAR=$lidar CALIB=$calib "$HERE/zt_run.sh" "$mode" "$ROOT/$name" "$map" "$laps" $dmode
+  echo "=== $name (lidar=$lidar mode=$mode${flags:+ flags=$flags})"
+  if [ -n "$flags" ]; then  # 传 flags 时 driver_mode 必须显式给出
+    [ -n "$dmode" ] || { [ "$mode" = mapping ] && dmode=mapping || dmode=localize; }
+    LIDAR=$lidar CALIB=$calib "$HERE/zt_run.sh" "$mode" "$ROOT/$name" "$map" "$laps" "$dmode" "$flags"
+  else
+    LIDAR=$lidar CALIB=$calib "$HERE/zt_run.sh" "$mode" "$ROOT/$name" "$map" "$laps" $dmode
+  fi
 }
 
+# 单雷达（侧装 MID-360）：初始化期间慢转；建图另在出生点慢转一圈（见 README“单雷达”）
 for L in single dual; do
-  run "${L}_mapping" $L mapping "$ROOT/map_$L" 2
-  run "${L}_localization" $L localization "$ROOT/map_$L" 1
-  run "${L}_spin" $L mapping "$ROOT/spinmap_$L" 0 spin
+  if [ $L = single ]; then F=earlyspin; FM=earlyspin,spawnspin; else F=; FM=; fi
+  run "${L}_mapping" $L mapping "$ROOT/map_$L" 2 "" 0 "$FM"
+  run "${L}_localization" $L localization "$ROOT/map_$L" 1 "" 0 "$F"
+  run "${L}_spin" $L mapping "$ROOT/spinmap_$L" 0 spin 0 "$F"
 done
 run dual_calibration dual mapping "$ROOT/calibmap" 0 "" 1
 clean
