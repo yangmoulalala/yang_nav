@@ -2,7 +2,7 @@
 
 移植自 `reference/z-localization`（东北大学 T-DT，ZLIO 前端 + 因子图后端，GPL-2.0-only），
 并融合 `reference/navi_minco_bit` 的双雷达标定思路，适配本机器人：**Livox MID-360（云台上）+
-Unitree L2（底盘下、朝后）**，可选单雷达或双雷达。仿真与真车各一个启动文件，融合、前端、后端完全共用。
+Unitree L2（云台上、朝后）**，可选单雷达或双雷达。仿真与真车各一个启动文件，融合、前端、后端完全共用。
 
 ```
 MID-360 点云 ─┐

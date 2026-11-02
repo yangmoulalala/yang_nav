@@ -23,7 +23,7 @@ from launch_ros.substitutions import FindPackageShare
 WORKSPACE = Path(get_package_share_directory('bringup')).parents[3]
 
 ARGS = {
-    'lidar': ('dual', 'single 或 dual'),
+    'lidar': ('single', 'single 或 dual'),
     'mode': ('mapping', 'mapping 或 localization'),
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
     'map_dir': (str(WORKSPACE / 'maps' / 'sim'), '地图保存目录（绝对路径）'),
