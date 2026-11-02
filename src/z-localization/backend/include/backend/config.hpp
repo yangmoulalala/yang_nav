@@ -216,6 +216,13 @@ struct RecoveryConfig {
     double confirm_translation = 0.3;
     /// 相邻恢复候选 map←odom 变换允许的旋转差，rad。
     double confirm_rotation_rad = 5.0 * kPi / 180.0;
+    /// 提交前要求首个候选以来车体（里程计）至少移动的平移，m；与下一项任一满足即可，两项均为 0 关闭运动门。
+    /// 静止时对称或相似场景的错误解会连续自洽，移动后视野变化才能把它们区分开。
+    double confirm_min_translation = 0.0;
+    /// 提交前要求首个候选以来车体至少转过的角度，rad。
+    double confirm_min_rotation_rad = 0.0;
+    /// 运动门开启时，静止状态下连续一致候选达到该次数也提交（避免停车时永不恢复）；0 表示必须移动。
+    int confirm_stationary_max = 0;
     /// 恢复提交后的试用期（全局观测周期数）；期间一次严重冲突即进入 SUSPECT，0 关闭。
     int probation_observations = 5;
     SourceAccumulationConfig source;

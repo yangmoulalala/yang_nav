@@ -211,31 +211,61 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
 /// 相似场景下单帧匹配可能给出错误位姿，要求多帧一致可在提交前将其滤除。
 bool Localization::recoveryConfirmedLocked(const RecoveryWork& work,
                                            const RecoveryResult& result) {
-    const int required = config_.recovery.confirmations;
-    if (required <= 1)
+    const auto& rc = config_.recovery;
+    const int required = rc.confirmations;
+    const bool motion_gate = rc.confirm_min_translation > 0.0 || rc.confirm_min_rotation_rad > 0.0;
+    if (required <= 1 && !motion_gate)
         return true;
     const Eigen::Matrix4d T_map_odom = result.pose * work.frame.odom_pose.inverse();
+    /// 两个 map←odom 变换在确认门限内一致。
+    const auto consistent = [&](const Eigen::Matrix4d& reference, double& translation,
+                                double& rotation) {
+        const Eigen::Matrix4d delta = reference.inverse() * T_map_odom;
+        translation = delta.block<3, 1>(0, 3).norm();
+        rotation = rotationAngleFromMatrix(delta);
+        return delta.allFinite() && translation <= rc.confirm_translation &&
+               rotation <= rc.confirm_rotation_rad;
+    };
     if (pending_recovery_ && pending_recovery_->epoch == work.identity.epoch) {
-        const Eigen::Matrix4d delta = pending_recovery_->T_map_odom.inverse() * T_map_odom;
-        const double translation = delta.block<3, 1>(0, 3).norm();
-        const double rotation = rotationAngleFromMatrix(delta);
-        if (delta.allFinite() && translation <= config_.recovery.confirm_translation &&
-            rotation <= config_.recovery.confirm_rotation_rad) {
-            if (++pending_recovery_->confirmations >= required) {
+        double translation = 0.0, rotation = 0.0, anchor_t = 0.0, anchor_r = 0.0;
+        // 同时与上一候选和首个候选比较：防止一致性沿多次候选逐步漂移。
+        if (consistent(pending_recovery_->T_map_odom, translation, rotation) &&
+            consistent(pending_recovery_->first_T_map_odom, anchor_t, anchor_r)) {
+            ++pending_recovery_->confirmations;
+            pending_recovery_->T_map_odom = T_map_odom;
+            const Eigen::Matrix4d motion =
+                pending_recovery_->first_odom_pose.inverse() * work.frame.odom_pose;
+            const double moved_t = motion.block<3, 1>(0, 3).norm();
+            const double moved_r = rotationAngleFromMatrix(motion);
+            const bool moved =
+                !motion_gate ||
+                (rc.confirm_min_translation > 0.0 && moved_t >= rc.confirm_min_translation) ||
+                (rc.confirm_min_rotation_rad > 0.0 && moved_r >= rc.confirm_min_rotation_rad);
+            const bool stationary_ok =
+                rc.confirm_stationary_max > 0 &&
+                pending_recovery_->confirmations >= rc.confirm_stationary_max;
+            if (pending_recovery_->confirmations >= required && (moved || stationary_ok)) {
+                BACKEND_INFO_STREAM("recovery candidate accepted after "
+                                    << pending_recovery_->confirmations
+                                    << " consistent candidates, motion=" << moved_t << "m/"
+                                    << moved_r * 180.0 / M_PI << "deg"
+                                    << (moved ? "" : " (stationary limit)"));
                 pending_recovery_.reset();
                 return true;
             }
-            pending_recovery_->T_map_odom = T_map_odom;
             BACKEND_INFO_STREAM("recovery candidate confirmed "
-                                << pending_recovery_->confirmations << "/" << required << " via "
-                                << result.source);
+                                << pending_recovery_->confirmations << "/" << required
+                                << ", motion=" << moved_t << "m/" << moved_r * 180.0 / M_PI
+                                << "deg via " << result.source);
             return false;
         }
         BACKEND_INFO_STREAM("recovery candidate inconsistent with previous: delta_t="
                             << translation << "m, delta_r_deg=" << rotation * 180.0 / M_PI
-                            << "; restarting confirmation");
+                            << ", vs first: delta_t=" << anchor_t << "m, delta_r_deg="
+                            << anchor_r * 180.0 / M_PI << "; restarting confirmation");
     }
-    pending_recovery_ = PendingRecovery{T_map_odom, 1, work.identity.epoch};
+    pending_recovery_ =
+        PendingRecovery{T_map_odom, 1, work.identity.epoch, T_map_odom, work.frame.odom_pose};
     BACKEND_INFO_STREAM("recovery candidate awaiting confirmation 1/" << required << " via "
                                                                     << result.source);
     return false;

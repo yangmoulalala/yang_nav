@@ -209,6 +209,14 @@ void ParameterReader::loadRecovery() {
     double confirm_rotation_deg = parameters_.runtime.recovery.confirm_rotation_rad * 180.0 / M_PI;
     getParam("recovery/confirm_rotation_deg", confirm_rotation_deg);
     parameters_.runtime.recovery.confirm_rotation_rad = confirm_rotation_deg * M_PI / 180.0;
+    getParam("recovery/confirm_min_translation",
+             parameters_.runtime.recovery.confirm_min_translation);
+    double confirm_min_rotation_deg =
+        parameters_.runtime.recovery.confirm_min_rotation_rad * 180.0 / M_PI;
+    getParam("recovery/confirm_min_rotation_deg", confirm_min_rotation_deg);
+    parameters_.runtime.recovery.confirm_min_rotation_rad =
+        degreesToRadians(confirm_min_rotation_deg);
+    getParam("recovery/confirm_stationary_max", parameters_.runtime.recovery.confirm_stationary_max);
     getParam("recovery/probation_observations",
              parameters_.runtime.recovery.probation_observations);
     getParam("recovery/ambiguity_rmse_ratio",

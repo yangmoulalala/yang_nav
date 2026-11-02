@@ -9,6 +9,7 @@
       initspin   after ZLIO initializes, spin slowly until the backend is localized
       earlyspin  hold 2 s, then spin slowly during ZLIO initialization until the backend is localized
       spawnspin  one slow full turn at the spawn point before the laps (mapping with a side-mounted LiDAR)
+      kidnapspin after the kidnap, turn slowly while the backend is SUSPECT/LOST (gives recovery new views)
 """
 import json
 import math
@@ -223,6 +224,16 @@ class Driver(Node):
             self.cmd.publish(Twist())
             self.record(tag)
 
+    def rotate(self, seconds, tag, rate=0.3):
+        end = time.monotonic() + seconds
+        while time.monotonic() < end:
+            rclpy.spin_once(self, timeout_sec=0.02)
+            t = Twist()
+            t.angular.z = rate
+            self.cmd.publish(t)
+            self.record(tag)
+        self.stop()
+
     def teleport(self, x, y, yaw):
         req = Pose()
         req.name = 'sentry'
@@ -303,7 +314,10 @@ def main():
             end = time.monotonic() + 90
             asked = False
             while time.monotonic() < end:
-                d.hold(0.5, 'kidnap')
+                if 'kidnapspin' in extras and d.state in ('SUSPECT', 'LOST'):
+                    d.rotate(0.5, 'kidnap')
+                else:
+                    d.hold(0.5, 'kidnap')
                 if d.state == 'LOST' and not asked and time.monotonic() > end - 60:
                     result['services'].append(d.call('/backend_node/relocalize'))
                     asked = True

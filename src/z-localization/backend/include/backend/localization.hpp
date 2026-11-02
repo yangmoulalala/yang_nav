@@ -330,9 +330,13 @@ private:
     double last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
     /// 等待连续确认的恢复候选。
     struct PendingRecovery {
+        /// 最近一次一致候选的 map←odom。
         Eigen::Matrix4d T_map_odom = Eigen::Matrix4d::Identity();
         int confirmations = 0;
         std::uint64_t epoch = 0;
+        /// 首个候选的 map←odom 及其源帧里程计位姿，用于防止逐次漂移和度量确认期间的运动。
+        Eigen::Matrix4d first_T_map_odom = Eigen::Matrix4d::Identity();
+        Eigen::Matrix4d first_odom_pose = Eigen::Matrix4d::Identity();
     };
     std::optional<PendingRecovery> pending_recovery_;
     int last_lidar_observation_runtime_index_ = -1;

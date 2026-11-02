@@ -196,6 +196,13 @@ backend_node:
       confirm_translation: 0.3
       # 相邻恢复候选 map 到 odom 变换允许的旋转差，单位为度。
       confirm_rotation_deg: 5.0
+      # 运动门：提交恢复前要求自首个候选起车体至少平移该距离（米）或转过下一项角度；两项都为 0 关闭。
+      # 静止时对称/相似场景的错误解会连续自洽，移动后视野变化才能区分。
+      confirm_min_translation: 0.3
+      # 运动门的最小转角，单位为度。
+      confirm_min_rotation_deg: 30.0
+      # 运动门开启时，静止下连续一致候选达到该次数也提交，避免停车时永不恢复；0 表示必须移动。
+      confirm_stationary_max: 15
       # 恢复提交后的试用期（全局观测次数）；期间一次严重冲突即重新进入 SUSPECT；0 关闭。
       probation_observations: 5
       # 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复；0 关闭；初始化不检验。
