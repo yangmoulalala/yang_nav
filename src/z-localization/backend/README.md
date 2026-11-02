@@ -148,7 +148,9 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `~/save_map` | `std_srvs/srv/Trigger` | 保存运行轨迹地图包至 `trajectory.save_directory`；用于建图模式 |
 | `~/relocalize` | `std_srvs/srv/Trigger` | 在 `LOST` 状态下请求重定位，收到新的有效帧后执行 |
 | `/localization_reset` | `std_srvs/srv/Trigger` | 发起前后端协调重置；`success=true` 表示请求已接受 |
-| `/zlio/reset_internal` | `localization_interfaces/srv/ResetFrontend` | 后端调用的前端重置服务，由 `reset.service` 配置 |
+| `/zlio/reset_internal` | `localization_interfaces/srv/ResetFrontend` | 后端调用的前端重置服务 |
+
+以上服务名均为节点内固定名称，不是参数；需要改名时在 launch 中使用 ROS remap。
 
 手动调用 `/localization_reset` 时，若前端无法提供暖重置前后的坐标变换，后端会按机器人保持静止来衔接位姿。
 因此，调用时须保证整个重置期间停车。自动冷恢复需要重新通过先验地图匹配或 UWB 对齐确定全局位姿；

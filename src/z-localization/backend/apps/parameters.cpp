@@ -95,9 +95,8 @@ void ParameterReader::applyBodyExtrinsic(const Eigen::Matrix4d& T_sensor_body) {
 
 /// 读取地图持久化、关键帧和唯一点到面配准参数。
 void ParameterReader::loadMapTrajectoryAndRegistration() {
-    int cloud_cache_mb = 64, submap_cache_mb = 64;
-    getParam("storage/cloud_cache_mb", cloud_cache_mb);
-    getParam("storage/submap_cache_mb", submap_cache_mb);
+    const int cloud_cache_mb = param<int>("storage/cloud_cache_mb");
+    const int submap_cache_mb = param<int>("storage/submap_cache_mb");
     parameters_.runtime.storage.cloud_cache_bytes =
         static_cast<std::size_t>(std::max(0, cloud_cache_mb)) * 1024U * 1024U;
     parameters_.runtime.storage.submap_cache_bytes =
@@ -111,9 +110,8 @@ void ParameterReader::loadMapTrajectoryAndRegistration() {
     getParam("trajectory/save_global_pcd", parameters_.maps.save_global_pcd);
     getParam("trajectory/map_voxel_resolution", parameters_.maps.runtime_voxel);
     getParam("trajectory/keyframe/distance", parameters_.runtime.keyframes.distance);
-    double keyframe_angle_deg = 12.0;
-    getParam("trajectory/keyframe/angle_deg", keyframe_angle_deg);
-    parameters_.runtime.keyframes.angle_rad = degreesToRadians(keyframe_angle_deg);
+    parameters_.runtime.keyframes.angle_rad =
+        degreesToRadians(param<double>("trajectory/keyframe/angle_deg"));
     getParam("trajectory/keyframe/min_interval", parameters_.runtime.keyframes.min_interval);
     getParam("trajectory/keyframe/max_interval", parameters_.runtime.keyframes.max_interval);
     RegistrationConfig& registration = parameters_.runtime.relocalization.point_to_plane_config;
@@ -134,18 +132,15 @@ void ParameterReader::loadMapTrajectoryAndRegistration() {
     getParam("registration/residual_std_floor", registration.residual_std_floor);
     getParam("registration/measurement_translation_std_floor",
              registration.measurement_translation_std_floor);
-    double measurement_rotation_std_floor_deg = 0.0;
-    getParam("registration/measurement_rotation_std_floor_deg", measurement_rotation_std_floor_deg);
     registration.measurement_rotation_std_floor_rad =
-        degreesToRadians(measurement_rotation_std_floor_deg);
+        degreesToRadians(param<double>("registration/measurement_rotation_std_floor_deg"));
     getParam("registration/min_coverage_sectors", registration.min_coverage_sectors);
     getParam("registration/convergence_translation", registration.convergence_translation);
-    double convergence_rotation_deg = 0.0;
-    getParam("registration/convergence_rotation_deg", convergence_rotation_deg);
+    const double convergence_rotation_deg = param<double>("registration/convergence_rotation_deg");
     if (!(registration.convergence_translation > 0.0) || !(convergence_rotation_deg > 0.0))
         throw std::invalid_argument(
             "registration.convergence_translation and convergence_rotation_deg must be > 0");
-    registration.convergence_rotation_rad = convergence_rotation_deg * M_PI / 180.0;
+    registration.convergence_rotation_rad = degreesToRadians(convergence_rotation_deg);
     getParam("registration/degeneracy_condition_threshold",
              registration.degeneracy_condition_threshold);
 }
@@ -153,10 +148,8 @@ void ParameterReader::loadMapTrajectoryAndRegistration() {
 /// 读取 NORMAL 跟踪和系统联合创新参数。
 void ParameterReader::loadTracking() {
     getParam("tracking/correction_period", parameters_.runtime.tracking.correction_period);
-    int tracking_target_keyframes = 16;
-    getParam("tracking/target_keyframes", tracking_target_keyframes);
     parameters_.runtime.tracking.target_keyframes =
-        static_cast<std::size_t>(std::max(1, tracking_target_keyframes));
+        static_cast<std::size_t>(std::max(1, param<int>("tracking/target_keyframes")));
     getParam("tracking/target_radius", parameters_.runtime.tracking.target_radius);
     getParam("tracking/nearest_reference_radius",
              parameters_.runtime.tracking.nearest_reference_radius);
@@ -167,16 +160,12 @@ void ParameterReader::loadTracking() {
     getParam("tracking/source/max_time", parameters_.runtime.tracking.source.max_time);
     getParam("tracking/source/max_translation",
              parameters_.runtime.tracking.source.max_translation);
-    double tracking_source_max_rotation_deg = 0.0;
-    getParam("tracking/source/max_rotation_deg", tracking_source_max_rotation_deg);
     parameters_.runtime.tracking.source.max_rotation_rad =
-        degreesToRadians(tracking_source_max_rotation_deg);
+        degreesToRadians(param<double>("tracking/source/max_rotation_deg"));
     getParam("tracking/max_translation_correction",
              parameters_.runtime.tracking.max_translation_correction);
-    double max_rotation_correction_deg = 15.0;
-    getParam("tracking/max_rotation_correction_deg", max_rotation_correction_deg);
     parameters_.runtime.tracking.max_rotation_correction_rad =
-        degreesToRadians(max_rotation_correction_deg);
+        degreesToRadians(param<double>("tracking/max_rotation_correction_deg"));
     getParam("tracking/suspicious_linear_speed",
              parameters_.runtime.tracking.suspicious_linear_speed);
     getParam("tracking/suspicious_angular_speed",
@@ -206,16 +195,12 @@ void ParameterReader::loadRecovery() {
     getParam("recovery/automatic_when_lost", parameters_.runtime.recovery.automatic_when_lost);
     getParam("recovery/confirmations", parameters_.runtime.recovery.confirmations);
     getParam("recovery/confirm_translation", parameters_.runtime.recovery.confirm_translation);
-    double confirm_rotation_deg = parameters_.runtime.recovery.confirm_rotation_rad * 180.0 / M_PI;
-    getParam("recovery/confirm_rotation_deg", confirm_rotation_deg);
-    parameters_.runtime.recovery.confirm_rotation_rad = confirm_rotation_deg * M_PI / 180.0;
+    parameters_.runtime.recovery.confirm_rotation_rad =
+        degreesToRadians(param<double>("recovery/confirm_rotation_deg"));
     getParam("recovery/confirm_min_translation",
              parameters_.runtime.recovery.confirm_min_translation);
-    double confirm_min_rotation_deg =
-        parameters_.runtime.recovery.confirm_min_rotation_rad * 180.0 / M_PI;
-    getParam("recovery/confirm_min_rotation_deg", confirm_min_rotation_deg);
     parameters_.runtime.recovery.confirm_min_rotation_rad =
-        degreesToRadians(confirm_min_rotation_deg);
+        degreesToRadians(param<double>("recovery/confirm_min_rotation_deg"));
     getParam("recovery/confirm_stationary_max", parameters_.runtime.recovery.confirm_stationary_max);
     getParam("recovery/probation_observations",
              parameters_.runtime.recovery.probation_observations);
@@ -223,20 +208,15 @@ void ParameterReader::loadRecovery() {
              parameters_.runtime.relocalization.ambiguity_rmse_ratio);
     getParam("recovery/ambiguity_translation",
              parameters_.runtime.relocalization.ambiguity_translation);
-    double ambiguity_rotation_deg =
-        parameters_.runtime.relocalization.ambiguity_rotation_rad * 180.0 / M_PI;
-    getParam("recovery/ambiguity_rotation_deg", ambiguity_rotation_deg);
     parameters_.runtime.relocalization.ambiguity_rotation_rad =
-        degreesToRadians(ambiguity_rotation_deg);
+        degreesToRadians(param<double>("recovery/ambiguity_rotation_deg"));
     getParam("recovery/source/min_frames", parameters_.runtime.recovery.source.min_frames);
     getParam("recovery/source/max_frames", parameters_.runtime.recovery.source.max_frames);
     getParam("recovery/source/max_time", parameters_.runtime.recovery.source.max_time);
     getParam("recovery/source/max_translation",
              parameters_.runtime.recovery.source.max_translation);
-    double recovery_source_max_rotation_deg = 0.0;
-    getParam("recovery/source/max_rotation_deg", recovery_source_max_rotation_deg);
     parameters_.runtime.recovery.source.max_rotation_rad =
-        degreesToRadians(recovery_source_max_rotation_deg);
+        degreesToRadians(param<double>("recovery/source/max_rotation_deg"));
     getParam("recovery/initial_max_descriptor_distance",
              parameters_.runtime.relocalization.initial_relocalization_max_descriptor_distance);
     getParam("recovery/descriptor_distance_limit",
@@ -264,7 +244,7 @@ bool isFrameworkParameter(const std::string& name) {
 
 }  // namespace
 
-/// 读取可视化、服务和世界点云输出参数。
+/// 读取可视化和世界点云输出参数；服务名为固定名称（见 apps/config.hpp），不再是参数。
 void ParameterReader::loadOutputs() {
     getParam("visualization/enabled", parameters_.visualization.enabled);
     getParam("visualization/publish_prior_map", parameters_.visualization.publish_prior_map);
@@ -276,9 +256,6 @@ void ParameterReader::loadOutputs() {
     parameters_.runtime.registration_debug_enabled = parameters_.visualization.publish_registration;
     getParam("visualization/map_publish_period", parameters_.maps.publish_period);
 
-    getParam("services/save_map", parameters_.services.save_map);
-    getParam("services/relocalize", parameters_.services.relocalize);
-    getParam("services/reset", parameters_.services.reset);
     getParam("output/world_cloud/enabled", parameters_.world_cloud.enabled);
     getParam("output/world_cloud/publish_period", parameters_.world_cloud.publish_period);
     getParam("output/world_cloud/publish_initializing",

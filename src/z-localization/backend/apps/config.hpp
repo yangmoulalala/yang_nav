@@ -67,9 +67,9 @@ struct VisualizationParameters {
     bool publish_registration = false;
 };
 
-/// 前端重置客户端及后端公开服务的名称。
+/// 前端重置客户端及后端公开服务的固定名称；不是参数，需要改名时使用 ROS remap（与话题一致）。
 struct ServiceParameters {
-    std::string frontend_reset;
+    std::string frontend_reset = "/zlio/reset_internal";
     std::string save_map = "~/save_map";
     std::string relocalize = "~/relocalize";
     std::string reset = "/localization_reset";

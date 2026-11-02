@@ -98,6 +98,14 @@ private:
         }
     }
 
+    /// 读取一个必填参数并按值返回；用于需要换算单位的参数，避免写出看似默认值、实际从不生效的局部初值。
+    template <typename T>
+    T param(const std::string& path) {
+        T value{};
+        getParam(path, value);
+        return value;
+    }
+
     rclcpp::Node& node_;
     NodeConfig parameters_;
     /// 启用时的 epoch 0 启动提示 T_map_body，用启动时外参换算为 T_map_sensor。

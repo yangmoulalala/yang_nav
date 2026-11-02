@@ -179,15 +179,16 @@ class TestMapService(unittest.TestCase):
             # 第二个实际节点只读加载刚保存的包；服务可用意味着启动校验已完成。
             reload_parameters = backend_parameters(dict(parameters, **{
                 'prior_map.enabled': True, 'prior_map.directory': str(destination),
-                'trajectory.save_directory': '', 'services.reset': '/reload/reset',
+                'trajectory.save_directory': '',
             }))
             config = root / 'reload.yaml'
             config.write_text(
                 yaml.safe_dump({'/**': {'ros__parameters': reload_parameters}}), encoding='utf-8')
             with (root / 'reload.log').open('w', encoding='utf-8') as log:
-                # 话题为固定相对名，第二个节点通过 remap 与被测节点的输入隔离。
+                # 话题与服务为固定名称，第二个节点通过 remap 与被测节点的输入和公开重置服务隔离。
                 child = subprocess.Popen(
                     [executable, '--ros-args', '-r', '__node:=reload_backend',
+                     '-r', '/localization_reset:=/reload/reset',
                      '-r', 'frontend/frame:=/reload/unused_frames',
                      '-r', 'frontend/session:=/reload/unused_sessions',
                      '-r', 'frontend/odometry:=/reload/unused_predictions',

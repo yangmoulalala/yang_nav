@@ -13,15 +13,15 @@ backend_node:
     common:
       # 使用 ZLIO 原子观测与高频预测协议。
       frontend: zlio
-      # 全局地点描述子类型，可选 scan_context 或 gprobe。
+      # 全局地点描述子类型，可选 scan_context 或 gprobe。 [按车调整]
       descriptor_type: scan_context
-      # 前端里程计坐标系。
+      # 前端里程计坐标系。 [按车调整]
       odom_frame: odom
-      # 同步观测和预测使用的传感器坐标系。
+      # 同步观测和预测使用的传感器坐标系。 [按车调整]
       sensor_frame: imu
       # ZLIO 去畸变点云位于 IMU 局部坐标系。
       input_cloud_in_local_frame: true
-      # 车体输出坐标系名称；sensor_frame <- body_frame 外参由 URDF 经 TF 提供，按消息时间戳查询（跟踪云台关节）。
+      # 车体输出坐标系名称；sensor_frame <- body_frame 外参由 URDF 经 TF 提供，按消息时间戳查询（跟踪云台关节）。 [按车调整]
       body_frame: body
       # 外参精确时刻不可用时，允许使用的最新 TF 与请求时刻的最大时间差，单位为秒；
       # 超出时节流告警并沿用上次有效外参。须 ≥0。
@@ -39,7 +39,7 @@ backend_node:
         max_radius: 80.0
         # 描述子输入点云的体素边长，单位为米。
         downsample: 0.6
-        # 描述子使用的雷达安装高度，单位为米。
+        # 描述子使用的雷达安装高度，单位为米。 [按车调整]
         lidar_height: 0.35
         # 一个描述子栅格成为有效栅格所需的最少点数。
         min_bin_points: 1
@@ -58,7 +58,7 @@ backend_node:
         # 构造描述子前是否用前端 roll/pitch 整平点云。
         level_with_odom_roll_pitch: true
         # 列相似度平均方式：overlap 只按两帧都有点的扇区平均（上游行为）；union 按任一帧有点的扇区平均，
-        # 单侧视野（侧装单雷达）用 union，否则所有候选距离退化为 0。不影响已保存的地图。
+        # 单侧视野（侧装单雷达）用 union，否则所有候选距离退化为 0。不影响已保存的地图。 [按车调整]
         similarity_normalization: overlap
       # 全局地图坐标系名称。
       map_frame: map
@@ -69,13 +69,13 @@ backend_node:
       voxel_resolution: 0.15
     trajectory:
       keyframe:
-        # 关键帧平移触发距离，单位为米；非正值关闭该触发器。
+        # 关键帧平移触发距离，单位为米；非正值关闭该触发器。 [按车调整]
         distance: -1.0
-        # 关键帧旋转触发角度，单位为度；非正值关闭该触发器。
+        # 关键帧旋转触发角度，单位为度；非正值关闭该触发器。 [按车调整]
         angle_deg: -1.0
-        # 相邻关键帧允许的最小时间间隔，单位为秒。
+        # 相邻关键帧允许的最小时间间隔，单位为秒。 [按车调整]
         min_interval: 0.0
-        # 关键帧最大时间间隔，单位为秒；非正值关闭定时触发。
+        # 关键帧最大时间间隔，单位为秒；非正值关闭定时触发。 [按车调整]
         max_interval: 0.5
       # 无先验图时是否在正常退出时保存运行轨迹地图。
       save_on_shutdown: false
@@ -84,7 +84,7 @@ backend_node:
       # 合并运行地图时使用的体素边长，单位为米。
       map_voxel_resolution: 0.15
     registration:
-      # 共享点到面配准的输入体素边长，单位为米。
+      # 共享点到面配准的输入体素边长，单位为米。 [按车调整]
       voxel_resolution: 0.4
       # 每个配准层允许的最大求解迭代次数。
       max_iterations: 16
@@ -130,9 +130,9 @@ backend_node:
       # 选择先验参考关键帧的最大空间距离，单位为米；0 表示不限。
       nearest_reference_radius: 7.0
       source:
-        # 一次观测最多累计的因果点云帧数。
+        # 一次观测最多累计的因果点云帧数。 [按车调整]
         max_frames: 5
-        # 累计窗口允许的最大时间跨度，单位为秒；0 表示不限制。
+        # 累计窗口允许的最大时间跨度，单位为秒；0 表示不限制。 [按车调整]
         max_time: 0.5
         # 累计窗口允许的最大相对旋转，单位为度；0 表示不限制。
         max_rotation_deg: 0.0
@@ -212,20 +212,20 @@ backend_node:
       # 歧义检验中判定两解不同的旋转差，单位为度。
       ambiguity_rotation_deg: 30.0
     uwb:
-      # 是否接入 UWB 位置观测。
+      # 是否接入 UWB 位置观测。 [按车调整]
       enabled: true
       # 是否信任并使用 UWB 的 Z 方向观测。
       use_z: false
       # 有先验图时是否在线联合估计 UWB 坐标系到 map 的变换。
       estimate_zero_pose_online: true
-      # UWB 消息时刻到物理运动时刻的固定偏置，满足 t_motion=t_header+dt。
+      # UWB 消息时刻到物理运动时刻的固定偏置，满足 t_motion=t_header+dt。 [按车调整]
       time_offset_seconds: -0.15
       antenna_position_body:
-        # UWB 天线相位中心在 body 坐标系中的 X 位置，单位为米。
+        # UWB 天线相位中心在 body 坐标系中的 X 位置，单位为米。 [按车调整]
         x: -0.245
-        # UWB 天线相位中心在 body 坐标系中的 Y 位置，单位为米。
+        # UWB 天线相位中心在 body 坐标系中的 Y 位置，单位为米。 [按车调整]
         y: -0.0
-        # UWB 天线相位中心在 body 坐标系中的 Z 位置，单位为米。
+        # UWB 天线相位中心在 body 坐标系中的 Z 位置，单位为米。 [按车调整]
         z: 0.0
       # 单次 UWB 水平位置观测的标准差，单位为米。
       position_std_xy: 0.15
@@ -355,8 +355,6 @@ backend_node:
         # 鲁棒核按白化残差分量 RMS 定义的阈值。
         size: 0.5
     reset:
-      # 执行前端重置事务的服务。
-      service: /zlio/reset_internal
       # reset 响应超时重试间隔，单位为秒；重试沿用同一事务 ID。
       response_timeout: 5.0
       # 两次新 reset 事务之间的最小时间间隔，单位为秒。
@@ -366,17 +364,17 @@ backend_node:
       # 无有效坐标边界的停车 reset 在途旋转标准差，单位为度。
       stationary_rotation_std_deg: 1.0
     startup_hint:
-      # 是否提供 epoch 0 时 body 在 map 中的近似启动位姿。
+      # 是否提供 epoch 0 时 body 在 map 中的近似启动位姿。 [按车调整]
       enabled: false
       # 有先验图时是否持续只用启动提示做几何验证直至成功。
       force_until_matched: true
-      # 启动提示中 body 在 map 下的 X 坐标，单位为米。
+      # 启动提示中 body 在 map 下的 X 坐标，单位为米。 [按车调整]
       x: 4.6
-      # 启动提示中 body 在 map 下的 Y 坐标，单位为米。
+      # 启动提示中 body 在 map 下的 Y 坐标，单位为米。 [按车调整]
       y: 7.5
-      # 启动提示中 body 在 map 下的 Z 坐标，单位为米。
+      # 启动提示中 body 在 map 下的 Z 坐标，单位为米。 [按车调整]
       z: 0.15
-      # 启动提示中 body 在 map 下的偏航角，单位为度。
+      # 启动提示中 body 在 map 下的偏航角，单位为度。 [按车调整]
       yaw_deg: 0.0
     innovation:
       # 联合 NIS 卡方上尾概率低于该值时判定观测冲突。
@@ -395,7 +393,7 @@ backend_node:
       # 纯 odom 时 odom 原点在 map 中的 Y 坐标，单位为米。
       origin_y: 0.0
     visualization:
-      # 是否启用后端 RViz 可视化输出。
+      # 是否启用后端 RViz 可视化输出。 [按车调整]
       enabled: false
       # 是否发布不可变先验地图。
       publish_prior_map: false
@@ -409,13 +407,6 @@ backend_node:
       publish_debug_registration: false
       # 地图类可视化的最小发布周期，单位为秒。
       map_publish_period: 2.0
-    services:
-      # 保存当前运行轨迹地图包的服务名。
-      save_map: ~/save_map
-      # 手动全局重定位服务名。
-      relocalize: ~/relocalize
-      # 统一协调前端 reset 的公开服务名。
-      reset: /localization_reset
     output:
       world_cloud:
         # 是否发布变换到 map 坐标系的实时点云。

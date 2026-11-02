@@ -1,6 +1,27 @@
 # 参数与调参建议
 
-[返回 README](../README.md) · [参数列表](#参数列表) · [离线工具参数](#离线工具参数) · [调参建议](#调参建议)
+[返回 README](../README.md) · [常用参数](#常用参数) · [参数列表](#参数列表) · [离线工具参数](#离线工具参数) · [调参建议](#调参建议)
+
+## 常用参数
+
+换车、换雷达布置或换场地时通常只需要看下表；在 YAML 中这些键的注释带 `[按车调整]` 标记，
+可用 `grep -n '按车调整' bringup/config/*/backend*.yaml` 一次找全。其余参数是算法内部参数，
+一般保持不变；修改共用参数后运行 `python3 tools/check_bringup_params.py`，它会报出只改了一份文件的参数。
+
+| 参数 | 何时需要改 |
+| --- | --- |
+| `common.odom_frame`、`common.sensor_frame`、`common.body_frame` | 坐标系命名变化；`sensor_frame` 须等于前端 `frames.imu` |
+| `common.descriptor_type` | 换雷达型号时比较 Scan Context 与 G-PROBE |
+| `common.scan_context.lidar_height` | 雷达安装高度变化 |
+| `common.scan_context.similarity_normalization` | 单侧视野（侧装单雷达）用 `union`，全向用 `overlap` |
+| `registration.voxel_resolution` | 点云稀疏（配准点数不足）时减小 |
+| `tracking.source.max_frames`、`tracking.source.max_time` | 单帧点数不足时增大累积 |
+| `trajectory.keyframe.*` | 建图密度与车速不匹配 |
+| `uwb.enabled`、`uwb.antenna_position_body.*`、`uwb.time_offset_seconds` | 接入或移动 UWB 天线 |
+| `startup_hint.*` | 固定出发点启动 |
+| `visualization.enabled` | 是否需要 RViz 显示 |
+
+平台之间已知且允许的取值差异及原因见 `tools/check_bringup_params.py` 中的 `ALLOWED`。
 
 ## 参数列表
 
@@ -235,8 +256,8 @@
 | `antenna_position_body.x` | 浮点，m | `-0.245` | UWB 天线相位中心在车体系中的 X 坐标 |
 | `antenna_position_body.y` | 浮点，m | `-0.0` | UWB 天线相位中心在车体系中的 Y 坐标 |
 | `antenna_position_body.z` | 浮点，m | `0.0` | UWB 天线相位中心在车体系中的 Z 坐标 |
-| `position_std_xy` | 浮点，m | `0.15` | UWB 单次位置测量的 X、Y 标准差；越小融合权重越高，须 `>0` |
-| `position_std_z` | 浮点，m | `0.3` | UWB 单次高度测量的标准差；仅 `use_z=true` 时使用，须 `>0` |
+| `position_std_xy` | 浮点，m | `0.15` | UWB 单次位置测量的 X、Y 标准差；越小融合权重越高，须 `>0`，否则启动失败 |
+| `position_std_z` | 浮点，m | `0.3` | UWB 单次高度测量的标准差；仅 `use_z=true` 时使用，但始终须 `>0`，否则启动失败 |
 
 #### `uwb.bootstrap` · 启动对齐（10 项）
 
@@ -303,15 +324,16 @@
 | `odom_noise.rotation_variance_per_radian` | 浮点，rad²/rad | `3e-07` | 两关键帧间每转动一弧度额外增加的旋转方差；须 `≥0`，`0` 不附加 |
 | `odom_noise.translation_variance_per_meter` | 浮点，m²/m | `0.0002` | 两关键帧间每移动一米额外增加的平移方差；须 `≥0`，`0` 不附加 |
 | `robust.enabled` | 布尔 | `true` | 是否降低大残差回环因子的权重 |
-| `robust.kernel` | 字符串 | `cauchy` | 回环鲁棒核：`huber` 对大残差采用线性惩罚，`cauchy` 对大残差降权更强 |
+| `robust.kernel` | 字符串 | `cauchy` | 回环鲁棒核：`huber` 对大残差采用线性惩罚，`cauchy` 对大残差降权更强；其他取值启动失败 |
 | `robust.size` | 浮点，无量纲 | `0.5` | 以噪声标准差归一化后的残差尺度；越小越早降低回环权重，须 `>0` |
 | `fixed_lag_seconds` | 浮点，s | `30.0` | 图中保留位姿变量的历史时长；须 `≥0`，`0` 保留全图，开启回环时自动取 `0` |
 
-#### `reset` · 协调重置（5 项）
+#### `reset` · 协调重置（4 项）
+
+后端调用的前端重置服务固定为 `/zlio/reset_internal`（原 `reset.service` 已删除），需要改名时使用 ROS remap。
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `service` | 字符串 | `/zlio/reset_internal` | 后端调用的前端内部重置服务名 |
 | `min_gap` | 浮点，s | `10.0` | 两次独立重置请求之间的最短间隔；须 `≥0`，`0` 不限制 |
 | `response_timeout` | 浮点，s | `5.0` | 等待重置响应的超时时长；到期以同一事务 ID 重试，须 `≥0.05` |
 | `stationary_translation_std` | 浮点，m | `0.05` | 无暖重置坐标边界、按停车假设衔接时增加的平移标准差；须 `>0` |
@@ -347,13 +369,10 @@
 | `publish_debug_registration` | 布尔 | `false` | 是否发布最近一次配准的对齐后源点云与目标点云 |
 | `map_publish_period` | 浮点，s | `2.0` | 运行地图显示点云的发布周期，实际至少 `0.1 s` |
 
-#### `services` · 服务名称（3 项）
+#### 服务名称（不是参数）
 
-| 键 | 类型 / 单位 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `save_map` | 字符串 | `~/save_map` | 保存运行地图的服务名 |
-| `relocalize` | 字符串 | `~/relocalize` | 手动重定位服务名，仅在 `LOST` 状态接受请求 |
-| `reset` | 字符串 | `/localization_reset` | 对外提供的前后端协调重置服务名 |
+原 `services.*` 三项已删除。`~/save_map`、`~/relocalize`、`/localization_reset` 为节点内固定名称，
+与话题一样在 launch 中用 ROS remap 改名，含义见 [README](../README.md#服务)。
 
 #### `output.world_cloud` · 世界点云输出（4 项）
 
