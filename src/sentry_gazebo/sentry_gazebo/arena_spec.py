@@ -56,6 +56,15 @@ ROBOT_MODEL_NAME = 'sentry'
 ROBOT_SPAWN_XY_YAW = (1.25, 6.75, 0.0)   # scenario.json spawn, in the red supply zone
 ROBOT_Z = 0.062          # wheel bottoms on the floor (joint z 0.003 - radius 0.065)
 
+# RMUC 2027 full field (``arena:=rmuc``, model://rmuc_2027): converted from
+# RMUC2027_V1.0.0.step, 28.0 x 16.0 m, centred on the world origin, lowest
+# point at z = 0.  The field has no single flat main floor.  The spawn is the
+# flat floor 2 m behind the 0.45 m bump at x = -7.5 (ramps x -8.5..-7.8 and
+# -7.0..-6.3): x -10.7..-8.5 is flat at z 0.29 with a 10 mm strip at 0.30
+# along y = 0 (vertical ray cast of field_collision.stl).
+RMUC_SPAWN_XY_YAW = (-9.5, 0.0, 0.0)
+RMUC_SPAWN_FLOOR_Z = 0.30
+
 # The URDF's own orientation.  z-up already, so this stays identity; it is kept
 # so a future y-up export only has to change this one value.
 ROBOT_MODEL_RPY = (0.0, 0.0, 0.0)
@@ -79,7 +88,7 @@ WHEEL_LENGTH = 0.04      # wheel_front_left.stl is 4 cm thick along its axis
 # The bottom is cut to CHASSIS_GROUND_CLEARANCE above the floor: the raw bbox
 # reaches 4 mm above the floor, so the box snagged on the 10 mm centre plate,
 # which the 65 mm wheels climb easily.
-CHASSIS_GROUND_CLEARANCE = 0.03
+CHASSIS_GROUND_CLEARANCE = 0.05
 _HULL_TOP = 0.027 + 0.170 / 2.0                    # above the link origin
 _HULL_BOTTOM = CHASSIS_GROUND_CLEARANCE - ROBOT_Z   # link origin is ROBOT_Z up
 CHASSIS_HULL_CENTRE = (0.0, 0.0, (_HULL_TOP + _HULL_BOTTOM) / 2.0)

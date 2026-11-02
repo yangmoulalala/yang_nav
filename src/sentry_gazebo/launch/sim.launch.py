@@ -3,6 +3,7 @@
     ros2 launch sentry_gazebo sim.launch.py                  # headless
     ros2 launch sentry_gazebo sim.launch.py gui:=true        # + Gazebo GUI
     ros2 launch sentry_gazebo sim.launch.py gui:=true rviz:=true
+    ros2 launch sentry_gazebo sim.launch.py gui:=true arena:=rmuc   # RMUC full field
 
 Topics
     /cmd_vel               geometry_msgs/Twist          -> MecanumDrive
@@ -57,7 +58,8 @@ def build(context):
     gen = Path(_str(context, 'generated_dir') or generated_dir())
     urdf = Path(urdf_path())
 
-    world = prepare_world.generate(gen, urdf, view=gui)
+    arena = _str(context, 'arena') or 'rmul'
+    world = prepare_world.generate(gen, urdf, view=gui, arena=arena)
 
     actions = []
     env = gz_environment()
@@ -126,6 +128,9 @@ def generate_launch_description():
                               description='open the Gazebo GUI as well'),
         DeclareLaunchArgument('rviz', default_value='false',
                               description='start RViz2 with the sentry layout'),
+        DeclareLaunchArgument('arena', default_value='rmul', choices=['rmul', 'rmuc'],
+                              description='rmul: RMUL 2027 3v3 field (model://rmul_2027); '
+                                          'rmuc: RMUC 2027 full field (model://rmuc_2027)'),
         DeclareLaunchArgument('generated_dir', default_value='',
                               description='where to write the generated world '
                                           '(default: $SENTRY_GAZEBO_GEN or '
