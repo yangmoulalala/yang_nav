@@ -1,11 +1,11 @@
 # ZLIO · 激光惯性里程计
 
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus)
-![ROS 2 Humble](https://img.shields.io/badge/ROS_2-Humble-22314E?logo=ros)
+![ROS 2 Jazzy](https://img.shields.io/badge/ROS_2-Jazzy-22314E?logo=ros)
 ![LiDAR–IMU](https://img.shields.io/badge/Sensors-LiDAR%20%2B%20IMU-287A6B)
 ![Odometry](https://img.shields.io/badge/Localization-Odometry-536A8A)
 
-ZLIO 是 [Z-Localization](../../README.md) 的激光惯性前端，ROS 包名为 `frontend`。
+ZLIO 是 [Z-Localization](../README.md) 的激光惯性前端，ROS 包名为 `frontend`。
 它接收带逐点时间的 LiDAR 点云和 IMU 数据，输出局部里程计、去畸变点云，以及随 IMU 更新的高频位姿预测。
 
 [项目结构](#项目结构) · [环境与依赖](#环境与依赖) · [快速开始](#快速开始) · [参数配置](#参数配置) · [对外接口](#对外接口) · [致谢](#致谢)
@@ -13,7 +13,7 @@ ZLIO 是 [Z-Localization](../../README.md) 的激光惯性前端，ROS 包名为
 ## 项目结构
 
 ```text
-src/frontend/
+src/z-localization/frontend/
 ├── README.md
 ├── docs/parameters.md           参数列表与调参建议
 ├── include/zlio/                核心库公开接口
@@ -23,7 +23,6 @@ src/frontend/
 ├── launch/frontend.launch.py    里程计（可选可视化）启动入口
 ├── rviz/frontend.rviz           RViz 配置
 ├── cmake/                       CMake 导出配置
-├── test/                        单元、集成与 ROS 测试
 ├── CMakeLists.txt
 └── package.xml
 ```
@@ -35,13 +34,12 @@ src/frontend/
 
 | 类别 | 依赖 |
 | --- | --- |
-| 系统环境 | Ubuntu 22.04、ROS 2 Humble |
+| 系统环境 | Ubuntu 24.04、ROS 2 Jazzy |
 | 编译与构建 | C++ ≥ 17、CMake ≥ 3.16、ament_cmake |
 | C++ 库 | Eigen ≥ 3.3、nanoflann、Threads、OpenMP C++ |
 | ROS 包 | rclcpp、sensor_msgs、nav_msgs、geometry_msgs、std_srvs、tf2、tf2_ros、launch、launch_ros、rviz2 |
 | 工作区包 | localization_interfaces、livox_ros_driver2 |
 | 驱动依赖 | Livox-SDK2、PCL、APR |
-| 测试依赖 | ament_cmake_gtest、launch_testing_ament_cmake、rclpy、sensor_msgs_py、domain_coordinator |
 
 ## 快速开始
 

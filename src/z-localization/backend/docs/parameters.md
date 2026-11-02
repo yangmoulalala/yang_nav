@@ -59,7 +59,7 @@
 
 #### `common.body_frame` · 车体外参
 
-参数文件不再包含车体外参（原 `common.body.*` 已删除）。后端持续监听 TF，按消息时间戳查询
+参数文件不包含车体外参。后端持续监听 TF，按消息时间戳查询
 `common.sensor_frame` ← `common.body_frame` 的变换；启动时阻塞等待该变换首次可用（节流告警）。
 完整系统中该变换由 URDF（`src/sentry_description/urdf/sentry_robot.urdf`）经 `robot_state_publisher` 提供，
 外参只在 URDF 中维护。云台 `yaw_joint` 等可动关节由 `joint_state_publisher` 发布到 TF，后端按时间跟踪：
@@ -330,7 +330,7 @@
 
 #### `reset` · 协调重置（4 项）
 
-后端调用的前端重置服务固定为 `/zlio/reset_internal`（原 `reset.service` 已删除），需要改名时使用 ROS remap。
+后端调用的前端重置服务固定为 `/zlio/reset_internal`（不是参数），需要改名时使用 ROS remap。
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |

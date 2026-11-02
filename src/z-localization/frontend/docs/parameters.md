@@ -21,7 +21,7 @@ launch 也不覆盖任何参数（`use_sim_time` 除外）。规则：
 
 共 70 项。完整参数名为“小节名.键名”，如 `sensor.gravity`、`initialization.registration.voxel_size`。
 所有数值须有限；“正数”指大于零，“非负数”指不小于零，数组长度固定。
-旧版 `sensor.body_from_lidar.*` 已删除：LiDAR → IMU 外参在启动时从 TF `frames.imu ← frames.lidar` 读取，见[坐标系](#坐标系与外参)。
+LiDAR → IMU 外参不是参数，启动时从 TF `frames.imu ← frames.lidar` 读取，见[坐标系](#坐标系与外参)。
 
 #### `sensor` · 传感器（3 项）
 
@@ -151,7 +151,7 @@ launch 也不覆盖任何参数（`use_sim_time` 除外）。规则：
 | `frames.lidar` | 字符串 | `livox_frame` | LiDAR 坐标系；非空，用于查询外参 |
 | `frames.base` | 字符串 | `imu` | TF 输出的子坐标系；非空。与 `frames.imu` 相同时直接发布 `frames.world → frames.imu`；不同时发布 `frames.world → frames.base` = `(frames.world → frames.imu)·(frames.imu ← frames.base)`，后者按里程计时间戳从 TF 查询（云台转动也跟随）。IMU 系在 URDF 中已有父帧时须填树根（bringup 为 `base_link`），否则 IMU 系会有两个父帧 |
 
-LiDAR → IMU 外参不再作为参数（旧版 `sensor.body_from_lidar.*` 已删除）。节点构造时从 TF 查询
+LiDAR → IMU 外参不是参数。节点构造时从 TF 查询
 `target=frames.imu`、`source=frames.lidar` 的最新变换，即雷达坐标系在 IMU 系中的位姿；未就绪时每 5 s 告警一次并持续等待，
 取得后以 INFO 打印并校验（四元数模长与 1 相差不超过 `0.01`，随后归一化），运行中不再更新。该变换须由外部节点（如
 `static_transform_publisher` 或 robot_state_publisher）发布。输入消息的 `frame_id` 与 `frames.lidar` 不一致时只告警一次，不做转换。

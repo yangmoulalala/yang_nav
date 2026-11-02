@@ -17,7 +17,6 @@ import sys
 import threading
 import time
 
-import numpy as np
 import rclpy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry

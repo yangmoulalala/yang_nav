@@ -1,10 +1,10 @@
 # Localization Interfaces · 定位消息与服务
 
-![ROS 2 Humble](https://img.shields.io/badge/ROS_2-Humble-22314E?logo=ros)
+![ROS 2 Jazzy](https://img.shields.io/badge/ROS_2-Jazzy-22314E?logo=ros)
 ![ROSIDL](https://img.shields.io/badge/Interfaces-ROSIDL-287A6B)
 ![Messages and Services](https://img.shields.io/badge/Protocol-Messages%20%2B%20Services-536A8A)
 
-`localization_interfaces` 定义 [Z-Localization](../../README.md) 前后端共享的观测、预测、会话通知和重置协议，
+`localization_interfaces` 定义 [Z-Localization](../README.md) 前后端共享的观测、预测、会话通知和重置协议，
 并提供重置事务缓存辅助类。消息与服务通过 ROSIDL 生成，供 [frontend](../frontend/README.md)
 和 [backend](../backend/README.md) 使用。
 
@@ -13,7 +13,7 @@
 ## 项目结构
 
 ```text
-src/localization_interfaces/
+src/z-localization/localization_interfaces/
 ├── README.md
 ├── msg/
 │   ├── FrontendFrame.msg              同步后验观测
@@ -23,7 +23,7 @@ src/localization_interfaces/
 │   └── ResetFrontend.srv              前端重置请求与响应
 ├── include/localization_interfaces/
 │   └── reset_transaction_cache.hpp    重置事务缓存
-├── test/                              事务与消息序列化测试
+├── cmake/Warnings.cmake
 ├── CMakeLists.txt
 ├── package.xml
 └── LICENSE
@@ -33,10 +33,9 @@ src/localization_interfaces/
 
 | 类别 | 依赖 |
 | --- | --- |
-| 系统环境 | Ubuntu 22.04、ROS 2 Humble |
+| 系统环境 | Ubuntu 24.04、ROS 2 Jazzy |
 | 构建 | CMake ≥ 3.8、ament_cmake、rosidl_default_generators |
 | 消息与运行库 | builtin_interfaces、geometry_msgs、nav_msgs、sensor_msgs、rosidl_default_runtime |
-| 测试 | ament_cmake_gtest、ament_cmake_pytest、rclpy |
 
 ## 对外接口
 
@@ -141,7 +140,6 @@ src/localization_interfaces/
 | `frontendInstanceId()` | 获取缓存所属的前端进程标识 |
 
 缓存有效期间，相同事务复用完整响应，包括暖重置坐标边界；容量不足时淘汰最早登记的已完成事务。
-相关测试位于 [test/](test)，覆盖重复请求、在途冲突、执行计数、边界复用及消息序列化。
 
 ## 维护者
 

@@ -6,7 +6,7 @@
 - 全部参数（含离线工具）见 `src/z-localization/backend/docs/parameters.md`。
 - 仿真回归测试见 `tools/sim_tests/README.md`。
 
-内容对应分支 `kidnap-recovery-fix`（在 `single-lidar` 基础上增加严重冲突、恢复试用期、歧义检验和恢复运动门）。
+内容对应 `main`（已包含单雷达支持与绑架恢复修复：严重冲突、恢复试用期、歧义检验和恢复运动门）。
 
 ---
 

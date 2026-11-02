@@ -1,7 +1,7 @@
 # z-localization（yang_nav 移植版）
 
-移植自 `reference/z-localization`（东北大学 T-DT，ZLIO 前端 + 因子图后端，GPL-2.0-only），
-并融合 `reference/navi_minco_bit` 的双雷达标定思路，适配本机器人：**Livox MID-360（云台上）+
+移植自上游 z-localization（东北大学 T-DT，ZLIO 前端 + 因子图后端，GPL-2.0-only），
+并融合 navi_minco_bit 的双雷达标定思路，适配本机器人：**Livox MID-360（云台上）+
 Unitree L2（云台上、朝后）**，可选单雷达或双雷达。仿真与真车各一个启动文件，融合、前端、后端完全共用。
 
 ```
@@ -44,7 +44,7 @@ sudo apt install ros-jazzy-gtsam libpcl-dev ros-jazzy-pcl-ros ros-jazzy-pcl-conv
 # Livox-SDK2：从 github.com/Livox-SDK/Livox-SDK2 源码编译安装（GCC 13 需 -DCMAKE_CXX_FLAGS='-include cstdint'）
 
 cd ~/yang_nav
-# --base-paths src：reference/ 下有同名包，必须排除；限制并行避免 16 GB 内存下 OOM
+# --base-paths src：根目录若检出了上游仓库（reference/，已 gitignore）会有同名包，须排除；限制并行避免 16 GB 内存下 OOM
 MAKEFLAGS=-j6 colcon build --base-paths src --symlink-install --parallel-workers 1 \
   --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 ```
@@ -206,7 +206,7 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 
 - 后端偶尔打印 `invalid ZLIO observation frame/time/point layout`（一次运行 0–2 条），原因未查，未见对精度的影响。
 - 仿真出生点附近结构少，标定在该处全部因 `degenerate_geometry` 拒收，需开到拐角采集。
-- 绑架后恢复可能锁到对称位置或相似关键帧（场地中心对称）。修复前：双雷达 `FALSE TRUST` 0.6–14 s；单雷达（体素 0.25）12–17 s、结束时仍偏约 12 m。`kidnap-recovery-fix` 加了严重冲突提前进 `SUSPECT`、恢复试用期、歧义检验和运动门（见 `docs/backend_guide.md` 4.5–4.6、7.3）：恢复期间车或云台转动时，双雷达 5/5 恢复、恢复后可信最大误差 ≤ 0.31 m；单雷达仍只有 1/5 干净恢复，常锁到约 99°/180° 的错误位姿。车不动时运动门不起作用，停车兜底（`recovery.confirm_stationary_max`）可能提交错误解。`recovery.confirmations` 改为 3 无改善。
+- 绑架后恢复可能锁到对称位置或相似关键帧（场地中心对称）。修复前：双雷达 `FALSE TRUST` 0.6–14 s；单雷达（体素 0.25）12–17 s、结束时仍偏约 12 m。绑架恢复修复（已合入 main）加了严重冲突提前进 `SUSPECT`、恢复试用期、歧义检验和运动门（见 `docs/backend_guide.md` 4.5–4.6、7.3）：恢复期间车或云台转动时，双雷达 5/5 恢复、恢复后可信最大误差 ≤ 0.31 m；单雷达仍只有 1/5 干净恢复，常锁到约 99°/180° 的错误位姿。车不动时运动门不起作用，停车兜底（`recovery.confirm_stationary_max`）可能提交错误解。`recovery.confirmations` 改为 3 无改善。
 - 单雷达有一次绑架后已正确恢复（3 cm），行驶中又跑偏到 8.4 m，原因未查。
 - 跟踪与恢复/重定位共用 `registration.voxel_resolution`：单雷达跟踪需要 0.25，恢复用 0.25 更易误匹配，暂无法分开设置。
 - 单雷达跟踪时配准偶尔把航向拉偏 1–10°（预测航向是准的），推测侧装单雷达偏航约束弱，未单独验证。
@@ -218,6 +218,6 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 
 ## 上游文档
 
-地图制作（保存、清理、CloudCompare 精修、生成先验地图包）沿用上游流程，见
-`reference/z-localization/README.md`；参数说明见 `frontend/docs/parameters.md`、`backend/docs/parameters.md`（取值以本仓库 yaml 为准），
-设计说明见 `reference/z-localization/docs/design.md`。
+地图制作（保存、清理、CloudCompare 精修、生成先验地图包）沿用上游流程，详见上游仓库 README 与 `docs/design.md`（本仓库未收录）；
+本仓库内的地图工具列表见 [backend/README.md](backend/README.md#地图与标定工具)。
+参数说明见 [frontend/docs/parameters.md](frontend/docs/parameters.md)、[backend/docs/parameters.md](backend/docs/parameters.md)（取值以本仓库 yaml 为准）。

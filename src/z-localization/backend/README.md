@@ -1,11 +1,11 @@
 # Localization Backend · 定位后端
 
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus)
-![ROS 2 Humble](https://img.shields.io/badge/ROS_2-Humble-22314E?logo=ros)
+![ROS 2 Jazzy](https://img.shields.io/badge/ROS_2-Jazzy-22314E?logo=ros)
 ![GTSAM](https://img.shields.io/badge/GTSAM-4.2-287A6B)
 ![Localization](https://img.shields.io/badge/Mapping-Localization-536A8A)
 
-`backend` 是 [Z-Localization](../../README.md) 的定位后端，将前端里程计与先验地图、回环、UWB 位置观测结合，
+`backend` 是 [Z-Localization](../README.md) 的定位后端，将前端里程计与先验地图、回环、UWB 位置观测结合，
 输出全局位姿、速度、协方差和定位状态。包内也提供地图处理与车体外参标定工具。
 除 ZLIO 外，其他 LIO 前端及奥丁之眼等定位模块也可通过里程计与点云兼容接口适配接入。
 
@@ -14,7 +14,7 @@
 ## 项目结构
 
 ```text
-src/backend/
+src/z-localization/backend/
 ├── README.md
 ├── include/backend/             核心接口、配置与数据类型
 ├── src/                         因子图、配准、回环、重定位与 UWB 融合
@@ -40,7 +40,7 @@ src/backend/
 
 | 类别 | 依赖 |
 | --- | --- |
-| 系统环境 | Ubuntu 22.04、ROS 2 Humble |
+| 系统环境 | Ubuntu 24.04、ROS 2 Jazzy |
 | 编译与构建 | C++ ≥ 17、CMake ≥ 3.16、ament_cmake |
 | C++ 库 | GTSAM 4.2.x、Eigen、PCL、nanoflann、oneTBB、OpenMP C++、Threads |
 | ROS 包 | rclcpp、std_msgs、std_srvs、geometry_msgs、nav_msgs、sensor_msgs、visualization_msgs、tf2、tf2_ros、tf2_eigen、pcl_conversions、message_filters |
@@ -125,7 +125,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `~/localization_status` | `visualization_msgs/msg/Marker` | reliable，1，transient local | 定位状态文字标记；由 `visualization.enabled` 控制 |
 | `~/debug/aligned_source` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准后的源点云；由 `visualization.publish_debug_registration` 控制 |
 | `~/debug/target` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准的目标点云；由 `visualization.publish_debug_registration` 控制 |
-| `/tf` | `tf2_msgs/msg/TFMessage` | tf2 默认 QoS | map → odom |
+| `/tf` | `tf2_msgs/msg/TFMessage` | tf2 默认 QoS | map → `common.odom_frame`（bringup 为 `map → lio_odom`） |
 
 ### 标定与 ROS 通用话题
 
