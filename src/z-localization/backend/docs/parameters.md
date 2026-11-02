@@ -168,14 +168,17 @@
 | `suspicious_linear_speed` | 浮点，m/s | `10.0` | 线速度超过此值时进入 `SUSPECT`，仅有先验或 UWB 时生效；须 `≥0`，`0` 对任意非零速度触发 |
 | `suspicious_angular_speed` | 浮点，rad/s | `30.0` | 角速度超过此值时进入 `SUSPECT`，仅有先验或 UWB 时生效；须 `≥0`，`0` 对任意非零角速度触发 |
 
-#### `innovation` · 观测一致性（2 项）
+#### `innovation` · 观测一致性（5 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `rejection_probability` | 浮点，无量纲 | `0.001` | 观测与预测的卡方一致性检验 p 值低于此值时判为冲突；越大越严格，范围 `[1e-12,0.5]` |
 | `conflicts_before_suspect` | 整数，次 | `7` | 所有可用全局观测均冲突，连续达到多少次后进入 `SUSPECT`；须 `≥1` |
+| `severe_rejection_probability` | 浮点，无量纲 | `1.0e-8` | 先验图观测 p 值低于此值（或触发物理校正上限）且支撑充分时计为严重冲突；范围 `[0,rejection_probability]` |
+| `severe_min_support_ratio` | 浮点，无量纲 | `0.6` | 严重冲突要求的最小配准对应比例；范围 `[0,1]` |
+| `severe_conflicts_before_suspect` | 整数，次 | `2` | 连续冲突中累计多少次严重冲突即进入 `SUSPECT`，不必等 `conflicts_before_suspect`；须 `≥1` |
 
-#### `recovery` · 初始化与重定位（21 项）
+#### `recovery` · 初始化与重定位（28 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -187,7 +190,14 @@
 | `automatic_when_lost` | 布尔 | `true` | 丢失后是否自动重定位；关闭则等待重定位服务请求 |
 | `confirmations` | 整数，次 | `2` | 提交恢复前要求连续多少次匹配给出一致的 map→odom 变换；`1` 首次匹配即提交，须 `≥1` |
 | `confirm_translation` | 浮点，m | `0.3` | 相邻恢复候选的 map→odom 平移差上限；超出则从头确认 |
-| `confirm_rotation_deg` | 浮点，° | `5.0` | 相邻恢复候选的 map→odom 旋转差上限；超出则从头确认 |
+| `confirm_rotation_deg` | 浮点，° | `5.0` | 相邻恢复候选的 map→odom 旋转差上限；超出则从头确认。新候选还须与首个候选满足同样的平移/旋转上限 |
+| `confirm_min_translation` | 浮点，m | `0.3` | 运动门：提交前自首个候选起车体至少平移的距离，与 `confirm_min_rotation_deg` 任一满足即可；两项均为 `0` 关闭运动门，须 `≥0` |
+| `confirm_min_rotation_deg` | 浮点，° | `30.0` | 运动门的最小转角；须 `≥0` |
+| `confirm_stationary_max` | 整数，次 | `15` | 运动门开启时，静止状态下一致候选达到该次数也提交；`0` 表示必须移动，须 `≥0` |
+| `probation_observations` | 整数，次 | `5` | 恢复提交后的试用期（全局观测次数），期间一次严重冲突即重新进入 `SUSPECT`；`0` 关闭 |
+| `ambiguity_rmse_ratio` | 浮点，无量纲 | `1.15` | 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复（不计失败）；`0` 关闭，初始化不检验 |
+| `ambiguity_translation` | 浮点，m | `1.0` | 歧义检验中判定两解不同的平移差 |
+| `ambiguity_rotation_deg` | 浮点，° | `30.0` | 歧义检验中判定两解不同的旋转差 |
 | `source.min_frames` | 整数，帧 | `2` | 至少累积多少帧点云才尝试重定位；须在 `[1,source.max_frames]` |
 | `source.max_frames` | 整数，帧 | `5` | 重定位最多累积的同步观测帧数，含当前帧；须 `≥1` |
 | `source.max_time` | 浮点，s | `0.5` | 参与累积的历史帧与当前帧的最大时间差；须 `≥0`，`0` 不限 |

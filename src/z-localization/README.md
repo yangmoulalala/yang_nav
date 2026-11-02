@@ -206,12 +206,14 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 
 - 后端偶尔打印 `invalid ZLIO observation frame/time/point layout`（一次运行 0–2 条），原因未查，未见对精度的影响。
 - 仿真出生点附近结构少，标定在该处全部因 `degenerate_geometry` 拒收，需开到拐角采集。
-- 绑架后后端可能接受对称位置的错误匹配并保持 NORMAL 数秒（场地中心对称）：双雷达 0.6–14 s；单雷达（体素 0.25）12–17 s、最大偏 10.5 m。`recovery.confirmations` 改为 3 无改善。
+- 绑架后恢复可能锁到对称位置或相似关键帧（场地中心对称）。修复前：双雷达 `FALSE TRUST` 0.6–14 s；单雷达（体素 0.25）12–17 s、结束时仍偏约 12 m。`kidnap-recovery-fix` 加了严重冲突提前进 `SUSPECT`、恢复试用期、歧义检验和运动门（见 `docs/backend_guide.md` 4.5–4.6、7.3）：恢复期间车或云台转动时，双雷达 5/5 恢复、恢复后可信最大误差 ≤ 0.31 m；单雷达仍只有 1/5 干净恢复，常锁到约 99°/180° 的错误位姿。车不动时运动门不起作用，停车兜底（`recovery.confirm_stationary_max`）可能提交错误解。`recovery.confirmations` 改为 3 无改善。
+- 单雷达有一次绑架后已正确恢复（3 cm），行驶中又跑偏到 8.4 m，原因未查。
 - 跟踪与恢复/重定位共用 `registration.voxel_resolution`：单雷达跟踪需要 0.25，恢复用 0.25 更易误匹配，暂无法分开设置。
 - 单雷达跟踪时配准偶尔把航向拉偏 1–10°（预测航向是准的），推测侧装单雷达偏航约束弱，未单独验证。
 - 单雷达先验定位起点偶尔偏约 22 cm（2 次），原因未查。
 - ZLIO 初始化失败重来时会在转动中重新估计重力；纯原地慢转影响很小，人手推车可能偏差较大，未处理。
 - SUSPECT/LOST 时后端输出冻结在最后可信位姿（`backend/src/pose_output.cpp`），行驶中误差随距离增长；是否改为里程计外推待定。
+- 前端 IMU 采样中断（`front-end input discontinuity`）后，建图模式下后端停在 LOST 直到结束（仿真 2 次），原因未查。
 - 真车路径只验证了编译、launch 展开与无驱动启动（外参、云台关节跟随）。
 
 ## 上游文档

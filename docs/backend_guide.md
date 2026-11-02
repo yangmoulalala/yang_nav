@@ -6,7 +6,7 @@
 - 全部参数（含离线工具）见 `src/z-localization/backend/docs/parameters.md`。
 - 仿真回归测试见 `tools/sim_tests/README.md`。
 
-内容对应分支 `test/zlio-backend`（含重定位连续确认 `recovery.confirmations`）。
+内容对应分支 `kidnap-recovery-fix`（在 `single-lidar` 基础上增加严重冲突、恢复试用期、歧义检验和恢复运动门）。
 
 ---
 
@@ -137,6 +137,8 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | --- | --- | --- |
 | 全局观测被接受 | 配准有效且 NIS 检验通过（p ≥ `innovation.rejection_probability`=0.001） | 清零计数，回到 `NORMAL` |
 | 观测冲突 | 配准有效但与预测不一致（NIS 检验失败，或校正超过 `tracking.max_translation_correction` 1.5 m / `max_rotation_correction_deg` 15°） | 计数 +1；未到 `innovation.conflicts_before_suspect`（7）为 `OBS_DEGRADED`，到了进 `SUSPECT` |
+| 严重冲突 | 冲突且配准对应比例 ≥ `innovation.severe_min_support_ratio`（0.6），并触发校正上限或 NIS p < `severe_rejection_probability`（1e-8）。配准可靠而修正极端，典型于绑架或错误恢复 | 连续冲突中累计 `severe_conflicts_before_suspect`（2）次即进 `SUSPECT`，不必等 7 次（日志 `(severe 2/2)`） |
+| 恢复试用期内严重冲突 | 恢复提交后 `recovery.probation_observations`（5）次全局观测内 | 一次即进 `SUSPECT`（日志 `during recovery probation`） |
 | **观测模型无效** | 配准不收敛、信息矩阵无效、或 rmse 超出局部模型范围 | **一次就进 `SUSPECT`**（不计数） |
 | 速度异常 | 线速度 > `tracking.suspicious_linear_speed`（10 m/s）或角速度 > `suspicious_angular_speed`（30 rad/s） | 进 `SUSPECT` |
 | `SUSPECT` 下重定位失败 | 连续 `recovery.suspect_failures_before_lost`（3）次 | 进 `LOST` |
@@ -187,16 +189,29 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | 水平覆盖扇区 | `registration.min_coverage_sectors` | 6 / 36 |
 | 可观性 | 6 自由度满秩，协方差有效 | — |
 
-### 4.5 连续确认（本分支新增）
+### 4.5 连续确认与运动门
 
-通过验证的位姿不会立即提交，而是先换算成 `map ← odom` 变换。只有连续 `recovery.confirmations`（2）次结果彼此相差不超过 `confirm_translation`（0.3 m）和 `confirm_rotation_deg`（5°）才提交并回到 `NORMAL`；不一致则从头计数（日志 `recovery candidate inconsistent with previous ... restarting confirmation`）。设为 1 即恢复原来“首次匹配就提交”的行为。
+通过验证的位姿不会立即提交，而是先换算成 `map ← odom` 变换，满足下面全部条件才提交并回到 `NORMAL`：
 
-### 4.6 失败与升级
+1. **连续一致**：连续 `recovery.confirmations`（2）个候选一致。每个新候选与**上一个**和**第一个**候选的差都不超过 `confirm_translation`（0.3 m）和 `confirm_rotation_deg`（5°），防止沿候选链逐步漂移；不一致则从头计数（日志 `recovery candidate inconsistent with previous ... vs first ...; restarting confirmation`）。
+2. **运动门**：自第一个候选起，里程计平移 ≥ `confirm_min_translation`（0.3 m）或转角 ≥ `confirm_min_rotation_deg`（30°）。车静止时，对称或相似场景的错误解会连续自洽；视野变化后错误解才会和里程计对不上。两项都设 0 关闭运动门。
+3. **停车兜底**：运动门开启但车一直不动时，一致候选累计 `confirm_stationary_max`（15）次也提交（日志带 `(stationary limit)`）；设 0 则必须移动。仿真中停车兜底有时会提交错误解。
+
+提交时日志为 `recovery candidate accepted after N consistent candidates, motion=..m/..deg`。`confirmations: 1` 且关闭运动门即恢复“首次匹配就提交”。
+
+**建议**：`SUSPECT`/`LOST` 期间让车或云台（`yaw_link`）慢转，给运动门提供视角变化。仿真用 `zt_driver.py` 的 `kidnapspin` 标志模拟。
+
+### 4.6 歧义检验与恢复试用期
+
+- **歧义检验**（只在 `SUSPECT`/`LOST`，初始化不检验）：本次验证中若有另一个通过的解，与最佳解位姿相差 > `recovery.ambiguity_translation`（1 m）或 > `ambiguity_rotation_deg`（30°），且残差 ≤ 最佳残差 × `ambiguity_rmse_ratio`（1.15），就推迟恢复，不计为失败（日志 `ambiguous result, deferring recovery`）。`ambiguity_rmse_ratio: 0` 关闭。注意：描述子航向初值验证通过后不再扫描其余航向，180° 对称解通常没有进入比较，所以这项检验拦不住对称解。
+- **恢复试用期**：恢复提交后的 `recovery.probation_observations`（5）次全局观测内，一次严重冲突（第 3.1 节）即回 `SUSPECT`。用于发现锁错的恢复，避免修正上限把后续纠正挡掉、同时一直报可信。
+
+### 4.7 失败与升级
 
 - `SUSPECT` 下没有任何候选通过：失败计数 +1，达到 3 次进 `LOST`。
 - 进入 `LOST` 时，后端会向前端发协调重置（`/zlio/reset_internal`）。冷启动后前端里程计从零开始，必须再次通过先验地图或 UWB 确定全局位姿；**建图模式没有先验地图，一旦 LOST 会一直保持 LOST。**
 
-### 4.7 手动操作
+### 4.8 手动操作
 
 | 服务 | 作用 |
 | --- | --- |
@@ -270,6 +285,8 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | `tracking.suspicious_linear_speed` / `suspicious_angular_speed` | 10 m/s / 30 rad/s | 速度异常直接 `SUSPECT` |
 | `innovation.rejection_probability` | 0.001 | NIS 检验阈值，越大越严 |
 | `innovation.conflicts_before_suspect` | 7 | 连续冲突多少次进 `SUSPECT` |
+| `innovation.severe_rejection_probability` / `severe_min_support_ratio` | 1e-8 / 0.6 | 严重冲突判定（第 3.1 节） |
+| `innovation.severe_conflicts_before_suspect` | 2 | 累计多少次严重冲突直接进 `SUSPECT` |
 
 ### 6.5 重定位 `recovery`
 
@@ -285,6 +302,9 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | `suspect_failures_before_lost` | 3 | `SUSPECT` → `LOST` |
 | `automatic_when_lost` | true | LOST 时是否自动全局重定位 |
 | `confirmations` / `confirm_translation` / `confirm_rotation_deg` | 2 / 0.3 m / 5° | 连续确认（第 4.5 节） |
+| `confirm_min_translation` / `confirm_min_rotation_deg` / `confirm_stationary_max` | 0.3 m / 30° / 15 | 运动门与停车兜底（第 4.5 节） |
+| `probation_observations` | 5 | 恢复试用期（第 4.6 节） |
+| `ambiguity_rmse_ratio` / `ambiguity_translation` / `ambiguity_rotation_deg` | 1.15 / 1 m / 30° | 歧义检验（第 4.6 节） |
 | `source.min_frames` / `max_frames` / `max_time` / `max_translation` | 2 / 5 / 0.5 s / 1.5 m | 源点云累积 |
 
 ### 6.6 回环 `loop`
@@ -334,9 +354,25 @@ MID-360 侧倾安装、视场不对称。建图时车头朝向不变，地图里
 - 候选修法：把单次无效当作“本周期无观测”、连续 N 次才进 `SUSPECT`；或放宽/改写收敛判据。
 - 已试无效：限制累积窗口转角 `source.max_rotation_deg: 10`。
 
-### 7.3 场地 180° 中心对称（未修）
+### 7.3 绑架与场地 180° 中心对称（双雷达已缓解，单雷达未修）
 
-RMUL 场地红蓝两半绕中心旋转 180° 相同。车在中线附近静止时，同一个错误匹配可能连续出现，通过连续确认。建议：优先选离最后可信位姿近的候选、要求两次确认之间车有位移，或用 UWB / `startup_hint` 提供区分信息。
+RMUL 场地红蓝两半绕中心旋转 180° 相同，另有局部几何相似的关键帧。仿真绑架（`set_pose` 瞬移）排查出三处根因：
+
+| 问题 | 原因 | 修法 |
+| --- | --- | --- |
+| 瞬移后约 4 s 才进 `SUSPECT`，期间报可信 | 冲突再严重也要连续 7 次 | 严重冲突累计 2 次即升级（第 3.1 节） |
+| 恢复后仍偏几米却报可信（双雷达约 3.7 m） | 修正上限挡掉后续正确修正 | 恢复试用期（第 4.6 节） |
+| 恢复锁到对称位姿或相似关键帧 | 只要求相邻候选一致，车不动时错误解也能连续一致 | 运动门（第 4.5 节），歧义检验只部分有效 |
+
+仿真结果（2026-11-02，`fabbcc5`，`kidnapspin`，各 5 场，详见 `tools/sim_tests/README.md`）：
+
+- 双雷达 5/5 恢复，`FALSE TRUST` 0–2.6 s，恢复后可信样本最大误差 ≤ 0.31 m（修复前 9.0 s / 3.68 m）。
+- 单雷达只有 1/5 干净恢复，其余锁到约 99°/180° 的错误位姿，或恢复正确后行驶中又跑偏。
+- 车不动时运动门不起作用：双雷达停在不可信状态等待，或停车兜底提交错误解。
+
+试过但撤回：最佳候选补验航向翻转 180° 的解（单雷达略有改善，双雷达恢复后误差退回 4–7 m）；`confirmations` 改为 3（无改善）。
+
+待做：单雷达需要更强的区分手段，例如并行保留多个假设、随车移动淘汰，或把运动门转角提高到 ≥ 90°；单雷达配置可考虑 `confirm_stationary_max: 0`。也可以用 UWB / `startup_hint` 提供区分信息。
 
 ### 7.4 其他注意事项
 
