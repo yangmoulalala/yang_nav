@@ -140,8 +140,9 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | 严重冲突 | 冲突且配准对应比例 ≥ `innovation.severe_min_support_ratio`（0.6），并触发校正上限或 NIS p < `severe_rejection_probability`（1e-8）。配准可靠而修正极端，典型于绑架或错误恢复 | 连续冲突中累计 `severe_conflicts_before_suspect`（2）次即进 `SUSPECT`，不必等 7 次（日志 `(severe 2/2)`） |
 | 恢复试用期内严重冲突 | 恢复提交后 `recovery.probation_observations`（5）次全局观测内 | 一次即进 `SUSPECT`（日志 `during recovery probation`） |
 | **观测模型无效** | 配准不收敛、信息矩阵无效、或 rmse 超出局部模型范围 | **一次就进 `SUSPECT`**（不计数） |
-| 速度异常 | 线速度 > `tracking.suspicious_linear_speed`（10 m/s）或角速度 > `suspicious_angular_speed`（30 rad/s） | 进 `SUSPECT` |
-| `SUSPECT` 下重定位失败 | 连续 `recovery.suspect_failures_before_lost`（3）次 | 进 `LOST` |
+| 速度异常 | 只在有先验地图或开启 UWB 时检查：线速度 > `tracking.suspicious_linear_speed`（10 m/s）或角速度 > `suspicious_angular_speed`（30 rad/s） | 进 `SUSPECT` |
+| UWB 位置证据冲突 | 开启 UWB 且先验配准被接受时，UWB 的 NIS p < `innovation.severe_rejection_probability`，连续 `uwb.conflicts_before_suspect`（3）次 | 进 `SUSPECT` |
+| `SUSPECT` 下重定位失败 | 连续 `recovery.suspect_failures_before_lost`（3）次（源点云帧数不够不计；源点云被连续性门拒绝算一次） | 进 `LOST` |
 | 估计器失败 / 前端输入中断 | 例如前端报告 `reset_required` 或 `failed` | 进 `LOST` |
 | 重定位成功 | 见第 4 节 | 回 `NORMAL` |
 
@@ -155,9 +156,9 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.1 何时运行
 
-- 只要状态是 `INITIALIZING`、`SUSPECT` 或 `LOST`，后端就自动进入恢复流程；`NORMAL`/`OBS_DEGRADED` 下不运行重定位，只做常规跟踪。
+- 状态是 `INITIALIZING`、`SUSPECT` 或 `LOST`，且加载了先验地图时，维护周期运行恢复流程；`NORMAL`/`OBS_DEGRADED` 下不运行重定位，只做常规跟踪。没有先验地图时这条恢复流程不运行：纯里程计在收到首帧时直接进 `NORMAL`，纯 UWB 系统在收帧时尝试 UWB/里程计对齐（`localization.cpp`、`localization_recovery.cpp`）。
 - 调度间隔 `recovery.period`（0.2 s），且必须有新的同步帧。
-- 源点云：累积最近 `recovery.source.min_frames`～`max_frames`（2～5）帧、时间跨度 ≤ 0.5 s、平移 ≤ 1.5 m。帧数不够时等待（日志 `waiting for recovery source`）。
+- 源点云：累积最近 `recovery.source.min_frames`～`max_frames`（2～5）帧、时间跨度 ≤ 0.5 s、平移 ≤ 1.5 m。帧数不够时等待（日志 `waiting for recovery source`），本周期直接跳过，不计为失败。
 - `LOST` 下若 `recovery.automatic_when_lost=false`，只在手动调用 `/backend_node/relocalize` 后才尝试。
 - 前端协调重置进行中时暂停。
 
@@ -174,7 +175,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.3 航向假设
 
-每个候选关键帧先用描述子给出的 yaw 作初值；不通过时按 `recovery.yaw_sweep_count`（6，即每 60°）扫一圈。日志中 `hypothesis=descriptor_yaw+120deg` 即来自扫描。每次最多验证 `max_candidates`（15）个候选，`parallel_candidates`（16）路并行。
+每个候选关键帧先用描述子给出的 yaw 作初值；不通过时按 `recovery.yaw_sweep_count`（6，即每 60°）扫一圈。日志中 `hypothesis=descriptor_yaw+120deg` 即来自扫描。每次最多验证 `max_candidates`（15）个候选，`parallel_candidates`（16）路并行，实际并行数不超过 CPU 硬件线程数。
 
 ### 4.4 几何验证
 
@@ -182,7 +183,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 | 条件 | 参数 | 默认 |
 | --- | --- | --- |
-| 收敛（最终一步 ≤ 5 mm 且 ≤ 0.1°，代码常量） | — | — |
+| 收敛（在最终对应集上再解一步，步长不超过阈值） | `registration.convergence_translation` / `convergence_rotation_deg` | 0.005 m / 0.1°（真车）；0.02 m / 0.5°（仿真） |
 | 残差 | `registration.max_rmse` | 0.25 m |
 | 对应点比例 | `registration.min_correspondence_ratio` | 0.5 |
 | 对应点数 | `registration.min_correspondences` | 80 |
@@ -208,8 +209,9 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.7 失败与升级
 
-- `SUSPECT` 下没有任何候选通过：失败计数 +1，达到 3 次进 `LOST`。
-- 进入 `LOST` 时，后端会向前端发协调重置（`/zlio/reset_internal`）。冷启动后前端里程计从零开始，必须再次通过先验地图或 UWB 确定全局位姿；**建图模式没有先验地图，一旦 LOST 会一直保持 LOST。**
+- `SUSPECT` 下没有任何候选通过（或源点云被连续性门拒绝）：失败计数 +1，达到 3 次进 `LOST`。结果有歧义时只推迟，候选通过但确认门还没满足时只记下候选，都不计失败。
+- 进入 `LOST` 时，后端会向前端发协调重置（`/zlio/reset_internal`）；之后 `LOST` 下每次全局重定位失败都会再请求一次，由挂起事务和 `reset.min_gap`（10 s）限流。
+- 重置完成后：有先验地图时状态保持 `LOST`，靠全局重定位恢复。没有先验地图时取决于里程计连续性标记（`odometry_connected_`）：前端输入中断走的 `notifyFrontendDiscontinuity` 会先把它清掉，所以无论前端做暖重置还是冷启动，后端都会 `forceLost`（开启 UWB 时改为进 `INITIALIZING` 等 UWB 对齐）。手动 `/localization_reset` 不清这个标记：暖重置边界有效时用 `old_from_new` 衔接，否则按停车假设用最后可信位姿衔接，然后进 `INITIALIZING`，下一帧回到 `NORMAL`（`reset_coordinator.cpp`）。**所以建图模式（无先验地图、无 UWB）下前端一旦输入中断，后端会一直保持 LOST。**
 
 ### 4.8 手动操作
 
@@ -224,12 +226,13 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 5.1 定位模式：常规跟踪
 
-- 每 `tracking.correction_period`（0.5 s）取最近 ≤5 帧点云，在离当前位置最近（`nearest_reference_radius` 7 m 内）的先验关键帧附近子图上做 scan-to-map。
+- 每个新的运行关键帧最多做一次全局观测，两次观测至少隔 `tracking.correction_period`（0.5 s，且受维护周期 `common.maintenance_period` 限制）。源点云取该关键帧及之前 ≤5 帧，在离预测位置最近（`nearest_reference_radius` 7 m 内）的先验关键帧附近子图上做 scan-to-map。
 - 参考关键帧切换带 `target_hysteresis_distance`（0.5 m）滞回，避免来回跳。
 - 结果按 3.1 节分为接受 / 冲突 / 无效。被接受的观测作为先验因子进图（日志 `prior scan-to-map factor accepted` + `global correction committed`）。
 
 ### 5.2 建图模式：关键帧与回环
 
+- 回环开关是 `loop.enabled`，但加载了先验地图或描述子不可用时，`resolveConfig()`（`backend/src/config.cpp`）会把它强制关闭并打印 `configuration override`，所以实际只在建图模式运行。
 - 关键帧：默认只按时间 `trajectory.keyframe.max_interval`（0.5 s）触发，距离/角度触发关闭（-1）。
 - 回环检索（`loop.*`）：用 Scan Context 在已优化位姿 `candidate_max_distance`（7 m）内找历史关键帧，两次回环之间至少隔 `cooldown_keyframes`（5）帧。
 - 回环验收：
@@ -270,7 +273,8 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | 参数 | 默认 | 调大/调小的影响 |
 | --- | --- | --- |
 | `voxel_resolution` | 0.4 m | 越小越精细但越慢 |
-| `max_iterations` | 16 | 不收敛时会跑满 |
+| `max_iterations` | 16（仿真 30） | 不收敛时会跑满 |
+| `convergence_translation` / `convergence_rotation_deg` | 0.005 m / 0.1°（仿真 0.02 m / 0.5°） | 收敛判据：最终一步的步长上限；不收敛的跟踪观测判为“模型无效”，一次进 `SUSPECT` |
 | `max_correspondence_distance` | 1.0 m | 越大初值容忍越大、误匹配越多 |
 | `max_rmse` | 0.25 m | 越小越严格 |
 | `min_correspondence_ratio` | 0.5 | 越大越严格，地图覆盖不全时容易失败 |
@@ -311,7 +315,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 | 参数 | 默认 |
 | --- | --- |
-| `enabled` | true（仅建图模式生效） |
+| `enabled` | true（有先验地图或无描述子时由 `resolveConfig()` 强制关闭，所以只在建图模式生效） |
 | `candidate_max_distance` | 7 m |
 | `cooldown_keyframes` | 5 |
 | `validation.min_overlap_ratio` | 0.45 |
@@ -349,7 +353,8 @@ MID-360 侧倾安装、视场不对称。建图时车头朝向不变，地图里
 
 即使地图覆盖完整，原地转 4 圈仍进入 `SUSPECT` 约 10 次，每次 0.4–1.2 s 后恢复。日志原因是 `prior scan-to-map cannot construct a pose likelihood`，但当时 rmse 0.05–0.09 m、支撑率 0.65–0.92，匹配本身是好的。
 
-- 原因：配准收敛判据要求最终一步 ≤ 5 mm 且 ≤ 0.1°（`registration_solver.cpp`），转动时这些观测都跑满 16 次迭代仍未满足，被判“无效”；而“无效”一次就进 `SUSPECT`（第 3.1 节）。
+- 原因：配准收敛判据（`registration_solver.cpp`）要求在最终对应集上再解一步的步长 ≤ `registration.convergence_translation` 且 ≤ `convergence_rotation_deg`。当时用的是上游值 5 mm / 0.1°、`max_iterations` 16，转动时这些观测跑满迭代仍未满足，被判“无效”；而“无效”一次就进 `SUSPECT`（第 3.1 节）。
+- 现状：仿真配置已放宽为 0.02 m / 0.5°、30 次迭代（见 `src/z-localization/README.md`），本文未复测；真车仍为上游值。
 - 影响：期间输出冻结，导航拿到的是停住的位姿。
 - 候选修法：把单次无效当作“本周期无观测”、连续 N 次才进 `SUSPECT`；或放宽/改写收敛判据。
 - 已试无效：限制累积窗口转角 `source.max_rotation_deg: 10`。

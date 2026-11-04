@@ -99,4 +99,4 @@ LIDAR=dual   tools/sim_tests/zt_run.sh localization /tmp/zt/k ~/yang_nav/maps/si
 - 必须设置 `MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA`（脚本已设置），否则雷达掉到约 3 Hz。
 - 瞬移偶尔返回失败（`TELEPORT False`），但多数情况下位姿实际已跳变（11-02 验证中 4 次都是这样）。用 `kidnap` 阶段的误差（约 7 m）判断绑架是否发生，不要只看返回值。
 - Gazebo 关闭时段错误（exit 139）、`merge_node` 关闭时 exit 1 都发生在 SIGINT 之后，不影响结果。
-- 前端 IMU 采样中断后，建图模式下后端会停在 LOST 直到结束（已出现 2 次：单雷达原地旋转、双雷达标定），原因未查。
+- 前端 IMU 采样中断后，建图模式下后端会停在 LOST 直到结束（已出现 2 次：单雷达原地旋转、双雷达标定）。这是有意设计，原因见 [`src/z-localization/README.md`](../../src/z-localization/README.md) 已知问题；需要继续建图时，停车后调用 `/localization_reset`。

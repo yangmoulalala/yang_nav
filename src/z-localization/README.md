@@ -213,7 +213,7 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 - 单雷达先验定位起点偶尔偏约 22 cm（2 次），原因未查。
 - ZLIO 初始化失败重来时会在转动中重新估计重力；纯原地慢转影响很小，人手推车可能偏差较大，未处理。
 - SUSPECT/LOST 时后端输出冻结在最后可信位姿（`backend/src/pose_output.cpp`），行驶中误差随距离增长；是否改为里程计外推待定。
-- 前端 IMU 采样中断（`front-end input discontinuity`）后，建图模式下后端停在 LOST 直到结束（仿真 2 次），原因未查。
+- 前端 IMU 采样中断（`front-end input discontinuity`）后，建图模式下后端停在 LOST 直到结束（仿真 2 次）。读代码确认的原因：`notifyFrontendDiscontinuity` → `isolateFrontendLocked` 把 `odometry_connected_` 置为 false，重置完成后 `commitFrontendResetBoundaryLocked` 在无先验地图、无 UWB 时调用 `forceLost`，暖重置返回的 `old_from_new` 也不再用于衔接（`backend/src/reset_coordinator.cpp`）。这是有意设计：`old_from_new` 只对应中断前最后一次后验，补不回断流期间车的运动；若直接用它衔接，车在断流中移动过时会把错误的边写进地图，而状态仍报可信。需要继续建图时，停车后手动调用 `/localization_reset`。
 - 真车路径只验证了编译、launch 展开与无驱动启动（外参、云台关节跟随）。
 
 ## 上游文档
