@@ -247,6 +247,12 @@ backend_node:
       time_jitter_std_seconds: 0.05
       # 恢复使用 UWB 解算允许的最大年龄，单位为秒。
       max_age: 0.25
+      # 在线坐标标定与无先验启动对齐中 UWB 与位姿配对允许的最大年龄，单位为秒（应比 max_age 严格）。
+      calibration_max_age: 0.25
+      # 先验地图配准被接受但 UWB 连续严重冲突多少次即进入 SUSPECT；0 关闭。
+      conflicts_before_suspect: 3
+      # 恢复解推算的天线位置与新鲜 UWB 读数允许的最大水平偏差，单位为米；0 关闭。
+      recovery_max_offset: 0.6
       # UWB 物理时刻到真实前端位姿端点的最大时间差，单位为秒。
       odom_sync_tolerance: 0.25
       # 以 UWB 位置召回先验关键帧的搜索半径，单位为米。

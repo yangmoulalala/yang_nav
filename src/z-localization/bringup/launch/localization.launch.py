@@ -5,6 +5,7 @@
   - params_file：取自 config_dir 下的 lidar_fusion.yaml / frontend.yaml / backend.yaml（节点参数唯一来源；
     lidar:=single 时后端改用 backend_single.yaml）；
   - 运行选择：use_sim_time、dual、mode、prior_map、save_dir、rviz（不在 yaml 中出现）；
+    uwb 非空时覆盖后端 uwb.enabled（留空沿用 yaml）；
   - 话题重映射。
 
 数据流：
@@ -31,6 +32,7 @@ ARGS = {
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
     'map_dir': ('', '~/save_map 保存目录（绝对路径）'),
     'rviz': ('false', '后端 RViz'),
+    'uwb': ('', '覆盖后端 uwb.enabled（true/false），输入话题 /uwb_pose；留空沿用 yaml'),
     'primary_topic': ('', '主雷达（MID-360）点云话题'),
     'secondary_topic': ('', '副雷达（L2）点云话题'),
     'imu_topic': ('', 'ZLIO 使用的 IMU 话题'),
@@ -71,5 +73,5 @@ def generate_launch_description():
         include('backend', 'backend.launch.py', {
             'params_file': params(backend_file), 'use_sim_time': arg['use_sim_time'],
             'mode': arg['mode'], 'prior_map': prior_map, 'save_dir': arg['map_dir'],
-            'rviz': arg['rviz']}),
+            'rviz': arg['rviz'], 'uwb': arg['uwb']}),
     ])

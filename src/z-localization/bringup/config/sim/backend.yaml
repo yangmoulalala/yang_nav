@@ -216,7 +216,7 @@ backend_node:
       # 有先验图时是否在线联合估计 UWB 坐标系到 map 的变换。
       estimate_zero_pose_online: true
       # UWB 消息时刻到物理运动时刻的固定偏置，满足 t_motion=t_header+dt。 [按车调整]
-      time_offset_seconds: -0.15
+      time_offset_seconds: -0.2
       antenna_position_body:
         # UWB 天线相位中心在 body 坐标系中的 X 位置，单位为米。 [按车调整]
         x: -0.245
@@ -246,7 +246,13 @@ backend_node:
       # 单次 UWB 解算随机时间抖动的标准差，单位为秒。
       time_jitter_std_seconds: 0.05
       # 恢复使用 UWB 解算允许的最大年龄，单位为秒。
-      max_age: 0.25
+      max_age: 1.2
+      # 在线坐标标定与无先验启动对齐中 UWB 与位姿配对允许的最大年龄，单位为秒（应比 max_age 严格）。
+      calibration_max_age: 0.25
+      # 先验地图配准被接受但 UWB 连续严重冲突多少次即进入 SUSPECT；0 关闭。
+      conflicts_before_suspect: 3
+      # 恢复解推算的天线位置与新鲜 UWB 读数允许的最大水平偏差，单位为米；0 关闭。
+      recovery_max_offset: 0.6
       # UWB 物理时刻到真实前端位姿端点的最大时间差，单位为秒。
       odom_sync_tolerance: 0.25
       # 以 UWB 位置召回先验关键帧的搜索半径，单位为米。

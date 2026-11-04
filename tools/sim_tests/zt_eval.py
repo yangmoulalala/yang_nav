@@ -77,3 +77,45 @@ if false_trust:
           f'(max {worst:.2f} m, span {span:.1f} s, tags {tags})')
 else:
     print('false trust: none (no trusted sample with error > 0.5 m)')
+# 裁判系统 UWB（RMUC uwb_sim）：原始观测与真值比较，确认输入质量；不参与上面的定位误差。
+# 真值取接收时刻前 UWB_LATENCY 秒（uwb_sim 默认延迟）并加天线杆臂，变换到裁判场地坐标系。
+REFEREE = {'rmuc': (14.0, 8.0, math.pi)}   # 原点 (world)、+X 航向，与 sentry_gazebo arena_spec.REFEREE_FRAMES 一致
+UWB_ANTENNA_X, UWB_LATENCY = -0.245, 0.20
+uwb = res.get('uwb') or []
+if uwb:
+    ts = np.array([s['t'] for s in res['samples']])
+    gts = np.array([s['gt'] for s in res['samples']])
+    errs = []
+    if res.get('arena') in REFEREE and len(ts) > 1:
+        ox, oy, ryaw = REFEREE[res['arena']]
+        c, s_ = math.cos(ryaw), math.sin(ryaw)
+        # 瞬移前后的真值不能插值：跳过绝架时刻附近的 UWB
+        kidnap_t = [s['t'] for s in res['samples'] if s['tag'] in ('kidnap', 'symkidnap')][:1]
+        for u in uwb:
+            tq = u['t'] - UWB_LATENCY
+            if tq < ts[0] or tq > ts[-1]:
+                continue
+            if kidnap_t and abs(tq - kidnap_t[0]) < 1.5:
+                continue
+            i = min(max(int(np.searchsorted(ts, tq)), 1), len(ts) - 1)
+            if ts[i] - ts[i - 1] > 0.5:   # 样本间隔过大（绑架、停顿）时不插值
+                continue
+            a = (tq - ts[i - 1]) / (ts[i] - ts[i - 1])
+            x, y = gts[i - 1][:2] + a * (gts[i][:2] - gts[i - 1][:2])
+            yaw = gts[i][2]
+            ax, ay = x + UWB_ANTENNA_X * math.cos(yaw), y + UWB_ANTENNA_X * math.sin(yaw)
+            dx, dy = ax - ox, ay - oy
+            ref = np.array([c * dx + s_ * dy, -s_ * dx + c * dy])
+            errs.append(np.linalg.norm(np.array(u['xy']) - ref))
+    span = uwb[-1]['t'] - uwb[0]['t']
+    if res.get('uwb_team') is not None:
+        ok = res.get('uwb_team') == res.get('team')
+        print(f"uwb team: {res.get('uwb_team')} (expected {res.get('team')}){'' if ok else '  MISMATCH'}")
+    line = f'uwb input: n={len(uwb)} rate={(len(uwb) - 1) / span if span > 0 else 0:.2f}Hz'
+    if errs:
+        e = np.array(errs)
+        line += f' | vs GT: rmse={math.sqrt((e ** 2).mean()):.3f}m p95={np.percentile(e, 95):.3f}m max={e.max():.3f}m'
+    print(line)
+# UWB 中断事件（zt_driver.py uwbdrop / uwbdropkidnap）
+for ev in res.get('uwb_events') or []:
+    print(f"uwb outage: {ev['event']} ok={ev['ok']} t={ev['t']} state={ev['state']}")
