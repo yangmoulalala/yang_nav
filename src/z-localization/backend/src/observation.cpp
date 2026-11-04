@@ -167,7 +167,19 @@ void ObservationBatch::classify(const InnovationBatchAssessment& assessment,
 ObservationConclusion ObservationBatch::conclusion() const {
     ObservationConclusion result;
     result.had_conflict = !conflicts.empty();
-    if (!accepted_evidence.empty()) {
+    // UWB 只约束水平位置、不约束航向：同周期全位姿证据（先验地图配准）冲突时，仅有 UWB
+    // 被接受不能证明位姿可信（绑架或恢复锁错航向后 UWB 位置仍可能大致正确），按冲突计数，
+    // 不重置冲突计数、不回到 NORMAL。已接受的 UWB 因子仍由调用方写入图。
+    const bool full_pose_accepted =
+        std::any_of(entries.begin(), entries.end(), [](const ObservationEntry& entry) {
+            return entry.accepted && entry.source != ObservationSource::Uwb;
+        });
+    if (!accepted_evidence.empty() && result.had_conflict && !full_pose_accepted) {
+        result.outcome = ObservationOutcome::Conflict;
+        result.reason = "position-only evidence cannot confirm the pose while full-pose evidence "
+                        "conflicted: accepted " +
+                        joinEvidence(accepted_evidence) + "; conflicts: " + joinEvidence(conflicts);
+    } else if (!accepted_evidence.empty()) {
         result.outcome = ObservationOutcome::Accepted;
         result.reason = "system global observation accepted: " + joinEvidence(accepted_evidence);
         if (result.had_conflict)
@@ -287,6 +299,30 @@ void Localization::updateGlobalObservationStateLocked(GlobalObservationTransacti
         commit.transition = state_.onTrustedCorrection(conclusion.reason,
                                                        TrustedCorrectionSource::RegularObservation);
         transaction.publish_state = true;
+        // 配准被接受时，同周期 UWB 是唯一独立于地图匹配的证据：持续严重不一致说明配准
+        // 可能锁到相似或对称位姿，按 uwb.conflicts_before_suspect 进入 SUSPECT。
+        const bool has_uwb = std::any_of(
+            transaction.observations.entries.begin(), transaction.observations.entries.end(),
+            [](const ObservationEntry& entry) { return entry.source == ObservationSource::Uwb; });
+        if (has_uwb && commit.prior_accepted) {
+            const bool severe_disagreement =
+                !commit.uwb_accepted && commit.uwb_innovation.valid &&
+                commit.uwb_innovation.upper_tail_probability <
+                    config_.innovation.severe_rejection_probability;
+            std::ostringstream evidence;
+            evidence << "UWB NIS=" << commit.uwb_innovation.nis << "/"
+                     << commit.uwb_innovation.degrees_of_freedom
+                     << ", p=" << commit.uwb_innovation.upper_tail_probability;
+            const LocalizationTransition position = state_.onPositionEvidence(
+                severe_disagreement, evidence.str(), config_.uwb.conflicts_before_suspect);
+            if (position.changed) {
+                commit.transition.current = position.current;
+                commit.transition.reason = position.reason;
+                commit.transition.changed = commit.transition.previous != position.current;
+                if (position.current == LocalizationStatus::Suspect)
+                    beginSuspectRecoveryLocked();
+            }
+        }
         return;
     }
     commit.transition = state_.onCorrectionConflict(

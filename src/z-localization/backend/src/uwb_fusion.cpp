@@ -357,7 +357,8 @@ bool UwbFusion::observeAnchor(const Keyframe& reference, const Eigen::Matrix4d& 
 
     const double motion_timestamp = motionTimestamp(*latest_uwb);
     const double age = reference.timestamp - motion_timestamp;
-    if (age < -config_.uwb.odom_sync_tolerance || age > config_.uwb.max_age) {
+    // 标定配对用比恢复先验更严格的年龄门限：配对误差直接进入 T_map_uwb。
+    if (age < -config_.uwb.odom_sync_tolerance || age > config_.uwb.calibration_max_age) {
         return false;
     }
     const std::optional<UwbFactorInput> factor = buildLatestFactor(reference);
@@ -405,7 +406,7 @@ std::optional<UwbAlignmentEstimate> UwbFusion::bootstrap(const FrontendFrame& fr
 
     const double motion_timestamp = motionTimestamp(*latest_uwb);
     const double age = frame.timestamp - motion_timestamp;
-    if (age < -config_.uwb.odom_sync_tolerance || age > config_.uwb.max_age) {
+    if (age < -config_.uwb.odom_sync_tolerance || age > config_.uwb.calibration_max_age) {
         return std::nullopt;
     }
     const std::optional<Eigen::Matrix4d> timed_odom_pose =

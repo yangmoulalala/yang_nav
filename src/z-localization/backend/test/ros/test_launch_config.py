@@ -123,6 +123,23 @@ def test_localization_with_rviz_yields_backend_and_rviz(tmp_path, params_file):
     assert not any(key.startswith('visualization') for key in overrides)
 
 
+@pytest.mark.parametrize('text, expected', [('', None), ('true', True), ('false', False)])
+def test_uwb_argument_overrides_only_when_given(params_file, text, expected):
+    """uwb 留空时不覆盖参数文件；给出时只覆盖 uwb.enabled。"""
+    _, overrides = backend_launch.resolve({
+        'params_file': str(params_file), 'mode': 'mapping', 'prior_map': '', 'save_dir': '',
+        'use_sim_time': 'false', 'rviz': 'false', 'uwb': text})[:2]
+    assert overrides.get('uwb.enabled') is expected
+    assert set(overrides) - {'uwb.enabled'} == {
+        'prior_map.enabled', 'prior_map.directory', 'trajectory.save_directory', 'use_sim_time'}
+
+
+def test_invalid_uwb_argument_fails(params_file):
+    """非法 uwb 文本在创建进程前失败。"""
+    with pytest.raises(ValueError):
+        launch_actions(params_file, uwb='perhaps')
+
+
 def test_example_yaml_is_ros_format_without_launch_only_or_removed_keys():
     """示例配置为 ROS 参数文件格式，不含 launch 独占、话题及已删除的外参键。"""
     data = yaml.safe_load((PACKAGE / 'config/example.yaml').read_text(encoding='utf-8'))

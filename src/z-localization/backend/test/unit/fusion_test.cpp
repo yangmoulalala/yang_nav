@@ -91,5 +91,49 @@ TEST(ObservationPolicy, JointAssessmentControlsAcceptanceAcrossSources) {
     assessment.individual.pop_back();
     EXPECT_FALSE(inconsistent.validate(assessment));
 }
+
+/// 先验地图冲突时，单独接受的 UWB（只约束位置）不能把系统判为可信，仍按冲突计数。
+TEST(ObservationPolicy, PositionOnlyUwbCannotConfirmPoseAgainstConflictingMap) {
+    ObservationBatch batch;
+    batch.entries = {{ObservationSource::PriorMap, "map", {}, false},
+                     {ObservationSource::Uwb, "uwb", {}, false}};
+    InnovationBatchAssessment assessment;
+    assessment.joint = {true, 8, 300, 1e-50, {}};
+    assessment.individual = {{true, 6, 290, 1e-50, {}}, {true, 2, .5, .8, {}}};
+    ASSERT_TRUE(batch.validate(assessment));
+    batch.classify(assessment, .001);
+    EXPECT_FALSE(batch.entries[0].accepted);
+    EXPECT_TRUE(batch.entries[1].accepted);  // UWB 因子仍可写入图
+    const ObservationConclusion conclusion = batch.conclusion();
+    EXPECT_EQ(conclusion.outcome, ObservationOutcome::Conflict);
+    EXPECT_TRUE(conclusion.had_conflict);
+}
+
+/// 物理修正上限等直接冲突（无地图条目）时，单独的 UWB 同样不能确认位姿。
+TEST(ObservationPolicy, PositionOnlyUwbCannotConfirmPoseAgainstCappedMapCorrection) {
+    ObservationBatch batch;
+    batch.conflicts.push_back("prior scan-to-map physical correction cap");
+    batch.entries = {{ObservationSource::Uwb, "uwb", {}, false}};
+    InnovationBatchAssessment assessment;
+    assessment.joint = {true, 2, .5, .8, {}};
+    assessment.individual = {{true, 2, .5, .8, {}}};
+    ASSERT_TRUE(batch.validate(assessment));
+    batch.classify(assessment, .001);
+    EXPECT_TRUE(batch.entries[0].accepted);
+    EXPECT_EQ(batch.conclusion().outcome, ObservationOutcome::Conflict);
+}
+
+/// 没有地图冲突时，UWB 单独接受仍是可信校正（无先验地图或配准不可用的周期）。
+TEST(ObservationPolicy, PositionOnlyUwbWithoutConflictIsAccepted) {
+    ObservationBatch batch;
+    batch.unavailable.push_back("prior scan-to-map unavailable");
+    batch.entries = {{ObservationSource::Uwb, "uwb", {}, false}};
+    InnovationBatchAssessment assessment;
+    assessment.joint = {true, 2, .5, .8, {}};
+    assessment.individual = {{true, 2, .5, .8, {}}};
+    ASSERT_TRUE(batch.validate(assessment));
+    batch.classify(assessment, .001);
+    EXPECT_EQ(batch.conclusion().outcome, ObservationOutcome::Accepted);
+}
 }  // namespace
 }  // namespace backend

@@ -247,7 +247,16 @@ struct UwbConfig {
     double time_offset_prior_std_seconds = 0.1;
     /// 单次位置解的时间抖动标准差，s；经天线速度传播到位置协方差。
     double time_jitter_std_seconds = 0.05;
+    /// 恢复时把 UWB 用作位置先验允许的最大年龄，s（按修正后的测量时刻计）。
     double max_age = 0.25;
+    /// 在线坐标标定与无先验启动对齐中，UWB 与位姿配对允许的最大年龄，s；配对直接决定标定，
+    /// 应比恢复先验更严格。
+    double calibration_max_age = 0.25;
+    /// 先验地图配准被接受但 UWB 连续严重冲突（p 低于 innovation.severe_rejection_probability）
+    /// 多少次即进入 SUSPECT；0 关闭。要求 T_map_uwb 可信（固定零位或已完成的在线标定）。
+    int conflicts_before_suspect = 3;
+    /// 恢复解推算的天线位置与新鲜 UWB 读数允许的最大水平偏差，m；0 关闭该检查。
+    double recovery_max_offset = 0.6;
     /// UWB 运动时刻与里程计插值端点的最大时间间隔，s。
     double odom_sync_tolerance = 0.25;
     double recovery_search_radius = 2.0;

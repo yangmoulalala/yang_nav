@@ -271,6 +271,27 @@ bool Localization::recoveryConfirmedLocked(const RecoveryWork& work,
     return false;
 }
 
+/// UWB 先验只决定搜索范围（search_radius，2 m）；这里再用同一天线点检查恢复解本身。
+/// 适用于所有恢复来源（UWB 分支、描述子分支），UWB 不新鲜时不检查。
+bool Localization::recoveryConsistentWithUwbLocked(const RecoveryWork& work,
+                                                   const RecoveryResult& result) const {
+    // 在线标定完成前 T_map_uwb 只是初值（如单位阵），UWB 映射到地图的位置不可信，不能用来否决。
+    if (!work.uwb_prior || config_.uwb.recovery_max_offset <= 0.0 || !uwb_.ready())
+        return true;
+    const RelocalizationPositionPrior& prior = *work.uwb_prior;
+    // result.pose 为捕获帧的 T_map_sensor；runtime_sensor_point 为同一帧传感器系中的天线点。
+    const Eigen::Vector3d antenna_map =
+        result.pose.block<3, 3>(0, 0) * prior.runtime_sensor_point + result.pose.block<3, 1>(0, 3);
+    const Eigen::Vector3d delta = antenna_map - prior.map_point;
+    const double offset = prior.use_z ? delta.norm() : delta.head<2>().norm();
+    if (std::isfinite(offset) && offset <= config_.uwb.recovery_max_offset)
+        return true;
+    BACKEND_WARN_STREAM("recovery candidate rejected: inconsistent with UWB (offset="
+                        << offset << "m > " << config_.uwb.recovery_max_offset << "m, via "
+                        << result.source << ")");
+    return false;
+}
+
 /// 校验恢复任务身份并提交完整位姿锚或累计恢复失败。
 void Localization::commit(const RecoveryWork& work, const RecoveryResult& result) {
     if (result.outcome == RecoveryOutcome::Deferred)
@@ -289,6 +310,11 @@ void Localization::commit(const RecoveryWork& work, const RecoveryResult& result
                 return false;
             }
             if (matched) {
+                // 与新鲜 UWB 不一致的解（偏离的附近关键帧、对称位姿）不参与确认，也不计为失败。
+                if (!recoveryConsistentWithUwbLocked(work, result)) {
+                    pending_recovery_.reset();
+                    return false;
+                }
                 // 未获连续确认的候选只记录，不改变状态与输出。
                 if (!recoveryConfirmedLocked(work, result))
                     return false;

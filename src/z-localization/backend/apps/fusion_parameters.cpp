@@ -29,6 +29,9 @@ void ParameterReader::loadUwb() {
              parameters_.runtime.uwb.time_offset_prior_std_seconds);
     getParam("uwb/time_jitter_std_seconds", parameters_.runtime.uwb.time_jitter_std_seconds);
     getParam("uwb/max_age", parameters_.runtime.uwb.max_age);
+    getParam("uwb/calibration_max_age", parameters_.runtime.uwb.calibration_max_age);
+    getParam("uwb/conflicts_before_suspect", parameters_.runtime.uwb.conflicts_before_suspect);
+    getParam("uwb/recovery_max_offset", parameters_.runtime.uwb.recovery_max_offset);
     getParam("uwb/odom_sync_tolerance", parameters_.runtime.uwb.odom_sync_tolerance);
     getParam("uwb/recovery_search_radius", parameters_.runtime.uwb.recovery_search_radius);
     getParam("uwb/recovery_candidates", parameters_.runtime.uwb.recovery_candidates);

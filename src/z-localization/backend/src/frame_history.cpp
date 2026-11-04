@@ -31,7 +31,7 @@ void FrameHistory::append(const FrontendFrame& frame) {
     latest_frame_ = frame;
 
     const double history_duration = std::max(
-        2.0, timing_.max_age + timing_.odom_sync_tolerance + std::abs(timing_.time_offset_seconds) +
+        2.0, std::max(timing_.max_age, timing_.calibration_max_age) + timing_.odom_sync_tolerance + std::abs(timing_.time_offset_seconds) +
                  (timing_.estimate_time_offset_online ? 4.0 * timing_.time_offset_prior_std_seconds
                                                       : 0.0) +
                  1.0);

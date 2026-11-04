@@ -261,9 +261,10 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
 /// 规范化 UWB 时空参数、位置协方差及依赖其数值的启动标定。
 void normalizeUwbNumerics(UwbConfig& uwb, const UwbConfig& ud) {
     uwb.recovery_candidates = std::max(1, uwb.recovery_candidates);
+    uwb.conflicts_before_suspect = std::max(0, uwb.conflicts_before_suspect);
     fields(uwb, ud,
            {&UwbConfig::effective_rate_hz, &UwbConfig::time_jitter_std_seconds, &UwbConfig::max_age,
-            &UwbConfig::odom_sync_tolerance, &UwbConfig::recovery_search_radius},
+            &UwbConfig::calibration_max_age, &UwbConfig::recovery_max_offset, &UwbConfig::odom_sync_tolerance, &UwbConfig::recovery_search_radius},
            nonnegativeOr);
     uwb.time_offset_seconds = finiteOr(uwb.time_offset_seconds, ud.time_offset_seconds);
     uwb.time_offset_prior_std_seconds =

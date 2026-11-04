@@ -197,6 +197,9 @@ private:
                                             LocalizationTransition& transition);
     /// 累计恢复候选；连续给出一致 map←odom 变换达到配置次数后返回 true。
     bool recoveryConfirmedLocked(const RecoveryWork& work, const RecoveryResult& result);
+    /// 有新鲜 UWB 时，恢复解推算的天线位置须与 UWB 读数相差不超过 uwb.recovery_max_offset。
+    bool recoveryConsistentWithUwbLocked(const RecoveryWork& work,
+                                         const RecoveryResult& result) const;
     /// 将通过联合创新检验的回环写入图及可视化历史。
     LoopCommitSummary commit(const LoopWork& work, const LoopVerificationBatch& result);
 

@@ -249,7 +249,10 @@
 | `estimate_time_offset_online` | 布尔 | `false` | 是否在线估计固定时间偏置；需启用 UWB 和先验地图，关闭则固定使用 `time_offset_seconds` |
 | `time_offset_prior_std_seconds` | 浮点，s | `0.1` | 在线估计对初始时间偏置的不确定度；越小越信任配置值，须 `>0` |
 | `time_jitter_std_seconds` | 浮点，s | `0.05` | 每次 UWB 测量时间的随机抖动标准差，用于折算位置噪声；须 `≥0`，`0` 不计此项 |
-| `max_age` | 浮点，s | `0.25` | 将 UWB 用作恢复位置提示时，相对当前帧允许的最大滞后；须 `≥0`，按修正后的测量时间计算 |
+| `max_age` | 浮点，s | `0.25` | 将 UWB 用作恢复位置提示时，相对当前帧允许的最大滞后；须 `≥0`，按修正后的测量时间计算。低频 UWB（如 1 Hz 裁判系统）须大于一个解算周期，否则恢复几乎用不到 UWB |
+| `conflicts_before_suspect` | 整数，次 | `3` | 先验地图配准被接受、同周期 UWB 却严重冲突（p < `innovation.severe_rejection_probability`）时计一次，连续达到即进入 `SUSPECT`（配准可能锁到相似或对称位姿）；UWB 一致时清零。要求 `T_map_uwb` 可信；`0` 关闭 |
+| `recovery_max_offset` | 浮点，m | `0.6` | 恢复解（任何来源）推算的天线位置与新鲜 UWB 读数的最大水平偏差，超过则丢弃该候选（不计为失败）；`recovery_search_radius` 只限定搜索范围。约 3σ（位置 + 时间抖动）；`0` 关闭 |
+| `calibration_max_age` | 浮点，s | `0.25` | 在线坐标标定（`estimate_zero_pose_online`）与无先验启动对齐中，UWB 与位姿配对允许的最大滞后；配对误差直接进入 `T_map_uwb`，应比 `max_age` 严格；须 `≥0` |
 | `odom_sync_tolerance` | 浮点，s | `0.25` | UWB 测量时刻到里程计插值端点允许的最大时间差；须 `≥0`，`0` 要求时间重合 |
 | `recovery_search_radius` | 浮点，m | `2.0` | 围绕 UWB 推算位置搜索先验关键帧的半径；须 `≥0`，`0` 不限半径 |
 | `recovery_candidates` | 整数，候选 | `8` | 围绕 UWB 位置最多保留的恢复候选数；须 `≥1` |

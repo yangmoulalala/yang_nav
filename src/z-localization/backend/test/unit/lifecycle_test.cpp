@@ -96,6 +96,39 @@ TEST(LocalizationLifecycle, ProbationExpiresAfterAcceptedObservations) {
     EXPECT_EQ(state.status(), LocalizationStatus::ObsDegraded);
 }
 
+/// 配准被接受但独立位置证据连续严重不一致时进入 SUSPECT；普通观测不清零该计数。
+TEST(LocalizationLifecycle, PersistentPositionDisagreementEscalatesDespiteAcceptedPose) {
+    LocalizationStateMachine state;
+    state.onTrustedCorrection("anchor", TrustedCorrectionSource::Relocalization);
+    for (int i = 0; i < 2; ++i) {
+        state.onTrustedCorrection("map accepted", TrustedCorrectionSource::RegularObservation);
+        EXPECT_FALSE(state.onPositionEvidence(true, "uwb far", 3).changed);
+        EXPECT_EQ(state.status(), LocalizationStatus::Normal);
+    }
+    state.onTrustedCorrection("map accepted", TrustedCorrectionSource::RegularObservation);
+    const auto transition = state.onPositionEvidence(true, "uwb far", 3);
+    EXPECT_TRUE(transition.changed);
+    EXPECT_EQ(state.status(), LocalizationStatus::Suspect);
+    EXPECT_EQ(state.positionDisagreements(), 0);
+}
+
+/// 一致的位置证据或新的恢复锚清零不一致计数；阈值 0 关闭。
+TEST(LocalizationLifecycle, AgreeingPositionOrRelocalizationResetsDisagreement) {
+    LocalizationStateMachine state;
+    state.onTrustedCorrection("anchor", TrustedCorrectionSource::Relocalization);
+    state.onPositionEvidence(true, "far", 3);
+    state.onPositionEvidence(true, "far", 3);
+    state.onPositionEvidence(false, "near", 3);
+    EXPECT_EQ(state.positionDisagreements(), 0);
+    state.onPositionEvidence(true, "far", 3);
+    state.onPositionEvidence(true, "far", 3);
+    state.onTrustedCorrection("recovered", TrustedCorrectionSource::Relocalization);
+    EXPECT_EQ(state.positionDisagreements(), 0);
+    for (int i = 0; i < 10; ++i)
+        state.onPositionEvidence(true, "far", 0);
+    EXPECT_EQ(state.status(), LocalizationStatus::Normal);
+}
+
 /// 超时重试沿用事务身份，终态回复只完成一次事务并启动冷却。
 TEST(ResetCoordinator, TimeoutRetriesSameIdentityAndTerminalReplyClosesOnce) {
     ResetCoordinator coordinator;

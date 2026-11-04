@@ -87,6 +87,7 @@ void LocalizationStateMachine::restoreAfterResetRejected(const LocalizationState
 void LocalizationStateMachine::clearEvidence() {
     consecutive_correction_conflicts_ = 0;
     consecutive_severe_conflicts_ = 0;
+    consecutive_position_disagreements_ = 0;
     probation_remaining_ = 0;
     consecutive_suspect_relocalization_failures_ = 0;
 }
@@ -160,6 +161,9 @@ LocalizationTransition LocalizationStateMachine::onTrustedCorrection(
     consecutive_severe_conflicts_ = 0;
     consecutive_suspect_relocalization_failures_ = 0;
     if (source == TrustedCorrectionSource::Relocalization) {
+        // 新的独立位姿锚：旧位姿下的位置不一致不再适用。普通观测不清零，
+        // 否则锁错时同周期被接受的配准会把位置不一致计数一直清掉。
+        consecutive_position_disagreements_ = 0;
         probation_remaining_ = 0;  // 由调用方按配置重新开始试用期。
     } else if (probation_remaining_ > 0) {
         --probation_remaining_;
@@ -214,6 +218,41 @@ LocalizationTransition LocalizationStateMachine::onCorrectionConflict(
                   : LocalizationStatus::ObsDegraded;
     if (status_ == LocalizationStatus::Suspect)
         probation_remaining_ = 0;
+
+    transition.current = status_;
+    transition.reason = reason_;
+    transition.changed = transition.previous != transition.current;
+    if (transition.changed) {
+        advanceGeneration();
+    }
+    return transition;
+}
+
+/// 累计独立位置证据与全位姿观测的严重不一致，连续达到阈值进入 SUSPECT。
+LocalizationTransition LocalizationStateMachine::onPositionEvidence(const bool severe_disagreement,
+                                                                    const std::string& reason,
+                                                                    const int threshold) {
+    LocalizationTransition transition;
+    transition.previous = status_;
+    transition.current = status_;
+    transition.reason = reason_;
+    if (!poseTrusted(status_)) {
+        return transition;
+    }
+    if (!severe_disagreement) {
+        consecutive_position_disagreements_ = 0;
+        return transition;
+    }
+    ++consecutive_position_disagreements_;
+    if (threshold <= 0 || consecutive_position_disagreements_ < threshold) {
+        return transition;
+    }
+    std::ostringstream oss;
+    oss << "position evidence disagreed " << consecutive_position_disagreements_ << "/"
+        << threshold << " times with accepted full-pose evidence: " << reason;
+    status_ = LocalizationStatus::Suspect;
+    reason_ = oss.str();
+    clearEvidence();
 
     transition.current = status_;
     transition.reason = reason_;
