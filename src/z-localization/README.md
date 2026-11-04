@@ -17,8 +17,8 @@ MID-360 内置 IMU ────────────────────�
 
 | 包 | 来源 | 作用 |
 | --- | --- | --- |
-| `frontend` | 上游，改参数与 TF 接口 | ZLIO 激光惯性里程计（`zlio_node`），发布 `lio_odom → base_link` |
-| `backend` | 上游，改参数与 TF 接口 | 因子图后端：建图、回环、先验地图定位、UWB 辅助（保留，默认关闭） |
+| `frontend` | 上游 | ZLIO 激光惯性里程计（`zlio_node`），发布 `lio_odom → base_link` |
+| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位、UWB 辅助（保留，默认关闭） |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
 | `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
