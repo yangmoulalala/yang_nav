@@ -33,6 +33,8 @@ ros2 launch sentry_gazebo sim.launch.py gui:=true rviz:=true
 | --- | --- | --- |
 | `gui` | `false` | 是否打开 Gazebo GUI；`true` 时追加两路 PointCloud 面板 |
 | `rviz` | `false` | 是否同时启动 RViz2（`rviz/sentry.rviz`） |
+| `uwb` | `true` | 是否启动裁判系统 UWB 模拟节点 `uwb_sim`（仅 `arena:=rmuc` 生效） |
+| `team` | 空 | 己方颜色 `red` / `blue`：出生在己方半场，并由 `uwb_sim` 发布到 `/uwb_pose/team`；空 = 场地原出生点（RMUL 红方、RMUC 蓝方） |
 | `generated_dir` | `$SENTRY_GAZEBO_GEN` 或 `/tmp/sentry_gazebo_generated` | 生成的 world 输出目录 |
 
 点云只由 Gazebo 内置的 `gpu_lidar` 产生（ogre2 光线投射），没有其他后端。
@@ -184,6 +186,8 @@ L2 的采样刻意按真机 64 000 点/s 的点数预算设置：在 10 倍稠�
 | `/lidar_mid360/imu` | `sensor_msgs/Imu` | gz → ROS | `imu` 传感器 |
 | `/lidar_l2/imu` | `sensor_msgs/Imu` | gz → ROS | `imu` 传感器 |
 | `/cmd_vel` | `geometry_msgs/Twist` | ROS → gz | `MecanumDrive` |
+| `/uwb_pose` | `geometry_msgs/PoseStamped` | ROS | `uwb_sim`（裁判系统 0x0203 模拟，1 Hz，仅 RMUC，见下文） |
+| `/uwb_pose/team` | `std_msgs/String` | ROS | `uwb_sim`：己方颜色 `red` / `blue`（transient local，仅 RMUC） |
 
 gz 侧的原始话题名是 `lidar_mid360/points` 与 `lidar_l2/points`（`<topic>` 元素必须是
 `<sensor>` 的直接子元素且**不带前导 `/`**，否则 gz 不派生点云话题）。gz 会派生两个话题：
@@ -206,6 +210,48 @@ l2_link     -> sentry/l2_link/l2_lidar
 ```
 
 如果你更希望点云直接带 `mid360_link`，需要在 ROS 侧另加一个改写 `frame_id` 的节点。
+
+## 裁判系统 UWB 模拟（0x0203）
+
+`uwb_sim` 节点模拟裁判系统串口 0x0203“机器人位置数据”，**只在 RMUC 场地（`arena:=rmuc`）启动**，RMUL 不模拟；`uwb:=false` 可关闭，
+也可单独运行：`ros2 run sentry_gazebo uwb_sim --ros-args -p use_sim_time:=true`。
+
+| 项 | 值 |
+| --- | --- |
+| 话题 | `/uwb_pose`，`geometry_msgs/PoseStamped`，`frame_id: uwb`（即后端 `uwb_pose` / `uwb.frame` 的输入） |
+| 频率 | 1 Hz（仿真时间），与 0x0203 一致 |
+| 内容 | x、y 为裁判系统场地坐标（m，float32 精度）；z 恒为 0；朝向 `angle` 不模拟，姿态为单位四元数 |
+| 时间戳 | **接收时刻**（与串口驱动一致），数据本身比时间戳旧约 0.2 s |
+
+**真值来源**：机器人模型上的 gz `PosePublisher` 只发布到 gz 话题 `/model/sentry/pose`，**不进 bridge**，
+ROS 侧仍然没有真值。
+
+**坐标系**（协议表 1-21）：原点为红方补给站一侧的场地围挡交点，+X 沿长边指向蓝方，+Y 沿短边指向红方停机坪；红蓝方共用。
+RMUC world 为 28 × 16 m、以世界原点为中心，红方在世界 +x 一侧，所以裁判坐标系是世界坐标系绕 z 转 180°（右手系）：
+
+```
+x_ref = 14 - x_world        y_ref = 8 - y_world        （蓝方出生点 (-9.5, 0) -> (23.5, 8)，红方出生点 (9.5, 0) -> (4.5, 8)）
+```
+
+原点、轴向可用参数 `referee_origin_x/y`、`referee_x_axis_yaw_deg`、`referee_y_axis_sign` 覆盖。
+
+**己方颜色**：launch 参数 `team:=red|blue`。场地中心对称，红方出生点 = 蓝方出生点绕场地中心转 180°（RMUC：蓝方 `(-9.5, 0, 0)`，红方 `(9.5, 0, π)`，都朝向场地中央）。`uwb_sim` 把颜色发布到 `/uwb_pose/team`（`std_msgs/String`，`red`/`blue`，transient local，每秒随 UWB 重发）。`/uwb_pose` 本身仍是 `PoseStamped`（后端直接订阅它，不能加字段）。单独运行 `uwb_sim` 时用 `-p team:=red` 指定；首帧位置不在该颜色半场时会打印警告。
+
+**误差模型**（默认值在 `arena_spec.UWB_SIM`，均可用同名参数覆盖）：
+
+| 参数 | 默认 | 依据 |
+| --- | --- | --- |
+| `noise_std` | 0.08 m | 每轴白噪声；UWB 套装标称 ±10 cm |
+| `bias_std` / `bias_tau` | 0.05 m / 30 s | 一阶 Gauss-Markov 慢变偏差（基站坐标误差、多径） |
+| `outlier_prob` / `outlier_std` | 3 % / 0.30 m | 遮挡时 ±30 cm |
+| `latency_mean` / `latency_jitter_std` | 0.20 s / 0.03 s | UWB 输出延时约 80 ms + 常规链路约 130 ms |
+| `drop_prob` | 1 % | 常规链路丢包 <1 % |
+| `antenna_position_body` | `[-0.245, 0, 0]` | 标签在 `base_link` 中的位置，与后端 `uwb.antenna_position_body` 一致；按真实姿态旋转（杆臂） |
+| `seed` | 0 | 0 为随机，非 0 可复现 |
+
+后端侧对应参数：`uwb.position_std_xy` 0.15（≈ 白噪声 + 偏差 + 离群的综合）、`uwb.time_offset_seconds` 约 `-0.2`、
+`uwb.effective_rate_hz` 1。bringup 的 `config/sim/backend*.yaml` 里 `uwb.enabled` 为 `false`（RMUL 没有 UWB），
+RMUC 上用 `ros2 launch bringup sim.launch.py uwb:=true` 打开（只覆盖 `uwb.enabled`）。仿真回归见 `tools/sim_tests/README.md`（`ARENA=rmuc UWB=true`）。
 
 ## 机器人建模方式
 
@@ -272,12 +318,13 @@ sentry_gazebo/
 ├── sentry_gazebo/
 │   ├── arena_spec.py      # 单一数据源：赛场盒体、机器人位姿、雷达参数、话题名
 │   ├── sdf_builder.py     # URDF + arena_spec -> SDF world
-│   └── teleop.py          # 键盘遥控节点（发布 /cmd_vel）
+│   ├── teleop.py          # 键盘遥控节点（发布 /cmd_vel）
+│   └── uwb_sim.py         # 裁判系统 UWB（0x0203）模拟节点（发布 /uwb_pose）
 ├── launch/
 │   ├── sim.launch.py      # 主入口（gz + bridge + robot/joint_state_publisher + 帧别名）
 │   ├── prepare_world.py   # 每次启动重新生成 world + env.sh
 │   └── launch_utils.py    # 路径/环境变量共享
-├── scripts/teleop         # ros2 run 入口（装到 lib/sentry_gazebo）
+├── scripts/teleop, uwb_sim  # ros2 run 入口（装到 lib/sentry_gazebo）
 ├── config/bridge.yaml     # ROS <-> gz 话题
 ├── rviz/sentry.rviz
 └── models/rmul_2027/      # 官方 STEP 网格 + 贴图（仅视觉）

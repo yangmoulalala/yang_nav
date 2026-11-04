@@ -60,12 +60,22 @@ RMUC_COLLISION_URI = 'model://rmuc_2027/meshes/field_collision.stl'
 # per-arena world settings: world name, spawn, lights and GUI camera
 ARENAS = {
     'rmul': {'world': 'rmul_2027', 'centre': (6.0, 4.0),
-             'spawn': None, 'floor_z': 0.0,
+             'spawn': A.ROBOT_SPAWN_XY_YAW, 'spawn_team': A.ROBOT_SPAWN_TEAM,
+             'floor_z': 0.0,
              'camera': '-1.6 -1.9 4.2 0 0.42 0.9'},
     'rmuc': {'world': 'rmuc_2027', 'centre': (0.0, 0.0),
-             'spawn': A.RMUC_SPAWN_XY_YAW, 'floor_z': A.RMUC_SPAWN_FLOOR_Z,
+             'spawn': A.RMUC_SPAWN_XY_YAW, 'spawn_team': A.RMUC_SPAWN_TEAM,
+             'floor_z': A.RMUC_SPAWN_FLOOR_Z,
              'camera': '-18 -14 12 0 0.5 0.66'},
 }
+
+
+def spawn_of(arena, team=None):
+    """(x, y, yaw) spawn of ``team`` on ``arena``; ``None`` keeps the arena's own spawn."""
+    cfg = ARENAS[arena]
+    return A.team_spawn(cfg['spawn'], cfg['spawn_team'], team or cfg['spawn_team'],
+                        cfg['centre'])
+
 
 CHASSIS_RGBA = (0.53, 0.54, 0.58, 1.0)
 TURRET_RGBA = (0.62, 0.62, 0.68, 1.0)
@@ -528,12 +538,27 @@ def robot_model_xml(w, indent, urdf, spawn=None, floor_z=0.0):
     w(indent + 4, '<topic>%s</topic>' % A.TOPIC_CMD_VEL)
     w(indent + 2, '</plugin>')
     # No OdometryPublisher: the real robot has no ground-truth pose, so the
-    # simulation does not publish one either (no /odom, no odom frame).
+    # simulation does not publish one to ROS either (no /odom, no odom frame).
+    # The model's world pose goes to a gz-only topic, read by the UWB
+    # simulator (uwb_sim) to synthesise the referee 0x0203 position; it is
+    # not in bridge.yaml.
+    w(indent + 2, '<plugin filename="gz-sim-pose-publisher-system" '
+                  'name="gz::sim::systems::PosePublisher">')
+    w(indent + 4, '<publish_link_pose>false</publish_link_pose>')
+    w(indent + 4, '<publish_sensor_pose>false</publish_sensor_pose>')
+    w(indent + 4, '<publish_collision_pose>false</publish_collision_pose>')
+    w(indent + 4, '<publish_visual_pose>false</publish_visual_pose>')
+    w(indent + 4, '<publish_nested_model_pose>false</publish_nested_model_pose>')
+    w(indent + 4, '<publish_model_pose>true</publish_model_pose>')
+    w(indent + 4, '<use_pose_vector_msg>false</use_pose_vector_msg>')
+    w(indent + 4, '<static_publisher>false</static_publisher>')
+    w(indent + 4, '<update_frequency>%s</update_frequency>' % n(A.ROBOT_POSE_RATE))
+    w(indent + 2, '</plugin>')
     w(indent, '</model>')
 
 
 # --------------------------------------------------------------------------- world
-def world_xml(w, urdf, view=False, arena_mesh=True, arena='rmul'):
+def world_xml(w, urdf, view=False, arena_mesh=True, arena='rmul', team=None):
     """Full world SDF.
 
     ``arena``        'rmul' (default, RMUL 3v3 field) or 'rmuc' (RMUC full field)
@@ -628,19 +653,19 @@ def world_xml(w, urdf, view=False, arena_mesh=True, arena='rmul'):
         rmuc_arena_model_xml(w, 4)
     else:
         arena_model_xml(w, 4, with_visual_mesh=arena_mesh)
-    robot_model_xml(w, 4, urdf, spawn=cfg['spawn'], floor_z=cfg['floor_z'])
+    robot_model_xml(w, 4, urdf, spawn=spawn_of(arena, team), floor_z=cfg['floor_z'])
     w(2, '</world>')
     w(0, '</sdf>')
 
 
 # --------------------------------------------------------------------------- CLI
-def build(urdf_path, view=False, arena_mesh=True, arena='rmul'):
+def build(urdf_path, view=False, arena_mesh=True, arena='rmul', team=None):
     """Return the complete world SDF for ``urdf_path``."""
     if arena not in ARENAS:
         raise ValueError('unknown arena %r (choose from %s)' % (arena, ', '.join(ARENAS)))
     urdf = Urdf(urdf_path)
     w = W()
-    world_xml(w, urdf, view=view, arena_mesh=arena_mesh, arena=arena)
+    world_xml(w, urdf, view=view, arena_mesh=arena_mesh, arena=arena, team=team)
     return w.text()
 
 
@@ -653,10 +678,12 @@ def main(argv=None):
                     help='draw the arena from primitives instead of the STEP mesh')
     ap.add_argument('--arena', default='rmul', choices=sorted(ARENAS),
                     help='rmul (3v3 field, default) or rmuc (full RMUC 2027 field)')
+    ap.add_argument('--team', choices=('red', 'blue'),
+                    help='spawn in this half (default: the arena spawn, rmul red / rmuc blue)')
     args = ap.parse_args(argv)
 
     text = build(args.urdf, view=args.view, arena_mesh=not args.no_arena_mesh,
-                 arena=args.arena)
+                 arena=args.arena, team=args.team)
     if args.output:
         Path(args.output).write_text(text, encoding='utf-8')
     else:

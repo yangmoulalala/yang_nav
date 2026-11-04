@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+"""``ros2 run sentry_gazebo uwb_sim`` entry point (see scripts/teleop for why
+this is a data file and not a console script)."""
+import sys
+
+from sentry_gazebo.uwb_sim import main
+
+sys.exit(main())

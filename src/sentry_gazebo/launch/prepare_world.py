@@ -25,7 +25,7 @@ from launch_utils import generated_dir, urdf_path  # noqa: E402
 WORLD = 'rmul_2027.sdf'
 
 
-def generate(gen_root, urdf, view=False, arena='rmul'):
+def generate(gen_root, urdf, view=False, arena='rmul', team=None):
     """Write the world plus its mesh shim; return the world path.
 
     ``view=True`` adds the two PointCloud panels to the Gazebo GUI.
@@ -49,7 +49,7 @@ def generate(gen_root, urdf, view=False, arena='rmul'):
         link.symlink_to((urdf.parent.parent / 'meshes').resolve(), target_is_directory=True)
 
     world = gen_root / ('%s.sdf' % sdf_builder.ARENAS[arena]['world'])
-    world.write_text(sdf_builder.build(str(urdf), view=view, arena=arena), encoding='utf-8')
+    world.write_text(sdf_builder.build(str(urdf), view=view, arena=arena, team=team), encoding='utf-8')
     write_env_script(gen_root / 'env.sh')
     print('[sentry_gazebo] generated %s in %s (urdf %s)' % (world.name, gen_root, urdf))
     return world

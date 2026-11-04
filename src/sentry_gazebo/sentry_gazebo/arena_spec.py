@@ -65,6 +65,29 @@ ROBOT_Z = 0.062          # wheel bottoms on the floor (joint z 0.003 - radius 0.
 RMUC_SPAWN_XY_YAW = (-9.5, 0.0, 0.0)
 RMUC_SPAWN_FLOOR_Z = 0.30
 
+# Teams.  Both fields are point-symmetric: the blue half is the red half turned
+# 180 deg about the field centre, so one team's spawn mirrors onto the other's.
+TEAMS = ('red', 'blue')
+# The team the spawns above belong to: ROBOT_SPAWN_XY_YAW is the RMUL red
+# supply zone; RMUC_SPAWN_XY_YAW is on world -x, which is the BLUE half of
+# RMUC (red is at world +x, see REFEREE_FRAMES).
+ROBOT_SPAWN_TEAM = 'red'
+RMUC_SPAWN_TEAM = 'blue'
+
+
+def team_spawn(spawn, spawn_team, team, centre):
+    """``spawn`` (x, y, yaw) of ``spawn_team`` moved to ``team``'s half.
+
+    The other team's spawn is the same spot turned 180 deg about ``centre``.
+    """
+    if team not in TEAMS:
+        raise ValueError('unknown team %r (choose from %s)' % (team, ', '.join(TEAMS)))
+    if team == spawn_team:
+        return tuple(spawn)
+    x, y, yaw = spawn
+    yaw = math.atan2(math.sin(yaw + PI), math.cos(yaw + PI))
+    return (2.0 * centre[0] - x, 2.0 * centre[1] - y, yaw)
+
 # The URDF's own orientation.  z-up already, so this stays identity; it is kept
 # so a future y-up export only has to change this one value.
 ROBOT_MODEL_RPY = (0.0, 0.0, 0.0)
@@ -164,6 +187,62 @@ ROBOT_MOUNTS = (
 
 # ROS topics (bridged from Gazebo)
 TOPIC_CMD_VEL = '/cmd_vel'
+
+
+# ---------------------------------------------------------------------------
+# Referee-system UWB (serial 0x0203), simulated by ``uwb_sim``
+# ---------------------------------------------------------------------------
+# Ground truth for the simulator only: the stock PosePublisher on the sentry
+# model publishes its world pose on this gz topic.  It is deliberately *not*
+# bridged to ROS -- the localization stack must not see a ground truth.
+GZ_TOPIC_ROBOT_POSE = '/model/%s/pose' % ROBOT_MODEL_NAME
+ROBOT_POSE_RATE = 100.0
+
+# Output: what the referee serial driver would publish, the input of
+# backend_node (``uwb_pose`` topic, ``uwb.frame``).
+TOPIC_UWB_POSE = '/uwb_pose'
+# own colour, 'red' / 'blue' (std_msgs/String, transient local)
+TOPIC_UWB_TEAM = '/uwb_pose/team'
+UWB_FRAME = 'uwb'
+
+# Referee field frame (protocol table 1-21) in the gz world:
+#   origin  inner corner of the perimeter next to the RED supply zone,
+#   +X      along the long side, towards blue,
+#   +Y      along the short side, towards the red landing pad;
+#   the same frame for both colours.
+# ``x_axis_yaw_deg`` is the world heading of referee +X, ``y_axis_sign`` = +1
+# when +Y is +X turned 90 deg counter-clockwise seen from above (right-handed
+# with z up), -1 when clockwise.
+#
+# Only the RMUC field has a referee UWB; RMUL is not simulated.
+# RMUC (28 x 16 m centred on the world origin): red is at world +x, so the
+# origin is the world corner (14, 8) and the referee frame is the world frame
+# turned 180 deg (right-handed, a rigid T_map_uwb exists):
+#     x_ref = 14 - x_world        y_ref = 8 - y_world
+# The blue spawn (-9.5, 0) reads (23.5, 8), the red spawn (9.5, 0) reads (4.5, 8).
+REFEREE_FRAMES = {
+    'rmuc': {'origin': (14.0, 8.0), 'x_axis_yaw_deg': 180.0, 'y_axis_sign': 1,
+             'length': 28.0},     # x_ref < length / 2 is the red half
+}
+
+# Error model of one 0x0203 sample (all overridable as uwb_sim parameters).
+# Sources: RoboMaster UWB kit manual -- 50 Hz solution, ~80 ms output delay,
+# +-10 cm standard error, ~+-30 cm when occluded; referee protocol -- 0x0203
+# at 1 Hz on the regular link, ~130 ms latency (200 ms when congested),
+# <1 % packet loss (3 % when congested).
+UWB_SIM = {
+    'rate_hz': 1.0,              # 0x0203 fixed rate
+    'noise_std': 0.08,           # white, per axis [m]
+    'bias_std': 0.05,            # slow Gauss-Markov bias, per axis [m]
+    'bias_tau': 30.0,            # its correlation time [s]
+    'outlier_prob': 0.03,        # chance a sample is an occlusion outlier
+    'outlier_std': 0.30,         # outlier std, replaces noise_std [m]
+    'latency_mean': 0.20,        # UWB solve ~80 ms + regular link ~130 ms [s]
+    'latency_jitter_std': 0.03,  # [s]
+    'drop_prob': 0.01,           # lost frames on the regular link
+    # tag position in base_link; same numbers as backend uwb.antenna_position_body
+    'antenna_position_body': (-0.245, 0.0, 0.0),
+}
 
 # gz topic carrying the packed cloud: gz-sim appends "/points" to <topic>
 GZ_TOPIC_MID360_CLOUD = '/' + MID360_LIDAR['topic'] + '/points'

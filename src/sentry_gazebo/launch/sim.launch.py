@@ -4,12 +4,15 @@
     ros2 launch sentry_gazebo sim.launch.py gui:=true        # + Gazebo GUI
     ros2 launch sentry_gazebo sim.launch.py gui:=true rviz:=true
     ros2 launch sentry_gazebo sim.launch.py gui:=true arena:=rmuc   # RMUC full field
+    ros2 launch sentry_gazebo sim.launch.py arena:=rmuc team:=red   # red spawn
 
 Topics
     /cmd_vel               geometry_msgs/Twist          -> MecanumDrive
     /lidar_mid360/points   sensor_msgs/PointCloud2      <- Livox MID-360
     /lidar_l2/points       sensor_msgs/PointCloud2      <- Unitree L2
     /clock                 rosgraph_msgs/Clock          <- Gazebo
+    /uwb_pose              geometry_msgs/PoseStamped    <- uwb_sim (referee 0x0203, 1 Hz, rmuc only)
+    /uwb_pose/team         std_msgs/String              <- uwb_sim (own colour red/blue, rmuc only)
     /tf, /tf_static        base_link -> yaw_link -> sensors
 
 Everything is stock ROS 2 / Gazebo:
@@ -41,6 +44,7 @@ import prepare_world  # noqa: E402
 from launch_utils import gz_environment, generated_dir, urdf_path  # noqa: E402
 
 from sentry_gazebo import arena_spec as A  # noqa: E402
+from sentry_gazebo import sdf_builder  # noqa: E402
 
 
 def _bool(context, name):
@@ -59,7 +63,10 @@ def build(context):
     urdf = Path(urdf_path())
 
     arena = _str(context, 'arena') or 'rmul'
-    world = prepare_world.generate(gen, urdf, view=gui, arena=arena)
+    # own colour: spawn in that half (point-symmetric field); empty keeps the
+    # arena's own spawn (rmul red, rmuc blue)
+    team = _str(context, 'team').lower() or sdf_builder.ARENAS[arena]['spawn_team']
+    world = prepare_world.generate(gen, urdf, view=gui, arena=arena, team=team)
 
     actions = []
     env = gz_environment()
@@ -113,6 +120,14 @@ def build(context):
                        '--child-frame-id', '%s/%s/%s' % (A.ROBOT_MODEL_NAME, link, sensor)],
             parameters=[{'use_sim_time': True}]))
 
+    # referee-system UWB (0x0203): 1 Hz noisy position in the referee field
+    # frame on /uwb_pose, synthesised from the gz-only ground-truth pose
+    # only on the RMUC field: RMUL has no referee UWB
+    if _bool(context, 'uwb') and arena == 'rmuc':
+        actions.append(Node(package='sentry_gazebo', executable='uwb_sim', name='uwb_sim',
+                            output='screen',
+                            parameters=[{'use_sim_time': True, 'arena': arena, 'team': team}]))
+
     if rviz:
         rviz_cfg = share / 'rviz' / 'sentry.rviz'
         actions.append(Node(package='rviz2', executable='rviz2', name='rviz2',
@@ -131,6 +146,13 @@ def generate_launch_description():
         DeclareLaunchArgument('arena', default_value='rmul', choices=['rmul', 'rmuc'],
                               description='rmul: RMUL 2027 3v3 field (model://rmul_2027); '
                                           'rmuc: RMUC 2027 full field (model://rmuc_2027)'),
+        DeclareLaunchArgument('uwb', default_value='true',
+                              description='run the referee UWB (0x0203) simulator on /uwb_pose '
+                                          '(arena:=rmuc only; ignored on rmul)'),
+        DeclareLaunchArgument('team', default_value='',
+                              description='own colour red|blue: spawn in that half and report '
+                                          'it on /uwb_pose/team (default: the arena spawn, '
+                                          'rmul red / rmuc blue)'),
         DeclareLaunchArgument('generated_dir', default_value='',
                               description='where to write the generated world '
                                           '(default: $SENTRY_GAZEBO_GEN or '

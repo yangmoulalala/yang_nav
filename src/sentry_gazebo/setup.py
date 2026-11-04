@@ -37,7 +37,7 @@ setup(
         # ros2 run searches lib/<pkg>; colcon installs ament_python console
         # scripts into <prefix>/bin instead, so the node launcher is a data
         # file (see the note in scripts/teleop).
-        (os.path.join('lib', package_name), ['scripts/teleop']),
+        (os.path.join('lib', package_name), ['scripts/teleop', 'scripts/uwb_sim']),
     ] + data_tree('models'),
     install_requires=['setuptools'],
     zip_safe=True,
