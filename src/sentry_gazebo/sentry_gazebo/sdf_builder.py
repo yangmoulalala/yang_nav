@@ -477,12 +477,16 @@ def robot_model_xml(w, indent, urdf, spawn=None, floor_z=0.0):
         inertial_xml(w, indent + 4, WHEEL_MASS, 6e-4, 6e-4, 1.2e-3)
         if urdf.mesh_of(j.child) is not None:
             mesh_visual_xml(w, indent + 4, urdf.mesh_of(j.child), WHEEL_RGBA, 'wheel_mesh')
-        # one cylinder instead of the 109 k-triangle wheel STL; friction only
-        # along the rolling direction (fdir1), none along the axle, like the
-        # free rollers of an omni wheel
+        # one sphere instead of the 109 k-triangle wheel STL.  Not a cylinder:
+        # a cylinder rim against the triangle-mesh field (3 mm decal edges,
+        # plate seams) gets horizontal contact normals and stalls, a sphere
+        # always gets a normal through its centre and rolls over the edge.
+        # The omni wheel only touches the ground at one point, so the
+        # kinematics are unchanged.  Friction only along the rolling direction
+        # (fdir1), none along the axle, like the free rollers of an omni wheel.
         w(indent + 4, '<collision name="wheel_collision">')
-        w(indent + 6, '<geometry><cylinder><radius>%s</radius><length>%s</length></cylinder></geometry>'
-          % (n(A.WHEEL_RADIUS), n(A.WHEEL_LENGTH)))
+        w(indent + 6, '<geometry><sphere><radius>%s</radius></sphere></geometry>'
+          % n(A.WHEEL_RADIUS))
         w(indent + 6, '<surface><friction><ode><mu>1</mu><mu2>0</mu2>'
                       '<fdir1 gz:expressed_in="%s">%s 0</fdir1></ode></friction></surface>'
           % (root, vec(roll)))

@@ -263,8 +263,9 @@ RMUC 上用 `ros2 launch bringup sim.launch.py uwb:=true` 打开（只覆盖 `uw
 - **云台**：仿真不驱动云台，`yaw_joint` 在 SDF 里是 fixed（被动关节会被底盘带着空转）。
 - **碰撞**：`base_link` 用单个 box hull 代替 1.29 M 三角面的 STL。水平尺寸和顶面取
   `base_link.stl` 按其 URDF visual 旋转后的包围盒（`0.594 × 0.594`，顶面离地 0.174 m）；
-  底面抬到离地 `CHASSIS_GROUND_CLEARANCE` = 30 mm（原包围盒底面只离地 4 mm，会卡在中央 10 mm 高的台面边上）。
-  外加 4 个圆柱轮（r = 0.065，厚 0.04），轮子只在滚动方向有摩擦（`fdir1`，`mu2 = 0`），
+  底面抬到离地 `CHASSIS_GROUND_CLEARANCE` = 70 mm（原包围盒底面只离地 4 mm，会卡在中央 10 mm 高的台面边上）。
+  外加 4 个球形轮（r = 0.065；圆柱轮缘碰到场地网格上 3 mm 的白色标线边会得到水平法线而卡死，球总能滚上去），
+  轮子只在滚动方向有摩擦（`fdir1`，`mu2 = 0`），
   模拟全向轮的小辊子。贴墙时方形车体转不动，需先退开，与真车一致。
 - **视觉**：直接用 URDF 的 STL，URI 为 `model://sentry_description/meshes/*.stl`，通过
   `GZ_SIM_RESOURCE_PATH` 里的 `sentry_description` 模型 shim 解析（`prepare_world.py` 会把

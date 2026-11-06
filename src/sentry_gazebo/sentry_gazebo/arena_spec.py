@@ -110,8 +110,9 @@ WHEEL_LENGTH = 0.04      # wheel_front_left.stl is 4 cm thick along its axis
 # visual rotation (0.594 x 0.594 x 0.170, centred 0.027 above the link origin).
 # The bottom is cut to CHASSIS_GROUND_CLEARANCE above the floor: the raw bbox
 # reaches 4 mm above the floor, so the box snagged on the 10 mm centre plate,
-# which the 65 mm wheels climb easily.
-CHASSIS_GROUND_CLEARANCE = 0.05
+# which the 65 mm wheels climb easily.  Note: 0.07 puts the hull bottom above
+# the wheel axles (0.065 above the floor).
+CHASSIS_GROUND_CLEARANCE = 0.07
 _HULL_TOP = 0.027 + 0.170 / 2.0                    # above the link origin
 _HULL_BOTTOM = CHASSIS_GROUND_CLEARANCE - ROBOT_Z   # link origin is ROBOT_Z up
 CHASSIS_HULL_CENTRE = (0.0, 0.0, (_HULL_TOP + _HULL_BOTTOM) / 2.0)
