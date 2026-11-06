@@ -35,7 +35,8 @@ zlio:
       # IMU 历史最长保留时长，s。
       imu_history_seconds: 30.0
       # 相邻 IMU 采样允许的最大间隔，s。
-      maximum_imu_interval: 0.1
+      # 仿真放宽到 0.3 s：WSL 下多进程同时运行时 IMU 回调偶发被饿住超过 0.1 s，前端会反复重置；真车配置保持 0.1。
+      maximum_imu_interval: 0.3
       # IMU 历史最多保留的样本数。
       maximum_imu_samples: 65536
       # 单包、待处理队列及核心点云缓存的点数上限。

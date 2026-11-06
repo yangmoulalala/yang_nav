@@ -63,6 +63,7 @@ ALLOWED = {
         'zlio/sensor.minimum_range': '仿真雷达量程设置',
         'zlio/sensor.maximum_range': '仿真雷达量程设置',
         'zlio/initialization.minimum_directional_support': '仿真出生点静止视野几何单一',
+        'zlio/input.maximum_imu_interval': 'WSL 下仿真+定位+导航同时运行时 IMU 回调偶发被饿住超过 0.1 s，仿真放宽到 0.3 s',
     },
     ('sim/lidar_fusion.yaml', 'real/lidar_fusion.yaml'): {
         'lidar_merge/primary.time_field': 'gpu_lidar 整帧同一时刻；真车用驱动逐点时间',
