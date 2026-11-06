@@ -86,6 +86,16 @@ CHASSIS_INERTIA = (0.32, 0.32, 0.42)     # ixx, iyy, izz [kg m^2]
 TURRET_INERTIA = (0.05, 0.05, 0.05)
 WHEEL_MASS = 0.5
 
+# Per-wheel vertical suspension (prismatic joint, spring + damper, along base z).
+# Without it the rigid 4-wheel base rests on 3 wheels: one diagonal pair carries
+# almost no load and the (+x,-y) direction, driven only by that pair, did not move.
+# ~24 kg / 4 wheels ~ 60 N per wheel -> ~1 cm static compression at 6000 N/m.
+SUSP_STIFFNESS = 6000.0     # N/m
+SUSP_DAMPING = 300.0        # N s/m (about critical for ~6 kg per corner)
+SUSP_PRELOAD = 0.01         # m, spring_reference offset so the static ride height stays nominal
+SUSP_TRAVEL = 0.02          # m, +- joint limit
+SUSP_LINK_MASS = 0.2
+
 # The real LiDARs do not see the robot's own meshes as returns (the vendor
 # drivers / blind zone drop them), but gpu_lidar renders every visual.  Robot
 # visuals carry this flag and the LiDARs mask it out.
@@ -472,6 +482,23 @@ def robot_model_xml(w, indent, urdf, spawn=None, floor_z=0.0):
         slot, sign, roll = omni_wheel(j)
         slots.setdefault(slot, []).append(j.name)
         xyz, rpy = urdf.pose_of(j.child)
+        # suspension link at the wheel pose, sprung along base z (see SUSP_* above)
+        susp = j.child + '_susp'
+        w(indent + 2, '<link name="%s">' % susp)
+        w(indent + 4, '<pose relative_to="%s">%s %s</pose>' % (root, vec(xyz), vec(rpy)))
+        inertial_xml(w, indent + 4, SUSP_LINK_MASS, 1e-4, 1e-4, 1e-4)
+        w(indent + 2, '</link>')
+        w(indent + 2, '<joint name="%s_joint" type="prismatic">' % susp)
+        w(indent + 4, '<parent>%s</parent><child>%s</child>' % (root, susp))
+        w(indent + 4, '<axis>')
+        w(indent + 6, '<xyz expressed_in="%s">0 0 1</xyz>' % root)
+        w(indent + 6, '<limit><lower>%s</lower><upper>%s</upper><effort>1000</effort></limit>'
+          % (n(-SUSP_TRAVEL), n(SUSP_TRAVEL)))
+        w(indent + 6, '<dynamics><damping>%s</damping><spring_reference>%s</spring_reference>'
+                      '<spring_stiffness>%s</spring_stiffness></dynamics>'
+          % (n(SUSP_DAMPING), n(SUSP_PRELOAD), n(SUSP_STIFFNESS)))
+        w(indent + 4, '</axis>')
+        w(indent + 2, '</joint>')
         w(indent + 2, '<link name="%s">' % j.child)
         w(indent + 4, '<pose relative_to="%s">%s %s</pose>' % (root, vec(xyz), vec(rpy)))
         inertial_xml(w, indent + 4, WHEEL_MASS, 6e-4, 6e-4, 1.2e-3)
@@ -492,8 +519,18 @@ def robot_model_xml(w, indent, urdf, spawn=None, floor_z=0.0):
           % (root, vec(roll)))
         w(indent + 4, '</collision>')
         w(indent + 2, '</link>')
-        joint_xml(w, indent + 2, j, 'revolute', effort=20, velocity=60, damping=0.02,
-                  axis=tuple(sign * c for c in j.axis))
+        # wheel spins relative to its suspension link; joint frame = wheel frame (= URDF joint frame)
+        ax = tuple(sign * c for c in j.axis)
+        w(indent + 2, '<joint name="%s" type="revolute">' % j.name)
+        w(indent + 4, '<parent>%s</parent><child>%s</child>' % (susp, j.child))
+        w(indent + 4, '<pose relative_to="%s">0 0 0 0 0 0</pose>' % j.child)
+        w(indent + 4, '<axis>')
+        w(indent + 6, '<xyz>%s</xyz>' % vec(ax))
+        w(indent + 6, '<limit><lower>-1e16</lower><upper>1e16</upper>'
+                      '<effort>20</effort><velocity>60</velocity></limit>')
+        w(indent + 6, '<dynamics><damping>0.02</damping></dynamics>')
+        w(indent + 4, '</axis>')
+        w(indent + 2, '</joint>')
     if sorted(slots) != sorted(MECANUM_SLOTS):
         raise RuntimeError('omni wheels do not fill the four MecanumDrive slots: %r' % slots)
 
