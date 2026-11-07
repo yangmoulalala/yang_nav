@@ -35,6 +35,8 @@ PLATFORM_ONLY = {'real': ('livox_driver.yaml', 'robot_state.yaml')}
 SIM_IMU = 'Gazebo IMU 位于 mid360_link 原点；真车为 MID-360 内置 IMU mid360_imu_link'
 SIM_CONVERGENCE = '仿真点云稀疏，真车沿用上游收敛判据'
 BACKEND_PLATFORM = {
+    'backend_node/recovery.suspect_search_radius':
+        '仿真 RMUC 出生点镜像位姿约 18.85 m，半径须小于它（docs/localization_issues.md L6）；真车待实测',
     'backend_node/common.sensor_frame': SIM_IMU,
     'backend_node/registration.max_iterations': SIM_CONVERGENCE,
     'backend_node/registration.convergence_translation': SIM_CONVERGENCE,

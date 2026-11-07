@@ -150,7 +150,9 @@ backend_node:
       suspicious_angular_speed: 30.0
     recovery:
       # SUSPECT 围绕最后可信位置的候选搜索半径，单位为米。
-      suspect_search_radius: 30.0
+      # 仿真 RMUC 场地中心对称：出生点的镜像位姿相距约 18.85 m（=2x 到场地中心的距离）。
+      # 半径须小于镜像距离，否则 SUSPECT 下描述子会召回镜像侧关键帧并可能被确认（L6）。
+      suspect_search_radius: 8.0
       # LOST 描述子候选的宽域搜索半径，单位为米；0 表示不限。
       lost_search_radius: 35.0
       source:
