@@ -7,6 +7,8 @@
 # env: OUT (default /tmp/nav_run), MAP (default maps/sim-rmuc-dual), GUI=true
 WS=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${OUT:-/tmp/nav_run}; MAP=${MAP:-$WS/maps/sim}; GUI=${GUI:-false}
+# TERRAIN: nav_terrain package (terrain_export.py output) used as terrain_dir and for goal registration
+TERRAIN=${TERRAIN:-$MAP/terrain}
 mkdir -p "$OUT"; rm -f "$OUT"/*.log
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=${MESA_D3D12_DEFAULT_ADAPTER_NAME:-NVIDIA}
 # RVIZ=true opens the navigation RViz (WSLg); HOLD=S keeps everything running S seconds after the goals
@@ -80,7 +82,7 @@ if ! timeout 8 ros2 run tf2_ros tf2_echo map base_link 2>/dev/null | grep -q 'Tr
 fi
 echo 'TF map -> base_link ok'
 
-ros2 launch nav_bringup navigation.launch.py terrain_dir:="$MAP/nav" rviz:=false > "$OUT/nav.log" 2>&1 & NAV=$!
+ros2 launch nav_bringup navigation.launch.py terrain_dir:="$TERRAIN" rviz:=false > "$OUT/nav.log" 2>&1 & NAV=$!
 for i in $(seq 1 60); do grep -q 'Managed nodes are active' "$OUT/nav.log" && break; sleep 1; done
 grep -q 'Managed nodes are active' "$OUT/nav.log" || { echo 'nav2 did not come up'; tail -40 "$OUT/nav.log"; exit 1; }
 echo 'nav2 active'
@@ -123,7 +125,7 @@ for g in "$@"; do
     continue
   fi
   echo "=== goal (world) $g   resets so far: $(grep -c 'IMU input interrupted' "$OUT/loc.log")"
-  python3 "$WS/tools/nav_regress/goal.py" $g --frame ${GOAL_FRAME:-world} --nav-dir "$MAP/nav" | tee -a "$OUT/goals.log"
+  python3 "$WS/tools/nav_regress/goal.py" $g --frame ${GOAL_FRAME:-world} --nav-dir "$TERRAIN" | tee -a "$OUT/goals.log"
   if [ "${PIPESTATUS[0]}" = 0 ]; then CONSEC=0; else rc=1; CONSEC=$((CONSEC+1)); fi
   echo "truth: $(tail -1 "$OUT/truth.log")"
   if [ "$CONSEC" -ge 2 ]; then echo "ABORT: 2 consecutive failures, robot likely stuck"; break; fi
