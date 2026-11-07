@@ -9,11 +9,13 @@ install(PROGRAMS
           scripts/cloud_to_height_map.py
           scripts/terrain_label_editor.py
           scripts/terrain_export.py
+          scripts/terrain_auto_direction.py
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_terrain_label test/test_terrain_label.py)
+  ament_add_pytest_test(test_auto_direction test/test_auto_direction.py)
 endif()
 
 ament_package()
