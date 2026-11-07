@@ -3,14 +3,17 @@ project(nav_terrain)
 
 find_package(ament_cmake REQUIRED)
 
-install(PROGRAMS scripts/terrain_builder.py scripts/compare_terrain.py scripts/terrain_viewer.py
+# terrain_map.py / terrain_export.py are imported by the other scripts from the same directory
+install(PROGRAMS
+          scripts/terrain_map.py
+          scripts/cloud_to_height_map.py
+          scripts/terrain_label_editor.py
+          scripts/terrain_export.py
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
-  ament_add_pytest_test(test_terrain_builder test/test_terrain_builder.py)
-  ament_add_pytest_test(test_manual_zones test/test_manual_zones.py)
-  ament_add_pytest_test(test_manual_approach test/test_manual_approach.py)
+  ament_add_pytest_test(test_terrain_label test/test_terrain_label.py)
 endif()
 
 ament_package()

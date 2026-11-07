@@ -14,8 +14,11 @@ M0 nodes:
 
 collision_monitor is added in M2, when terrain_node provides ground-free obstacles.
 
-Until terrain_builder (M1) exists, terrain_dir points at an old build_nav_map.py output;
-only nav_map.yaml is read.  Live obstacles (terrain_node) arrive in M2.
+terrain_dir is a nav_terrain package (labelled map, HWSentryNav26 style):
+    cloud_to_height_map.py --map-dir maps/sim --out maps/sim/terrain.msgpack
+    terrain_label_editor.py maps/sim/terrain.msgpack
+    terrain_export.py maps/sim/terrain.msgpack --out maps/sim/terrain
+Only nav_map.yaml is read here.  Live obstacles (terrain_node) arrive in M2.
 """
 import os
 from pathlib import Path
