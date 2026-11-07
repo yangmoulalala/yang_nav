@@ -9,8 +9,11 @@ plus map-frame origin, the embedded height map backdrop, and the TUNNEL label.
 Tools   pixel brush | rectangle | line. A line sets the direction of directional labels to the
         LEFT perpendicular of the stroke (draw a ramp's bottom edge left-to-right looking uphill;
         draw across a tunnel mouth so the left normal points through the tunnel).
-Keys    0-7 label   p/r/l tool   [ ] brush size   +/- zoom   Ctrl+Z undo   Ctrl+S save   e/a toggle
-        elevation / arrows. Right-drag pans.
+Keys    0-7 label   p/r/l tool   [ ] brush size   +/- zoom   Ctrl+Z undo   Ctrl+S save   e/a/m toggle
+        elevation / arrows / manual outline   u revert mode (tools restore the automatic label).
+        Right-drag pans.
+Manual  every painted cell is marked manual (white outline) and survives mesh_to_terrain re-runs;
+        unmarked cells follow the automatic layer.
 Labels  0 flat  1 obstacle  2 slope  3 step_l1  4 step_l2  5 fly_slope  6 step_high  7 tunnel
 """
 import argparse
@@ -22,6 +25,7 @@ from tkinter import filedialog, messagebox, ttk
 
 import numpy as np
 from PIL import Image, ImageTk
+from scipy import ndimage
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from terrain_map import DIRECTIONAL, LABELS, TerrainMap, encode_angle, load_keyframe_cloud, read_pcd  # noqa
@@ -91,6 +95,8 @@ class Editor:
         self.brush = tk.IntVar(value=3)
         self.show_elev = tk.BooleanVar(value=True)
         self.show_arrows = tk.BooleanVar(value=True)
+        self.show_manual = tk.BooleanVar(value=True)
+        self.revert = tk.BooleanVar(value=False)
         self.drag_start = None
         self.preview = []
         self._img = None
@@ -129,6 +135,8 @@ class Editor:
         self.dir_code.trace_add('write', lambda *_: self._dir_label())
         tk.Checkbutton(bar, text='elevation', variable=self.show_elev, command=self.redraw).pack(side=tk.LEFT)
         tk.Checkbutton(bar, text='arrows', variable=self.show_arrows, command=self.redraw).pack(side=tk.LEFT)
+        tk.Checkbutton(bar, text='manual', variable=self.show_manual, command=self.redraw).pack(side=tk.LEFT)
+        tk.Checkbutton(bar, text='revert to auto (u)', variable=self.revert, fg='#c62828').pack(side=tk.LEFT)
 
         frame = tk.Frame(self.root)
         frame.pack(fill=tk.BOTH, expand=True)
@@ -186,6 +194,13 @@ class Editor:
         elif ch == 'a':
             self.show_arrows.set(not self.show_arrows.get())
             self.redraw()
+        elif ch == 'm':
+            self.show_manual.set(not self.show_manual.get())
+            self.redraw()
+        elif ch == 'u':
+            self.revert.set(not self.revert.get())
+            self.status.config(text='revert-to-auto %s' % ('ON: brush/rect/line restore the automatic labels'
+                                                            if self.revert.get() else 'off'))
 
     # ---------------------------------------------------------------- files
     def open_dialog(self):
@@ -262,6 +277,9 @@ class Editor:
             rgb[flat & valid] = g[flat & valid]
             lab = ~flat & valid
             rgb[lab] = ((1 - ELEV_OPACITY) * rgb[lab] + ELEV_OPACITY * g[lab]).astype(np.uint8)
+        if self.show_manual.get() and m.manual is not None and m.manual.any():
+            edge = m.manual & ~ndimage.binary_erosion(m.manual)
+            rgb[edge] = (255, 255, 255)
         return rgb
 
     def redraw(self):
@@ -309,20 +327,25 @@ class Editor:
 
     # ---------------------------------------------------------------- editing
     def push(self):
-        self.history.append((self.m.terrain.copy(), self.m.direction.copy()))
+        self.history.append((self.m.terrain.copy(), self.m.direction.copy(), self.m.ensure_manual().copy()))
         del self.history[:-HISTORY]
 
     def undo(self):
         if self.history:
-            self.m.terrain, self.m.direction = self.history.pop()
+            self.m.terrain, self.m.direction, self.m.manual = self.history.pop()
             self.redraw()
 
     def apply(self, mask, code=None):
+        if self.revert.get():
+            n = self.m.revert_to_auto(mask)
+            self.status.config(text='reverted %d cells to the automatic label' % n)
+            return
         self.m.terrain[mask] = self.label
         if self.label in DIRECTIONAL:
             self.m.direction[mask] = self.dir_code.get() if code is None else code
         else:
             self.m.direction[mask] = 0
+        self.m.ensure_manual()[mask] = True
 
     def on_down(self, e):
         cell = self.to_cell(e)
@@ -396,8 +419,12 @@ class Editor:
         lab = int(m.terrain[r, c])
         z = m.elevation[r, c] if m.elevation is not None else float('nan')
         d = ' dir %.0f deg' % (m.direction[r, c] / 255 * 360) if lab in DIRECTIONAL else ''
-        self.status.config(text='x %.2f  y %.2f  (col %d row %d)  z %s  %s%s'
-                           % (x, y, c, r, '%.3f' % z if np.isfinite(z) else '-', LABELS[lab], d))
+        src = ''
+        if m.auto_terrain is not None:
+            src = '  [manual, auto %s]' % LABELS[int(m.auto_terrain[r, c])] if (
+                m.manual is not None and m.manual[r, c]) else '  [auto]'
+        self.status.config(text='x %.2f  y %.2f  (col %d row %d)  z %s  %s%s%s'
+                           % (x, y, c, r, '%.3f' % z if np.isfinite(z) else '-', LABELS[lab], d, src))
 
 
 def main(argv=None):

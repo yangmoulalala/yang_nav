@@ -10,12 +10,14 @@ install(PROGRAMS
           scripts/terrain_label_editor.py
           scripts/terrain_export.py
           scripts/terrain_auto_direction.py
+          scripts/mesh_to_terrain.py
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_terrain_label test/test_terrain_label.py)
   ament_add_pytest_test(test_auto_direction test/test_auto_direction.py)
+  ament_add_pytest_test(test_mesh_to_terrain test/test_mesh_to_terrain.py)
 endif()
 
 ament_package()

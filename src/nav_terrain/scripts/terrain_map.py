@@ -200,6 +200,33 @@ class TerrainMap:
     origin: tuple = (0.0, 0.0)
     elevation: Optional[np.ndarray] = None   # float32 [H, W], NaN = unknown
     extra: dict = field(default_factory=dict)
+    # automatic layer (mesh_to_terrain) + mask of hand-edited cells; terrain/direction = merged result
+    auto_terrain: Optional[np.ndarray] = None
+    auto_direction: Optional[np.ndarray] = None
+    manual: Optional[np.ndarray] = None      # bool [H, W]
+
+    def ensure_manual(self):
+        if self.manual is None:
+            self.manual = np.zeros(self.terrain.shape, bool)
+        return self.manual
+
+    def merge_auto(self, auto_terrain, auto_direction):
+        """Install a new automatic layer; hand-edited cells keep their label and direction."""
+        man = self.ensure_manual()
+        self.auto_terrain = np.asarray(auto_terrain, np.uint8).copy()
+        self.auto_direction = np.asarray(auto_direction, np.uint8).copy()
+        self.terrain = np.where(man, self.terrain, self.auto_terrain).astype(np.uint8)
+        self.direction = np.where(man, self.direction, self.auto_direction).astype(np.uint8)
+
+    def revert_to_auto(self, mask):
+        """Drop hand edits inside mask (no-op without an automatic layer)."""
+        if self.auto_terrain is None:
+            return 0
+        mask = mask & self.ensure_manual()
+        self.terrain[mask] = self.auto_terrain[mask]
+        self.direction[mask] = self.auto_direction[mask]
+        self.manual[mask] = False
+        return int(mask.sum())
 
     @property
     def height(self):
@@ -231,8 +258,10 @@ class TerrainMap:
         if bad.any():
             r, c = np.argwhere(bad)[0]
             raise ValueError('invalid terrain label %d at row %d col %d' % (self.terrain[r, c], r, c))
-        if self.elevation is not None and self.elevation.shape != self.terrain.shape:
-            raise ValueError('elevation shape mismatch')
+        for name in ('elevation', 'auto_terrain', 'auto_direction', 'manual'):
+            g = getattr(self, name)
+            if g is not None and g.shape != self.terrain.shape:
+                raise ValueError('%s shape mismatch' % name)
 
     def to_dict(self):
         self.validate()
@@ -245,6 +274,11 @@ class TerrainMap:
         })
         if self.elevation is not None:
             d['elevation'] = np.ascontiguousarray(self.elevation, '<f4').tobytes()
+        if self.auto_terrain is not None:
+            d['auto_terrain'] = np.ascontiguousarray(self.auto_terrain, np.uint8).tobytes()
+            d['auto_direction'] = np.ascontiguousarray(self.auto_direction, np.uint8).tobytes()
+        if self.manual is not None:
+            d['manual'] = np.ascontiguousarray(self.manual, np.uint8).tobytes()
         return d
 
     @classmethod
@@ -263,11 +297,16 @@ class TerrainMap:
                 raise ValueError('%s size mismatch: expected %d, got %d' % (key, n, a.size))
             return a.reshape(h, w).copy()
 
-        known = {'width', 'height', 'resolution', 'origin_x', 'origin_y', 'terrain', 'direction', 'elevation'}
+        known = {'width', 'height', 'resolution', 'origin_x', 'origin_y', 'terrain', 'direction', 'elevation',
+                 'auto_terrain', 'auto_direction', 'manual'}
+        has_auto = 'auto_terrain' in d and 'auto_direction' in d
         m = cls(grid('terrain', np.uint8), grid('direction', np.uint8), float(d.get('resolution', 0.05)),
                 (float(d.get('origin_x', 0.0)), float(d.get('origin_y', 0.0))),
                 grid('elevation', '<f4').astype(np.float32) if 'elevation' in d else None,
-                {k: v for k, v in d.items() if k not in known})
+                {k: v for k, v in d.items() if k not in known},
+                grid('auto_terrain', np.uint8) if has_auto else None,
+                grid('auto_direction', np.uint8) if has_auto else None,
+                grid('manual', np.uint8).astype(bool) if 'manual' in d else None)
         m.validate()
         return m
 
