@@ -178,6 +178,34 @@ def surfaces(cells, zs, ups, ncell, layers, eps=0.005):
     return Z, C, top
 
 
+def lip_relief(Z, C, nx, ny, res, radius=0.10, same=0.02, cap=0.01):
+    """Clearance as seen by the chassis on a thin raised lip (seam plate, entry strip).
+
+    The body rides on the wheels spread over the footprint, so a few-mm strip one or two cells
+    wide does not lift it by its full height.  Clearance is measured from min(Z, local mean of the
+    same surface) instead of Z, relief capped at `cap`; it never lowers clearance.  In the RMUC
+    tunnels a 5.6 mm strip left 0.2456 m (< 0.248) and cut b1/b2/c1/c2 in half.
+    """
+    r = max(1, int(round(radius / res)))
+    out = C.copy()
+    for k in range(Z.shape[0]):
+        z = Z[k].reshape(nx, ny)
+        zp = np.pad(z, r, constant_values=np.nan)
+        s = np.zeros((nx, ny)); n = np.zeros((nx, ny))
+        for dx in range(-r, r + 1):
+            for dy in range(-r, r + 1):
+                if dx * dx + dy * dy > r * r:
+                    continue
+                zn = zp[r + dx:r + dx + nx, r + dy:r + dy + ny]
+                with np.errstate(invalid='ignore'):
+                    use = np.isfinite(zn) & (np.abs(zn - z) <= same)
+                s += np.where(use, zn, 0.0); n += use
+        with np.errstate(invalid='ignore', divide='ignore'):
+            relief = np.clip(z - s / n, 0.0, cap)
+        out[k] = C[k] + np.nan_to_num(relief).reshape(-1)
+    return out
+
+
 def reachable(Z, C, nx, ny, min_clear, max_step, seeds):
     """Surfaces connected to the seed cells (ix, iy, z) through clearance- and step-feasible neighbours."""
     L = Z.shape[0]
@@ -289,6 +317,7 @@ def build_auto(tri_m, x0, y0, res, nx, ny, seeds_map, cfg, log=print):
     """Map-frame triangles -> dict of [ny, nx] grids: terrain, direction, elevation, ground, clearance."""
     cells, zs, ups = raycast(tri_m, x0, y0, res, nx, ny)
     Z, C, top = surfaces(cells, zs, ups, nx * ny, layers=4)
+    C = lip_relief(Z, C, nx, ny, res)
     min_clear = cfg.robot_height + cfg.clearance_margin
     seeds = [(int(math.floor((x - x0) / res)), int(math.floor((y - y0) / res)), z) for x, y, z in seeds_map]
     reach = reachable(Z, C, nx, ny, min_clear, cfg.max_step, seeds)
