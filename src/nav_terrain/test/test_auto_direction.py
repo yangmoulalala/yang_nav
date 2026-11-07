@@ -35,7 +35,8 @@ def test_square_tunnel_axis_from_walls():
     m.elevation[32:48, 25:31] = 0.5
     m.elevation[32:48, 49:55] = 0.5
     ad.solve(m)
-    assert m.direction[40, 40] == encode_angle(math.pi / 2)   # passage along y
+    # passage along y; tunnels are bidirectional, stored in [-90, 90) -> -90 deg
+    assert m.direction[40, 40] == encode_angle(-math.pi / 2)
 
 
 def test_tunnel_angle_in_half_plane():
