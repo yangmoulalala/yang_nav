@@ -185,9 +185,6 @@ private:
                                             LocalizationTransition& transition);
     /// 累计恢复候选；连续给出一致 map←odom 变换达到配置次数后返回 true。
     bool recoveryConfirmedLocked(const RecoveryWork& work, const RecoveryResult& result);
-    /// SUSPECT 恢复解须与进入 SUSPECT 时的可信 map←odom 加当前里程计预测一致（排除对称/远处误解）。
-    bool recoveryConsistentWithOdometryLocked(const RecoveryWork& work,
-                                              const RecoveryResult& result);
     /// 将通过联合创新检验的回环写入图及可视化历史。
     LoopCommitSummary commit(const LoopWork& work, const LoopVerificationBatch& result);
 
@@ -198,7 +195,7 @@ private:
     static bool tryStartCycle(const Timestamp& now, const double target_period_sec,
                               Timestamp& last_cycle_time);
 
-    /// 建立 SUSPECT 恢复源边界及里程计连续性门锚。
+    /// 建立 SUSPECT 恢复源边界。
     void beginSuspectRecoveryLocked();
 
     /// 收集尚未消费且可线性化的全局观测及不可用原因。
@@ -323,17 +320,6 @@ private:
         Eigen::Matrix4d first_odom_pose = Eigen::Matrix4d::Identity();
     };
     std::optional<PendingRecovery> pending_recovery_;
-    /// 进入 SUSPECT 时的可信 map←odom 及里程计位姿；同一前端代次内用于里程计连续性门。
-    struct OdomGateAnchor {
-        Eigen::Matrix4d T_map_odom = Eigen::Matrix4d::Identity();
-        Eigen::Matrix4d odom_pose = Eigen::Matrix4d::Identity();
-        std::uint64_t epoch = 0;
-        int rejections = 0;
-    };
-    std::optional<OdomGateAnchor> odom_gate_anchor_;
-    /// 最近一次恢复（含初始化）提交的前端代次与源帧时刻。
-    std::uint64_t odom_gate_trusted_epoch_ = 0;
-    double odom_gate_trusted_since_ = std::numeric_limits<double>::quiet_NaN();
     int last_lidar_observation_runtime_index_ = -1;
     Timestamp last_global_observation_cycle_time_;
     Timestamp last_recovery_cycle_time_;

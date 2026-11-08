@@ -223,7 +223,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <rect class="box" x="800" y="150" width="180" height="50" rx="8"/><text class="tm" x="890" y="179" text-anchor="middle">/localization/odometry</text>
     <rect class="box" x="800" y="248" width="180" height="56" rx="8"/><text class="tm" x="890" y="271" text-anchor="middle">localization_state</text><text class="ts" x="890" y="290" text-anchor="middle">含 pose_trusted</text>
   </svg></div>
-  <figcaption><code>ingestFrame()</code> 还会做几件小事：新代次首帧套用重置后的位姿种子；没有先验地图也没有 UWB 时，第一帧就把 INITIALIZING 转为 NORMAL（map = 里程计起点）；<b>有先验地图或 UWB 时</b>才检查速度异常（&gt;10 m/s 或 &gt;30 rad/s 进 SUSPECT）；位姿可信且到间隔时加关键帧。后端用 3 线程执行器，高频输出和维护周期各在独立回调组。</figcaption>
+  <figcaption><code>ingestFrame()</code> 还会做几件小事：新代次首帧套用重置后的位姿种子；没有先验地图时，第一帧就把 INITIALIZING 转为 NORMAL（map = 里程计起点）；<b>有先验地图时</b>才检查速度异常（&gt;10 m/s 或 &gt;30 rad/s 进 SUSPECT）；位姿可信且到间隔时加关键帧。后端用 3 线程执行器，高频输出和维护周期各在独立回调组。</figcaption>
   </figure>
 
   <h3>维护周期 <code>runMaintenanceCycle()</code></h3>
@@ -242,12 +242,12 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <path class="ln ln-ok" d="M140 285 V310 H310 V200 H328" marker-end="url(#ah-ok)"/><path class="ln ln-be" d="M310 290 H328" marker-end="url(#ah-be)"/><text class="ts tok" x="148" y="303">否</text>
     <rect class="box wr" x="330" y="20" width="650" height="125" rx="10"/>
     <text class="tb" x="350" y="44">重定位 recovery</text><text class="ts" x="490" y="44">至少隔 0.2 s · 只在有先验地图时运行</text>
-    <text x="350" y="68">候选：startup_hint → UWB → Scan Context（SUSPECT 30 m；INIT/LOST 35 m + 全局补充）</text>
+    <text x="350" y="68">候选：startup_hint → Scan Context（都只在 2 m 内，不做全局重定位）</text>
     <text x="350" y="90">每个候选先用描述子航向，不过再每 60° 扫一圈 → 并行点到面验证 → 歧义检验</text>
     <text x="350" y="112">连续 2 次一致 + 运动 ≥0.3 m / ≥30°（或一致 15 次）→ 回 NORMAL，进入 5 次观测试用期</text>
     <text class="twr" x="350" y="134">源点云帧数不够不算失败；SUSPECT 连续失败 3 次 → LOST，LOST 下每次失败都请求前端重置</text>
     <rect class="box ok" x="330" y="155" width="650" height="90" rx="10"/>
-    <text class="tb" x="350" y="179">跟踪 tracking</text><text class="ts" x="470" y="179">每个新关键帧最多一次，两次至少隔 0.5 s · 有先验地图或 UWB</text>
+    <text class="tb" x="350" y="179">跟踪 tracking</text><text class="ts" x="470" y="179">每个新关键帧最多一次，两次至少隔 0.5 s · 有先验地图</text>
     <text x="350" y="203">最近 ≤5 帧点云 → 最近先验关键帧子图（7 m 内，0.5 m 滞回）做 scan-to-map</text>
     <text x="350" y="225">无效 → 立即 SUSPECT ｜ 冲突 → 计数（7 次或严重 2 次 → SUSPECT）｜ 通过 → 先验因子进图</text>
     <rect class="box be" x="330" y="260" width="650" height="60" rx="10"/>
@@ -269,7 +269,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
 <section id="states">
   <div class="sec-head"><span class="num">04</span><h2>定位状态机</h2></div>
   <figure><div class="scroll">
-  <svg viewBox="0 0 1000 400" role="img" aria-label="五个状态及转移：INITIALIZING 到 NORMAL；NORMAL 与 OBS_DEGRADED 互转；配准无效、速度异常、UWB 不一致、冲突累计进 SUSPECT；SUSPECT 失败三次进 LOST；重定位成功回 NORMAL。">
+  <svg viewBox="0 0 1000 400" role="img" aria-label="五个状态及转移：INITIALIZING 到 NORMAL；NORMAL 与 OBS_DEGRADED 互转；配准无效、速度异常、冲突累计进 SUSPECT；SUSPECT 失败三次进 LOST；重定位成功回 NORMAL。">
     <rect class="box ok" x="560" y="12" width="14" height="14" rx="3"/><text class="ts" x="580" y="24">可信 pose_trusted=true</text>
     <rect class="box wr" x="760" y="12" width="14" height="14" rx="3"/><text class="ts" x="780" y="24">不可信，输出冻结</text>
     <rect class="box sen" x="30" y="55" width="160" height="50" rx="25"/><text class="tm tb" x="110" y="85" text-anchor="middle">INITIALIZING</text>
@@ -281,15 +281,15 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <path class="ln" d="M470 72 H668" marker-end="url(#ah)"/><text class="ts" x="569" y="64" text-anchor="middle">单次观测冲突</text>
     <path class="ln ln-ok" d="M670 90 H472" marker-end="url(#ah-ok)"/><text class="ts" x="571" y="107" text-anchor="middle">观测被接受</text>
     <path class="ln ln-wr" d="M415 105 V233" marker-end="url(#ah-wr)"/>
-    <text class="ts twr" x="407" y="160" text-anchor="end">配准无效</text><text class="ts twr" x="407" y="176" text-anchor="end">速度异常</text><text class="ts twr" x="407" y="192" text-anchor="end">UWB 位置连续不一致</text>
+    <text class="ts twr" x="407" y="160" text-anchor="end">配准无效</text><text class="ts twr" x="407" y="176" text-anchor="end">速度异常</text>
     <path class="ln ln-ok" d="M455 233 V107" marker-end="url(#ah-ok)"/><text class="ts tok" x="463" y="180">局部重定位成功</text>
     <path class="ln ln-wr" d="M765 105 V260 H562" marker-end="url(#ah-wr)"/><text class="ts twr" x="773" y="170">连续冲突 ≥7</text><text class="ts twr" x="773" y="186">或严重冲突 ×2</text><text class="ts twr" x="773" y="202">或试用期内严重冲突 ×1</text>
     <path class="ln ln-wr" d="M400 260 H262" marker-end="url(#ah-wr)"/><text class="ts twr" x="331" y="252" text-anchor="middle">连续失败 ≥3</text>
-    <path class="ln ln-ok" d="M180 235 V160 H360 V107" marker-end="url(#ah-ok)"/><text class="ts tok" x="270" y="152" text-anchor="middle">全局重定位成功</text>
+    <path class="ln ln-ok" d="M180 235 V160 H360 V107" marker-end="url(#ah-ok)"/><text class="ts tok" x="270" y="152" text-anchor="middle">重定位成功</text>
     <rect class="box" x="40" y="322" width="280" height="52" rx="8"/>
     <text class="ts" x="180" y="343" text-anchor="middle">前端输入中断 / 前端失败</text><text class="ts" x="180" y="361" text-anchor="middle">估计器失败 / 手动重置：任意状态→LOST</text>
     <path class="ln ln-wr" d="M180 322 V287" marker-end="url(#ah-wr)"/>
-    <text class="ts" x="360" y="343">建图模式（无先验地图、无 UWB）没有全局重定位：前端输入中断后会一直保持 LOST。</text>
+    <text class="ts" x="360" y="343">建图模式（无先验地图）没有重定位：前端输入中断后会一直保持 LOST。</text>
     <text class="ts" x="360" y="361">手动 /localization_reset（需停车）能衔接位姿，重置后经 INITIALIZING 回到 NORMAL。</text>
   </svg></div>
   <figcaption>“配准无效”（不收敛、不能构造似然，或残差超出局部模型）一次就进 SUSPECT；“观测冲突”（能构造但和预测不符）要累计。进 SUSPECT 的事件只在可信状态下生效；SUSPECT/LOST 时常规观测不运行，只有重定位能回到 NORMAL。代码在 <code>backend/src/localization_state.cpp</code>。</figcaption>
@@ -315,7 +315,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <path class="ln ln-be" d="M665 182 L700 110" marker-end="url(#ah-be)"/><text class="tm ts" x="692" y="150">请求</text>
     <path class="ln ln-fe" d="M790 108 L860 180" marker-end="url(#ah-fe)"/><text class="tm ts" x="836" y="146">回复</text>
   </svg></div>
-  <figcaption>输入中断这条路径里，后端先断开了里程计连续性，所以即使前端做暖重置、返回新旧里程计系的变换 <code>old_from_new</code>，它也只用来给重定位提供预测位姿，状态不会自己回到 NORMAL：有先验地图时保持 LOST 等全局重定位，建图模式下一直 LOST。手动 <code>/localization_reset</code> 不断开连续性，可以衔接。另外两种情况不走这条路：还没输出过后验时，前端本地清空、同代次重新初始化；<code>coordinated_reset=false</code> 时前端自己换代。</figcaption>
+  <figcaption>输入中断这条路径里，后端先断开了里程计连续性，所以即使前端做暖重置、返回新旧里程计系的变换 <code>old_from_new</code>，它也只用来给重定位提供预测位姿，状态不会自己回到 NORMAL：有先验地图时保持 LOST 等重定位，建图模式下一直 LOST。手动 <code>/localization_reset</code> 不断开连续性，可以衔接。另外两种情况不走这条路：还没输出过后验时，前端本地清空、同代次重新初始化；<code>coordinated_reset=false</code> 时前端自己换代。</figcaption>
   </figure>
 </section>
 

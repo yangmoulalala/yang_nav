@@ -4,8 +4,8 @@
 #   tools/sim_tests/zt_run.sh localization OUT_DIR MAP_DIR [laps] [driver_mode] [flags]
 #     driver_mode overrides mapping/localize (e.g. spin); flags: comma-separated
 #     spin / initspin / earlyspin / spawnspin / kidnapspin (see zt_driver.py); flags require driver_mode
-#   env: LIDAR=single|dual  ARENA=rmul|rmuc  TEAM=red|blue  UWB=true|false  CALIB=1
-#        SIM_UWB=true|false（仿真是否启动 uwb_sim；UWB 只控制后端是否融合）
+#   env: LIDAR=single|dual  ARENA=rmul|rmuc  TEAM=red|blue  CALIB=1
+#        SIM_UWB=true|false（仿真是否启动 uwb_sim；定位不读 UWB，只给 zt_eval.py 统计）
 # 仿真与 bringup 在同一进程组中启动，驱动脚本结束后只停止该进程组。
 HERE=$(cd "$(dirname "$0")" && pwd)
 MODE=$1; OUT=$2; MAP=$3; LAPS=${4:-2}
@@ -16,10 +16,9 @@ export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 # LIDAR=single|dual（默认 dual）；CALIB=1 时同时启动双雷达标定，结果写 $OUT/extrinsic.yaml
-# ARENA=rmul|rmuc（默认 rmul）；UWB=true 时后端融合裁判系统 UWB（/uwb_pose，只有 RMUC 的 uwb_sim 发布）
+# ARENA=rmul|rmuc（默认 rmul）
 LIDAR=${LIDAR:-dual}
 export ARENA=${ARENA:-rmul}
-UWB=${UWB:-false}
 # TEAM=red|blue（默认空 = 场地原出生点：RMUL 红方、RMUC 蓝方）：仿真出生在该方半场，uwb_sim 发布到 /uwb_pose/team
 export TEAM=${TEAM:-}
 CALIB_CMD=""

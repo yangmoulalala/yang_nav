@@ -102,7 +102,8 @@ std::optional<RecoveryWork> Localization::captureRecovery() {
     work.identity.epoch = active_epoch_;
     work.predicted_map_pose = poses_.transform() * frames_.latest().odom_pose;
     if (current == LocalizationStatus::Suspect && poses_.trusted().hasPose()) {
-        // SUSPECT 只在最后可信位置附近召回；LOST 保持宽域或全局搜索。
+        // SUSPECT 在最后可信位置附近召回；LOST/初始化在里程计推算位置附近召回（lost_search_radius），
+        // global_fallback_candidates>0 时才补全局候选。
         work.predicted_map_pose = poses_.trusted().mapSensorPose();
     }
     work.startup_hint_prior = makeStartupHintPriorLocked(frames_.latest());
@@ -124,9 +125,6 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
     // 恢复观测属于捕获帧，同状态代内的新帧继续使用校正后的全局规范。
     poses_.setTransform(result.pose * work.frame.odom_pose.inverse());
     anchorRecoveredFrameLocked(work.frame, result.pose, result.covariance, work.source_history);
-    odom_gate_anchor_.reset();
-    odom_gate_trusted_epoch_ = work.frame.epoch;
-    odom_gate_trusted_since_ = work.frame.timestamp;
     last_tracking_reference_index_ = -1;
     last_lidar_observation_runtime_index_ = trajectory_.latest().index;
     last_global_observation_cycle_time_ = Timestamp();
@@ -210,49 +208,6 @@ bool Localization::recoveryConfirmedLocked(const RecoveryWork& work,
     return false;
 }
 
-/// 里程计连续性门：同一前端代次内，里程计是连续的，进入 SUSPECT 时的 map←odom 乘当前里程计即为预测位姿。
-/// 里程计只走了很短距离而恢复解离预测很远（中心对称场地的对称位姿、远处相似场景）时拒绝，
-/// 不计为恢复失败。连续拒绝达到上限后门失效：里程计本身可能已失真（碰撞、被搬动）。
-bool Localization::recoveryConsistentWithOdometryLocked(const RecoveryWork& work,
-                                                       const RecoveryResult& result) {
-    const auto& rc = config_.recovery;
-    if (rc.odom_gate_translation <= 0.0 && rc.odom_gate_rotation_rad <= 0.0)
-        return true;
-    if (!odom_gate_anchor_ || odom_gate_anchor_->epoch != work.frame.epoch ||
-        (work.identity.status != LocalizationStatus::Suspect &&
-         work.identity.status != LocalizationStatus::Lost))
-        return true;
-    OdomGateAnchor& anchor = *odom_gate_anchor_;
-    if (rc.odom_gate_max_rejections > 0 && anchor.rejections >= rc.odom_gate_max_rejections)
-        return true;
-
-    const Eigen::Matrix4d travel = anchor.odom_pose.inverse() * work.frame.odom_pose;
-    const double travel_t = travel.block<3, 1>(0, 3).norm();
-    const Eigen::Matrix4d predicted = anchor.T_map_odom * work.frame.odom_pose;
-    const Eigen::Matrix4d delta = predicted.inverse() * result.pose;
-    if (!delta.allFinite())
-        return true;
-    const double offset_t = delta.block<2, 1>(0, 3).norm();
-    const double offset_r = rotationAngleFromMatrix(delta);
-    const double limit_t = rc.odom_gate_translation + rc.odom_gate_translation_ratio * travel_t;
-    const bool ok_t = rc.odom_gate_translation <= 0.0 || offset_t <= limit_t;
-    const bool ok_r = rc.odom_gate_rotation_rad <= 0.0 || offset_r <= rc.odom_gate_rotation_rad;
-    if (ok_t && ok_r)
-        return true;
-    ++anchor.rejections;
-    BACKEND_WARN_STREAM("recovery candidate rejected: inconsistent with odometry since SUSPECT "
-                        << "(offset=" << offset_t << "m/" << offset_r * 180.0 / M_PI
-                        << "deg, limit=" << limit_t << "m/" << rc.odom_gate_rotation_rad * 180.0 / M_PI
-                        << "deg, odom travel=" << travel_t << "m, via " << result.source
-                        << ", rejection " << anchor.rejections << "/" << rc.odom_gate_max_rejections
-                        << (rc.odom_gate_max_rejections > 0 &&
-                                    anchor.rejections >= rc.odom_gate_max_rejections
-                                ? "; odometry gate released"
-                                : "")
-                        << ")");
-    return false;
-}
-
 /// 校验恢复任务身份并提交完整位姿锚或累计恢复失败。
 void Localization::commit(const RecoveryWork& work, const RecoveryResult& result) {
     if (result.outcome == RecoveryOutcome::Deferred)
@@ -271,11 +226,6 @@ void Localization::commit(const RecoveryWork& work, const RecoveryResult& result
                 return false;
             }
             if (matched) {
-                // 里程计很短却跳得很远的解（对称位姿）不参与确认，也不计为失败。
-                if (!recoveryConsistentWithOdometryLocked(work, result)) {
-                    pending_recovery_.reset();
-                    return false;
-                }
                 // 未获连续确认的候选只记录，不改变状态与输出。
                 if (!recoveryConfirmedLocked(work, result))
                     return false;

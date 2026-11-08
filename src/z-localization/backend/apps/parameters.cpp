@@ -195,15 +195,6 @@ void ParameterReader::loadRecovery() {
     parameters_.runtime.recovery.confirm_min_rotation_rad =
         degreesToRadians(param<double>("recovery/confirm_min_rotation_deg"));
     getParam("recovery/confirm_stationary_max", parameters_.runtime.recovery.confirm_stationary_max);
-    getParam("recovery/odom_gate_translation", parameters_.runtime.recovery.odom_gate_translation);
-    getParam("recovery/odom_gate_translation_ratio",
-             parameters_.runtime.recovery.odom_gate_translation_ratio);
-    parameters_.runtime.recovery.odom_gate_rotation_rad =
-        degreesToRadians(param<double>("recovery/odom_gate_rotation_deg"));
-    getParam("recovery/odom_gate_max_rejections",
-             parameters_.runtime.recovery.odom_gate_max_rejections);
-    getParam("recovery/odom_gate_min_trusted_seconds",
-             parameters_.runtime.recovery.odom_gate_min_trusted_seconds);
     getParam("recovery/probation_observations",
              parameters_.runtime.recovery.probation_observations);
     getParam("recovery/ambiguity_rmse_ratio",

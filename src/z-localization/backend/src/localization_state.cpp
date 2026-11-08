@@ -39,7 +39,7 @@ bool LocalizationStateMachine::tfFrozen(const LocalizationStatus status) {
     return status == LocalizationStatus::Suspect || status == LocalizationStatus::Lost;
 }
 
-/// 判断当前状态是否应执行全局恢复流程。
+/// 判断当前状态是否应执行恢复（重定位）流程。
 bool LocalizationStateMachine::recoveryPath(const LocalizationStatus status) {
     return status == LocalizationStatus::Initializing || status == LocalizationStatus::Suspect ||
            status == LocalizationStatus::Lost;

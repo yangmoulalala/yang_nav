@@ -53,7 +53,7 @@ public:
     static bool poseTrusted(LocalizationStatus status);
     /// 判断当前状态是否应冻结最后可信的全局位姿。
     static bool tfFrozen(LocalizationStatus status);
-    /// 判断当前状态是否应执行全局恢复流程。
+    /// 判断当前状态是否应执行恢复（重定位）流程。
     static bool recoveryPath(LocalizationStatus status);
 
     /// 捕获状态、原因、工作代次及累计估计器故障诊断。

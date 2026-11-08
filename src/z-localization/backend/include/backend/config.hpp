@@ -188,6 +188,7 @@ struct RecoveryConfig {
     double suspect_search_radius = 8.0;
     /// LOST 及初始化阶段的描述子搜索半径，m；0 不限。
     double lost_search_radius = 30.0;
+    /// 局部检索失败后补充的全局描述子候选数（仅 LOST/初始化）；0 不做全局重定位。
     int global_fallback_candidates = 8;
     int suspect_failures_before_lost = 3;
     bool automatic_when_lost = true;
@@ -204,18 +205,6 @@ struct RecoveryConfig {
     double confirm_min_rotation_rad = 0.0;
     /// 运动门开启时，静止状态下连续一致候选达到该次数也提交（避免停车时永不恢复）；0 表示必须移动。
     int confirm_stationary_max = 0;
-    /// 里程计连续性门：SUSPECT 恢复解与"进入 SUSPECT 时的 map←odom × 当前里程计"预测的允许平移基数，m；
-    /// 与旋转门两项都为 0 时关闭。里程计只走了很短距离而恢复解跳得很远（如对称位姿），说明解是错的。
-    double odom_gate_translation = 0.0;
-    /// 允许平移随进入 SUSPECT 以来里程计位移增长的比例（漂移余量），无量纲。
-    double odom_gate_translation_ratio = 0.1;
-    /// 恢复解与里程计预测允许的旋转差，rad。
-    double odom_gate_rotation_rad = 0.0;
-    /// 同一 SUSPECT 段内连续性门最多拒绝的候选数，达到后门失效（里程计本身可能已失真，如被撞/瞬移）；0 不失效。
-    int odom_gate_max_rejections = 25;
-    /// 上次恢复（含初始化）后至少可信运行该时长，进入 SUSPECT 时才以当时规范为门锚，s；
-    /// 刚恢复就冲突说明该解本身可疑，此时不设门。
-    double odom_gate_min_trusted_seconds = 10.0;
     /// 恢复提交后的试用期（全局观测周期数）；期间一次严重冲突即进入 SUSPECT，0 关闭。
     int probation_observations = 5;
     SourceAccumulationConfig source;

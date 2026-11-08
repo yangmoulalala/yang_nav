@@ -231,17 +231,6 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
     c.recovery.confirm_min_rotation_rad = std::max(
         0.0, finiteOr(c.recovery.confirm_min_rotation_rad, d.recovery.confirm_min_rotation_rad));
     c.recovery.confirm_stationary_max = std::max(0, c.recovery.confirm_stationary_max);
-    c.recovery.odom_gate_translation = std::max(
-        0.0, finiteOr(c.recovery.odom_gate_translation, d.recovery.odom_gate_translation));
-    c.recovery.odom_gate_translation_ratio =
-        std::max(0.0, finiteOr(c.recovery.odom_gate_translation_ratio,
-                               d.recovery.odom_gate_translation_ratio));
-    c.recovery.odom_gate_rotation_rad = std::max(
-        0.0, finiteOr(c.recovery.odom_gate_rotation_rad, d.recovery.odom_gate_rotation_rad));
-    c.recovery.odom_gate_max_rejections = std::max(0, c.recovery.odom_gate_max_rejections);
-    c.recovery.odom_gate_min_trusted_seconds =
-        std::max(0.0, finiteOr(c.recovery.odom_gate_min_trusted_seconds,
-                               d.recovery.odom_gate_min_trusted_seconds));
 }
 
 /// 规范化回环检索、验证门限及一致性历史预算。

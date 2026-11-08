@@ -6,7 +6,7 @@
 - 全部参数（含离线工具）见 `src/z-localization/backend/docs/parameters.md`。
 - 仿真回归测试见 `tools/sim_tests/README.md`。
 
-内容对应 `main`（已包含单雷达支持与绑架恢复修复：严重冲突、恢复试用期、歧义检验和恢复运动门）。
+内容对应 `main`（已包含单雷达支持与绑架恢复修复：严重冲突、恢复试用期、歧义检验和恢复运动门）。2026-11-08 起（`feat/loc-cad-map` 分支）：定位不再使用 UWB；重定位只在最后可信位置或起点附近 2 m 内搜索，不做全局重定位（第 4.2 节）。
 
 ---
 
@@ -104,7 +104,7 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 | `NORMAL` | 正常 | true | 正常发布 |
 | `OBS_DEGRADED` | 全局观测与预测冲突，但未达阈值 | true | 继续用里程计外推输出 |
 | `SUSPECT` | 怀疑出错，正在局部重定位 | false | 冻结在最后可信位姿；`/localization/odometry` 速度清零、协方差放大 |
-| `LOST` | 丢失，等待全局重定位 | false | 同上 |
+| `LOST` | 丢失，等待重定位（里程计推算位置附近 2 m） | false | 同上 |
 
 **导航必须订阅 `localization_state`，`pose_trusted=false` 时停车或降级。** 冻结期间车如果还在动，输出位姿与真实位姿的误差会随时间增大（实测原地 0.6 rad/s 自转时每 0.2 s 增加约 8°）。
 
@@ -130,7 +130,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
    ③ OBS_DEGRADED 冲突达阈值                   │             │
                                                │ 连续失败 ≥ 3│
                                                ▼             │
-   估计器失败 / 前端输入中断 ───────────────▶ LOST ──────────┘ 全局重定位成功
+   估计器失败 / 前端输入中断 ───────────────▶ LOST ──────────┘ 重定位成功
 ```
 
 | 事件 | 条件 | 结果 |
@@ -163,13 +163,16 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.2 候选来源（责任链，按优先级）
 
-1. **启动提示** `startup_hint`（只在第 0 代初始化时，需 `enabled: true`）：在给定位姿附近验证。`force_until_matched: true` 时只用它，直到成功。
-3. **Scan Context 描述子**：
-   - `SUSPECT`：只在最后可信位置周围 `recovery.suspect_search_radius`（30 m）内找，不做全局补充；
-   - `INITIALIZING` / `LOST`：在预测位置周围 `lost_search_radius`（35 m）内找，失败再补 `global_fallback_candidates`（5）个全局候选；
+1. **启动提示** `startup_hint`（只在第 0 代初始化时，需 `enabled: true`）：在给定位姿附近验证。`force_until_matched: true` 时只用它，直到成功。搜索半径用 `recovery.suspect_search_radius`（2 m）。
+2. **Scan Context 描述子**：
+   - `SUSPECT`：只在最后可信位置周围 `recovery.suspect_search_radius`（2 m）内找；
+   - `INITIALIZING` / `LOST`：在里程计推算位置周围 `lost_search_radius`（2 m）内找。初始化且未配 `startup_hint` 时 `map ← odom` 为单位阵，推算位置就是地图原点（建图起点），所以开机位置必须在建图起点 2 m 内；
+   - `global_fallback_candidates: 0`：附近找不到也不补全局候选（不做全局重定位），继续等待；
    - 描述子距离上限：初始化 `initial_max_descriptor_distance`，恢复 `descriptor_distance_limit`（都是 0.8）。
 
-日志里 `recovered via Scan Context + scan-to-map` 表示第 3 条路径成功。
+日志里 `recovered via Scan Context + scan-to-map` 表示第 2 条路径成功；附近没有先验关键帧时日志为 `no prior KFs within radius`。
+
+**为什么只搜 2 m**：正常比赛中车不会被搬到很远；RMUC/RMUL 场地中心对称，全局搜索容易锁到对称位置。代价：开机位置离建图起点超过 2 m、或车真的被移动超过 2 m 时无法恢复；真车建议按出生点配置 `startup_hint`。
 
 ### 4.3 航向假设
 
@@ -208,14 +211,14 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 ### 4.7 失败与升级
 
 - `SUSPECT` 下没有任何候选通过（或源点云被连续性门拒绝）：失败计数 +1，达到 3 次进 `LOST`。结果有歧义时只推迟，候选通过但确认门还没满足时只记下候选，都不计失败。
-- 进入 `LOST` 时，后端会向前端发协调重置（`/zlio/reset_internal`）；之后 `LOST` 下每次全局重定位失败都会再请求一次，由挂起事务和 `reset.min_gap`（10 s）限流。
-- 重置完成后：有先验地图时状态保持 `LOST`，靠全局重定位恢复。没有先验地图时取决于里程计连续性标记（`odometry_connected_`）：前端输入中断走的 `notifyFrontendDiscontinuity` 会先把它清掉，所以无论前端做暖重置还是冷启动，后端都会 `forceLost`。手动 `/localization_reset` 不清这个标记：暖重置边界有效时用 `old_from_new` 衔接，否则按停车假设用最后可信位姿衔接，然后进 `INITIALIZING`，下一帧回到 `NORMAL`（`reset_coordinator.cpp`）。**所以建图模式（无先验地图）下前端一旦输入中断，后端会一直保持 LOST。**
+- 进入 `LOST` 时，后端会向前端发协调重置（`/zlio/reset_internal`）；之后 `LOST` 下每次重定位失败都会再请求一次，由挂起事务和 `reset.min_gap`（10 s）限流。
+- 重置完成后：有先验地图时状态保持 `LOST`，靠重定位恢复（里程计推算位置附近 2 m）。没有先验地图时取决于里程计连续性标记（`odometry_connected_`）：前端输入中断走的 `notifyFrontendDiscontinuity` 会先把它清掉，所以无论前端做暖重置还是冷启动，后端都会 `forceLost`。手动 `/localization_reset` 不清这个标记：暖重置边界有效时用 `old_from_new` 衔接，否则按停车假设用最后可信位姿衔接，然后进 `INITIALIZING`，下一帧回到 `NORMAL`（`reset_coordinator.cpp`）。**所以建图模式（无先验地图）下前端一旦输入中断，后端会一直保持 LOST。**
 
 ### 4.8 手动操作
 
 | 服务 | 作用 |
 | --- | --- |
-| `/backend_node/relocalize` | 只在 `LOST` 下有效：请求在下一有效帧做一次全局重定位 |
+| `/backend_node/relocalize` | 只在 `LOST` 下有效：请求在下一有效帧做一次重定位（同样只在推算位置附近搜索） |
 | `/localization_reset` | 前后端协调重置；**调用期间必须停车**（无法暖重置时后端假设车静止来衔接位姿） |
 
 ---
@@ -295,14 +298,14 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | 参数 | 默认 | 说明 |
 | --- | --- | --- |
 | `period` | 0.2 s | 尝试间隔 |
-| `suspect_search_radius` / `lost_search_radius` | 30 / 35 m | 候选搜索半径 |
-| `global_fallback_candidates` | 5 | LOST/初始化时的全局补充候选 |
+| `suspect_search_radius` / `lost_search_radius` | 2 / 2 m | 候选搜索半径（第 4.2 节） |
+| `global_fallback_candidates` | 0 | LOST/初始化时的全局补充候选；0 不做全局重定位 |
 | `descriptor_distance_limit` / `initial_max_descriptor_distance` | 0.8 | 描述子门限 |
 | `yaw_sweep_count` | 6 | 航向扫描档数 |
 | `max_candidates` / `parallel_candidates` | 15 / 16 | 每次验证数量 |
 | `target_keyframes` / `target_radius` | 11 / 8 m | 验证用子图 |
 | `suspect_failures_before_lost` | 3 | `SUSPECT` → `LOST` |
-| `automatic_when_lost` | true | LOST 时是否自动全局重定位 |
+| `automatic_when_lost` | true | LOST 时是否自动重定位 |
 | `confirmations` / `confirm_translation` / `confirm_rotation_deg` | 2 / 0.3 m / 5° | 连续确认（第 4.5 节） |
 | `confirm_min_translation` / `confirm_min_rotation_deg` / `confirm_stationary_max` | 0.3 m / 30° / 15 | 运动门与停车兜底（第 4.5 节） |
 | `probation_observations` | 5 | 恢复试用期（第 4.6 节） |
@@ -356,7 +359,7 @@ MID-360 侧倾安装、视场不对称。建图时车头朝向不变，地图里
 - 候选修法：把单次无效当作“本周期无观测”、连续 N 次才进 `SUSPECT`；或放宽/改写收敛判据。
 - 已试无效：限制累积窗口转角 `source.max_rotation_deg: 10`。
 
-### 7.3 绑架与场地 180° 中心对称（双雷达已缓解，单雷达未修）
+### 7.3 绑架与场地 180° 中心对称（2026-11-08 起改为局部搜索，见本节末）
 
 RMUL 场地红蓝两半绕中心旋转 180° 相同，另有局部几何相似的关键帧。仿真绑架（`set_pose` 瞬移）排查出三处根因：
 
@@ -375,6 +378,8 @@ RMUL 场地红蓝两半绕中心旋转 180° 相同，另有局部几何相似�
 试过但撤回：最佳候选补验航向翻转 180° 的解（单雷达略有改善，双雷达恢复后误差退回 4–7 m）；`confirmations` 改为 3（无改善）。
 
 待做：单雷达需要更强的区分手段，例如并行保留多个假设、随车移动淘汰，或把运动门转角提高到 ≥ 90°；单雷达配置可考虑 `confirm_stationary_max: 0`。也可以用 `startup_hint` 提供区分信息。
+
+**2026-11-08 更新**：上面是远距离绑架（5–7 m）加全局搜索时的数据。现在重定位只在 2 m 内搜索、不做全局重定位（第 4.2 节），对称位置（RMUC 相距约 19 m）不会成为候选；仿真绑架也改为离跑圈终点 1.5 m、航向 45°（`zt_driver.py`）。超过 2 m 的移动不再能恢复，按设计保持 `SUSPECT`/`LOST`。
 
 ### 7.4 其他注意事项
 

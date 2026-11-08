@@ -154,8 +154,6 @@ void Localization::initialize() {
         reset_coordinator_.clearRuntimeState();
         state_before_manual_reset_.reset();
         estimator_failed_ = false;
-        odom_gate_anchor_.reset();
-        odom_gate_trusted_since_ = std::numeric_limits<double>::quiet_NaN();
         frontend_status_ = FrontendStatus::Active;
         stationary_reset_ = false;
         odometry_connected_ = !config_.prior_map_enabled;
@@ -186,24 +184,12 @@ void Localization::initialize() {
     });
 }
 
-/// 建立 SUSPECT 恢复源边界及里程计连续性门锚。
+/// 建立 SUSPECT 恢复源边界。
 void Localization::beginSuspectRecoveryLocked() {
     frames_.beginRecovery();
     last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
     pending_recovery_.reset();
     last_recovery_cycle_time_ = Timestamp();
-    // 刚离开可信状态：当前 map←odom 仍是最后接受的全局规范，里程计在同一代次内连续。
-    // 只有该规范已稳定可信一段时间才作门锚；刚恢复就冲突时该解本身可疑（如初始化锁到对称位姿）。
-    odom_gate_anchor_.reset();
-    if (odometry_connected_ && frames_.hasLatest() && frames_.latest().epoch == active_epoch_) {
-        const double trusted_for = frames_.latest().timestamp - odom_gate_trusted_since_;
-        const bool settled = odom_gate_trusted_epoch_ != active_epoch_ ||
-                             !std::isfinite(odom_gate_trusted_since_) ||
-                             trusted_for >= config_.recovery.odom_gate_min_trusted_seconds;
-        if (settled)
-            odom_gate_anchor_ = OdomGateAnchor{poses_.transform(), frames_.latest().odom_pose,
-                                               active_epoch_, 0};
-    }
 }
 
 /// 为无先验地图的首个可信同步帧选择全局规范原因，并提交定位状态。

@@ -266,7 +266,7 @@ ros2 topic echo --once /livox/lidar --field header.frame_id
 | 服务 | 类型 | 用途 |
 | --- | --- | --- |
 | `/backend_node/save_map` | `std_srvs/Trigger` | 保存运行地图包到 `map_dir`（建图模式） |
-| `/backend_node/relocalize` | `std_srvs/Trigger` | `LOST` 时请求全局重定位 |
+| `/backend_node/relocalize` | `std_srvs/Trigger` | `LOST` 时请求重定位（只在推算位置附近搜索） |
 | `/localization_reset` | `std_srvs/Trigger` | 前后端协调重置；**调用期间必须停车** |
 | `/zlio/reset_internal` | `localization_interfaces/ResetFrontend` | 后端内部调用，不要手动调用 |
 | `/localization_start` | `std_srvs/SetBool` | 前端 `wait_for_start:=true` 时，`data: true` 开始接收数据 |

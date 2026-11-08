@@ -202,9 +202,9 @@
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `period` | 浮点，s | `0.2` | 两次重定位尝试的最小间隔；须 `≥0`，实际至少 `0.05 s`，且需要新同步帧 |
-| `suspect_search_radius` | 浮点，m | `30.0` | `SUSPECT` 时围绕最后可信位置搜索候选的半径；须 `≥0`，`0` 不限半径 |
-| `lost_search_radius` | 浮点，m | `35.0` | `LOST` 时围绕预测位置搜索候选的半径；须 `≥0`，`0` 不限半径 |
-| `global_fallback_candidates` | 整数，候选 | `5` | 局部搜索失败后补充的全局描述子候选数；须 `≥0`，`0` 关闭全局补充 |
+| `suspect_search_radius` | 浮点，m | `2.0` | `SUSPECT` 时围绕最后可信位置搜索候选的半径（启动提示也用此半径）；须 `≥0`，`0` 不限半径 |
+| `lost_search_radius` | 浮点，m | `2.0` | `LOST` 和初始化时围绕里程计推算位置（初始化时为地图原点或启动提示）搜索候选的半径；须 `≥0`，`0` 不限半径 |
+| `global_fallback_candidates` | 整数，候选 | `0` | 局部搜索失败后补充的全局描述子候选数；须 `≥0`，`0` 关闭全局补充 |
 | `suspect_failures_before_lost` | 整数，次 | `3` | `SUSPECT` 下连续重定位失败多少次后转为 `LOST`；须 `≥1` |
 | `automatic_when_lost` | 布尔 | `true` | 丢失后是否自动重定位；关闭则等待重定位服务请求 |
 | `confirmations` | 整数，次 | `2` | 提交恢复前要求连续多少次匹配给出一致的 map→odom 变换；`1` 首次匹配即提交，须 `≥1` |
@@ -213,11 +213,6 @@
 | `confirm_min_translation` | 浮点，m | `0.3` | 运动门：提交前自首个候选起车体至少平移的距离，与 `confirm_min_rotation_deg` 任一满足即可；两项均为 `0` 关闭运动门，须 `≥0` |
 | `confirm_min_rotation_deg` | 浮点，° | `30.0` | 运动门的最小转角；须 `≥0` |
 | `confirm_stationary_max` | 整数，次 | `15` | 运动门开启时，静止状态下一致候选达到该次数也提交；`0` 表示必须移动，须 `≥0` |
-| `odom_gate_translation` | 浮点，m | `1.5` | 里程计连续性门：SUSPECT/LOST 且前端代次未变时，恢复解与“进入 SUSPECT 时的 map→odom × 当前里程计”预测的水平偏差上限基数；超出则拒绝（不计失败），用于排除中心对称场地的对称位姿；与 `odom_gate_rotation_deg` 均为 `0` 关闭 |
-| `odom_gate_translation_ratio` | 浮点，无量纲 | `0.1` | 偏差上限随进入 SUSPECT 以来里程计位移增长的比例 |
-| `odom_gate_rotation_deg` | 浮点，° | `20.0` | 恢复解与里程计预测的旋转差上限；`0` 不检查 |
-| `odom_gate_max_rejections` | 整数，次 | `25` | 同一 SUSPECT 段内最多拒绝次数，达到后门失效（里程计可能已失真，如被撞、被搬动）；`0` 不失效 |
-| `odom_gate_min_trusted_seconds` | 浮点，s | `10.0` | 上次恢复（含初始化）后至少可信运行该时长，进入 SUSPECT 时才设门；刚恢复就冲突说明该解可疑，不设门 |
 | `probation_observations` | 整数，次 | `5` | 恢复提交后的试用期（全局观测次数），期间一次严重冲突即重新进入 `SUSPECT`；`0` 关闭 |
 | `ambiguity_rmse_ratio` | 浮点，无量纲 | `1.15` | 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复（不计失败）；`0` 关闭，初始化不检验 |
 | `ambiguity_translation` | 浮点，m | `1.0` | 歧义检验中判定两解不同的平移差 |

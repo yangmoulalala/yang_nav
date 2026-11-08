@@ -149,10 +149,10 @@ backend_node:
       # 直接进入 SUSPECT 的角速度阈值，单位为弧度每秒。
       suspicious_angular_speed: 30.0
     recovery:
-      # SUSPECT 围绕最后可信位置的候选搜索半径，单位为米。
-      suspect_search_radius: 30.0
-      # LOST 描述子候选的宽域搜索半径，单位为米；0 表示不限。
-      lost_search_radius: 35.0
+      # SUSPECT 只在最后可信位置附近搜索的半径，单位为米；不做全局重定位。
+      suspect_search_radius: 2.0
+      # LOST/初始化在里程计推算位置（初始化时为起点或启动提示）附近搜索的半径，单位为米；0 表示不限。
+      lost_search_radius: 2.0
       source:
         # 一次观测成立所需的最少因果点云帧数。
         min_frames: 2
@@ -180,11 +180,11 @@ backend_node:
       target_radius: 8.0
       # 恢复尝试的最小调度周期，单位为秒。
       period: 0.2
-      # 局部召回失败后额外尝试的全局候选数量。
-      global_fallback_candidates: 5
+      # 局部召回失败后额外尝试的全局候选数量；0 不做全局重定位。
+      global_fallback_candidates: 0
       # SUSPECT 升级到 LOST 所需的连续恢复失败次数。
       suspect_failures_before_lost: 3
-      # LOST 状态是否持续自动尝试全局恢复。
+      # LOST 状态是否持续自动尝试重定位（只在推算位置附近搜索）。
       automatic_when_lost: true
       # 提交恢复前要求连续给出一致位姿的次数；1 表示首次匹配即提交。
       confirmations: 2
@@ -199,17 +199,6 @@ backend_node:
       confirm_min_rotation_deg: 30.0
       # 运动门开启时，静止下连续一致候选达到该次数也提交，避免停车时永不恢复；0 表示必须移动。
       confirm_stationary_max: 15
-      # 里程计连续性门：SUSPECT/LOST（同一前端代次）恢复解与“进入 SUSPECT 时的 map←odom × 当前里程计”预测的允许平移基数，单位为米；
-      # 与 odom_gate_rotation_deg 都为 0 时关闭。里程计只走了很短距离却跳得很远的解（对称场地的对称位姿）被拒绝，不计失败。
-      odom_gate_translation: 1.5
-      # 允许平移随进入 SUSPECT 以来里程计位移增长的比例（漂移余量）。
-      odom_gate_translation_ratio: 0.1
-      # 恢复解与里程计预测允许的旋转差，单位为度；0 不检查旋转。
-      odom_gate_rotation_deg: 20.0
-      # 同一 SUSPECT 段内最多拒绝的候选数，达到后门失效（里程计可能已失真，如被撞、被搬动）；0 不失效。
-      odom_gate_max_rejections: 25
-      # 上次恢复（含初始化）后至少可信运行该时长，进入 SUSPECT 时才用当时规范当门锚，单位为秒；刚恢复就冲突说明该解可疑，不设门。
-      odom_gate_min_trusted_seconds: 10.0
       # 恢复提交后的试用期（全局观测次数）；期间一次严重冲突即重新进入 SUSPECT；0 关闭。
       probation_observations: 5
       # 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复；0 关闭；初始化不检验。
