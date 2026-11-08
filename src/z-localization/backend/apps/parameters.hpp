@@ -44,6 +44,10 @@ private:
     void loadTracking();
     /// 读取状态机恢复路径参数。
     void loadRecovery();
+    /// 读取局中恢复用的 UWB 参数及红/蓝方固定 T_map_uwb。
+    void loadUwb();
+    /// 读取一方的 uwb.zero_pose_<team>（x、y、yaw_deg）并构造 T_map_uwb。
+    Eigen::Matrix4d loadUwbZeroPose(const std::string& team);
     /// 读取回环与因子图参数。
     void loadLoopAndGraph();
     /// 读取图先验、过程噪声、鲁棒核及固定窗口参数。

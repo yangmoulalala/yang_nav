@@ -23,6 +23,7 @@
 #include <optional>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
 #include <utility>
@@ -111,6 +112,8 @@ private:
     /// 将高频里程计投影到当前不可变输出视图并复核发布身份。
     void highRateOdomCallback(const nav_msgs::msg::Odometry::ConstSharedPtr& odom,
                               std::uint64_t subscription_epoch);
+    /// 验收 UWB 消息坐标系与时间，交给核心保存供局中恢复使用。
+    void uwbCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& pose);
     /// 校验前端协方差并把同步里程计和点云转换为传感器局部帧。
     FrontendFrame makeFrontendFrame(const nav_msgs::msg::Odometry& odom,
                                     const sensor_msgs::msg::PointCloud2& cloud,
@@ -168,6 +171,8 @@ private:
     rclcpp::CallbackGroup::SharedPtr maintenance_callback_group_;
     rclcpp::CallbackGroup::SharedPtr map_callback_group_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr high_rate_odom_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr uwb_sub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr uwb_team_sub_;
     rclcpp::TimerBase::SharedPtr maintenance_timer_;
     rclcpp::TimerBase::SharedPtr map_timer_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;

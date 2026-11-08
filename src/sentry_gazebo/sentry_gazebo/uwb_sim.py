@@ -246,7 +246,7 @@ class UwbSim(Node):
         if not self.ref.right_handed:
             self.get_logger().warn(
                 'referee frame is left-handed (z up): no rigid T_map_uwb exists, so the backend '
-                'cannot align it (uwb.estimate_zero_pose_online / zero_pose).  Mirror y in the '
+                'cannot align it (uwb.zero_pose_red / zero_pose_blue).  Mirror y in the '
                 'serial driver on the real robot as well, or set referee_y_axis_sign:=1 if the '
                 'field frame is actually right-handed.')
 

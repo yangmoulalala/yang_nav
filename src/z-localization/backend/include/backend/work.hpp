@@ -105,11 +105,14 @@ struct RecoveryWork {
     RecoveryIdentity identity;
     Eigen::Matrix4d predicted_map_pose = Eigen::Matrix4d::Identity();
     std::optional<RelocalizationPositionPrior> startup_hint_prior;
+    /// 局中恢复（SUSPECT/LOST）：只用 UWB 位置先验重定位；为 true 且没有 uwb_prior 时只等待。
+    bool uwb_required = false;
+    std::optional<RelocalizationPositionPrior> uwb_prior;
     std::vector<FrontendFrame> source_history;
     int accumulated_frames = 0;
     double source_span_seconds = 0.0;
     /// 恢复源与普通传感器观测使用同一证据语义：历史尚未形成时为
-    /// UNAVAILABLE，连续性门拒绝已有历史时为 MODEL_INVALID，可执行匹配时为
+    /// UNAVAILABLE，累积门限（时间、运动、代次）拒绝已有历史时为 MODEL_INVALID，可执行匹配时为
     /// MEASUREMENT。
     ObservationEvidence source_evidence;
     bool force_startup_hint = false;

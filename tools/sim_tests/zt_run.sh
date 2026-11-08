@@ -5,7 +5,7 @@
 #     driver_mode overrides mapping/localize (e.g. spin); flags: comma-separated
 #     spin / initspin / earlyspin / spawnspin / kidnapspin (see zt_driver.py); flags require driver_mode
 #   env: LIDAR=single|dual  ARENA=rmul|rmuc  TEAM=red|blue  CALIB=1
-#        SIM_UWB=true|false（仿真是否启动 uwb_sim；定位不读 UWB，只给 zt_eval.py 统计）
+#        SIM_UWB=true|false（仿真是否启动 uwb_sim，仅 RMUC；后端 SUSPECT/LOST 恢复只用 UWB 位置先验，关掉后不会恢复）
 # 仿真与 bringup 在同一进程组中启动，驱动脚本结束后只停止该进程组。
 HERE=$(cd "$(dirname "$0")" && pwd)
 MODE=$1; OUT=$2; MAP=$3; LAPS=${4:-2}

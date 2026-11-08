@@ -123,7 +123,9 @@ TEST_F(LocalizationFlow, FrontendFailureRequiresAnExplicitCompletedReset) {
 /// 未建立可信位置的 LOST 不得产生全局 TF，已验收位置的冻结输出仍允许发布。
 TEST_F(LocalizationFlow, LostWithoutTrustedPoseCannotPublishGlobalTransforms) {
     reset.available = true;
+    config.uwb.enabled = true;
     start(true);
+    ASSERT_TRUE(controller->setUwbTeam("red"));
     ASSERT_TRUE(controller->requestCoordinatedReset());
     reply(FrontendResetOutcome::Completed, 1);
     const auto first = frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity(), 1);
@@ -133,6 +135,7 @@ TEST_F(LocalizationFlow, LostWithoutTrustedPoseCannotPublishGlobalTransforms) {
     EXPECT_FALSE(unknown.global_pose_available);
     EXPECT_FALSE(unknown.should_publish_tf);
     EXPECT_FALSE(output(first).global_pose_available);
+    ASSERT_TRUE(controller->ingestUwbPosition(10, Eigen::Vector3d::Zero()));
     maintain();
     ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
     const auto known = controller->project(first, Timestamp::fromSeconds(10));

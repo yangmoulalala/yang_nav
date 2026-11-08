@@ -51,7 +51,7 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | `livox_ros_driver2` | `livox_ros_driver2_node` | 真车 MID-360 驱动，输出 `/livox/lidar`、`/livox/imu` |
 | `lidar_fusion` | `merge_node`（节点名 `lidar_merge`） | 把 MID-360 与可选 L2 点云按 tf2 外参合并到 `mid360_link`，输出带逐点时间 `offset_time` 的 `/lidar/points` |
 | `frontend` (ZLIO) | `zlio_node`、`zlio_visualizer` | 激光惯性里程计：IMU 预测 + 点面配准滤波，输出高频里程计和去畸变观测帧，并发布 TF `lio_odom → base_link` |
-| `backend` | `backend_node`、`body_calibration_node` | 全局定位后端：先验地图定位或在线建图、Scan Context 回环、位姿图优化、丢失恢复 |
+| `backend` | `backend_node`、`body_calibration_node` | 全局定位后端：先验地图定位或在线建图、Scan Context 回环、位姿图优化、丢失恢复（局中恢复用裁判系统 UWB 作位置先验） |
 | `localization_interfaces` | — | 前后端协议消息：`FrontendFrame`、`FrontendOdometry`、`FrontendSession`、`ResetFrontend.srv` |
 | `lidar_calibration` | `calibrate` | 雷达/车体外参标定工具（订阅 `/odometry`） |
 | `bringup` | `localization.launch.py`、`sim.launch.py`、`real.launch.py` | `localization.launch.py` 组装融合 + ZLIO + 后端；`sim`/`real` 只管数据源；`config/{sim,real}/{lidar_fusion,frontend,backend}.yaml` 为完整参数文件 |
@@ -111,6 +111,8 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | `OBS_DEGRADED` | 观测与预测短暂冲突，未达阈值 | 是 |
 | `SUSPECT` | 连续冲突/速度异常，尝试恢复，输出冻结 | 否 |
 | `LOST` | 定位丢失，等待重定位 | 否 |
+
+后端另订阅裁判系统 UWB：`/uwb_pose`（`geometry_msgs/PoseStamped`，只用 x、y）与 `/uwb_pose/team`（`std_msgs/String`，己方颜色，transient local），只在 `uwb.enabled` 时订阅，只用于 `SUSPECT`/`LOST` 恢复；没有新鲜 UWB 时不会自动恢复。仿真由 `sentry_gazebo` 的 `uwb_sim` 发布（仅 RMUC）。
 
 ### 3.5 后端可视化（`rviz:=true` 时启用）
 
@@ -266,7 +268,7 @@ ros2 topic echo --once /livox/lidar --field header.frame_id
 | 服务 | 类型 | 用途 |
 | --- | --- | --- |
 | `/backend_node/save_map` | `std_srvs/Trigger` | 保存运行地图包到 `map_dir`（建图模式） |
-| `/backend_node/relocalize` | `std_srvs/Trigger` | `LOST` 时请求重定位（只在推算位置附近搜索） |
+| `/backend_node/relocalize` | `std_srvs/Trigger` | `LOST` 时请求重定位（需要新鲜 UWB，在 UWB 位置附近搜索） |
 | `/localization_reset` | `std_srvs/Trigger` | 前后端协调重置；**调用期间必须停车** |
 | `/zlio/reset_internal` | `localization_interfaces/ResetFrontend` | 后端内部调用，不要手动调用 |
 | `/localization_start` | `std_srvs/SetBool` | 前端 `wait_for_start:=true` 时，`data: true` 开始接收数据 |

@@ -39,6 +39,14 @@ BACKEND_PLATFORM = {
     'backend_node/registration.max_iterations': SIM_CONVERGENCE,
     'backend_node/registration.convergence_translation': SIM_CONVERGENCE,
     'backend_node/registration.convergence_rotation_deg': SIM_CONVERGENCE,
+    'backend_node/uwb.enabled': '仿真有 uwb_sim；真车 T_map_uwb 未标定，先关闭',
+    'backend_node/uwb.time_offset_seconds': '仿真 uwb_sim 延迟 0.2 s；真车待标定',
+    'backend_node/uwb.zero_pose_red.x': '仿真取 maps/sim 的 T_map_uwb；真车按地图包另设',
+    'backend_node/uwb.zero_pose_red.y': '同上',
+    'backend_node/uwb.zero_pose_red.yaw_deg': '同上',
+    'backend_node/uwb.zero_pose_blue.x': '同上',
+    'backend_node/uwb.zero_pose_blue.y': '同上',
+    'backend_node/uwb.zero_pose_blue.yaw_deg': '同上',
 }
 SINGLE_LIDAR = {
     'backend_node/common.scan_context.similarity_normalization':

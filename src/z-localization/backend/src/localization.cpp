@@ -6,6 +6,7 @@
 #include "backend/localization.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <cmath>
 #include <type_traits>
@@ -68,7 +69,9 @@ Localization::Localization(KeyframeMap& trajectory, KeyframeMap& prior_map,
       visualization_sink_(visualization_sink),
       graph_(config_.graph),
       target_cache_(32, config_.storage.submap_cache_bytes),
-      frames_(config_.tracking.source, config_.recovery.source),
+      frames_(config_.tracking.source, config_.recovery.source,
+              std::max(2.0, config_.uwb.max_age + config_.uwb.odom_sync_tolerance +
+                                std::abs(config_.uwb.time_offset_seconds) + 1.0)),
       poses_(config_.graph.odom_noise),
       tracking_({config_.tracking, config_.relocalization.point_to_plane_config,
                  config_.registration_debug_enabled},
@@ -162,6 +165,7 @@ void Localization::initialize() {
         next_manual_relocalization_request_id_ = 0;
         clearManualRelocalizationRequestLocked();
         frames_.clear();
+        latest_uwb_.reset();
         last_lidar_observation_runtime_index_ = -1;
         last_global_observation_cycle_time_ = Timestamp();
         last_recovery_cycle_time_ = Timestamp();
@@ -331,4 +335,39 @@ void Localization::runMaintenanceCycle() {
     if (config_.loop.enabled)
         execute(&Localization::captureLoop, loop_cycle_);
 }
+/// 接收新的 UWB 物理解；只保存最新一条供局中恢复使用，不进入图，也不影响定位状态。
+bool Localization::ingestUwbPosition(const double timestamp, const Eigen::Vector3d& position_uwb,
+                                     const std::optional<Eigen::Matrix4d>& T_sensor_body) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!config_.uwb.enabled || !std::isfinite(timestamp) || !position_uwb.head<2>().allFinite() ||
+        (T_sensor_body && !T_sensor_body->allFinite()))
+        return false;
+    if (latest_uwb_ && timestamp <= latest_uwb_->timestamp)
+        return false;
+    latest_uwb_ = UwbSample{timestamp, Eigen::Vector3d(position_uwb.x(), position_uwb.y(), 0.0),
+                            T_sensor_body};
+    return true;
+}
+
+/// 按己方颜色选用固定的 T_map_uwb。
+bool Localization::setUwbTeam(const std::string& team) {
+    std::string colour = team;
+    std::transform(colour.begin(), colour.end(), colour.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (colour != "red" && colour != "blue")
+        return false;
+    if (colour != uwb_team_) {
+        uwb_team_ = colour;
+        T_map_uwb_ = colour == "red" ? config_.uwb.T_map_uwb_red : config_.uwb.T_map_uwb_blue;
+        BACKEND_INFO_STREAM("UWB team set to " << colour << "; recovery uses T_map_uwb={x="
+                                               << (*T_map_uwb_)(0, 3) << ", y=" << (*T_map_uwb_)(1, 3)
+                                               << ", yaw_deg="
+                                               << yawFromRotation(T_map_uwb_->block<3, 3>(0, 0)) *
+                                                      180.0 / M_PI
+                                               << "}");
+    }
+    return true;
+}
+
 }  // namespace backend

@@ -103,6 +103,8 @@ void LocalizationNode::configureInputs() {
     zlio_frames_.reset();
     zlio_predictions_.reset();
     zlio_identity_.reset();
+    uwb_sub_.reset();
+    uwb_team_sub_.reset();
 
     if (parameters_.input.frontend == "zlio") {
         configureZlioInputs(frontend_.epoch());
@@ -148,6 +150,22 @@ void LocalizationNode::configureInputs() {
                 highRateOdomCallback(odom, subscription_epoch);
             },
             high_rate_options);
+    }
+    if (parameters_.runtime.uwb.enabled) {
+        uwb_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
+            "uwb_pose", rclcpp::QoS(10),
+            std::bind(&LocalizationNode::uwbCallback, this, std::placeholders::_1));
+        // 己方颜色（transient local）：选用红/蓝方固定 T_map_uwb。
+        uwb_team_sub_ = create_subscription<std_msgs::msg::String>(
+            "uwb_pose/team", rclcpp::QoS(1).transient_local(),
+            [this](const std_msgs::msg::String::ConstSharedPtr& message) {
+                invoke("UWB team", [&] {
+                    if (message && controller_ && !controller_->setUwbTeam(message->data))
+                        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+                                             "ignoring UWB team '%s'; expected red or blue",
+                                             message->data.c_str());
+                });
+            });
     }
 }
 
@@ -215,6 +233,32 @@ void LocalizationNode::highRateOdomCallback(const nav_msgs::msg::Odometry::Const
             odomToMatrix(*odom), covariance, covariance_valid,
             rclcpp::Time(odom->header.stamp).seconds(), subscription_epoch);
         publisher_.publishPrediction(*odom, projection);
+    });
+}
+
+/// 验收 UWB 消息坐标系与时间，按测量运动时刻查询外参后交给核心；UWB 只供局中恢复。
+void LocalizationNode::uwbCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& pose) {
+    invoke("UWB input", [&] {
+        if (!pose || !controller_ || !validStamp(pose->header.stamp))
+            return;
+        if (pose->header.frame_id != parameters_.input.uwb_frame) {
+            RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+                                 "ignoring UWB observation in frame '%s'; expected '%s'",
+                                 pose->header.frame_id.c_str(),
+                                 parameters_.input.uwb_frame.c_str());
+            return;
+        }
+        const rclcpp::Time stamp(pose->header.stamp);
+        if (stamp.nanoseconds() == 0)
+            return;
+        const Eigen::Vector3d position(pose->pose.position.x, pose->pose.position.y, 0.0);
+        if (!position.allFinite())
+            return;
+        std::optional<Eigen::Matrix4d> T_sensor_body;
+        if (body_extrinsic_)
+            T_sensor_body =
+                body_extrinsic_->at(stamp.seconds() + parameters_.runtime.uwb.time_offset_seconds);
+        controller_->ingestUwbPosition(stamp.seconds(), position, T_sensor_body);
     });
 }
 

@@ -17,6 +17,7 @@
 | `registration.voxel_resolution` | 点云稀疏（配准点数不足）时减小 |
 | `tracking.source.max_frames`、`tracking.source.max_time` | 单帧点数不足时增大累积 |
 | `trajectory.keyframe.*` | 建图密度与车速不匹配 |
+| `uwb.enabled`、`uwb.zero_pose_red.*`、`uwb.zero_pose_blue.*`、`uwb.antenna_position_body.*`、`uwb.time_offset_seconds` | 接入裁判系统 UWB、换地图包或移动 UWB 天线 |
 | `startup_hint.*` | 固定出发点启动 |
 | `visualization.enabled` | 是否需要 RViz 显示 |
 
@@ -33,7 +34,7 @@
 标为“仅 launch”的键由 `backend.launch.py` 传入，不得写入参数文件；标为“仅 legacy”的键只在
 `common.frontend=legacy` 时提供，`zlio` 时写入会被当作未知参数拒绝。数值须有限。参数在启动时读取，修改后需重启。
 
-输入输出话题不再通过参数配置：`frontend/frame`、`frontend/odometry`、`frontend/session`、
+输入输出话题不再通过参数配置：`frontend/frame`、`frontend/odometry`、`frontend/session`、`uwb_pose`、`uwb_pose/team`、
 `localization/lio_world_cloud` 为节点内固定的相对名，需要改名时在 launch 中使用 ROS remap。
 
 #### `common` · 坐标与输入（14 项）
@@ -64,7 +65,8 @@
 外参只在 URDF 中维护。云台 `yaw_joint` 等可动关节由 `joint_state_publisher` 发布到 TF，后端按时间跟踪：
 
 - `~/localization_pose` 的车体位姿使用输出时间戳处的外参（`T_map_body = T_map_sensor · T_sensor_body(t)`）；
-  该杆臂随测量进入因子、启动对齐与恢复先验；在线时间偏置估计的小时间窗内把该杆臂视为常量；
+- UWB 天线固定在 body 系，每条 UWB 测量按其运动时刻（消息时间 + `uwb.time_offset_seconds`）的外参换算传感器系杆臂，
+  只用于局中恢复的位置先验和 UWB 一致性检查；
 - `startup_hint` 描述启动时刻的车体位姿，用**启动时**的外参换算为传感器位姿（启动到首帧期间应保持云台不动）；
 - 关键帧、配准、描述子整平与 map → odom TF 均在传感器系中计算，不依赖车体外参。
 
@@ -197,22 +199,18 @@
 | `severe_min_support_ratio` | 浮点，无量纲 | `0.6` | 严重冲突要求的最小配准对应比例；范围 `[0,1]` |
 | `severe_conflicts_before_suspect` | 整数，次 | `2` | 连续冲突中累计多少次严重冲突即进入 `SUSPECT`，不必等 `conflicts_before_suspect`；须 `≥1` |
 
-#### `recovery` · 初始化与重定位（28 项）
+#### `recovery` · 初始化与重定位（24 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `period` | 浮点，s | `0.2` | 两次重定位尝试的最小间隔；须 `≥0`，实际至少 `0.05 s`，且需要新同步帧 |
-| `suspect_search_radius` | 浮点，m | `2.0` | `SUSPECT` 时围绕最后可信位置搜索候选的半径（启动提示也用此半径）；须 `≥0`，`0` 不限半径 |
-| `lost_search_radius` | 浮点，m | `2.0` | `LOST` 和初始化时围绕里程计推算位置（初始化时为地图原点或启动提示）搜索候选的半径；须 `≥0`，`0` 不限半径 |
-| `global_fallback_candidates` | 整数，候选 | `0` | 局部搜索失败后补充的全局描述子候选数；须 `≥0`，`0` 关闭全局补充 |
-| `suspect_failures_before_lost` | 整数，次 | `3` | `SUSPECT` 下连续重定位失败多少次后转为 `LOST`；须 `≥1` |
+| `initial_search_radius` | 浮点，m | `2.0` | 开机初始化时围绕里程计推算位置（地图原点或启动提示）搜索候选的半径，启动提示也用此半径；须 `≥0`，`0` 不限半径。`SUSPECT`/`LOST` 不用它，见 `uwb.search_radius` |
+| `global_fallback_candidates` | 整数，候选 | `0` | 初始化局部搜索失败后补充的全局描述子候选数；须 `≥0`，`0` 关闭全局补充 |
+| `suspect_failures_before_lost` | 整数，次 | `3` | `SUSPECT` 下连续重定位失败多少次后转为 `LOST`（等待 UWB、歧义、与 UWB 不一致都不计）；须 `≥1` |
 | `automatic_when_lost` | 布尔 | `true` | 丢失后是否自动重定位；关闭则等待重定位服务请求 |
 | `confirmations` | 整数，次 | `2` | 提交恢复前要求连续多少次匹配给出一致的 map→odom 变换；`1` 首次匹配即提交，须 `≥1` |
 | `confirm_translation` | 浮点，m | `0.3` | 相邻恢复候选的 map→odom 平移差上限；超出则从头确认 |
 | `confirm_rotation_deg` | 浮点，° | `5.0` | 相邻恢复候选的 map→odom 旋转差上限；超出则从头确认。新候选还须与首个候选满足同样的平移/旋转上限 |
-| `confirm_min_translation` | 浮点，m | `0.3` | 运动门：提交前自首个候选起车体至少平移的距离，与 `confirm_min_rotation_deg` 任一满足即可；两项均为 `0` 关闭运动门，须 `≥0` |
-| `confirm_min_rotation_deg` | 浮点，° | `30.0` | 运动门的最小转角；须 `≥0` |
-| `confirm_stationary_max` | 整数，次 | `15` | 运动门开启时，静止状态下一致候选达到该次数也提交；`0` 表示必须移动，须 `≥0` |
 | `probation_observations` | 整数，次 | `5` | 恢复提交后的试用期（全局观测次数），期间一次严重冲突即重新进入 `SUSPECT`；`0` 关闭 |
 | `ambiguity_rmse_ratio` | 浮点，无量纲 | `1.15` | 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复（不计失败）；`0` 关闭，初始化不检验 |
 | `ambiguity_translation` | 浮点，m | `1.0` | 歧义检验中判定两解不同的平移差 |
@@ -223,12 +221,39 @@
 | `source.max_translation` | 浮点，m | `1.5` | 参与累积的历史帧相对当前帧的最大位移；须 `≥0`，`0` 不限 |
 | `source.max_rotation_deg` | 浮点，° | `0.0` | 参与累积的历史帧相对当前帧的最大转角；须 `≥0`，`0` 不限 |
 | `initial_max_descriptor_distance` | 浮点，无量纲 | `0.8` | 初始定位时允许的最大描述子差异；越小越严格，须 `≥0`，`0` 关闭此筛选 |
-| `descriptor_distance_limit` | 浮点，无量纲 | `0.8` | `SUSPECT` / `LOST` 恢复时允许的最大描述子差异；须 `≥0`，`0` 关闭此筛选 |
+| `descriptor_distance_limit` | 浮点，无量纲 | `0.8` | 非初始化时的描述子差异上限；`SUSPECT` / `LOST` 现在只用 UWB 分支，此项实际不生效；须 `≥0`，`0` 关闭此筛选 |
 | `yaw_sweep_count` | 整数，方向 | `6` | 需要搜索航向时，在整周均匀尝试的方向数；须 `≥1` |
 | `parallel_candidates` | 整数，工作线程 | `16` | 同时验证恢复候选的工作线程数上限；须 `≥0`，`0` 按硬件线程数选择 |
 | `max_candidates` | 整数，候选 | `15` | 每批最多进入几何验证的候选数；须 `≥1` |
 | `target_keyframes` | 整数，帧 | `11` | 为一个恢复候选拼接目标子图时，最多使用的先验关键帧数；须 `≥1` |
 | `target_radius` | 浮点，m | `8.0` | 围绕恢复候选关键帧拼接目标子图的半径；须 `≥0`，`0` 不限半径 |
+
+#### `uwb` · 局中恢复位置先验（17 项）
+
+UWB 只在 `SUSPECT`/`LOST` 恢复时作位置先验，不参与跟踪和因子图，也不用于判断定位是否正常；开机初始化不用 UWB。
+局中恢复只走 UWB 分支：关闭 UWB、未收到己方颜色或没有新鲜读数时，`SUSPECT`/`LOST` 不重定位、只等待，不计失败。
+
+| 键 | 类型 / 单位 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `enabled` | 布尔 | `false` | 是否订阅 `uwb_pose`、`uwb_pose/team` 并在局中恢复时使用 UWB；bringup 仿真 `true`、真车 `false` |
+| `frame` | 字符串 | `uwb` | UWB 消息的 `frame_id`，须非空；不一致的消息被丢弃 |
+| `time_offset_seconds` | 浮点，s | `0.0` | 运动时刻 = 消息时间戳 + 此值；测量早于消息时间时填负数（仿真 `-0.2`，真车 `-0.15` 待标定） |
+| `antenna_position_body.x` | 浮点，m | `-0.245` | UWB 天线相位中心在车体系中的 X 坐标 |
+| `antenna_position_body.y` | 浮点，m | `0.0` | 同上，Y 坐标 |
+| `antenna_position_body.z` | 浮点，m | `0.0` | 同上，Z 坐标 |
+| `zero_pose_red.x` | 浮点，m | `0.0` | 己方为红方时 `T_map_uwb` 的 X 平移（UWB 原点在 map 系中的位置）；与地图包绑定，换地图要重设 |
+| `zero_pose_red.y` | 浮点，m | `0.0` | 同上，Y 平移 |
+| `zero_pose_red.yaw_deg` | 浮点，° | `0.0` | 同上，把 UWB 坐标旋转到 map 的航向 |
+| `zero_pose_blue.x` | 浮点，m | `0.0` | 己方为蓝方时 `T_map_uwb` 的 X 平移 |
+| `zero_pose_blue.y` | 浮点，m | `0.0` | 同上，Y 平移 |
+| `zero_pose_blue.yaw_deg` | 浮点，° | `0.0` | 同上，航向 |
+| `max_age` | 浮点，s | `1.2` | UWB 读数（按运动时刻）相对当前帧的最大年龄，超出视为没有 UWB；1 Hz 裁判系统须大于 1 s；须 `≥0` |
+| `odom_sync_tolerance` | 浮点，s | `0.25` | UWB 运动时刻到里程计插值端点的最大时间差；须 `≥0` |
+| `search_radius` | 浮点，m | `2.0` | 围绕 UWB 推算位置召回先验关键帧的半径；须 `≥0`，`0` 不限半径 |
+| `candidates` | 整数，候选 | `8` | 围绕 UWB 位置最多保留的候选关键帧数；须 `≥1` |
+| `max_offset` | 浮点，m | `0.6` | 恢复解推算的天线位置与 UWB 读数的最大水平偏差，超出则丢弃该候选（不计失败）；`0` 关闭 |
+
+己方颜色从 `uwb_pose/team`（`red`/`blue`，transient local）读取，未收到时局中恢复视为没有 UWB。
 
 #### `loop` · 回环检索（13 项）
 

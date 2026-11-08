@@ -13,8 +13,9 @@ mkdir -p "$OUT"; rm -f "$OUT"/*.log
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=${MESA_D3D12_DEFAULT_ADAPTER_NAME:-NVIDIA}
 # RVIZ=true opens the navigation RViz (WSLg); HOLD=S keeps everything running S seconds after the goals
 RVIZ=${RVIZ:-false}; HOLD=${HOLD:-0}
-# UWB=true (default): referee UWB sim + backend fusion; the point-symmetric RMUC field
-# otherwise lets scan-to-map lock onto the mirrored pose
+# UWB=true (default): start the referee UWB sim (uwb_sim). The backend uses UWB only as the
+# position prior for SUSPECT/LOST recovery (uwb.enabled in bringup/config/sim/backend*.yaml);
+# without it the backend waits in SUSPECT/LOST instead of recovering
 UWB=${UWB:-true}
 export DISPLAY=${DISPLAY:-:0}
 source /opt/ros/jazzy/setup.bash; source "$WS/install/setup.bash"

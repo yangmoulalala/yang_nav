@@ -249,9 +249,10 @@ x_ref = 14 - x_world        y_ref = 8 - y_world        （蓝方出生点 (-9.5,
 | `antenna_position_body` | `[-0.245, 0, 0]` | 标签在 `base_link` 中的位置，与后端 `uwb.antenna_position_body` 一致；按真实姿态旋转（杆臂） |
 | `seed` | 0 | 0 为随机，非 0 可复现 |
 
-后端侧对应参数：`uwb.position_std_xy` 0.15（≈ 白噪声 + 偏差 + 离群的综合）、`uwb.time_offset_seconds` 约 `-0.2`、
-`uwb.effective_rate_hz` 1。bringup 的 `config/sim/backend*.yaml` 里 `uwb.enabled` 为 `false`（RMUL 没有 UWB），
-RMUC 上用 `ros2 launch bringup sim.launch.py uwb:=true` 打开（只覆盖 `uwb.enabled`）。仿真回归见 `tools/sim_tests/README.md`（`ARENA=rmuc UWB=true`）。
+后端只在 `SUSPECT`/`LOST` 局中恢复时把 UWB 当位置先验（不进跟踪和因子图），参数见 `z-localization/backend/docs/parameters.md` 的 `uwb` 小节：
+`uwb.time_offset_seconds` `-0.2`（抵消上面的延时）、`uwb.max_age` 1.2 s（须大于 1 Hz 周期）、`uwb.antenna_position_body` 与上表一致、
+`uwb.zero_pose_red` / `zero_pose_blue` 为裁判坐标系到地图包 `map` 的固定变换（与地图包绑定）。bringup 的 `config/sim/backend*.yaml` 里
+`uwb.enabled: true`，没有 launch 开关；RMUL 不发 `/uwb_pose`，所以在 RMUL 上 `SUSPECT`/`LOST` 只等待、不会恢复。仿真回归见 `tools/sim_tests/README.md`。
 
 ## 机器人建模方式
 

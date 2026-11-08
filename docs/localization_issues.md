@@ -1,6 +1,6 @@
 # 定位问题记录（导航测试中发现）
 
-> 2026-11-08：定位已删除 UWB，重定位只在附近 2 m 内搜索。下面记录里的 UWB 相关现象（UWB 恢复、UWB 校验、`uwb_zero_pose`）只作历史参考。
+> 2026-11-08：UWB 先从定位中删除，同日改为只在 `SUSPECT`/`LOST` 局中恢复时作位置先验（不参与跟踪和因子图，不再在线估计零位，改用固定的 `uwb.zero_pose_red` / `zero_pose_blue`）；开机初始化只在起点或启动提示附近 2 m 内搜索。下面记录里的 UWB 融合、UWB 校验、`uwb_zero_pose=online` 属旧实现，只作历史参考。
 
 导航侧直接信任定位输出（TF `map -> lio_odom -> base_link`、`pose_trusted`），不做任何过滤或修正。
 下面的问题都留到定位端处理。

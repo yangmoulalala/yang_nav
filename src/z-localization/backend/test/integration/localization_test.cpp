@@ -58,7 +58,9 @@ TEST_F(LocalizationFlow, LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
     config.startup_hint.T_map_sensor = Eigen::Matrix4d::Identity();
     config.recovery.suspect_failures_before_lost = 1;
     config.recovery.automatic_when_lost = false;
+    config.uwb.enabled = true;
     start(true);
+    ASSERT_TRUE(controller->setUwbTeam("red"));
     auto first = frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
     ASSERT_TRUE(ingest(first));
     maintain();
@@ -66,6 +68,7 @@ TEST_F(LocalizationFlow, LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
     const auto prior_revision = prior.revision();
     auto sparse = frame(11, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
     sparse.cloud_local->resize(1);
+    ASSERT_TRUE(controller->ingestUwbPosition(11, Eigen::Vector3d::Zero()));
     ASSERT_TRUE(ingest(sparse, Eigen::Vector3d(10, 0, 0)));
     EXPECT_EQ(controller->status(), LocalizationStatus::Suspect);
     maintain();
@@ -78,6 +81,7 @@ TEST_F(LocalizationFlow, LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
     maintain();
     EXPECT_EQ(controller->status(), LocalizationStatus::Lost);
     next.timestamp = 13;
+    ASSERT_TRUE(controller->ingestUwbPosition(13, Eigen::Vector3d::Zero()));
     ASSERT_TRUE(ingest(next));
     maintain();
     EXPECT_EQ(controller->status(), LocalizationStatus::Normal);
@@ -147,5 +151,34 @@ TEST_F(LocalizationFlow, InconsistentLoopCannotRewriteOdometryOrDegradeTrackingH
     EXPECT_LT((output(current).T_map_sensor - current.odom_pose).norm(), 1e-10);
 }
 
+
+/// 局中恢复只在有新鲜 UWB 时进行：没有 UWB 时保持 SUSPECT 等待，不计失败、不进 LOST；
+/// 收到 UWB 后在其位置附近匹配恢复。UWB 不用于判断定位是否正常。
+TEST_F(LocalizationFlow, InGameRecoveryWaitsForUwbAndThenRecoversNearIt) {
+    config.startup_hint.T_map_sensor = Eigen::Matrix4d::Identity();
+    config.recovery.suspect_failures_before_lost = 1;
+    config.uwb.enabled = true;
+    start(true);
+    ASSERT_TRUE(controller->setUwbTeam("red"));
+    auto first = frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
+    ASSERT_TRUE(ingest(first));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+    auto next = frame(11, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
+    ASSERT_TRUE(ingest(next, Eigen::Vector3d(10, 0, 0)));
+    ASSERT_EQ(controller->status(), LocalizationStatus::Suspect);
+    for (int i = 0; i < 3; ++i) {
+        next.timestamp = 12 + i;
+        ASSERT_TRUE(ingest(next));
+        maintain();
+        EXPECT_EQ(controller->status(), LocalizationStatus::Suspect);
+    }
+    next.timestamp = 15;
+    ASSERT_TRUE(controller->ingestUwbPosition(15, Eigen::Vector3d::Zero()));
+    ASSERT_TRUE(ingest(next));
+    maintain();
+    EXPECT_EQ(controller->status(), LocalizationStatus::Normal);
+    EXPECT_LT((output(next).T_map_sensor - Eigen::Matrix4d::Identity()).norm(), 2e-4);
+}
 }  // namespace
 }  // namespace backend

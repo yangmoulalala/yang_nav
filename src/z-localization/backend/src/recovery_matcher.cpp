@@ -1,6 +1,6 @@
 /**
  * @file recovery_matcher.cpp
- * @brief 按启动提示与描述子次序求解恢复位姿。
+ * @brief 初始化（启动提示 → 描述子）与局中恢复（UWB）求解恢复位姿。
  */
 
 #include <algorithm>
@@ -37,7 +37,7 @@ void RecoveryMatcher::prepare(RecoveryWork& work) const {
                static_cast<std::size_t>(std::max(1, config_.recovery.source.min_frames))) {
         work.source_evidence.disposition = ObservationDisposition::ModelInvalid;
         work.source_evidence.reason =
-            "recovery source continuity gate rejected available causal "
+            "recovery source accumulation limits rejected available causal "
             "frames";
     } else {
         work.source_evidence.disposition = ObservationDisposition::Unavailable;
@@ -60,13 +60,9 @@ bool RecoveryMatcher::match(const RecoveryWork& work,
     request.source_information_scale =
         1.0 / static_cast<double>(std::max(1, work.accumulated_frames));
     if (position_prior == nullptr) {
-        if (work.identity.status == LocalizationStatus::Suspect) {
-            request.search_radius = config_.recovery.suspect_search_radius;
-            request.global_fallback_candidates = 0;
-        } else {
-            request.search_radius = config_.recovery.lost_search_radius;
-            request.global_fallback_candidates = config_.recovery.global_fallback_candidates;
-        }
+        // 描述子分支只在开机初始化时使用：在推算位置（地图原点）附近检索。
+        request.search_radius = config_.recovery.initial_search_radius;
+        request.global_fallback_candidates = config_.recovery.global_fallback_candidates;
     }
 
     const RelocalizationResult result =
@@ -103,10 +99,16 @@ bool RecoveryMatcher::match(const RecoveryWork& work,
     return true;
 }
 
-/// 按启动提示和描述子优先级求解完整可观恢复位姿。
+/// 求解完整可观恢复位姿：初始化按启动提示 → 描述子；SUSPECT/LOST 只用 UWB 位置先验。
 RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     RecoveryResult result;
-    // 显式责任链：完整启动提示 → 描述子；每个分支仍调用同一匹配器。
+    // 局中恢复只在有新鲜 UWB 时进行；没有 UWB 时不做重定位，推迟且不计失败。
+    if (work.uwb_required && !work.uwb_prior) {
+        result.outcome = RecoveryOutcome::Deferred;
+        result.source = "waiting for fresh UWB";
+        return result;
+    }
+    // 初始化的显式责任链：完整启动提示 → 描述子；每个分支仍调用同一匹配器。
     if (work.startup_hint_prior) {
         if (match(work, &*work.startup_hint_prior, result)) {
             result.outcome = RecoveryOutcome::Matched;
@@ -133,6 +135,18 @@ RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     }
     if (work.source_evidence.disposition != ObservationDisposition::Measurement)
         return result;
+    if (work.uwb_required) {
+        if (match(work, &*work.uwb_prior, result)) {
+            result.outcome = RecoveryOutcome::Matched;
+            result.source = "UWB + scan-to-map";
+            return result;
+        }
+        result.outcome =
+            result.source == "ambiguous" ? RecoveryOutcome::Deferred : RecoveryOutcome::Failed;
+        if (result.outcome == RecoveryOutcome::Failed)
+            result.source = "UWB position prior";
+        return result;
+    }
     if (match(work, nullptr, result)) {
         result.outcome = RecoveryOutcome::Matched;
         result.source = (result.source.empty() ? "descriptor" : result.source) + " + scan-to-map";

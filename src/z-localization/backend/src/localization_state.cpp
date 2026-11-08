@@ -265,7 +265,7 @@ LocalizationTransition LocalizationStateMachine::onRecoveryRelocalizationFailure
         }
         reason_ = oss.str();
     } else if (status_ == LocalizationStatus::Lost) {
-        reason_ = source_name + " global recovery failed in LOST; front-end reset pending";
+        reason_ = source_name + " recovery failed in LOST; front-end reset pending";
     } else {
         reason_ = "initial localization via " + source_name + " pending";
     }

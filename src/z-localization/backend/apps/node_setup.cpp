@@ -156,6 +156,7 @@ void LocalizationNode::completeStartup() {
         "unified backend ready: prior_map="
             << (parameters_.runtime.prior_map_enabled ? "enabled" : "disabled")
             << ", loop=" << (parameters_.runtime.loop.enabled ? "enabled" : "disabled")
+            << ", uwb_recovery=" << (parameters_.runtime.uwb.enabled ? "enabled" : "disabled")
             << ", frontend=" << parameters_.input.frontend
             << (parameters_.input.frontend == "zlio"
                     ? std::string()

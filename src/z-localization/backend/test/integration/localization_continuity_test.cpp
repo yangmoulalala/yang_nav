@@ -126,8 +126,10 @@ TEST_F(LocalizationFlow, WarmBoundaryCannotMakeLostPriorLocalizationTrusted) {
     config.startup_hint.T_map_sensor = Eigen::Matrix4d::Identity();
     config.recovery.suspect_failures_before_lost = 1;
     config.recovery.automatic_when_lost = false;
+    config.uwb.enabled = true;
     reset.available = true;
     start(true);
+    ASSERT_TRUE(controller->setUwbTeam("red"));
     const auto first = frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
     ASSERT_TRUE(ingest(first));
     maintain();
@@ -135,6 +137,7 @@ TEST_F(LocalizationFlow, WarmBoundaryCannotMakeLostPriorLocalizationTrusted) {
     const auto trusted = output(first);
     auto sparse = frame(11, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
     sparse.cloud_local->resize(1);
+    ASSERT_TRUE(controller->ingestUwbPosition(11, Eigen::Vector3d::Zero()));
     ASSERT_TRUE(ingest(sparse, Eigen::Vector3d(10, 0, 0)));
     maintain();
     ASSERT_EQ(controller->status(), LocalizationStatus::Lost);

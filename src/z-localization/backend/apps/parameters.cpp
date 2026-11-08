@@ -22,6 +22,7 @@ NodeConfig ParameterReader::load(const BodyExtrinsicLookup& lookup) {
     loadMapTrajectoryAndRegistration();
     loadTracking();
     loadRecovery();
+    loadUwb();
     loadLoopAndGraph();
     loadResetAndStartup();
     loadOutputs();
@@ -179,8 +180,7 @@ void ParameterReader::loadTracking() {
 /// 读取 INITIALIZING、SUSPECT 和 LOST 共用的恢复参数。
 void ParameterReader::loadRecovery() {
     getParam("recovery/period", parameters_.runtime.recovery.period);
-    getParam("recovery/suspect_search_radius", parameters_.runtime.recovery.suspect_search_radius);
-    getParam("recovery/lost_search_radius", parameters_.runtime.recovery.lost_search_radius);
+    getParam("recovery/initial_search_radius", parameters_.runtime.recovery.initial_search_radius);
     getParam("recovery/global_fallback_candidates",
              parameters_.runtime.recovery.global_fallback_candidates);
     getParam("recovery/suspect_failures_before_lost",
@@ -190,11 +190,6 @@ void ParameterReader::loadRecovery() {
     getParam("recovery/confirm_translation", parameters_.runtime.recovery.confirm_translation);
     parameters_.runtime.recovery.confirm_rotation_rad =
         degreesToRadians(param<double>("recovery/confirm_rotation_deg"));
-    getParam("recovery/confirm_min_translation",
-             parameters_.runtime.recovery.confirm_min_translation);
-    parameters_.runtime.recovery.confirm_min_rotation_rad =
-        degreesToRadians(param<double>("recovery/confirm_min_rotation_deg"));
-    getParam("recovery/confirm_stationary_max", parameters_.runtime.recovery.confirm_stationary_max);
     getParam("recovery/probation_observations",
              parameters_.runtime.recovery.probation_observations);
     getParam("recovery/ambiguity_rmse_ratio",

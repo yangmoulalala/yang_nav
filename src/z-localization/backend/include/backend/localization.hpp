@@ -57,6 +57,13 @@ public:
     /// 调用方不得发布或投影被拒绝的帧。
     bool ingestFrame(const FrontendFrame& frame, const Eigen::Vector3d& linear_velocity_sensor,
                      const Eigen::Vector3d& angular_velocity_sensor);
+    /// 接入裁判系统 UWB 天线位置（UWB 坐标系，只用水平分量），只供局中恢复使用。
+    /// T_sensor_body 为测量时刻的外参，空值使用启动外参。新的物理解返回 true。
+    bool ingestUwbPosition(double timestamp, const Eigen::Vector3d& position_uwb,
+                           const std::optional<Eigen::Matrix4d>& T_sensor_body = std::nullopt);
+    /// 设置己方颜色（red/blue），据此选用固定的 T_map_uwb；未设置时局中恢复视为没有 UWB。
+    bool setUwbTeam(const std::string& team);
+
     /// 执行一次有界维护周期；事件数据由帧回调捕获，本函数按状态运行跟踪、恢复或
     /// 一次回环验证。
     void runMaintenanceCycle();
@@ -185,6 +192,9 @@ private:
                                             LocalizationTransition& transition);
     /// 累计恢复候选；连续给出一致 map←odom 变换达到配置次数后返回 true。
     bool recoveryConfirmedLocked(const RecoveryWork& work, const RecoveryResult& result);
+    /// UWB 引导的恢复解推算的天线位置须与 UWB 读数相差不超过 uwb.max_offset。
+    bool recoveryConsistentWithUwbLocked(const RecoveryWork& work,
+                                         const RecoveryResult& result) const;
     /// 将通过联合创新检验的回环写入图及可视化历史。
     LoopCommitSummary commit(const LoopWork& work, const LoopVerificationBatch& result);
 
@@ -225,6 +235,9 @@ private:
     bool sourceIsLatestLocked(const RecoveryWork& work) const;
     /// 确认同步帧严格晚于手动请求捕获的输入边界。
     bool manualRequestAllowsFrameLocked(const FrontendFrame& frame) const;
+    /// 由新鲜 UWB 读数、固定 T_map_uwb 及测量时刻里程计构造局中恢复的位置先验。
+    std::optional<RelocalizationPositionPrior> makeUwbRecoveryPriorLocked(
+        const FrontendFrame& frame) const;
     /// 在第零代初始化期间构造待几何验证的启动提示。
     std::optional<RelocalizationPositionPrior> makeStartupHintPriorLocked(
         const FrontendFrame& frame) const;
@@ -315,11 +328,20 @@ private:
         Eigen::Matrix4d T_map_odom = Eigen::Matrix4d::Identity();
         int confirmations = 0;
         std::uint64_t epoch = 0;
-        /// 首个候选的 map←odom 及其源帧里程计位姿，用于防止逐次漂移和度量确认期间的运动。
+        /// 首个候选的 map←odom，用于防止一致性沿候选链逐步漂移。
         Eigen::Matrix4d first_T_map_odom = Eigen::Matrix4d::Identity();
-        Eigen::Matrix4d first_odom_pose = Eigen::Matrix4d::Identity();
     };
     std::optional<PendingRecovery> pending_recovery_;
+    /// 最新的 UWB 原始解（UWB 坐标系）及测量时刻外参。
+    struct UwbSample {
+        double timestamp = 0.0;
+        Eigen::Vector3d position_uwb = Eigen::Vector3d::Zero();
+        std::optional<Eigen::Matrix4d> T_sensor_body;
+    };
+    std::optional<UwbSample> latest_uwb_;
+    /// 按己方颜色选定的 T_map_uwb；未收到颜色时为空。
+    std::optional<Eigen::Matrix4d> T_map_uwb_;
+    std::string uwb_team_;
     int last_lidar_observation_runtime_index_ = -1;
     Timestamp last_global_observation_cycle_time_;
     Timestamp last_recovery_cycle_time_;

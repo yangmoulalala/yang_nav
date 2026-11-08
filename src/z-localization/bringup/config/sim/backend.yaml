@@ -149,10 +149,9 @@ backend_node:
       # 直接进入 SUSPECT 的角速度阈值，单位为弧度每秒。
       suspicious_angular_speed: 30.0
     recovery:
-      # SUSPECT 只在最后可信位置附近搜索的半径，单位为米；不做全局重定位。
-      suspect_search_radius: 2.0
-      # LOST/初始化在里程计推算位置（初始化时为起点或启动提示）附近搜索的半径，单位为米；0 表示不限。
-      lost_search_radius: 2.0
+      # 开机初始化在里程计推算位置（地图原点或启动提示）附近检索的半径，单位为米；启动提示也用此半径。
+      # 局中恢复（SUSPECT/LOST）只用 UWB，见 uwb.search_radius。
+      initial_search_radius: 2.0
       source:
         # 一次观测成立所需的最少因果点云帧数。
         min_frames: 2
@@ -192,13 +191,6 @@ backend_node:
       confirm_translation: 0.3
       # 相邻恢复候选 map 到 odom 变换允许的旋转差，单位为度。
       confirm_rotation_deg: 5.0
-      # 运动门：提交恢复前要求自首个候选起车体至少平移该距离（米）或转过下一项角度；两项都为 0 关闭。
-      # 静止时对称/相似场景的错误解会连续自洽，移动后视野变化才能区分。
-      confirm_min_translation: 0.3
-      # 运动门的最小转角，单位为度。
-      confirm_min_rotation_deg: 30.0
-      # 运动门开启时，静止下连续一致候选达到该次数也提交，避免停车时永不恢复；0 表示必须移动。
-      confirm_stationary_max: 15
       # 恢复提交后的试用期（全局观测次数）；期间一次严重冲突即重新进入 SUSPECT；0 关闭。
       probation_observations: 5
       # 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复；0 关闭；初始化不检验。
@@ -207,6 +199,47 @@ backend_node:
       ambiguity_translation: 1.0
       # 歧义检验中判定两解不同的旋转差，单位为度。
       ambiguity_rotation_deg: 30.0
+    uwb:
+      # 局中恢复（SUSPECT/LOST）是否使用裁判系统 UWB。UWB 只作重定位位置先验，不参与跟踪，也不用于判断定位是否正常；
+      # 开机初始化不用 UWB。关闭或没有新鲜 UWB 时，SUSPECT/LOST 不做重定位，只等待。 [按车调整]
+      enabled: true
+      # UWB 消息的 frame_id，不一致的消息被丢弃。己方颜色从 uwb_pose/team（red/blue）读取。
+      frame: uwb
+      # UWB 消息时刻到物理运动时刻的固定偏置，t_motion=t_header+dt，单位为秒。 [按车调整]
+      time_offset_seconds: -0.2
+      antenna_position_body:
+        # UWB 天线在 body 系中的 X 位置，单位为米。 [按车调整]
+        x: -0.245
+        # UWB 天线在 body 系中的 Y 位置，单位为米。 [按车调整]
+        y: 0.0
+        # UWB 天线在 body 系中的 Z 位置，单位为米。 [按车调整]
+        z: 0.0
+      # 己方为红方时 UWB 坐标系到 map 的固定变换（与地图包绑定，换地图要重设）。 [按车调整]
+      zero_pose_red:
+        # T_map_uwb 的 X 平移，单位为米。
+        x: 23.42
+        # T_map_uwb 的 Y 平移，单位为米。
+        y: 8.27
+        # T_map_uwb 的航向，单位为度。
+        yaw_deg: 180.15
+      # 己方为蓝方时 UWB 坐标系到 map 的固定变换。 [按车调整]
+      zero_pose_blue:
+        # T_map_uwb 的 X 平移，单位为米。
+        x: 23.42
+        # T_map_uwb 的 Y 平移，单位为米。
+        y: 8.27
+        # T_map_uwb 的航向，单位为度。
+        yaw_deg: 180.15
+      # UWB 读数（按运动时刻）相对当前帧允许的最大年龄，单位为秒；超出视为没有 UWB。
+      max_age: 1.2
+      # UWB 运动时刻与里程计插值端点的最大时间间隔，单位为秒。
+      odom_sync_tolerance: 0.25
+      # 以 UWB 位置召回先验关键帧的半径，单位为米。
+      search_radius: 2.0
+      # UWB 位置召回最多保留的先验关键帧数量。
+      candidates: 8
+      # 恢复解推算的天线位置与 UWB 读数允许的最大水平偏差，单位为米；0 关闭。
+      max_offset: 0.6
     loop:
       # 是否在无先验图时启用运行轨迹回环。
       enabled: true

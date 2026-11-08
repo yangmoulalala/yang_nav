@@ -147,7 +147,7 @@ void fields(Config& config, const Config& defaults, std::initializer_list<double
     for (auto member : members)
         config.*member = rule(config.*member, defaults.*member);
 }
-/// 规范化因果源最小帧数、容量及连续性门限。
+/// 规范化因果源最小帧数、容量及时间、运动累积门限。
 void source(SourceAccumulationConfig& config, const SourceAccumulationConfig& defaults) {
     config.max_frames = std::max(1, config.max_frames);
     config.min_frames = std::clamp(config.min_frames, 1, config.max_frames);
@@ -214,8 +214,7 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
                                d.relocalization.ambiguity_rotation_rad));
     c.recovery.suspect_failures_before_lost = std::max(1, c.recovery.suspect_failures_before_lost);
     fields(c.recovery, d.recovery,
-           {&RecoveryConfig::period, &RecoveryConfig::suspect_search_radius,
-            &RecoveryConfig::lost_search_radius},
+           {&RecoveryConfig::period, &RecoveryConfig::initial_search_radius},
            nonnegativeOr);
     source(c.tracking.source, d.tracking.source);
     source(c.recovery.source, d.recovery.source);
@@ -226,11 +225,22 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
         std::max(0.0, finiteOr(c.recovery.confirm_translation, d.recovery.confirm_translation));
     c.recovery.confirm_rotation_rad =
         std::max(0.0, finiteOr(c.recovery.confirm_rotation_rad, d.recovery.confirm_rotation_rad));
-    c.recovery.confirm_min_translation = std::max(
-        0.0, finiteOr(c.recovery.confirm_min_translation, d.recovery.confirm_min_translation));
-    c.recovery.confirm_min_rotation_rad = std::max(
-        0.0, finiteOr(c.recovery.confirm_min_rotation_rad, d.recovery.confirm_min_rotation_rad));
-    c.recovery.confirm_stationary_max = std::max(0, c.recovery.confirm_stationary_max);
+}
+
+/// 规范化局中恢复 UWB 的时间、半径、偏差门限与固定坐标变换。
+void normalizeUwbNumerics(UwbConfig& uwb, const UwbConfig& ud) {
+    fields(uwb, ud,
+           {&UwbConfig::max_age, &UwbConfig::odom_sync_tolerance, &UwbConfig::search_radius,
+            &UwbConfig::max_offset},
+           nonnegativeOr);
+    uwb.time_offset_seconds = finiteOr(uwb.time_offset_seconds, ud.time_offset_seconds);
+    uwb.candidates = std::max(1, uwb.candidates);
+    if (!uwb.T_map_uwb_red.allFinite())
+        uwb.T_map_uwb_red = ud.T_map_uwb_red;
+    if (!uwb.T_map_uwb_blue.allFinite())
+        uwb.T_map_uwb_blue = ud.T_map_uwb_blue;
+    if (!uwb.antenna_position_body.allFinite())
+        uwb.antenna_position_body = ud.antenna_position_body;
 }
 
 /// 规范化回环检索、验证门限及一致性历史预算。
@@ -308,6 +318,7 @@ void normalizeBackendConfigNumerics(Config* config) {
     normalizeObservationNumerics(c, d);
     if (!c.T_sensor_body.allFinite())
         c.T_sensor_body = d.T_sensor_body;
+    normalizeUwbNumerics(c.uwb, d.uwb);
     normalizeLoopNumerics(c.loop, d.loop);
     normalizeResetNumerics(c.reset, d.reset);
     normalizeGraphNumerics(c.graph, d.graph);

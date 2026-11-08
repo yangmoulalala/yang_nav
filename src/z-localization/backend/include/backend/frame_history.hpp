@@ -54,8 +54,10 @@ struct TrackingSourceSnapshot {
 class FrameHistory {
 public:
     /// 绑定帧历史和配准源窗口所需的只读配置。
-    FrameHistory(const SourceAccumulationConfig& tracking, const SourceAccumulationConfig& recovery)
-        : tracking_(tracking), recovery_(recovery) {}
+    /// odometry_seconds：里程计时间支撑保留时长，供 UWB 测量时刻插值。
+    FrameHistory(const SourceAccumulationConfig& tracking, const SourceAccumulationConfig& recovery,
+                 double odometry_seconds = 2.0)
+        : tracking_(tracking), recovery_(recovery), odometry_seconds_(odometry_seconds) {}
     /// 校验前端代次、有限值和当前时间轴的单调性。
     bool accepts(const FrontendFrame& frame, std::uint64_t epoch) const;
     /// 保存最新同步帧并按配置裁剪点云历史及里程计时间支撑。
@@ -72,6 +74,8 @@ public:
     const FrontendFrame& latest() const { return *latest_frame_; }
     /// 返回用于因果源组装的有界同步帧历史。
     const std::deque<FrontendFrame>& history() const { return frame_history_; }
+    /// 返回 UWB 测量时刻插值使用的只读里程计历史。
+    const TimedPoseBuffer& odometry() const { return odom_history_; }
     /// 返回关键帧创建时冻结的因果源快照。
     const std::optional<TrackingSourceSnapshot>& trackingSource() const {
         return tracking_source_snapshot_;
@@ -83,6 +87,8 @@ public:
 private:
     const SourceAccumulationConfig& tracking_;
     const SourceAccumulationConfig& recovery_;
+    double odometry_seconds_ = 2.0;
+    TimedPoseBuffer odom_history_;
     std::optional<FrontendFrame> latest_frame_;
     std::optional<double> restart_after_;
     std::deque<FrontendFrame> frame_history_;

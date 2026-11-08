@@ -15,10 +15,12 @@ namespace backend::ros {
 
 /// 前端消息、坐标系、同步器和维护周期参数。
 /// 全部由参数文件提供；legacy 专用字段仅在 common.frontend=legacy 时读取，其余情况不使用。
-/// ZLIO 输入话题为固定相对名，部署时通过 ROS remap 改名。
+/// ZLIO 与 UWB 输入话题为固定相对名，部署时通过 ROS remap 改名。
 struct RosInputParameters {
     std::string frontend;
     std::string sensor_frame;
+    /// UWB 原始解的 frame_id；不一致的消息被丢弃。
+    std::string uwb_frame;
     std::string map_frame;
     std::string odom_frame;
     std::string body_frame;

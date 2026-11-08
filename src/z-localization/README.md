@@ -18,7 +18,7 @@ MID-360 内置 IMU ────────────────────�
 | 包 | 来源 | 作用 |
 | --- | --- | --- |
 | `frontend` | 上游 | ZLIO 激光惯性里程计（`zlio_node`），发布 `lio_odom → base_link` |
-| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位 |
+| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位；局中恢复（SUSPECT/LOST）用裁判系统 UWB 作位置先验 |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
 | `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
@@ -113,7 +113,7 @@ LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通�
 不再有手写的 `imu` 静态 TF：MID-360 内置 IMU 是 URDF 中的 `mid360_imu_link`（Livox 出厂外参），
 前端启动时从 TF 查一次 `frames.imu ← frames.lidar`（同在雷达上，固定）；后端按每条消息的时间戳查
 `common.sensor_frame ← common.body_frame`（`base_link`），超过 `common.body_extrinsic_tolerance` 时沿用上次有效值并告警，
-所以云台 `yaw_joint` 转动时车体位姿也跟随（启动位姿提示仍用启动时外参）。后端只发布 `map → lio_odom`，
+所以云台 `yaw_joint` 转动时车体位姿与 UWB 杆臂也跟随（启动位姿提示仍用启动时外参）。后端只发布 `map → lio_odom`，
 不发 `map → base_link`。Gazebo 不发布真值 `/odom` / `odom` 帧。
 
 ### 仿真实测（2026-10-27，RTX 4060 Ti，RTF 1.0）
@@ -145,6 +145,8 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 - TF：本文件启动 `robot_state_publisher`（URDF）和 `joint_state_publisher`（`bringup/config/real/robot_state.yaml`）。
   云台 `yaw_joint` 取自底盘发布的 `/chassis/joint_states`；该话题没有数据时，所有关节发 0。
 - 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。
+  真车 `uwb.enabled: false`（`uwb.zero_pose_*` 未标定），此时 SUSPECT/LOST 不会自动恢复；接入裁判系统 UWB 后在这里打开，并按
+  `backend/docs/parameters.md` 的 `uwb` 小节配置。
 
 **以下取值未在真车验证（本机无硬件），上车先核对**，改启动参数或 yaml 即可，不用改代码：
 
@@ -205,7 +207,7 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 
 - 后端偶尔打印 `invalid ZLIO observation frame/time/point layout`（一次运行 0–2 条），原因未查，未见对精度的影响。
 - 仿真出生点附近结构少，标定在该处全部因 `degenerate_geometry` 拒收，需开到拐角采集。
-- 绑架后恢复可能锁到对称位置或相似关键帧（场地中心对称）。修复前：双雷达 `FALSE TRUST` 0.6–14 s；单雷达（体素 0.25）12–17 s、结束时仍偏约 12 m。绑架恢复修复（已合入 main）加了严重冲突提前进 `SUSPECT`、恢复试用期、歧义检验和运动门（见 `docs/backend_guide.md` 4.5–4.6、7.3）：恢复期间车或云台转动时，双雷达 5/5 恢复、恢复后可信最大误差 ≤ 0.31 m；单雷达仍只有 1/5 干净恢复，常锁到约 99°/180° 的错误位姿。车不动时运动门不起作用，停车兜底（`recovery.confirm_stationary_max`）可能提交错误解。`recovery.confirmations` 改为 3 无改善。2026-11-08 起重定位只在最后可信位置或起点附近 2 m 内搜索、不做全局重定位（`docs/backend_guide.md` 4.2），对称锁错不再出现，但开机位置须在建图起点 2 m 内（或配置 `startup_hint`），超过 2 m 的移动无法恢复。
+- 绑架后恢复可能锁到对称位置或相似关键帧（场地中心对称）。修复前：双雷达 `FALSE TRUST` 0.6–14 s；单雷达（体素 0.25）12–17 s、结束时仍偏约 12 m。绑架恢复修复（已合入 main）加了严重冲突提前进 `SUSPECT`、恢复试用期、歧义检验和运动门（见 `docs/backend_guide.md` 4.5–4.6、7.3）：恢复期间车或云台转动时，双雷达 5/5 恢复、恢复后可信最大误差 ≤ 0.31 m；单雷达仍只有 1/5 干净恢复，常锁到约 99°/180° 的错误位姿。车不动时运动门不起作用，停车兜底可能提交错误解（两者已于 2026-11-08 删除）。`recovery.confirmations` 改为 3 无改善。2026-11-08 起开机初始化只在起点或 `startup_hint` 附近 2 m 内搜索，局中恢复只在 UWB 位置 2 m 内搜索并检查与 UWB 的偏差（`docs/backend_guide.md` 4.2），不做全局重定位；开机位置须在建图起点 2 m 内（或配置 `startup_hint`），没有 UWB 时 SUSPECT/LOST 不会自动恢复。
 - 单雷达有一次绑架后已正确恢复（3 cm），行驶中又跑偏到 8.4 m，原因未查。
 - 跟踪与恢复/重定位共用 `registration.voxel_resolution`：单雷达跟踪需要 0.25，恢复用 0.25 更易误匹配，暂无法分开设置。
 - 单雷达跟踪时配准偶尔把航向拉偏 1–10°（预测航向是准的），推测侧装单雷达偏航约束弱，未单独验证。

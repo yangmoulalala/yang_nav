@@ -1,6 +1,6 @@
 /**
  * @file fusion_parameters.cpp
- * @brief 读取回环、图估计、重置与启动提示参数。
+ * @brief 读取 UWB、回环、图估计、重置与启动提示参数。
  */
 
 #include <algorithm>
@@ -11,6 +11,39 @@
 #include "backend/math.hpp"
 
 namespace backend::ros {
+
+/// 读取局中恢复用的 UWB 输入、杆臂、时间与门限参数。
+void ParameterReader::loadUwb() {
+    UwbConfig& uwb = parameters_.runtime.uwb;
+    getParam("uwb/enabled", uwb.enabled);
+    getParam("uwb/frame", parameters_.input.uwb_frame);
+    if (parameters_.input.uwb_frame.empty())
+        throw std::invalid_argument("uwb.frame must not be empty");
+    getParam("uwb/time_offset_seconds", uwb.time_offset_seconds);
+    getParam("uwb/max_age", uwb.max_age);
+    getParam("uwb/odom_sync_tolerance", uwb.odom_sync_tolerance);
+    getParam("uwb/search_radius", uwb.search_radius);
+    getParam("uwb/candidates", uwb.candidates);
+    getParam("uwb/max_offset", uwb.max_offset);
+    getParam("uwb/antenna_position_body/x", uwb.antenna_position_body.x());
+    getParam("uwb/antenna_position_body/y", uwb.antenna_position_body.y());
+    getParam("uwb/antenna_position_body/z", uwb.antenna_position_body.z());
+    if (!uwb.antenna_position_body.allFinite())
+        throw std::invalid_argument("uwb.antenna_position_body contains a non-finite value");
+    uwb.T_map_uwb_red = loadUwbZeroPose("red");
+    uwb.T_map_uwb_blue = loadUwbZeroPose("blue");
+}
+
+/// 读取一方的固定 UWB 到地图变换（水平平移与航向）。
+Eigen::Matrix4d ParameterReader::loadUwbZeroPose(const std::string& team) {
+    const std::string base = "uwb/zero_pose_" + team + "/";
+    const double x = param<double>(base + "x");
+    const double y = param<double>(base + "y");
+    const double yaw_deg = param<double>(base + "yaw_deg");
+    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(yaw_deg))
+        throw std::invalid_argument("uwb.zero_pose_" + team + " contains a non-finite value");
+    return yawGuess(degreesToRadians(yaw_deg), Eigen::Vector3d(x, y, 0.0));
+}
 
 /// 读取回环验证与因子图噪声、鲁棒核和窗口参数。
 void ParameterReader::loadLoopAndGraph() {

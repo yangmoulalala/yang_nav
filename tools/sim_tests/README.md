@@ -7,7 +7,7 @@
 | --- | --- |
 | `run_all.sh` | 全量回归：单/双雷达 ×（建图、定位+绑架、原地旋转）+ 双雷达标定，串行运行并打印汇总；单雷达场景自动加 `earlyspin`（建图另加 `spawnspin`） |
 | `zt_run.sh` | 一键启动仿真 + `bringup sim.launch.py`，运行驱动脚本后清理进程组；环境变量 `LIDAR=single\|dual`（默认 dual），`CALIB=1` 时同时启动标定 |
-| `zt_driver.py` | 按真值跟踪路线（补给区 → 中央 → 返回）；`mapping` 结束时调用 `save_map`；`localize` 跑完后用 `set_pose` 瞬移到跑圈终点 1.5 m 外、航向 45°（RMUL (1.25, 5.25)，RMUC (-9.5, -1.5)）并等待恢复；定位只在最后可信位置 2 m 内搜索；`spin` 原地慢转/快转；`calib` 依次停到 5 个拐角/中央点、每处 4 个朝向静止 6 s；第 4 个参数（`zt_run.sh` 第 6 个）为逗号分隔的标志，见下文[单雷达](#单雷达) |
+| `zt_driver.py` | 按真值跟踪路线（补给区 → 中央 → 返回）；`mapping` 结束时调用 `save_map`；`localize` 跑完后用 `set_pose` 瞬移到跑圈终点 1.5 m 外、航向 45°（RMUL (1.25, 5.25)，RMUC (-9.5, -1.5)）并等待恢复（局中恢复在 UWB 位置 2 m 内搜索，只有 RMUC 有 UWB，RMUL 绑架后不会恢复）；`spin` 原地慢转/快转；`calib` 依次停到 5 个拐角/中央点、每处 4 个朝向静止 6 s；第 4 个参数（`zt_run.sh` 第 6 个）为逗号分隔的标志，见下文[单雷达](#单雷达) |
 | `zt_eval.py` | SE(2) 对齐真值与估计（参考样本几乎不动时改用首样本锚定），按阶段输出 RMSE / 最大误差 / 航向误差；`FALSE TRUST` 行统计定位自报可信但误差 > 0.5 m 的样本（错误恢复）；SUSPECT/LOST 时后端把输出冻结在最后可信位姿、误差随行驶距离增长，故每个阶段另列 `trusted` / `untrusted` 统计；`--align YAW_DEG TX TY` 用固定对齐（取建图那次的 alignment） |
 | `cloud_rate.py` | 不反序列化点云地统计话题频率与 RTF（`ros2 topic hz` 对大点云会严重低估） |
 
@@ -52,16 +52,17 @@ MID-360 侧装（URDF `mid360_joint` 俯仰约 90°），静止时只看到一�
 | `initspin` | ZLIO 初始化完成后才慢转 | 只补后端重定位视野，前端仍可能久等 |
 | `spawnspin` | 建图时先在出生点慢转一圈再跑圈 | 侧装雷达各航向画面不同；地图在出生点缺其他航向的关键帧时，启动慢转会让重定位锁到对称位置（曾偏 5.5 m / 94°） |
 | `spin` | 每个路点原地转一圈 | 单雷达建图不要用：建图最大误差升到约 27 cm |
-| `kidnapspin` | 绑架后后端处于 SUSPECT/LOST 时以 0.3 rad/s 原地慢转（单双雷达都可用） | 后端恢复的运动门需要视角变化；车不动时对称解会连续自洽。真车对应 SUSPECT 时转云台 |
+| `kidnapspin` | 绑架后后端处于 SUSPECT/LOST 时以 0.3 rad/s 原地慢转（单双雷达都可用） | 原用于给运动门提供视角变化（运动门已于 2026-11-08 删除）；现在只给恢复增加视野 |
 
 单雷达后端读 `bringup/config/sim/backend_single.yaml`（launch 按 `lidar` 选择），与 `backend.yaml` 的差异写在该文件开头。
 
 ## 2026-11-08 变更
 
-- 定位已删除 UWB；重定位只在最后可信位置或起点附近 2 m 内搜索，不做全局重定位（`docs/backend_guide.md` 4.2）。
-- 绑架改为瞬移到跑圈终点 1.5 m 外、航向 45°（见上表 `zt_driver.py`）。下面两张表是旧设定（远距离绑架、全局搜索）下的结果，只作历史对比。
-- `run_all.sh` 已去掉 `*_localization_uwb` 场景。仿真里的 `uwb_sim` 仍在发布 `/uwb_pose`，`zt_eval.py` 的 `uwb input` 只统计仿真 UWB 本身，定位不读取。
-- `symkidnap`、`uwbdrop`、`uwbdropkidnap` 标志仍可用，但定位不再读 UWB：对称绑架预期不会被发现、也无法恢复。
+- 后端：UWB 只在 `SUSPECT`/`LOST` 局中恢复时作位置先验：在 UWB 位置 `uwb.search_radius`（2 m）内召回关键帧、航向全圈扫描，与 UWB 偏差超过 `uwb.max_offset`（0.6 m）的解丢弃；没有新鲜 UWB 时只等待，不计失败。UWB 不参与跟踪和因子图。开机初始化不用 UWB，只在起点或 `startup_hint` 附近 `recovery.initial_search_radius`（2 m）内搜索。运动门、里程计连续性门已删除（`docs/backend_guide.md` 4.2、4.5）。
+- `bringup/config/sim/backend*.yaml` 里 `uwb.enabled: true`，没有 launch 开关。RMUL 不模拟 UWB，所以 RMUL 场景绑架后保持 `SUSPECT`/`LOST`、不会恢复；要测恢复用 RMUC。
+- 绑架改为瞬移到跑圈终点 1.5 m 外、航向 45°（见上表 `zt_driver.py`）。下面两张表是旧设定（远距离绑架、全局搜索、运动门）下的结果，只作历史对比。
+- `run_all.sh` 已去掉单独的 `*_localization_uwb` 场景：`rmuc_*_localization` 默认就启动 `uwb_sim`（`zt_run.sh` 的 `SIM_UWB` 默认 `true`），后端会用它恢复。
+- `symkidnap`：雷达画面相同、跟踪察觉不到，UWB 只在已进 `SUSPECT`/`LOST` 后才用，预期不会被发现。`uwbdrop`、`uwbdropkidnap` 暂停 `uwb_sim` 期间，后端恢复只等待。
 
 ## 参考结果（2026-11-02，`single-lidar` 分支 `1357a28`，RTX 4060 Ti，RTF 1.0）
 
@@ -97,7 +98,7 @@ LIDAR=dual   tools/sim_tests/zt_run.sh localization /tmp/zt/k ~/yang_nav/maps/si
 | 两种雷达绑架，车不动 | 同上 | 运动门不起作用：双雷达 2/3 停在不可信状态未恢复；停车兜底可能提交错误解（日志 `stationary limit`） |
 | 全量 `run_all.sh`（不带 `kidnapspin`） | 见上表 | 建图最大 3.5 / 3.6 cm，原地旋转 4.0 / 5.5 cm，先验跑圈 trusted 最大 4.4 / 8.4 cm（单 / 双），标定与 URDF 差约 9.5 mm；绑架两种雷达仍锁错 |
 
-新增日志关键字：`(severe N/2)`（严重冲突）、`during recovery probation`（试用期内升级）、`ambiguous result, deferring recovery`（歧义推迟）、`recovery candidate accepted after N consistent candidates, motion=..`（运动门通过）、`(stationary limit)`（停车兜底提交）。
+新增日志关键字：`(severe N/2)`（严重冲突）、`during recovery probation`（试用期内升级）、`ambiguous result, deferring recovery`（歧义推迟）、`recovery candidate accepted after N consistent candidates, motion=..`（运动门通过）、`(stationary limit)`（停车兜底提交）。运动门和停车兜底已于 2026-11-08 删除：现在提交日志为 `recovery candidate accepted after N consistent candidates via <来源>`，与 UWB 不一致时为 `recovery candidate rejected: inconsistent with UWB`。
 
 ## 注意
 

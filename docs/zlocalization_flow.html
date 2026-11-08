@@ -242,10 +242,10 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <path class="ln ln-ok" d="M140 285 V310 H310 V200 H328" marker-end="url(#ah-ok)"/><path class="ln ln-be" d="M310 290 H328" marker-end="url(#ah-be)"/><text class="ts tok" x="148" y="303">否</text>
     <rect class="box wr" x="330" y="20" width="650" height="125" rx="10"/>
     <text class="tb" x="350" y="44">重定位 recovery</text><text class="ts" x="490" y="44">至少隔 0.2 s · 只在有先验地图时运行</text>
-    <text x="350" y="68">候选：startup_hint → Scan Context（都只在 2 m 内，不做全局重定位）</text>
+    <text x="350" y="68">候选：初始化 startup_hint → Scan Context（2 m 内）；SUSPECT/LOST 只用 UWB 位置 2 m 内</text>
     <text x="350" y="90">每个候选先用描述子航向，不过再每 60° 扫一圈 → 并行点到面验证 → 歧义检验</text>
-    <text x="350" y="112">连续 2 次一致 + 运动 ≥0.3 m / ≥30°（或一致 15 次）→ 回 NORMAL，进入 5 次观测试用期</text>
-    <text class="twr" x="350" y="134">源点云帧数不够不算失败；SUSPECT 连续失败 3 次 → LOST，LOST 下每次失败都请求前端重置</text>
+    <text x="350" y="112">与 UWB 偏差 ≤0.6 m，连续 2 次一致 → 回 NORMAL，进入 5 次观测试用期</text>
+    <text class="twr" x="350" y="134">源点云不够、没有 UWB 只等待；SUSPECT 失败 3 次 → LOST，LOST 下失败即请求前端重置</text>
     <rect class="box ok" x="330" y="155" width="650" height="90" rx="10"/>
     <text class="tb" x="350" y="179">跟踪 tracking</text><text class="ts" x="470" y="179">每个新关键帧最多一次，两次至少隔 0.5 s · 有先验地图</text>
     <text x="350" y="203">最近 ≤5 帧点云 → 最近先验关键帧子图（7 m 内，0.5 m 滞回）做 scan-to-map</text>
