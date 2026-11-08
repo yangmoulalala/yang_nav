@@ -51,7 +51,7 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | `livox_ros_driver2` | `livox_ros_driver2_node` | 真车 MID-360 驱动，输出 `/livox/lidar`、`/livox/imu` |
 | `lidar_fusion` | `merge_node`（节点名 `lidar_merge`） | 把 MID-360 与可选 L2 点云按 tf2 外参合并到 `mid360_link`，输出带逐点时间 `offset_time` 的 `/lidar/points` |
 | `frontend` (ZLIO) | `zlio_node`、`zlio_visualizer` | 激光惯性里程计：IMU 预测 + 点面配准滤波，输出高频里程计和去畸变观测帧，并发布 TF `lio_odom → base_link` |
-| `backend` | `backend_node`、`body_calibration_node` | 全局定位后端：先验地图定位或在线建图、Scan Context 回环、位姿图优化、丢失恢复、可选 UWB 融合 |
+| `backend` | `backend_node`、`body_calibration_node` | 全局定位后端：先验地图定位或在线建图、Scan Context 回环、位姿图优化、丢失恢复 |
 | `localization_interfaces` | — | 前后端协议消息：`FrontendFrame`、`FrontendOdometry`、`FrontendSession`、`ResetFrontend.srv` |
 | `lidar_calibration` | `calibrate` | 雷达/车体外参标定工具（订阅 `/odometry`） |
 | `bringup` | `localization.launch.py`、`sim.launch.py`、`real.launch.py` | `localization.launch.py` 组装融合 + ZLIO + 后端；`sim`/`real` 只管数据源；`config/{sim,real}/{lidar_fusion,frontend,backend}.yaml` 为完整参数文件 |
@@ -122,11 +122,10 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | `/backend_node/loop_edges` | `visualization_msgs/Marker` | 回环连线 |
 | `/backend_node/map_axes` | `Marker` | 关键帧坐标轴 |
 | `/backend_node/localization_status` | `Marker` | 状态文字标记 |
-| `/backend_node/uwb_position` | `Marker` | UWB 推算的车体位置（UWB 关闭时无数据） |
 | `/backend_node/debug/aligned_source` | `PointCloud2` | 最近一次配准后的源点云 |
 | `/backend_node/debug/target` | `PointCloud2` | 最近一次配准的目标点云；两者重合程度反映匹配质量 |
 
-> **`*_array` 话题**（`loop_edges_array`、`map_axes_array`、`localization_status_array`、`uwb_position_array`）不是代码发布的：RViz2 的 Marker 显示项会同时订阅 `<topic>` 和 `<topic>_array`（MarkerArray），所以只要 RViz 打开就会出现，没有发布者，可忽略。
+> **`*_array` 话题**（`loop_edges_array`、`map_axes_array`、`localization_status_array`）不是代码发布的：RViz2 的 Marker 显示项会同时订阅 `<topic>` 和 `<topic>_array`（MarkerArray），所以只要 RViz 打开就会出现，没有发布者，可忽略。
 
 ### 3.6 ROS 通用
 

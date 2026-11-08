@@ -18,7 +18,7 @@ MID-360 内置 IMU ────────────────────�
 | 包 | 来源 | 作用 |
 | --- | --- | --- |
 | `frontend` | 上游 | ZLIO 激光惯性里程计（`zlio_node`），发布 `lio_odom → base_link` |
-| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位、UWB 辅助（保留，默认关闭） |
+| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位 |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
 | `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
@@ -113,7 +113,7 @@ LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通�
 不再有手写的 `imu` 静态 TF：MID-360 内置 IMU 是 URDF 中的 `mid360_imu_link`（Livox 出厂外参），
 前端启动时从 TF 查一次 `frames.imu ← frames.lidar`（同在雷达上，固定）；后端按每条消息的时间戳查
 `common.sensor_frame ← common.body_frame`（`base_link`），超过 `common.body_extrinsic_tolerance` 时沿用上次有效值并告警，
-所以云台 `yaw_joint` 转动时车体位姿与 UWB 杆臂也跟随（启动位姿提示仍用启动时外参）。后端只发布 `map → lio_odom`，
+所以云台 `yaw_joint` 转动时车体位姿也跟随（启动位姿提示仍用启动时外参）。后端只发布 `map → lio_odom`，
 不发 `map → base_link`。Gazebo 不发布真值 `/odom` / `odom` 帧。
 
 ### 仿真实测（2026-10-27，RTX 4060 Ti，RTF 1.0）
@@ -144,8 +144,7 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 - IMU：MID-360 内置 IMU，`imu_acceleration_scale=9.81`，外参是 URDF 中 `mid360_imu_link` 的 Livox 出厂值。
 - TF：本文件启动 `robot_state_publisher`（URDF）和 `joint_state_publisher`（`bringup/config/real/robot_state.yaml`）。
   云台 `yaw_joint` 取自底盘发布的 `/chassis/joint_states`；该话题没有数据时，所有关节发 0。
-- 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。接 UWB 时在这里打开 `uwb.enabled` 并按
-  `backend/docs/parameters.md` 配置。
+- 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。
 
 **以下取值未在真车验证（本机无硬件），上车先核对**，改启动参数或 yaml 即可，不用改代码：
 
@@ -213,7 +212,7 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 - 单雷达先验定位起点偶尔偏约 22 cm（2 次），原因未查。
 - ZLIO 初始化失败重来时会在转动中重新估计重力；纯原地慢转影响很小，人手推车可能偏差较大，未处理。
 - SUSPECT/LOST 时后端输出冻结在最后可信位姿（`backend/src/pose_output.cpp`），行驶中误差随距离增长；是否改为里程计外推待定。
-- 前端 IMU 采样中断（`front-end input discontinuity`）后，建图模式下后端停在 LOST 直到结束（仿真 2 次）。读代码确认的原因：`notifyFrontendDiscontinuity` → `isolateFrontendLocked` 把 `odometry_connected_` 置为 false，重置完成后 `commitFrontendResetBoundaryLocked` 在无先验地图、无 UWB 时调用 `forceLost`，暖重置返回的 `old_from_new` 也不再用于衔接（`backend/src/reset_coordinator.cpp`）。这是有意设计：`old_from_new` 只对应中断前最后一次后验，补不回断流期间车的运动；若直接用它衔接，车在断流中移动过时会把错误的边写进地图，而状态仍报可信。需要继续建图时，停车后手动调用 `/localization_reset`。
+- 前端 IMU 采样中断（`front-end input discontinuity`）后，建图模式下后端停在 LOST 直到结束（仿真 2 次）。读代码确认的原因：`notifyFrontendDiscontinuity` → `isolateFrontendLocked` 把 `odometry_connected_` 置为 false，重置完成后 `commitFrontendResetBoundaryLocked` 在无先验地图时调用 `forceLost`，暖重置返回的 `old_from_new` 也不再用于衔接（`backend/src/reset_coordinator.cpp`）。这是有意设计：`old_from_new` 只对应中断前最后一次后验，补不回断流期间车的运动；若直接用它衔接，车在断流中移动过时会把错误的边写进地图，而状态仍报可信。需要继续建图时，停车后手动调用 `/localization_reset`。
 - 真车路径只验证了编译、launch 展开与无驱动启动（外参、云台关节跟随）。
 
 ## 上游文档

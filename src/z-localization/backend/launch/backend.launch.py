@@ -3,7 +3,6 @@
 每个节点参数只有一个来源：
 - params_file：除下列三项外的全部后端参数（ROS 参数文件格式，不支持继承或合并）；
 - launch：prior_map.enabled、prior_map.directory、trajectory.save_directory 与 use_sim_time；
-  uwb 非空时另覆盖 uwb.enabled（留空沿用参数文件）。
 """
 
 import os
@@ -50,9 +49,6 @@ def resolve(args):
         'trajectory.save_directory': args['save_dir'],
         'use_sim_time': use_sim_time,
     }
-    # 运行选择：同一份参数文件可按数据源有无 UWB 启动（如仿真只有 RMUC 场地有裁判系统 UWB）。
-    if args.get('uwb', ''):
-        overrides['uwb.enabled'] = launch_bool(args['uwb'])
     return str(params_file), overrides, use_sim_time, rviz, prior
 
 
@@ -66,7 +62,6 @@ def generate_launch_description():
         'prior_map': '',
         'save_dir': '',
         'rviz': 'false',
-        'uwb': '',
     }
     descriptions = {
         'params_file': '后端 ROS 参数文件（backend_node: ros__parameters:）',
@@ -75,7 +70,6 @@ def generate_launch_description():
         'prior_map': '先验地图包目录；localization 必填且须存在，mapping 忽略',
         'save_dir': '~/save_map 与退出保存的目标目录；留空则不可保存',
         'rviz': '是否启动 RViz；可视化话题开关只由参数文件的 visualization.* 决定',
-        'uwb': '覆盖 uwb.enabled（true/false）；留空沿用参数文件',
     }
 
     def setup(context):

@@ -54,8 +54,6 @@ public:
     /// 复核高频投影身份，发布传感器里程计与车体位姿。
     void publishPrediction(const nav_msgs::msg::Odometry& odom,
                            const LocalizationProjection& projection);
-    /// 显示已接纳 UWB 观测经时空对齐与杆臂修正后的 map 系车体位置。
-    void publishUwb(const geometry_msgs::msg::PoseStamped& pose);
     /// 复核状态快照的代次与输出版本后发布定位诊断。
     void publishState(const LocalizationSnapshot& snapshot) override;
     /// 在可选输出的失败边界内发布轨迹、回环和配准调试几何。
@@ -127,7 +125,6 @@ private:
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr optimized_path_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr loop_marker_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr map_axes_pub_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr uwb_marker_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr status_marker_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr aligned_source_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr target_pub_;

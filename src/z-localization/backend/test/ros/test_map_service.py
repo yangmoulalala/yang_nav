@@ -57,7 +57,7 @@ def generate_test_description():
     parameters = {
         'common.frontend': 'zlio', 'common.odom_frame': 'odom', 'common.sensor_frame': 'imu',
         'common.body_frame': 'body', 'common.input_cloud_in_local_frame': True,
-        'uwb.enabled': False, 'loop.enabled': False,
+        'loop.enabled': False,
         'trajectory.save_on_shutdown': False, 'trajectory.map_voxel_resolution': 0.0,
         'trajectory.keyframe.min_interval': 0.0, 'trajectory.keyframe.max_interval': 0.1,
         'visualization.enabled': False,

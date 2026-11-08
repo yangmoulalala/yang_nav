@@ -141,22 +141,6 @@ protected:
         controller->onFrontendResetResponse(
             {reset.requests.back(), outcome, 71, generation, std::move(boundary)});
     }
-    /// 以带横向激励的解析 UWB 观测与里程计序列建立可信对齐和运行图。
-    void feedUwbTrajectory(const Eigen::Matrix4d& alignment, FrontendFrame& current,
-                           std::uint64_t epoch = 0, double begin = 10) {
-        for (int index = 0; index < 12; ++index) {
-            SCOPED_TRACE(index);
-            const auto odom = testing::scenePose(.5 * index, .15 * (index % 3), 0, 0);
-            const Eigen::Matrix4d truth = alignment * odom;
-            const Eigen::Vector3d antenna =
-                truth.block<3, 3>(0, 0) * config.uwb.antenna_position_sensor +
-                truth.block<3, 1>(0, 3);
-            ASSERT_TRUE(controller->ingestUwbPosition(begin + index, antenna));
-            current = frame(begin + index, truth, odom, epoch);
-            ASSERT_TRUE(ingest(current));
-            maintain();
-        }
-    }
 };
 
 }  // namespace backend::testing

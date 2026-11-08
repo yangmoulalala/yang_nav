@@ -26,7 +26,6 @@
 #include "backend/pose_graph.hpp"
 #include "backend/pose_output.hpp"
 #include "backend/reset_coordinator.hpp"
-#include "backend/uwb_fusion.hpp"
 
 namespace backend {
 struct GlobalObservationTransaction;
@@ -50,25 +49,14 @@ public:
                  FrontendResetPort& reset_port, StateSink& state_sink,
                  VisualizationSink& visualization_sink);
 
-    /// 初始化 epoch 0。启动提示只提供初值：先验图负责几何验证，UWB-only 等待
-    /// 可观运动，二者都没有时直接选择里程计 gauge。
+    /// 初始化 epoch 0。启动提示只提供初值：先验图负责几何验证，
+    /// 没有先验图时直接选择里程计 gauge。
     void initialize();
 
     /// 接入同步前端帧；旧 epoch、无效数据或当前 epoch 内时间回退时返回 false，
     /// 调用方不得发布或投影被拒绝的帧。
     bool ingestFrame(const FrontendFrame& frame, const Eigen::Vector3d& linear_velocity_sensor,
                      const Eigen::Vector3d& angular_velocity_sensor);
-    /// 接入 UWB 天线位置；只有新的物理解返回 true。无效、乱序和保持重发返回
-    /// false，避免诊断输出用新时间戳重标旧解。
-    /// extrinsic 为适配层在测量时刻查得的 T_sensor_body 与传感器系杆臂；空值使用配置固定值。
-    bool ingestUwbPosition(double timestamp, const Eigen::Vector3d& position_uwb_antenna,
-                           const std::optional<UwbMeasurementExtrinsic>& extrinsic = std::nullopt);
-    /// 返回最新原始 UWB 解所代表的物理时刻；在线估计开启时使用当前共享 dt
-    /// 后验。
-    std::optional<double> latestUwbMotionTimestamp() const;
-    /// 用时间对齐的前端姿态消除天线杆臂并返回机体原点；仅供诊断，不进入图。
-    std::optional<Eigen::Vector3d> latestUwbBodyPositionMap() const;
-
     /// 执行一次有界维护周期；事件数据由帧回调捕获，本函数按状态运行跟踪、恢复或
     /// 一次回环验证。
     void runMaintenanceCycle();
@@ -197,9 +185,9 @@ private:
                                             LocalizationTransition& transition);
     /// 累计恢复候选；连续给出一致 map←odom 变换达到配置次数后返回 true。
     bool recoveryConfirmedLocked(const RecoveryWork& work, const RecoveryResult& result);
-    /// 有新鲜 UWB 时，恢复解推算的天线位置须与 UWB 读数相差不超过 uwb.recovery_max_offset。
-    bool recoveryConsistentWithUwbLocked(const RecoveryWork& work,
-                                         const RecoveryResult& result) const;
+    /// SUSPECT 恢复解须与进入 SUSPECT 时的可信 map←odom 加当前里程计预测一致（排除对称/远处误解）。
+    bool recoveryConsistentWithOdometryLocked(const RecoveryWork& work,
+                                              const RecoveryResult& result);
     /// 将通过联合创新检验的回环写入图及可视化历史。
     LoopCommitSummary commit(const LoopWork& work, const LoopVerificationBatch& result);
 
@@ -210,14 +198,14 @@ private:
     static bool tryStartCycle(const Timestamp& now, const double target_period_sec,
                               Timestamp& last_cycle_time);
 
-    /// 建立 SUSPECT 恢复源边界并重启必要的 UWB 启动配对。
+    /// 建立 SUSPECT 恢复源边界及里程计连续性门锚。
     void beginSuspectRecoveryLocked();
 
     /// 收集尚未消费且可线性化的全局观测及不可用原因。
     void collectGlobalInnovationsLocked(const GlobalObservationWork& work,
                                         const PriorMapObservation& prior_observation,
                                         GlobalObservationTransaction& transaction) const;
-    /// 执行共同预测下的联合创新检验并完成有效 UWB 观测消费。
+    /// 执行共同预测下的联合创新检验。
     void assessGlobalInnovationsLocked(const GlobalObservationWork& work,
                                        GlobalObservationTransaction& transaction,
                                        GlobalObservationCommit& commit);
@@ -240,9 +228,6 @@ private:
     bool sourceIsLatestLocked(const RecoveryWork& work) const;
     /// 确认同步帧严格晚于手动请求捕获的输入边界。
     bool manualRequestAllowsFrameLocked(const FrontendFrame& frame) const;
-    /// 将时间对齐的 UWB 天线位置及杆臂构造成恢复位置先验。
-    std::optional<RelocalizationPositionPrior> makeUwbRecoveryPriorLocked(
-        const FrontendFrame& frame) const;
     /// 在第零代初始化期间构造待几何验证的启动提示。
     std::optional<RelocalizationPositionPrior> makeStartupHintPriorLocked(
         const FrontendFrame& frame) const;
@@ -291,13 +276,10 @@ private:
     void addTrajectoryConstraintLocked(const FrontendFrame& frame, const Keyframe& keyframe,
                                        const std::optional<Keyframe>& previous,
                                        const Eigen::Matrix4d& initial_map_pose);
-    /// 以恢复观测建立独立全位姿锚，并按需验收附加 UWB 因子。
+    /// 以恢复观测建立独立全位姿锚。
     void anchorRecoveredFrameLocked(const FrontendFrame& frame, const Eigen::Matrix4d& T_map_sensor,
                                     const PoseCovariance6d& covariance,
-                                    std::vector<FrontendFrame> tracking_source_history,
-                                    const bool add_uwb_factor = true);
-    /// 验收可观的 UWB 启动估计并将其协方差传播到恢复位姿锚。
-    bool tryCommitUwbBootstrapLocked(const FrontendFrame& frame);
+                                    std::vector<FrontendFrame> tracking_source_history);
     KeyframeMap& trajectory_;
     KeyframeMap& prior_map_;
     PlaceDescriptor& descriptor_;
@@ -313,7 +295,6 @@ private:
     LocalizationStateMachine state_;
     FrameHistory frames_;
     PoseOutput poses_;
-    UwbFusion uwb_;
 
     mutable std::mutex mutex_;
     std::shared_ptr<const OutputView> output_view_;
@@ -342,6 +323,17 @@ private:
         Eigen::Matrix4d first_odom_pose = Eigen::Matrix4d::Identity();
     };
     std::optional<PendingRecovery> pending_recovery_;
+    /// 进入 SUSPECT 时的可信 map←odom 及里程计位姿；同一前端代次内用于里程计连续性门。
+    struct OdomGateAnchor {
+        Eigen::Matrix4d T_map_odom = Eigen::Matrix4d::Identity();
+        Eigen::Matrix4d odom_pose = Eigen::Matrix4d::Identity();
+        std::uint64_t epoch = 0;
+        int rejections = 0;
+    };
+    std::optional<OdomGateAnchor> odom_gate_anchor_;
+    /// 最近一次恢复（含初始化）提交的前端代次与源帧时刻。
+    std::uint64_t odom_gate_trusted_epoch_ = 0;
+    double odom_gate_trusted_since_ = std::numeric_limits<double>::quiet_NaN();
     int last_lidar_observation_runtime_index_ = -1;
     Timestamp last_global_observation_cycle_time_;
     Timestamp last_recovery_cycle_time_;

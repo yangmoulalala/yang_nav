@@ -39,8 +39,6 @@ BACKEND_PLATFORM = {
     'backend_node/registration.max_iterations': SIM_CONVERGENCE,
     'backend_node/registration.convergence_translation': SIM_CONVERGENCE,
     'backend_node/registration.convergence_rotation_deg': SIM_CONVERGENCE,
-    'backend_node/uwb.time_offset_seconds': '仿真 uwb_sim 延迟 0.2 s；真车待标定',
-    'backend_node/uwb.max_age': '仿真为 1 Hz 裁判系统 UWB（恢复时解算最旧约 1 s）；真车按实际设备；标定配对另用 calibration_max_age',
 }
 SINGLE_LIDAR = {
     'backend_node/common.scan_context.similarity_normalization':

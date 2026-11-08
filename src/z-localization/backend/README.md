@@ -5,7 +5,7 @@
 ![GTSAM](https://img.shields.io/badge/GTSAM-4.2-287A6B)
 ![Localization](https://img.shields.io/badge/Mapping-Localization-536A8A)
 
-`backend` 是 [Z-Localization](../README.md) 的定位后端，将前端里程计与先验地图、回环、UWB 位置观测结合，
+`backend` 是 [Z-Localization](../README.md) 的定位后端，将前端里程计与先验地图、回环结合，
 输出全局位姿、速度、协方差和定位状态。包内也提供地图处理与车体外参标定工具。
 除 ZLIO 外，其他 LIO 前端及奥丁之眼等定位模块也可通过里程计与点云兼容接口适配接入。
 
@@ -17,7 +17,7 @@
 src/z-localization/backend/
 ├── README.md
 ├── include/backend/             核心接口、配置与数据类型
-├── src/                         因子图、配准、回环、重定位与 UWB 融合
+├── src/                         因子图、配准、回环、重定位
 ├── apps/                        ROS 输入、参数、服务与发布
 ├── tools/                       地图处理和车体外参标定
 ├── launch/
@@ -87,7 +87,7 @@ ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --yaw 0 --pitch 0 
 
 ### 输入话题
 
-`common.frontend` 决定使用哪组接口。ZLIO 与 UWB 话题为节点内固定的相对名，在默认命名空间下解析为表中名称，
+`common.frontend` 决定使用哪组接口。ZLIO 话题为节点内固定的相对名，在默认命名空间下解析为表中名称，
 需要改名时在 launch 中使用 ROS remap；legacy 话题名由 legacy 专用参数配置。ZLIO 消息定义见
 [localization_interfaces](../localization_interfaces/README.md)。
 
@@ -99,7 +99,6 @@ ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --yaw 0 --pitch 0 
 | `common.sync_odom_topic` | `nav_msgs/msg/Odometry` | best effort，50 | `legacy` 模式用于同步的里程计 |
 | `common.cloud_topic` | `sensor_msgs/msg/PointCloud2` | best effort，50 | `legacy` 模式用于同步的点云 |
 | `common.odom_topic` | `nav_msgs/msg/Odometry` | SensorDataQoS | `legacy` 模式的高频里程计 |
-| `uwb_pose` | `geometry_msgs/msg/PoseStamped` | reliable，10 | UWB 天线在 `uwb.frame` 坐标系中的原始位置；由 `uwb.enabled` 启用 |
 
 输入位姿以 `common.odom_frame` 为参考，描述 `common.sensor_frame` 的位置和姿态。
 ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计一致。
@@ -121,7 +120,6 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `~/optimized_path` | `nav_msgs/msg/Path` | reliable，1，transient local | map 系优化轨迹；由 `visualization.publish_paths` 控制 |
 | `~/loop_edges` | `visualization_msgs/msg/Marker` | reliable，1，transient local | 回环连线；由 `visualization.publish_paths` 控制 |
 | `~/map_axes` | `visualization_msgs/msg/Marker` | reliable，1，transient local | 地图关键帧坐标轴；由 `visualization.publish_map_axes` 控制 |
-| `~/uwb_position` | `visualization_msgs/msg/Marker` | reliable，1，transient local | UWB 推算的 map 系车体位置；由 `visualization.enabled` 控制 |
 | `~/localization_status` | `visualization_msgs/msg/Marker` | reliable，1，transient local | 定位状态文字标记；由 `visualization.enabled` 控制 |
 | `~/debug/aligned_source` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准后的源点云；由 `visualization.publish_debug_registration` 控制 |
 | `~/debug/target` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准的目标点云；由 `visualization.publish_debug_registration` 控制 |
@@ -153,7 +151,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 以上服务名均为节点内固定名称，不是参数；需要改名时在 launch 中使用 ROS remap。
 
 手动调用 `/localization_reset` 时，若前端无法提供暖重置前后的坐标变换，后端会按机器人保持静止来衔接位姿。
-因此，调用时须保证整个重置期间停车。自动冷恢复需要重新通过先验地图匹配或 UWB 对齐确定全局位姿；
+因此，调用时须保证整个重置期间停车。自动冷恢复需要重新通过先验地图匹配确定全局位姿；
 已有轨迹、且无绝对定位来源的纯建图模式会保持 `LOST`。
 普通前端处理失败会使后端冻结输出，等待显式重置或新前端进程接入，不会自动反复重启。
 

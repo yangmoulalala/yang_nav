@@ -4,7 +4,6 @@
     ros2 launch bringup sim.launch.py lidar:=single            # 仅 MID-360
     ros2 launch bringup sim.launch.py lidar:=dual rviz:=true   # MID-360 + L2
     ros2 launch bringup sim.launch.py mode:=localization       # 用 map_dir 里保存的地图定位
-    ros2 launch bringup sim.launch.py mode:=localization uwb:=true   # RMUC：融合 uwb_sim 的 /uwb_pose
 
 节点参数只来自 bringup/config/sim/*.yaml。
 仿真 IMU 位于 mid360_link 原点，前端 frames.imu = frames.lidar = mid360_link（外参为单位阵）。
@@ -29,8 +28,6 @@ ARGS = {
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
     'map_dir': (str(WORKSPACE / 'maps' / 'sim'), '地图保存目录（绝对路径）'),
     'rviz': ('false', '后端 RViz'),
-    # 裁判系统 UWB 只在 RMUC 场地模拟（sentry_gazebo arena:=rmuc），config/sim 默认关闭，按场地在这里打开
-    'uwb': ('false', 'true 时后端融合 /uwb_pose（仅 arena:=rmuc 有数据）'),
 }
 
 

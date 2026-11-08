@@ -90,14 +90,6 @@ void LocalizationNode::initializeRuntime() {
     EffectiveConfig effective_config = resolveConfig(parameters_.runtime, descriptor_->enabled());
     parameters_.runtime = effective_config.values;
 
-    if (!uwbFrameContractValid(parameters_.runtime.uwb, parameters_.input.uwb_frame,
-                               parameters_.input.map_frame)) {
-        throw std::invalid_argument(
-            "uwb.frame equals common.map_frame while effective UWB-to-map "
-            "calibration is non-identity or online; publish the raw solution "
-            "in its real UWB-local frame_id (for example 'uwb'), or disable "
-            "the transform");
-    }
     if (parameters_.runtime.prior_map_enabled &&
         parameters_.runtime.graph.fixed_lag_seconds <= 0.0) {
         RCLCPP_WARN(get_logger(),
@@ -164,11 +156,6 @@ void LocalizationNode::completeStartup() {
         "unified backend ready: prior_map="
             << (parameters_.runtime.prior_map_enabled ? "enabled" : "disabled")
             << ", loop=" << (parameters_.runtime.loop.enabled ? "enabled" : "disabled")
-            << ", uwb=" << (parameters_.runtime.uwb.enabled ? "enabled" : "disabled")
-            << ", uwb_dimension=" << (parameters_.runtime.uwb.use_z ? "xyz" : "xy")
-            << ", uwb_zero_pose="
-            << (parameters_.runtime.uwb.estimate_zero_pose_online ? "online" : "fixed")
-            << ", uwb_frame=" << parameters_.input.uwb_frame
             << ", frontend=" << parameters_.input.frontend
             << (parameters_.input.frontend == "zlio"
                     ? std::string()

@@ -23,7 +23,7 @@ bool LocalizationNode::loadPriorMap(const std::string& directory) {
     if (!descriptor_->enabled()) {
         RCLCPP_WARN(get_logger(),
                     "place descriptor is disabled; prior tracking remains available "
-                    "but arbitrary-point recovery requires fresh UWB");
+                    "but arbitrary-point recovery is unavailable");
         return true;
     }
     if (!descriptor_->load(directory)) {

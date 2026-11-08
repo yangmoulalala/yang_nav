@@ -12,7 +12,7 @@
 namespace backend {
 
 /// 因子提交端使用的观测身份；共同统计策略不按来源分支。
-enum class ObservationSource { PriorMap, Uwb };
+enum class ObservationSource { PriorMap };
 
 /// 同一来源的线性化输入、诊断名称及接纳结果。
 struct ObservationEntry {

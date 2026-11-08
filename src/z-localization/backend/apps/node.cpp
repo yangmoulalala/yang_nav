@@ -103,7 +103,6 @@ void LocalizationNode::configureInputs() {
     zlio_frames_.reset();
     zlio_predictions_.reset();
     zlio_identity_.reset();
-    uwb_sub_.reset();
 
     if (parameters_.input.frontend == "zlio") {
         configureZlioInputs(frontend_.epoch());
@@ -149,11 +148,6 @@ void LocalizationNode::configureInputs() {
                 highRateOdomCallback(odom, subscription_epoch);
             },
             high_rate_options);
-    }
-    if (parameters_.runtime.uwb.enabled) {
-        uwb_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
-            "uwb_pose", rclcpp::QoS(10),
-            std::bind(&LocalizationNode::uwbCallback, this, std::placeholders::_1));
     }
 }
 
@@ -221,47 +215,6 @@ void LocalizationNode::highRateOdomCallback(const nav_msgs::msg::Odometry::Const
             odomToMatrix(*odom), covariance, covariance_valid,
             rclcpp::Time(odom->header.stamp).seconds(), subscription_epoch);
         publisher_.publishPrediction(*odom, projection);
-    });
-}
-
-/// 验收 UWB 消息坐标系及物理解，并按需发布天线杆臂修正后的诊断位置。
-void LocalizationNode::uwbCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& pose) {
-    invoke("UWB input", [&] {
-        if (!pose || !controller_ || !validStamp(pose->header.stamp)) {
-            return;
-        }
-        if (pose->header.frame_id != parameters_.input.uwb_frame) {
-            RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
-                                 "ignoring UWB observation in frame '%s'; expected '%s'",
-                                 pose->header.frame_id.c_str(),
-                                 parameters_.input.uwb_frame.c_str());
-            return;
-        }
-        const rclcpp::Time stamp(pose->header.stamp);
-        if (stamp.nanoseconds() == 0) {
-            return;
-        }
-        Eigen::Vector3d position(pose->pose.position.x, pose->pose.position.y,
-                                 pose->pose.position.z);
-        const bool position_finite =
-            parameters_.runtime.uwb.use_z ? position.allFinite() : position.head<2>().allFinite();
-        if (!position_finite) {
-            return;
-        }
-        if (!parameters_.runtime.uwb.use_z) {
-            position.z() = 0.0;
-        }
-        // 天线固定在 body 系；按测量运动时刻（消息时间 + 配置时间偏置）的外参换算到传感器系。
-        std::optional<UwbMeasurementExtrinsic> extrinsic;
-        if (body_extrinsic_) {
-            extrinsic = uwbExtrinsicFromBody(
-                body_extrinsic_->at(stamp.seconds() + parameters_.runtime.uwb.time_offset_seconds),
-                parameters_.input.antenna_position_body);
-        }
-        if (!controller_->ingestUwbPosition(stamp.seconds(), position, extrinsic)) {
-            return;
-        }
-        publisher_.publishUwb(*pose);
     });
 }
 

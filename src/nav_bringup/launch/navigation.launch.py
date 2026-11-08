@@ -1,7 +1,7 @@
 """Sentry navigation v2 on top of z-localization.
 
     ros2 launch sentry_gazebo sim.launch.py arena:=rmuc uwb:=true
-    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=true \
+    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization \
          prior_map:=$HOME/yang_nav/maps/sim
     ros2 launch nav_bringup navigation.launch.py terrain_dir:=$HOME/yang_nav/maps/sim/nav
 

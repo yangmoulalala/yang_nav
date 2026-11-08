@@ -68,11 +68,8 @@ Localization::Localization(KeyframeMap& trajectory, KeyframeMap& prior_map,
       visualization_sink_(visualization_sink),
       graph_(config_.graph),
       target_cache_(32, config_.storage.submap_cache_bytes),
-      frames_(config_.uwb, config_.tracking.source, config_.recovery.source),
+      frames_(config_.tracking.source, config_.recovery.source),
       poses_(config_.graph.odom_noise),
-      uwb_({config_.uwb, config_.graph.odom_noise, config_.innovation.rejection_probability,
-            config_.prior_map_enabled},
-           graph_, frames_.odometry()),
       tracking_({config_.tracking, config_.relocalization.point_to_plane_config,
                  config_.registration_debug_enabled},
                 prior_map_, target_cache_),
@@ -85,37 +82,11 @@ Localization::Localization(KeyframeMap& trajectory, KeyframeMap& prior_map,
                                                        << " -> effective=" << override.effective
                                                        << " (" << override.reason << ")");
     }
-    if (config_.prior_map_enabled && !descriptor_.enabled() && !config_.uwb.enabled &&
+    if (config_.prior_map_enabled && !descriptor_.enabled() &&
         !config_.startup_hint.T_map_sensor.has_value()) {
         BACKEND_WARN_STREAM(
-            "prior map has no startup hint, UWB, or descriptor; the backend "
+            "prior map has no startup hint or descriptor; the backend "
             "cannot obtain an initial global pose");
-    }
-    if (config_.uwb.enabled && config_.uwb.estimate_zero_pose_online) {
-        BACKEND_INFO_STREAM(
-            "online UWB zero-pose estimation enabled: UWB factors remain "
-            "gated until accepted prior scan-to-map poses produce a stable "
-            << (config_.uwb.use_z ? "SE(2)+Z" : "SE(2) (Z fixed)")
-            << " bootstrap; its raw inliers then initialize one joint graph "
-               "alignment state without a derived prior");
-        if (!descriptor_.enabled() && !config_.startup_hint.T_map_sensor.has_value()) {
-            BACKEND_WARN_STREAM(
-                "online UWB zero-pose estimation has no startup hint or "
-                "descriptor fallback; configured T_map_uwb must place the "
-                "first UWB recovery search inside the scan-to-map basin");
-        }
-    }
-    if (uwb_.timeOffsetEstimationEnabled()) {
-        BACKEND_INFO_STREAM("online static UWB time-offset estimation enabled: prior="
-                            << config_.uwb.time_offset_seconds << "+/-"
-                            << config_.uwb.time_offset_prior_std_seconds
-                            << "s, per-solution jitter=" << config_.uwb.time_jitter_std_seconds
-                            << "s; weak observability retains the graph prior/posterior");
-    } else if (config_.uwb.enabled && std::abs(config_.uwb.time_offset_seconds) > 1.0e-12) {
-        BACKEND_INFO_STREAM("fixed UWB motion-time correction enabled: t_motion=t_header"
-                            << (config_.uwb.time_offset_seconds >= 0.0 ? "+" : "")
-                            << config_.uwb.time_offset_seconds
-                            << "s (raw header stamps still own ordering and deduplication)");
     }
     publishOutputViewLocked();
 }
@@ -141,7 +112,6 @@ void Localization::isolateEstimatorFailureLocked(const std::string& reason) {
     if (config_.loop.enabled)
         descriptor_.clear();
     frames_.invalidate();
-    uwb_.resetGraph();
     target_cache_.clear();
     next_epoch_seed_.reset();
     pending_epoch_anchor_ = std::monostate{};
@@ -184,22 +154,22 @@ void Localization::initialize() {
         reset_coordinator_.clearRuntimeState();
         state_before_manual_reset_.reset();
         estimator_failed_ = false;
+        odom_gate_anchor_.reset();
+        odom_gate_trusted_since_ = std::numeric_limits<double>::quiet_NaN();
         frontend_status_ = FrontendStatus::Active;
         stationary_reset_ = false;
-        odometry_connected_ = !config_.prior_map_enabled && !config_.uwb.enabled;
+        odometry_connected_ = !config_.prior_map_enabled;
         active_epoch_ = 0;
         poses_.initialize();
         next_manual_relocalization_request_id_ = 0;
         clearManualRelocalizationRequestLocked();
         frames_.clear();
-        uwb_.resetAll();
         last_lidar_observation_runtime_index_ = -1;
         last_global_observation_cycle_time_ = Timestamp();
         last_recovery_cycle_time_ = Timestamp();
         last_tracking_reference_index_ = -1;
         empty_loop_.reset();
-        const bool pure_odometry = !config_.prior_map_enabled && !config_.uwb.enabled &&
-                                   !config_.loop.enabled &&
+        const bool pure_odometry = !config_.prior_map_enabled && !config_.loop.enabled &&
                                    !config_.startup_hint.T_map_sensor.has_value();
         if (pure_odometry) {
             poses_.setOrigin(config_.pure_odometry.origin_xy);
@@ -208,26 +178,31 @@ void Localization::initialize() {
             if (config_.startup_hint.force_until_matched) {
                 state_.initialize("waiting for forced startup-hint scan-to-map verification");
             } else {
-                state_.initialize("waiting for startup-hint, UWB, or descriptor scan-to-map");
+                state_.initialize("waiting for startup-hint or descriptor scan-to-map");
             }
-        } else if (config_.uwb.enabled) {
-            state_.initialize("waiting for yaw-observable UWB/odometry alignment");
         } else {
             state_.initialize("waiting for first front-end frame");
         }
     });
 }
 
-/// 建立 SUSPECT 恢复源边界并重启必要的 UWB 启动配对。
+/// 建立 SUSPECT 恢复源边界及里程计连续性门锚。
 void Localization::beginSuspectRecoveryLocked() {
     frames_.beginRecovery();
     last_recovery_timestamp_ = -std::numeric_limits<double>::infinity();
     pending_recovery_.reset();
     last_recovery_cycle_time_ = Timestamp();
-
-    if (!config_.prior_map_enabled && config_.uwb.enabled) {
-        // 纯 UWB 系统冻结后必须用状态边界后的运动重新建立位置和 yaw 对齐。
-        uwb_.restartBootstrap(poses_.transform());
+    // 刚离开可信状态：当前 map←odom 仍是最后接受的全局规范，里程计在同一代次内连续。
+    // 只有该规范已稳定可信一段时间才作门锚；刚恢复就冲突时该解本身可疑（如初始化锁到对称位姿）。
+    odom_gate_anchor_.reset();
+    if (odometry_connected_ && frames_.hasLatest() && frames_.latest().epoch == active_epoch_) {
+        const double trusted_for = frames_.latest().timestamp - odom_gate_trusted_since_;
+        const bool settled = odom_gate_trusted_epoch_ != active_epoch_ ||
+                             !std::isfinite(odom_gate_trusted_since_) ||
+                             trusted_for >= config_.recovery.odom_gate_min_trusted_seconds;
+        if (settled)
+            odom_gate_anchor_ = OdomGateAnchor{poses_.transform(), frames_.latest().odom_pose,
+                                               active_epoch_, 0};
     }
 }
 
@@ -272,28 +247,17 @@ bool Localization::ingestFrame(const FrontendFrame& frame,
                 applied_trusted_seed = next_epoch_seed_->trusted;
                 pending_epoch_anchor_ = std::move(next_epoch_seed_->anchor);
                 bindResetAnchorLocked(frame);
-                if (!config_.prior_map_enabled && config_.uwb.enabled && !applied_trusted_seed)
-                    uwb_.seedBootstrap(poses_.transform());
                 next_epoch_seed_.reset();
                 poses_.advanceRevision();
             }
             frames_.append(frame);
 
             if (!config_.prior_map_enabled &&
-                (state_.status() == LocalizationStatus::Initializing ||
-                 state_.status() == LocalizationStatus::Suspect)) {
-                if (state_.status() == LocalizationStatus::Initializing &&
-                    (applied_trusted_seed || !config_.uwb.enabled)) {
-                    state_changed = startTrajectoryLocked(frame, applied_trusted_seed);
-                } else if (config_.uwb.enabled && tryCommitUwbBootstrapLocked(frame)) {
-                    state_changed = true;
-                    trajectory_changed = true;
-                }
+                state_.status() == LocalizationStatus::Initializing) {
+                state_changed = startTrajectoryLocked(frame, applied_trusted_seed);
             }
 
-            const bool has_global_recovery_capability =
-                config_.prior_map_enabled || config_.uwb.enabled;
-            if (has_global_recovery_capability &&
+            if (config_.prior_map_enabled &&
                 (linear_velocity_sensor.norm() > config_.tracking.suspicious_linear_speed ||
                  angular_velocity_sensor.norm() > config_.tracking.suspicious_angular_speed)) {
                 const LocalizationTransition transition = state_.onVelocitySpike(
@@ -376,17 +340,9 @@ void Localization::runMaintenanceCycle() {
             execute(&Localization::captureRecovery, recovery_);
         return;
     }
-    if (config_.prior_map_enabled || config_.uwb.enabled)
+    if (config_.prior_map_enabled)
         execute(&Localization::captureTracking, tracking_);
     if (config_.loop.enabled)
         execute(&Localization::captureLoop, loop_cycle_);
 }
-/// 接收新的 UWB 物理解，拒绝无效时间及传输重发。
-bool Localization::ingestUwbPosition(const double timestamp,
-                                     const Eigen::Vector3d& position_uwb_antenna,
-                                     const std::optional<UwbMeasurementExtrinsic>& extrinsic) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return uwb_.ingest(timestamp, position_uwb_antenna, extrinsic);
-}
-
 }  // namespace backend

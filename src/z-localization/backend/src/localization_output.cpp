@@ -95,46 +95,4 @@ void Localization::publishState() {
     state_sink_.publishState(snapshot());
 }
 
-/// 返回最新 UWB 物理解经当前时间偏置修正后的时刻。
-std::optional<double> Localization::latestUwbMotionTimestamp() const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    const std::optional<UwbObservation>& latest_uwb = uwb_.observations().latest();
-    if (!latest_uwb.has_value()) {
-        return std::nullopt;
-    }
-    const double timestamp = uwb_.motionTimestamp(*latest_uwb);
-    return std::isfinite(timestamp) ? std::optional<double>(timestamp) : std::nullopt;
-}
-
-/// 利用对齐的前端姿态消除杆臂并返回机体原点诊断位置。
-std::optional<Eigen::Vector3d> Localization::latestUwbBodyPositionMap() const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    const std::optional<UwbObservation>& latest_uwb = uwb_.observations().latest();
-    if (!latest_uwb.has_value() || frames_.odometry().empty()) {
-        return std::nullopt;
-    }
-    const std::optional<Eigen::Matrix4d> timed_odom_pose = frames_.odometry().poseAt(
-        uwb_.motionTimestamp(*latest_uwb), config_.uwb.odom_sync_tolerance);
-    if (!timed_odom_pose.has_value()) {
-        return std::nullopt;
-    }
-
-    const Eigen::Matrix4d T_map_sensor = poses_.transform() * *timed_odom_pose;
-    const Eigen::Matrix3d R_map_sensor = T_map_sensor.block<3, 3>(0, 0);
-    // 外参与杆臂均取该 UWB 测量时刻的值。
-    const Eigen::Matrix4d T_sensor_body = uwb_.sensorBody(*latest_uwb);
-    const Eigen::Vector3d body_origin_sensor = T_sensor_body.block<3, 1>(0, 3);
-    const Eigen::Vector3d body_to_antenna_sensor =
-        uwb_.antennaPositionSensor(*latest_uwb) - body_origin_sensor;
-    Eigen::Vector3d position_map_body =
-        uwb_.positionMap(*latest_uwb) - R_map_sensor * body_to_antenna_sensor;
-
-    if (!config_.uwb.use_z) {
-        // 平面 UWB 不提供高度；调试点沿用同一时刻前后端位姿的 body 高度。
-        const Eigen::Matrix4d T_map_body = T_map_sensor * T_sensor_body;
-        position_map_body.z() = T_map_body(2, 3);
-    }
-    return position_map_body;
-}
-
 }  // namespace backend

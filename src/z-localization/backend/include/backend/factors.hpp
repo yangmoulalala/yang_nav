@@ -1,6 +1,6 @@
 /**
  * @file factors.hpp
- * @brief 定义图观测输入、UWB 时间关联数据与创新检验结果。
+ * @brief 定义图观测输入与创新检验结果。
  */
 #pragma once
 #include <gtsam/inference/Key.h>
@@ -43,47 +43,6 @@ struct InnovationTerm {
     std::vector<Eigen::MatrixXd> whitened_jacobians;
     /// 观测项无效时的原因。
     std::string invalid_reason;
-};
-
-/// UWB 时间插值使用的前端里程计样本。
-struct TimedOdometryPose {
-    /// 里程计采样时刻，s。
-    double timestamp = 0.0;
-    /// 传感器在 odom 坐标系中的位姿。
-    Eigen::Matrix4d T_odom_sensor = Eigen::Matrix4d::Identity();
-};
-
-/// UWB 时间偏置求值使用的局部轨迹与天线外参。
-struct UwbTimeOffsetSupport {
-    /// UWB 原始消息时间戳，s。
-    double measurement_timestamp = 0.0;
-    /// 关联关键帧的传感器在 odom 系中的位姿。
-    Eigen::Matrix4d keyframe_odom_pose = Eigen::Matrix4d::Identity();
-    /// 天线相位中心在传感器坐标系中的位置，m。
-    Eigen::Vector3d antenna_position_sensor = Eigen::Vector3d::Zero();
-    /// 按时间递增排列的里程计样本。
-    std::vector<TimedOdometryPose> odometry;
-
-    /// 在消息时间戳加偏置的时刻，计算关键帧传感器系中的天线位置及可选速度。
-    /// 区间外按最近区间外推；输入或计算结果无效时返回 false。
-    bool evaluate(double time_offset_seconds, Eigen::Vector3d* antenna_in_keyframe,
-                  Eigen::Vector3d* velocity_in_keyframe = nullptr) const;
-};
-
-/// UWB 位置因子的观测、协方差与时空对齐输入。
-struct UwbMeasurement {
-    /// 天线位置观测，m；固定对齐时为 map 系，在线对齐时为 UWB 原生系。
-    Eigen::Vector3d position = Eigen::Vector3d::Zero();
-    /// 测量时刻的天线在关联关键帧传感器系中的位置，m。
-    Eigen::Vector3d antenna_in_keyframe = Eigen::Vector3d::Zero();
-    /// 位置观测协方差，与 position 使用相同坐标系，m²。
-    Eigen::Matrix3d covariance = Eigen::Matrix3d::Identity();
-    /// 是否在因子中联合估计 UWB 到 map 的坐标对齐。
-    bool with_alignment = false;
-    /// 在线时间偏置计算数据；空值时使用 antenna_in_keyframe。
-    std::optional<UwbTimeOffsetSupport> time_support = std::nullopt;
-    /// UWB 原始消息时间戳，s。
-    double timestamp = 0.0;
 };
 
 /// 同一批观测基于更新前图协方差得到的创新检验结果。

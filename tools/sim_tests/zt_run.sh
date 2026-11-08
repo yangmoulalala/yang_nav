@@ -26,7 +26,7 @@ CALIB_CMD=""
 if [ "${CALIB:-0}" = 1 ]; then
   CALIB_CMD="(sleep 15; ros2 launch bringup calibration.launch.py platform:=sim output_file:=$OUT/extrinsic.yaml > $OUT/calib.log 2>&1) &"
 fi
-setsid bash -c "ros2 launch sentry_gazebo sim.launch.py arena:=$ARENA ${TEAM:+team:=$TEAM} uwb:=${SIM_UWB:-true} > $OUT/sim.log 2>&1 & sleep 12; $CALIB_CMD ros2 launch bringup sim.launch.py lidar:=$LIDAR mode:=$MODE map_dir:=$MAP uwb:=$UWB rviz:=false > $OUT/bringup.log 2>&1; wait" &
+setsid bash -c "ros2 launch sentry_gazebo sim.launch.py arena:=$ARENA ${TEAM:+team:=$TEAM} uwb:=${SIM_UWB:-true} > $OUT/sim.log 2>&1 & sleep 12; $CALIB_CMD ros2 launch bringup sim.launch.py lidar:=$LIDAR mode:=$MODE map_dir:=$MAP rviz:=false > $OUT/bringup.log 2>&1; wait" &
 PGID=$!
 trap 'kill -INT -- -$PGID 2>/dev/null; sleep 4; kill -KILL -- -$PGID 2>/dev/null' EXIT
 sleep 20

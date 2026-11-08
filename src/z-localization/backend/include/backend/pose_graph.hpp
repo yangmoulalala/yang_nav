@@ -97,25 +97,6 @@ public:
     void addLoopInformation(int from_index, int to_index, const Eigen::Matrix4d& measured_between,
                             const PoseSqrtInformation& sqrt_information);
 
-    /// 初始化共享的 UWB 到 map 空间对齐状态，并添加外部先验。
-    /// 状态包含水平平移与航向，use_z=true 时加入高度；协方差采用世界加性
-    /// [平移, 固定轴旋转] 顺序，提取对应状态分量。
-    void addUwbAlignmentPrior(const Eigen::Matrix4d& T_map_uwb, const PoseCovariance6d& covariance,
-                              bool use_z = true);
-
-    /// 登记水平对齐与可选高度的共享初值，随后与对应观测因子一同提交。
-    void addUwbAlignmentInitialValue(const Eigen::Matrix4d& T_map_uwb, bool use_z = true);
-
-    /// 添加共享 UWB 时间偏置的先验及初值，单位为 s。
-    /// 运动时刻 = 消息时间戳 + 时间偏置。
-    void addUwbTimeOffsetPrior(double initial_seconds, double standard_deviation_seconds);
-
-    /// 添加 UWB 天线位置观测；use_z=false 使用 XY，true 使用 XYZ。
-    void addUwbPosition(int index, const UwbMeasurement& measurement, bool use_z = true);
-    /// 在已提交图上计算 UWB 白化残差及位姿、共享时空状态的雅可比。
-    InnovationTerm linearizeUwbPosition(int index, const UwbMeasurement& measurement,
-                                        bool use_z = true) const;
-
     /// 基于更新前图协方差计算一批观测的联合及逐项创新检验结果。
     /// 调用时待提交因子与初值为空，各观测项来自同一图版本。
     InnovationBatchAssessment assessInnovationBatch(const std::vector<InnovationTerm>& terms) const;
@@ -129,39 +110,14 @@ public:
     bool hasEstimate(int index) const;
     /// 查询指定关键帧的当前图位姿，状态不存在时返回空值。
     std::optional<Eigen::Matrix4d> estimate(int index) const;
-    /// 判断共享 UWB 空间对齐状态是否已初始化且可查询。
-    bool hasUwbAlignment() const;
-    /// 返回 UWB 坐标系到 map 系的当前变换。
-    std::optional<Eigen::Matrix4d> uwbAlignmentEstimate() const;
-    /// 返回空间对齐的世界加性边缘协方差，顺序为 [平移, 固定轴旋转]。
-    /// 未参与估计的分量行列为零。
-    std::optional<PoseCovariance6d> uwbAlignmentMarginalCovariance() const;
-    /// 判断共享 UWB 时间偏置状态是否可查询。
-    bool hasUwbTimeOffset() const;
-    /// 返回共享 UWB 时间偏置估计，单位为秒。
-    std::optional<double> uwbTimeOffsetEstimate() const;
-    /// 返回共享 UWB 时间偏置的边缘方差，单位为秒平方。
-    std::optional<double> uwbTimeOffsetMarginalVariance() const;
     /// 返回位姿局部右扰动坐标下的边缘协方差，顺序为 [平移, 旋转]。
     std::optional<PoseCovariance6d> marginalCovariance(int index) const;
 
 private:
-    /// 检查位置、连杆臂及共享时空状态，返回不可用原因。
-    std::string uwbInputError(const UwbMeasurement& measurement, bool use_z) const;
-    /// 按高度、空间对齐和时间支撑组合构造对应的 UWB 因子。
-    gtsam::NoiseModelFactor::shared_ptr makeUwbFactor(int index, const UwbMeasurement& measurement,
-                                                      bool use_z,
-                                                      const gtsam::SharedNoiseModel& noise) const;
     /// 将后端齐次位姿转换为 GTSAM Pose3。
     static gtsam::Pose3 toGtsam(const Eigen::Matrix4d& pose);
     /// 将 GTSAM Pose3 转换为后端齐次位姿。
     static Eigen::Matrix4d fromGtsam(const gtsam::Pose3& pose);
-    /// 返回共享 UWB 平面对齐状态的图变量键。
-    static gtsam::Key uwbAlignmentKey();
-    /// 返回共享 UWB 高度对齐状态的图变量键。
-    static gtsam::Key uwbAlignmentZKey();
-    /// 返回共享 UWB 时间偏置状态的图变量键。
-    static gtsam::Key uwbTimeOffsetKey();
     /// 登记新位姿初值、时间戳和待提交的状态编号。
     void recordNewState(int index, const Eigen::Matrix4d& pose, double timestamp);
     /// 更新固定滞后窗口并边缘化过期轨迹位姿。
@@ -184,14 +140,6 @@ private:
     std::deque<std::pair<gtsam::Key, double>> pose_timestamps_;
     /// 本批新增的轨迹节点编号。
     std::vector<int> pending_new_indices_;
-    /// 是否已登记共享空间对齐初值。
-    bool uwb_alignment_initialized_ = false;
-    /// 空间对齐状态是否包含高度变量。
-    bool uwb_alignment_use_z_ = false;
-    /// 二维对齐模式沿用的固定高度，m。
-    double uwb_alignment_fixed_z_ = 0.0;
-    /// 是否已登记共享时间偏置初值。
-    bool uwb_time_offset_initialized_ = false;
     /// 输入时间转换为单调图时间所使用的偏移，s。
     double timestamp_offset_ = 0.0;
     /// 最近一次登记的有效输入时间戳，s。

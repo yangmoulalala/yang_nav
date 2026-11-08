@@ -420,7 +420,7 @@ void Localization::prepareNextEpochSeedLocked(const FrontendResetReply& reply) {
     }
 
     next_epoch_seed_.reset();
-    const bool fresh_map = !config_.prior_map_enabled && !config_.uwb.enabled &&
+    const bool fresh_map = !config_.prior_map_enabled &&
                            !poses_.trusted().hasPose() && trajectory_.empty();
     odometry_connected_ = fresh_map || (reply.outcome == FrontendResetOutcome::Completed &&
                                         stationary_reset_ && poses_.trusted().hasPose());
@@ -447,14 +447,11 @@ void Localization::commitFrontendResetBoundaryLocked(const FrontendResetReply& r
         state_.onFrontendResetCompleted();
     } else if (odometry_connected_) {
         state_.initialize("waiting for first front-end frame after reset");
-    } else if (config_.uwb.enabled) {
-        state_.initialize("waiting for UWB/odometry alignment after input discontinuity");
     } else {
         state_.forceLost("front-end continuity unavailable; explicit global anchor required");
     }
 
     frames_.clear();
-    uwb_.resetEpoch();
     last_lidar_observation_runtime_index_ = -1;
     last_global_observation_cycle_time_ = Timestamp();
     last_recovery_cycle_time_ = Timestamp();

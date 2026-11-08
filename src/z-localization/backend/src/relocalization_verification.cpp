@@ -100,8 +100,7 @@ VerificationEntry Search::makePositionVerificationEntry(const CandidateVerificat
     T_map_runtime.block<3, 3>(0, 0) = R_map_sensor;
     Eigen::Vector3d translation = prior.map_point - R_map_sensor * prior.runtime_sensor_point;
     if (!prior.use_z) {
-        // UWB 只提供水平位置，竖直方向沿前端初值交给 scan-to-map 求解，
-        // 不注入 UWB 高度。
+        // 水平位置先验不注入高度，竖直方向沿前端初值交给 scan-to-map 求解。
         translation.z() = request_.T_map_runtime_pred(2, 3);
     }
     T_map_runtime.block<3, 1>(0, 3) = translation;

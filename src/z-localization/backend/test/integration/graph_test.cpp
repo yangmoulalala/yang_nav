@@ -9,7 +9,6 @@
 #include "backend/loop_consistency.hpp"
 #include "backend/pose_graph.hpp"
 #include "backend/registration.hpp"
-#include "backend/uwb_alignment.hpp"
 #include "geometry.hpp"
 
 namespace backend {
@@ -62,117 +61,6 @@ TEST(PoseGraph, FixedLagRetiresOldStatesWithoutLosingCurrentMotion) {
 /// 构造具有精确二进制坐标的窗口轨迹，避免观测残差引发额外重线性化。
 Eigen::Matrix4d windowPose(int index) {
     return testing::translation(.25 * index, .125 * (index % 3), .0625 * (index % 5));
-}
-
-/// 按解析匀速局部轨迹生成同时关联空间、高度与时间标定量的 UWB 观测。
-UwbMeasurement windowMeasurement(int index, double time_offset) {
-    const Eigen::Vector3d velocity(.25, index % 2 ? .125 : -.125, .0625);
-    UwbTimeOffsetSupport support;
-    support.measurement_timestamp = index;
-    support.antenna_position_sensor = Eigen::Vector3d(.5, -.25, .125);
-    support.odometry = {
-        {index - 1.0, testing::translation(-velocity.x(), -velocity.y(), -velocity.z())},
-        {index + 1.0, testing::translation(velocity.x(), velocity.y(), velocity.z())}};
-    UwbMeasurement measurement;
-    measurement.with_alignment = true;
-    measurement.time_support = support;
-    measurement.covariance = Eigen::Matrix3d::Identity() * .0625;
-    measurement.position = windowPose(index).block<3, 1>(0, 3) + support.antenna_position_sensor +
-                           time_offset * velocity;
-    return measurement;
-}
-
-/// 以固定线性化点的完整图为参照，验证迟到观测下窗口边缘化保留共享标定及交叉信息。
-TEST(PoseGraph, FixedLagPreservesSharedCalibrationAndJointInnovationWithDelayedObservations) {
-    constexpr int kWindowSeconds = 12;
-    constexpr double kTimeOffset = .125;
-    PoseGraphConfig config;
-    config.fixed_lag_seconds = kWindowSeconds;
-    config.use_robust_kernel = false;
-    PoseGraph window(config);
-    config.fixed_lag_seconds = 0;
-    PoseGraph reference(config);
-    const Eigen::Matrix4d alignment = Eigen::Matrix4d::Identity();
-    for (auto* graph : {&window, &reference}) {
-        graph->addPrior(0, windowPose(0), PoseCovariance6d::Identity() * .01, 0);
-        graph->update(false);
-    }
-
-    std::mt19937 random(20261020);
-    for (int index = 1; index <= 120; ++index) {
-        SCOPED_TRACE(index);
-        const auto pose = windowPose(index);
-        std::vector<int> delayed;
-        for (unsigned sample = 0, count = random() % 4; sample < count; ++sample)
-            delayed.push_back(index -
-                              static_cast<int>(random() % (std::min(index, kWindowSeconds) + 1)));
-
-        // 两图使用同一批迟到目标；随机性只选择存活图键，不扰动测量和线性化点。
-        for (auto* graph : {&window, &reference}) {
-            graph->addOdometryMeasurement(index - 1, index, windowPose(index - 1).inverse() * pose,
-                                          pose, PoseCovariance6d::Identity() * .01, index);
-            if (index == 1) {
-                graph->addUwbAlignmentPrior(alignment, PoseCovariance6d::Identity() * .04, true);
-                graph->addUwbTimeOffsetPrior(kTimeOffset, .2);
-                for (int old = 0; old <= index; ++old)
-                    graph->addUwbPosition(old, windowMeasurement(old, kTimeOffset), true);
-            }
-            if (index % 12 < 4)
-                graph->addUwbPosition(index, windowMeasurement(index, kTimeOffset), true);
-            for (const int old : delayed)
-                graph->addUwbPosition(old, windowMeasurement(old, kTimeOffset), true);
-            graph->update(true);
-        }
-        if (index > kWindowSeconds) {
-            EXPECT_FALSE(window.hasEstimate(index - kWindowSeconds - 1));
-            EXPECT_TRUE(reference.hasEstimate(index - kWindowSeconds - 1));
-        }
-
-        const auto current = window.estimate(index);
-        const auto covariance = window.marginalCovariance(index);
-        const auto expected_covariance = reference.marginalCovariance(index);
-        ASSERT_TRUE(current);
-        ASSERT_TRUE(covariance);
-        ASSERT_TRUE(expected_covariance);
-        EXPECT_LT((*current - pose).norm(), 1e-9);
-        EXPECT_LT((*covariance - *expected_covariance).norm(), 1e-8);
-
-        const auto spatial = window.uwbAlignmentEstimate();
-        const auto spatial_covariance = window.uwbAlignmentMarginalCovariance();
-        const auto expected_spatial_covariance = reference.uwbAlignmentMarginalCovariance();
-        const auto temporal = window.uwbTimeOffsetEstimate();
-        const auto temporal_variance = window.uwbTimeOffsetMarginalVariance();
-        const auto expected_temporal_variance = reference.uwbTimeOffsetMarginalVariance();
-        ASSERT_TRUE(spatial);
-        ASSERT_TRUE(spatial_covariance);
-        ASSERT_TRUE(expected_spatial_covariance);
-        ASSERT_TRUE(temporal);
-        ASSERT_TRUE(temporal_variance);
-        ASSERT_TRUE(expected_temporal_variance);
-        EXPECT_LT((*spatial - alignment).norm(), 1e-9);
-        EXPECT_NEAR(*temporal, kTimeOffset, 1e-9);
-        EXPECT_LT((*spatial_covariance - *expected_spatial_covariance).norm(), 1e-8);
-        EXPECT_NEAR(*temporal_variance, *expected_temporal_variance, 1e-8);
-
-        // 查询探针不入图；联合位姿和 UWB 创新同时约束当前位姿与全部共享变量的相关性。
-        auto measurement = windowMeasurement(index, kTimeOffset);
-        measurement.position += Eigen::Vector3d(.0625, -.03125, .015625);
-        const Eigen::Matrix4d probe = pose * testing::translation(-.125, .0625, -.03125);
-        const PoseSqrtInformation information = PoseSqrtInformation::Identity(6, 6) * 4;
-        const auto actual =
-            window.assessInnovationBatch({window.linearizeAbsolutePose(index, probe, information),
-                                          window.linearizeUwbPosition(index, measurement, true)});
-        const auto expected = reference.assessInnovationBatch(
-            {reference.linearizeAbsolutePose(index, probe, information),
-             reference.linearizeUwbPosition(index, measurement, true)});
-        ASSERT_TRUE(actual.joint.valid) << actual.joint.invalid_reason;
-        ASSERT_TRUE(expected.joint.valid) << expected.joint.invalid_reason;
-        ASSERT_EQ(actual.individual.size(), 2U);
-        EXPECT_EQ(actual.joint.degrees_of_freedom, 9);
-        EXPECT_NEAR(actual.joint.nis, expected.joint.nis, 1e-8);
-        EXPECT_GT(std::abs(actual.joint.nis - actual.individual[0].nis - actual.individual[1].nis),
-                  1e-6);
-    }
 }
 
 /// 秩一位置观测仅约束对应平移方向，其余方向沿用图预测。
@@ -260,25 +148,5 @@ TEST(LoopConsensus, HistoricalSupportThresholdAndMissingHistoryHaveSeparateMeani
                                                     history, lookup));
 }
 
-/// 用已知平面变换验证 UWB 对齐，并检查内点保留原始测量时间戳。
-TEST(UwbAlignment, RecoversKnownPlanarTransformAndRetainsOriginalTimestamps) {
-    UwbAlignmentConfig config;
-    UwbAlignmentBootstrapper bootstrap(config);
-    const Eigen::Matrix3d rotation =
-        Eigen::AngleAxisd(.4, Eigen::Vector3d::UnitZ()).toRotationMatrix();
-    const Eigen::Vector3d translation(4, -2, 0);
-    std::optional<UwbAlignmentEstimate> result;
-    for (int index = 0; index < 20; ++index) {
-        const Eigen::Vector3d odom(.4 * index, .3 * (index % 3), 0);
-        result = bootstrap.addPair(10 + .5 * index, odom, rotation * odom + translation);
-    }
-    ASSERT_TRUE(result);
-    EXPECT_TRUE(result->observable);
-    EXPECT_TRUE(result->stable);
-    EXPECT_LT((result->T_map_odom.block<3, 3>(0, 0) - rotation).norm(), 1e-6);
-    EXPECT_LT((result->T_map_odom.block<2, 1>(0, 3) - translation.head<2>()).norm(), 1e-6);
-    EXPECT_EQ(result->inlier_timestamps.size(), 20U);
-    EXPECT_DOUBLE_EQ(result->inlier_timestamps.back(), 19.5);
-}
 }  // namespace
 }  // namespace backend

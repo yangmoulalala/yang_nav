@@ -52,7 +52,7 @@ for line in sys.stdin:
         buf=""
 ' > "$OUT/truth.log" 2>/dev/null ) & TRUTH=$!
 
-ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=$UWB prior_map:="$MAP" > "$OUT/loc.log" 2>&1 & LOC=$!
+ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP" > "$OUT/loc.log" 2>&1 & LOC=$!
 # Do not start navigation on top of a localization that never came up: without
 # lio_odom the local costmap times out and lifecycle_manager aborts the whole bringup.
 LOC_OK=false
@@ -69,7 +69,7 @@ if [ "$LOC_OK" != true ]; then
   kill $LOC 2>/dev/null; sleep 2
   pkill -9 -f 'bringup sim.launch.py'; pkill -9 -f zlio_node; pkill -9 -f backend_node; pkill -9 -f merge_node
   sleep 2
-  ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=$UWB prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
+  ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
   for i in $(seq 1 90); do
     if timeout 3 ros2 topic echo --once /backend_node/localization_state std_msgs/msg/String 2>/dev/null \
         | grep -q 'pose_trusted=true'; then LOC_OK=true; break; fi
@@ -114,7 +114,7 @@ for g in "$@"; do
     kill $LOC 2>/dev/null; sleep 2
     pkill -9 -f 'bringup sim.launch.py'; pkill -9 -f zlio_node; pkill -9 -f backend_node; pkill -9 -f merge_node
     sleep 2
-    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=$UWB prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
+    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
   fi
   if ! wait_trusted; then
     # not a navigation failure: the backend is LOST (tf frozen), so the robot cannot move

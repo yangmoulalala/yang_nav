@@ -17,7 +17,6 @@
 #include "backend/registration.hpp"
 #include "backend/search.hpp"
 #include "backend/types.hpp"
-#include "backend/uwb_fusion.hpp"
 
 namespace backend {
 
@@ -45,7 +44,7 @@ struct ObservationEvidence {
     std::string reason;
 };
 
-/// 普通全局观测周期的先验图匹配输入与已捕获 UWB 因子。
+/// 普通全局观测周期的先验图匹配输入。
 struct GlobalObservationWork {
     Keyframe runtime;
     std::uint64_t state_generation = 0;
@@ -59,8 +58,6 @@ struct GlobalObservationWork {
     double source_span_seconds = 0.0;
     Eigen::Matrix4d predicted_map_pose = Eigen::Matrix4d::Identity();
     Cloud::ConstPtr target;
-    /// 捕获时可用的新鲜 UWB 因子；提交前再次核对消费水位。
-    std::optional<UwbFactorInput> uwb;
     ObservationEvidence prior_input;
 };
 
@@ -81,13 +78,11 @@ struct GlobalObservationCommit {
     bool stale = false;
     bool graph_node_unavailable = false;
     bool prior_accepted = false;
-    bool uwb_accepted = false;
     bool had_conflict = false;
     bool model_invalid = false;
     PoseCorrectionDelta applied_correction;
     InnovationAssessment joint_innovation;
     InnovationAssessment prior_innovation;
-    InnovationAssessment uwb_innovation;
     LocalizationTransition transition;
 };
 
@@ -110,7 +105,6 @@ struct RecoveryWork {
     RecoveryIdentity identity;
     Eigen::Matrix4d predicted_map_pose = Eigen::Matrix4d::Identity();
     std::optional<RelocalizationPositionPrior> startup_hint_prior;
-    std::optional<RelocalizationPositionPrior> uwb_prior;
     std::vector<FrontendFrame> source_history;
     int accumulated_frames = 0;
     double source_span_seconds = 0.0;

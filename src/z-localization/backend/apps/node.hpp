@@ -111,8 +111,6 @@ private:
     /// 将高频里程计投影到当前不可变输出视图并复核发布身份。
     void highRateOdomCallback(const nav_msgs::msg::Odometry::ConstSharedPtr& odom,
                               std::uint64_t subscription_epoch);
-    /// 验收 UWB 消息坐标系及物理解，并按需发布天线杆臂修正后的诊断位置。
-    void uwbCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& pose);
     /// 校验前端协方差并把同步里程计和点云转换为传感器局部帧。
     FrontendFrame makeFrontendFrame(const nav_msgs::msg::Odometry& odom,
                                     const sensor_msgs::msg::PointCloud2& cloud,
@@ -170,7 +168,6 @@ private:
     rclcpp::CallbackGroup::SharedPtr maintenance_callback_group_;
     rclcpp::CallbackGroup::SharedPtr map_callback_group_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr high_rate_odom_sub_;
-    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr uwb_sub_;
     rclcpp::TimerBase::SharedPtr maintenance_timer_;
     rclcpp::TimerBase::SharedPtr map_timer_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;

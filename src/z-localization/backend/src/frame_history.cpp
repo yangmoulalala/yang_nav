@@ -30,13 +30,6 @@ bool FrameHistory::accepts(const FrontendFrame& frame, std::uint64_t epoch) cons
 void FrameHistory::append(const FrontendFrame& frame) {
     latest_frame_ = frame;
 
-    const double history_duration = std::max(
-        2.0, std::max(timing_.max_age, timing_.calibration_max_age) + timing_.odom_sync_tolerance + std::abs(timing_.time_offset_seconds) +
-                 (timing_.estimate_time_offset_online ? 4.0 * timing_.time_offset_prior_std_seconds
-                                                      : 0.0) +
-                 1.0);
-    odom_history_.append(frame.timestamp, frame.odom_pose, history_duration);
-
     if (!frame_history_.empty() && (frame.epoch != frame_history_.back().epoch ||
                                     frame.timestamp + 1.0e-3 < frame_history_.back().timestamp)) {
         frame_history_.clear();
@@ -72,7 +65,6 @@ void FrameHistory::invalidate() {
     if (latest_frame_)
         restart_after_ = latest_frame_->timestamp;
     latest_frame_.reset();
-    odom_history_.clear();
     frame_history_.clear();
     tracking_source_snapshot_.reset();
 }

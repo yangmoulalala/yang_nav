@@ -16,25 +16,6 @@
 
 namespace backend {
 
-/// UWB 与里程计的坐标对齐及结果验收参数。
-struct UwbAlignmentConfig {
-    /// 是否估计高度对齐；false 时仅估计水平平移与航向，高度沿用初值。
-    bool use_z = true;
-    int max_pairs = 120;
-    int min_pairs = 5;
-    double min_baseline = 3.0;
-    double inlier_threshold = 0.75;
-    double max_rmse = 0.45;
-    double position_std_xy = 0.2;
-    double position_std_z = 0.3;
-    double max_yaw_std_rad = 10.0 * M_PI / 180.0;
-    int stable_solutions = 2;
-    double stable_translation_delta = 0.25;
-    double stable_yaw_delta_rad = 3.0 * M_PI / 180.0;
-    /// 启动及无先验 UWB 重力对齐的横滚、俯仰标准差，rad。
-    double gravity_alignment_std_rad = 1.0 * M_PI / 180.0;
-};
-
 /// 关键帧的平移、旋转和时间触发参数。
 struct KeyframePolicy {
     double distance = 0.8;                   ///< 平移触发阈值，单位 m。
@@ -223,52 +204,21 @@ struct RecoveryConfig {
     double confirm_min_rotation_rad = 0.0;
     /// 运动门开启时，静止状态下连续一致候选达到该次数也提交（避免停车时永不恢复）；0 表示必须移动。
     int confirm_stationary_max = 0;
+    /// 里程计连续性门：SUSPECT 恢复解与"进入 SUSPECT 时的 map←odom × 当前里程计"预测的允许平移基数，m；
+    /// 与旋转门两项都为 0 时关闭。里程计只走了很短距离而恢复解跳得很远（如对称位姿），说明解是错的。
+    double odom_gate_translation = 0.0;
+    /// 允许平移随进入 SUSPECT 以来里程计位移增长的比例（漂移余量），无量纲。
+    double odom_gate_translation_ratio = 0.1;
+    /// 恢复解与里程计预测允许的旋转差，rad。
+    double odom_gate_rotation_rad = 0.0;
+    /// 同一 SUSPECT 段内连续性门最多拒绝的候选数，达到后门失效（里程计本身可能已失真，如被撞/瞬移）；0 不失效。
+    int odom_gate_max_rejections = 25;
+    /// 上次恢复（含初始化）后至少可信运行该时长，进入 SUSPECT 时才以当时规范为门锚，s；
+    /// 刚恢复就冲突说明该解本身可疑，此时不设门。
+    double odom_gate_min_trusted_seconds = 10.0;
     /// 恢复提交后的试用期（全局观测周期数）；期间一次严重冲突即进入 SUSPECT，0 关闭。
     int probation_observations = 5;
     SourceAccumulationConfig source;
-};
-
-/// UWB 位置观测、时空对齐和启动参数。
-struct UwbConfig {
-    bool enabled = false;
-    /// 是否使用 UWB 高度观测；false 时使用水平二维位置。
-    bool use_z = true;
-    /// UWB 坐标系到 map 系的固定变换，也用于在线对齐就绪前的初值。
-    Eigen::Matrix4d T_map_uwb_fixed = Eigen::Matrix4d::Identity();
-    /// 是否借助先验地图在线估计 UWB 坐标系到 map 系的变换。
-    bool estimate_zero_pose_online = false;
-    /// 独立位置解的更新频率，Hz；用于过滤周期内的保持重发，0 关闭该过滤。
-    double effective_rate_hz = 1.0;
-    /// UWB 固定时间偏置，s；运动时刻 = 消息时间戳 + 此值。
-    double time_offset_seconds = 0.0;
-    /// 是否借助先验地图在线估计共享时间偏置，以 time_offset_seconds 为先验均值。
-    bool estimate_time_offset_online = false;
-    /// 在线时间偏置的先验标准差，s。
-    double time_offset_prior_std_seconds = 0.1;
-    /// 单次位置解的时间抖动标准差，s；经天线速度传播到位置协方差。
-    double time_jitter_std_seconds = 0.05;
-    /// 恢复时把 UWB 用作位置先验允许的最大年龄，s（按修正后的测量时刻计）。
-    double max_age = 0.25;
-    /// 在线坐标标定与无先验启动对齐中，UWB 与位姿配对允许的最大年龄，s；配对直接决定标定，
-    /// 应比恢复先验更严格。
-    double calibration_max_age = 0.25;
-    /// 先验地图配准被接受但 UWB 连续严重冲突（p 低于 innovation.severe_rejection_probability）
-    /// 多少次即进入 SUSPECT；0 关闭。要求 T_map_uwb 可信（固定零位或已完成的在线标定）。
-    int conflicts_before_suspect = 3;
-    /// 恢复解推算的天线位置与新鲜 UWB 读数允许的最大水平偏差，m；0 关闭该检查。
-    double recovery_max_offset = 0.6;
-    /// UWB 运动时刻与里程计插值端点的最大时间间隔，s。
-    double odom_sync_tolerance = 0.25;
-    double recovery_search_radius = 2.0;
-    int recovery_candidates = 8;
-    /// 车体坐标系到前端传感器坐标系的固定变换。
-    Eigen::Matrix4d T_sensor_body = Eigen::Matrix4d::Identity();
-    /// UWB 天线相位中心在前端传感器坐标系中的位置，m。
-    Eigen::Vector3d antenna_position_sensor = Eigen::Vector3d::Zero();
-    /// UWB 原始位置观测的协方差，m²。
-    Eigen::Matrix3d position_covariance =
-        Eigen::Matrix3d::Identity() * 0.04;  // 默认标准差为 20 cm。
-    UwbAlignmentConfig bootstrap;
 };
 
 /// 回环检索、源点云累积、目标子图和验证参数。
@@ -318,7 +268,8 @@ struct Config {
     TrackingConfig tracking;
     InnovationConfig innovation;
     RecoveryConfig recovery;
-    UwbConfig uwb;
+    /// 车体坐标系到前端传感器坐标系的启动时外参 T_sensor_body。
+    Eigen::Matrix4d T_sensor_body = Eigen::Matrix4d::Identity();
     LoopConfig loop;
     ResetConfig reset;
     /// 是否生成配准调试点云和可视化快照。

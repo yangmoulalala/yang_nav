@@ -86,13 +86,6 @@ public:
     LocalizationTransition onCorrectionConflict(const std::string& reason,
                                                 int conflicts_before_suspect, bool severe = false,
                                                 int severe_conflicts_before_suspect = 0);
-    /// 记录本周期独立位置证据（UWB）与已接受的全位姿观测是否严重不一致。全位姿观测（点云配准）
-    /// 可能锁到相似或对称位姿而自洽；位置证据连续 threshold 次严重不一致（0 关闭）即进入 SUSPECT。
-    /// 一致的位置证据清零计数；本周期无位置证据时不应调用。
-    LocalizationTransition onPositionEvidence(bool severe_disagreement, const std::string& reason,
-                                              int threshold);
-    /// 返回当前连续严重不一致的位置证据次数。
-    int positionDisagreements() const { return consecutive_position_disagreements_; }
     /// 恢复提交后开始试用期：接下来 observations 次普通观测内的严重冲突直接进入 SUSPECT。
     void beginProbation(int observations);
     /// 返回剩余试用期观测次数。
@@ -114,7 +107,6 @@ private:
 
     int consecutive_correction_conflicts_ = 0;
     int consecutive_severe_conflicts_ = 0;
-    int consecutive_position_disagreements_ = 0;
     int probation_remaining_ = 0;
     int consecutive_suspect_relocalization_failures_ = 0;
     LocalizationStatus status_ = LocalizationStatus::Initializing;

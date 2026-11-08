@@ -199,6 +199,17 @@ backend_node:
       confirm_min_rotation_deg: 30.0
       # 运动门开启时，静止下连续一致候选达到该次数也提交，避免停车时永不恢复；0 表示必须移动。
       confirm_stationary_max: 15
+      # 里程计连续性门：SUSPECT/LOST（同一前端代次）恢复解与“进入 SUSPECT 时的 map←odom × 当前里程计”预测的允许平移基数，单位为米；
+      # 与 odom_gate_rotation_deg 都为 0 时关闭。里程计只走了很短距离却跳得很远的解（对称场地的对称位姿）被拒绝，不计失败。
+      odom_gate_translation: 1.5
+      # 允许平移随进入 SUSPECT 以来里程计位移增长的比例（漂移余量）。
+      odom_gate_translation_ratio: 0.1
+      # 恢复解与里程计预测允许的旋转差，单位为度；0 不检查旋转。
+      odom_gate_rotation_deg: 20.0
+      # 同一 SUSPECT 段内最多拒绝的候选数，达到后门失效（里程计可能已失真，如被撞、被搬动）；0 不失效。
+      odom_gate_max_rejections: 25
+      # 上次恢复（含初始化）后至少可信运行该时长，进入 SUSPECT 时才用当时规范当门锚，单位为秒；刚恢复就冲突说明该解可疑，不设门。
+      odom_gate_min_trusted_seconds: 10.0
       # 恢复提交后的试用期（全局观测次数）；期间一次严重冲突即重新进入 SUSPECT；0 关闭。
       probation_observations: 5
       # 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复；0 关闭；初始化不检验。
@@ -207,81 +218,6 @@ backend_node:
       ambiguity_translation: 1.0
       # 歧义检验中判定两解不同的旋转差，单位为度。
       ambiguity_rotation_deg: 30.0
-    uwb:
-      # 是否接入 UWB 位置观测。
-      # 本机器人暂未接入 UWB。 [按车调整]
-      enabled: false
-      # 是否信任并使用 UWB 的 Z 方向观测。
-      use_z: false
-      # 有先验图时是否在线联合估计 UWB 坐标系到 map 的变换。
-      estimate_zero_pose_online: true
-      # UWB 消息时刻到物理运动时刻的固定偏置，满足 t_motion=t_header+dt。 [按车调整]
-      time_offset_seconds: -0.2
-      antenna_position_body:
-        # UWB 天线相位中心在 body 坐标系中的 X 位置，单位为米。 [按车调整]
-        x: -0.245
-        # UWB 天线相位中心在 body 坐标系中的 Y 位置，单位为米。 [按车调整]
-        y: -0.0
-        # UWB 天线相位中心在 body 坐标系中的 Z 位置，单位为米。 [按车调整]
-        z: 0.0
-      # 单次 UWB 水平位置观测的标准差，单位为米。
-      position_std_xy: 0.15
-      # UWB 解算位置所属的真实坐标系名称。
-      frame: uwb
-      zero_pose:
-        # 固定或初始 T_map_uwb 的 X 平移，单位为米。
-        x: 0.0
-        # 固定或初始 T_map_uwb 的 Y 平移，单位为米。
-        y: 0.0
-        # 固定或初始 T_map_uwb 的 Z 平移，单位为米。
-        z: 0.0
-        # 固定或初始 T_map_uwb 的水平偏航角，单位为度。
-        yaw_deg: 0.0
-      # UWB 物理解的有效频率，单位为 Hz；用于识别高频保持重发。
-      effective_rate_hz: 1.0
-      # 有先验图时是否在线联合估计共享静态时间偏置。
-      estimate_time_offset_online: false
-      # 在线时间偏置状态的先验标准差，单位为秒。
-      time_offset_prior_std_seconds: 0.1
-      # 单次 UWB 解算随机时间抖动的标准差，单位为秒。
-      time_jitter_std_seconds: 0.05
-      # 恢复使用 UWB 解算允许的最大年龄，单位为秒。
-      max_age: 1.2
-      # 在线坐标标定与无先验启动对齐中 UWB 与位姿配对允许的最大年龄，单位为秒（应比 max_age 严格）。
-      calibration_max_age: 0.25
-      # 先验地图配准被接受但 UWB 连续严重冲突多少次即进入 SUSPECT；0 关闭。
-      conflicts_before_suspect: 3
-      # 恢复解推算的天线位置与新鲜 UWB 读数允许的最大水平偏差，单位为米；0 关闭。
-      recovery_max_offset: 0.6
-      # UWB 物理时刻到真实前端位姿端点的最大时间差，单位为秒。
-      odom_sync_tolerance: 0.25
-      # 以 UWB 位置召回先验关键帧的搜索半径，单位为米。
-      recovery_search_radius: 2.0
-      # UWB 位置召回最多保留的先验关键帧数量。
-      recovery_candidates: 8
-      # 单次 UWB 高度观测或固定高度规范的标准差，单位为米。
-      position_std_z: 0.3
-      bootstrap:
-        # UWB/里程计启动对齐保留的最大时间配对数量。
-        max_pairs: 120
-        # 尝试 UWB/里程计启动对齐所需的最少时间配对数量。
-        min_pairs: 5
-        # UWB/里程计启动对齐要求的最小水平运动基线，单位为米。
-        min_baseline: 3.0
-        # UWB 启动对齐一致性内点阈值，单位为米。
-        inlier_threshold: 0.75
-        # 接受 UWB 启动对齐的最大内点 RMSE，单位为米。
-        max_rmse: 0.45
-        # 接受 UWB 启动对齐的最大 yaw 标准差，单位为度。
-        max_yaw_std_deg: 10.0
-        # 启动放行前要求连续稳定的对齐解数量。
-        stable_solutions: 2
-        # 相邻稳定对齐解允许的最大平移差，单位为米。
-        stable_translation_delta: 0.25
-        # 相邻稳定对齐解允许的最大 yaw 差，单位为度。
-        stable_yaw_delta_deg: 3.0
-        # 无先验 UWB 图保持前端重力轴的 roll/pitch 标准差，单位为度。
-        gravity_alignment_std_deg: 1.0
     loop:
       # 是否在无先验图时启用运行轨迹回环。
       enabled: true

@@ -1,6 +1,6 @@
 /**
  * @file recovery_matcher.cpp
- * @brief 按启动提示、UWB 位置与描述子次序求解恢复位姿。
+ * @brief 按启动提示与描述子次序求解恢复位姿。
  */
 
 #include <algorithm>
@@ -103,10 +103,10 @@ bool RecoveryMatcher::match(const RecoveryWork& work,
     return true;
 }
 
-/// 按启动提示、UWB 和描述子优先级求解完整可观恢复位姿。
+/// 按启动提示和描述子优先级求解完整可观恢复位姿。
 RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     RecoveryResult result;
-    // 显式责任链：完整启动提示 → UWB 位置先验 → 描述子；每个分支仍调用同一匹配器。
+    // 显式责任链：完整启动提示 → 描述子；每个分支仍调用同一匹配器。
     if (work.startup_hint_prior) {
         if (match(work, &*work.startup_hint_prior, result)) {
             result.outcome = RecoveryOutcome::Matched;
@@ -133,11 +133,6 @@ RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     }
     if (work.source_evidence.disposition != ObservationDisposition::Measurement)
         return result;
-    if (work.uwb_prior && match(work, &*work.uwb_prior, result)) {
-        result.outcome = RecoveryOutcome::Matched;
-        result.source = "UWB + scan-to-map";
-        return result;
-    }
     if (match(work, nullptr, result)) {
         result.outcome = RecoveryOutcome::Matched;
         result.source = (result.source.empty() ? "descriptor" : result.source) + " + scan-to-map";
@@ -148,7 +143,7 @@ RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
         return result;
     }
     result.outcome = RecoveryOutcome::Failed;
-    result.source = work.uwb_prior ? "UWB preference and descriptor fallback" : "descriptor";
+    result.source = "descriptor";
     return result;
 }
 }  // namespace backend

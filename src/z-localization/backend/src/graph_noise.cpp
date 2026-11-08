@@ -31,48 +31,6 @@ gtsam::Matrix rosToGtsamOrder(const PoseCovariance6d& covariance) {
     return out;
 }
 
-/// 验证平面对齐变换并提取其 SE(2) 状态。
-gtsam::Pose2 planarAlignmentFromMatrix(const Eigen::Matrix4d& T_map_uwb) {
-    if (!T_map_uwb.allFinite() ||
-        !T_map_uwb.row(3).isApprox(Eigen::RowVector4d(0.0, 0.0, 0.0, 1.0), 1.0e-9)) {
-        throw std::invalid_argument("UWB alignment transform is non-finite or non-homogeneous");
-    }
-    const Eigen::Matrix3d rotation = T_map_uwb.block<3, 3>(0, 0);
-    if (!(rotation.transpose() * rotation).isApprox(Eigen::Matrix3d::Identity(), 1.0e-9) ||
-        std::abs(rotation.determinant() - 1.0) > 1.0e-9) {
-        throw std::invalid_argument("UWB alignment transform does not contain a valid rotation");
-    }
-    if ((rotation * Eigen::Vector3d::UnitZ() - Eigen::Vector3d::UnitZ()).norm() > 1.0e-9) {
-        throw std::invalid_argument(
-            "UWB alignment is SE(2)+optional-Z and cannot contain roll/pitch");
-    }
-    return gtsam::Pose2(T_map_uwb(0, 3), T_map_uwb(1, 3), yawFromRotation(rotation));
-}
-
-/// 将世界加性对齐协方差转换到共享状态的局部坐标。
-gtsam::Matrix alignmentPriorCovarianceLocal(const PoseCovariance6d& world_covariance,
-                                            const gtsam::Pose2& planar_alignment,
-                                            const bool use_z) {
-    const std::vector<int> indices =
-        use_z ? std::vector<int>{0, 1, 5, 2} : std::vector<int>{0, 1, 5};
-    const Eigen::Index dimension = static_cast<Eigen::Index>(indices.size());
-    gtsam::Matrix reduced = gtsam::Matrix::Zero(dimension, dimension);
-    if (!world_covariance.allFinite()) {
-        reduced.setConstant(std::numeric_limits<double>::quiet_NaN());
-        return reduced;
-    }
-    for (Eigen::Index row = 0; row < dimension; ++row) {
-        for (Eigen::Index col = 0; col < dimension; ++col) {
-            reduced(row, col) = world_covariance(indices[static_cast<std::size_t>(row)],
-                                                 indices[static_cast<std::size_t>(col)]);
-        }
-    }
-    gtsam::Matrix J = gtsam::Matrix::Identity(dimension, dimension);
-    J.topLeftCorner<2, 2>() = planar_alignment.rotation().matrix().transpose();
-    const gtsam::Matrix local = J * reduced * J.transpose();
-    return 0.5 * (local + local.transpose());
-}
-
 /// 验收测量协方差，无效时使用显式保守回退噪声。
 gtsam::SharedNoiseModel covarianceNoiseOrFallback(const gtsam::Matrix& covariance,
                                                   const gtsam::Matrix& fallback,
