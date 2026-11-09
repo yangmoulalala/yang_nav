@@ -19,13 +19,13 @@ from typing import Optional
 import numpy as np
 
 # ----------------------------------------------------------------------------- labels
-FLAT, OBSTACLE, SLOPE, STEP_L1, STEP_L2, FLY_SLOPE, STEP_HIGH, TUNNEL = range(8)
+FLAT, OBSTACLE, SLOPE, STEP_L1, STEP_L2, FLY_SLOPE, STEP_HIGH, TUNNEL, UNDULATION = range(9)
 LABELS = {
     FLAT: 'flat', OBSTACLE: 'obstacle', SLOPE: 'slope', STEP_L1: 'step_l1', STEP_L2: 'step_l2',
-    FLY_SLOPE: 'fly_slope', STEP_HIGH: 'step_high', TUNNEL: 'tunnel',
+    FLY_SLOPE: 'fly_slope', STEP_HIGH: 'step_high', TUNNEL: 'tunnel', UNDULATION: 'undulation',
 }
 LABEL_IDS = {v: k for k, v in LABELS.items()}
-DIRECTIONAL = {SLOPE, STEP_L1, STEP_L2, FLY_SLOPE, STEP_HIGH, TUNNEL}
+DIRECTIONAL = {SLOPE, STEP_L1, STEP_L2, FLY_SLOPE, STEP_HIGH, TUNNEL, UNDULATION}
 FIRST_DIRECTIONAL = SLOPE
 LABEL_COUNT = len(LABELS)
 

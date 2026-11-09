@@ -11,6 +11,10 @@ install(PROGRAMS
           scripts/terrain_export.py
           scripts/terrain_auto_direction.py
           scripts/mesh_to_terrain.py
+          scripts/mesh_io.py
+          scripts/surface_seg.py
+          scripts/surface_project.py
+          scripts/surface_studio.py
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
@@ -18,6 +22,7 @@ if(BUILD_TESTING)
   ament_add_pytest_test(test_terrain_label test/test_terrain_label.py)
   ament_add_pytest_test(test_auto_direction test/test_auto_direction.py)
   ament_add_pytest_test(test_mesh_to_terrain test/test_mesh_to_terrain.py)
+  ament_add_pytest_test(test_surface_seg test/test_surface_seg.py)
 endif()
 
 ament_package()
