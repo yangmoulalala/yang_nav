@@ -170,7 +170,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `LOST` | 定位丢失，等待或尝试重定位 | `false` |
 
 `localization_state` 使用分号分隔的 `key=value` 文本，包含定位状态、可信标记、重置代次和故障信息。
-进入 `SUSPECT` 或 `LOST` 后，若已有可信位姿，输出会冻结在该位姿；世界点云是否继续发布由 `output.world_cloud.publish_untrusted` 决定。
+进入 `SUSPECT` 后，若已有同一前端代次的可信位姿，输出沿用其 map←odom 由里程计前推，`/localization/odometry` 保留前端速度；进入 `LOST`（或 `SUSPECT` 跨越了前端重置）后，输出冻结在最后可信位姿、速度清零。两种情况位姿协方差都放大到至少 10 m / π；世界点云是否继续发布由 `output.world_cloud.publish_untrusted` 决定。
 
 ## 地图与标定工具
 

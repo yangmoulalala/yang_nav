@@ -15,6 +15,7 @@ namespace backend {
 /// 清除可信位姿及其前端代次和时间身份。
 void TrustedPoseProjector::clear() {
     map_from_sensor_ = Eigen::Matrix4d::Identity();
+    map_from_odom_ = Eigen::Matrix4d::Identity();
     epoch_ = 0;
     stamp_ = Timestamp();
     has_pose_ = false;
@@ -22,32 +23,45 @@ void TrustedPoseProjector::clear() {
 
 /// 仅在有效且代次及时间不回退时更新可信位姿。
 bool TrustedPoseProjector::updateIfNewer(const Eigen::Matrix4d& T_map_sensor,
+                                         const Eigen::Matrix4d& T_map_odom,
                                          const Timestamp& stamp, const std::uint64_t epoch) {
     if (!T_map_sensor.allFinite() || stamp.isZero() ||
         (has_pose_ && (epoch < epoch_ || (epoch == epoch_ && stamp < stamp_)))) {
         return false;
     }
-    return commitCorrection(T_map_sensor, stamp, epoch);
+    return commitCorrection(T_map_sensor, T_map_odom, stamp, epoch);
 }
 
 /// 原子安装已验收的绝对校正，允许新代次首帧的零时间戳。
 bool TrustedPoseProjector::commitCorrection(const Eigen::Matrix4d& T_map_sensor,
+                                            const Eigen::Matrix4d& T_map_odom,
                                             const Timestamp& stamp, const std::uint64_t epoch) {
-    if (!T_map_sensor.allFinite()) {
+    if (!T_map_sensor.allFinite() || !T_map_odom.allFinite()) {
         return false;
     }
     map_from_sensor_ = T_map_sensor;
+    map_from_odom_ = T_map_odom;
     epoch_ = epoch;
     stamp_ = stamp;
     has_pose_ = true;
     return true;
 }
 
-/// 在可信状态使用当前全局规范，否则冻结最后可信传感器位姿。
-TrustedPoseProjection TrustedPoseProjector::project(const bool pose_trusted,
+/// 在可信状态使用当前全局规范；SUSPECT 用最后可信 map←odom 前推里程计；
+/// 其他不可信状态冻结最后可信传感器位姿。
+TrustedPoseProjection TrustedPoseProjector::project(const LocalizationStatus status,
                                                     const Eigen::Matrix4d& T_map_odom_nominal,
-                                                    const Eigen::Matrix4d& T_odom_sensor) const {
+                                                    const Eigen::Matrix4d& T_odom_sensor,
+                                                    const std::uint64_t epoch) const {
     TrustedPoseProjection out;
+    const bool pose_trusted = LocalizationStateMachine::poseTrusted(status);
+    if (!pose_trusted && has_pose_ && status == LocalizationStatus::Suspect && epoch == epoch_) {
+        // 怀疑期间里程计仍连续：沿用最后可信的全局规范，让输出跟随车体运动。
+        out.T_map_odom = map_from_odom_;
+        out.T_map_sensor = map_from_odom_ * T_odom_sensor;
+        out.extrapolated = true;
+        return out;
+    }
     if (!pose_trusted && has_pose_) {
         out.T_map_sensor = map_from_sensor_;
         out.T_map_odom = map_from_sensor_ * T_odom_sensor.inverse();
@@ -111,15 +125,17 @@ LocalizationProjection PoseOutput::project(const FrontendFrame& frame, const Tim
     out.pose_trusted = LocalizationStateMachine::poseTrusted(out.status);
     out.global_pose_available = out.pose_trusted || trusted_pose_.hasPose();
     const TrustedPoseProjection projection =
-        trusted_pose_.project(out.pose_trusted, map_from_odom_, frame.odom_pose);
+        trusted_pose_.project(out.status, map_from_odom_, frame.odom_pose, frame.epoch);
     out.T_map_odom = projection.T_map_odom;
     out.T_map_sensor = projection.T_map_sensor;
+    out.pose_extrapolated = projection.extrapolated;
 
     const bool active_frame = frame.epoch == active_epoch;
     if (out.pose_trusted) {
         populateCovariance(frame.odom_pose, frame.pose_covariance, frame.pose_covariance_valid,
                            frame.epoch, frame.timestamp, out);
-        if (active_frame && trusted_pose_.updateIfNewer(out.T_map_sensor, stamp, frame.epoch)) {
+        if (active_frame && trusted_pose_.updateIfNewer(out.T_map_sensor, out.T_map_odom, stamp,
+                                                        frame.epoch)) {
             trusted_covariance_ = out.pose_covariance_valid
                                       ? std::optional<PoseCovariance6d>(out.pose_covariance)
                                       : std::nullopt;
@@ -160,9 +176,10 @@ LocalizationProjection PoseOutput::projectForOutput(
     out.pose_trusted = LocalizationStateMachine::poseTrusted(out.status);
     out.global_pose_available = out.pose_trusted || trusted_pose_.hasPose();
     const TrustedPoseProjection projection =
-        trusted_pose_.project(out.pose_trusted, map_from_odom_, T_odom_sensor);
+        trusted_pose_.project(out.status, map_from_odom_, T_odom_sensor, epoch);
     out.T_map_odom = projection.T_map_odom;
     out.T_map_sensor = projection.T_map_sensor;
+    out.pose_extrapolated = projection.extrapolated;
     if (!out.pose_trusted) {
         out.pose_covariance = trusted_covariance_.value_or(PoseCovariance6d::Zero());
         out.pose_covariance_valid = trusted_covariance_.has_value();
@@ -248,7 +265,7 @@ void PoseOutput::commitTrusted(const FrontendFrame& latest, std::uint64_t active
     projection.T_map_sensor = map_from_odom_ * latest.odom_pose;
     populateCovariance(latest.odom_pose, latest.pose_covariance, latest.pose_covariance_valid,
                        latest.epoch, latest.timestamp, projection);
-    trusted_pose_.commitCorrection(projection.T_map_sensor,
+    trusted_pose_.commitCorrection(projection.T_map_sensor, projection.T_map_odom,
                                    Timestamp::fromSeconds(latest.timestamp), active_epoch);
     trusted_covariance_ = projection.pose_covariance_valid
                               ? std::optional<PoseCovariance6d>(projection.pose_covariance)

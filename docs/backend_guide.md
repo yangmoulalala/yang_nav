@@ -103,10 +103,10 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 | `INITIALIZING` | 还没有全局位姿 | false | 不发布位姿、世界点云 |
 | `NORMAL` | 正常 | true | 正常发布 |
 | `OBS_DEGRADED` | 全局观测与预测冲突，但未达阈值 | true | 继续用里程计外推输出 |
-| `SUSPECT` | 怀疑出错，正在局部重定位 | false | 冻结在最后可信位姿；`/localization/odometry` 速度清零、协方差放大 |
-| `LOST` | 丢失，等待重定位（需要新鲜 UWB，UWB 位置附近 2 m） | false | 同上 |
+| `SUSPECT` | 怀疑出错，正在局部重定位 | false | 沿用最后可信 `map→lio_odom`，由里程计前推（`tf_frozen=false`）；`/localization/odometry` 保留前端速度，位姿协方差放大到至少 10 m / π。前端重置跨代次后旧 `map←odom` 不再适用，退回冻结（同 `LOST`） |
+| `LOST` | 丢失，等待重定位（需要新鲜 UWB，UWB 位置附近 2 m） | false | 冻结在最后可信位姿（`tf_frozen=true`）；`/localization/odometry` 速度清零、协方差放大 |
 
-**导航必须订阅 `localization_state`，`pose_trusted=false` 时停车或降级。** 冻结期间车如果还在动，输出位姿与真实位姿的误差会随时间增大（实测原地 0.6 rad/s 自转时每 0.2 s 增加约 8°）。
+**导航必须订阅 `localization_state`，`pose_trusted=false` 时停车或降级。** `SUSPECT` 前推的精度取决于进入 `SUSPECT` 前的全局位姿是否正确：误判无效（如 7.2）时输出仍准，绑架或错误恢复后会沿着偏掉的 `map←odom` 继续走。`LOST` 冻结期间车如果还在动，输出位姿与真实位姿的误差会随时间增大（实测原地 0.6 rad/s 自转时每 0.2 s 增加约 8°，该数据测于 SUSPECT 也冻结的旧实现）。
 
 `localization_state` 是分号分隔的 `key=value`：
 
@@ -373,7 +373,7 @@ MID-360 侧倾安装、视场不对称。建图时车头朝向不变，地图里
 
 - 原因：配准收敛判据（`registration_solver.cpp`）要求在最终对应集上再解一步的步长 ≤ `registration.convergence_translation` 且 ≤ `convergence_rotation_deg`。当时用的是上游值 5 mm / 0.1°、`max_iterations` 16，转动时这些观测跑满迭代仍未满足，被判“无效”；而“无效”一次就进 `SUSPECT`（第 3.1 节）。
 - 现状：仿真配置已放宽为 0.02 m / 0.5°、30 次迭代（见 `src/z-localization/README.md`），本文未复测；真车仍为上游值。
-- 影响：期间输出冻结，导航拿到的是停住的位姿。
+- 影响：期间 `pose_trusted=false`，按可信标记停车的导航会停下。输出位姿由里程计前推，不再停住（2026-11-09 前为冻结）。
 - 候选修法：把单次无效当作“本周期无观测”、连续 N 次才进 `SUSPECT`；或放宽/改写收敛判据。
 - 已试无效：限制累积窗口转角 `source.max_rotation_deg: 10`。
 

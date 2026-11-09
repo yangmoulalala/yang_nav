@@ -362,7 +362,7 @@ UWB 只在 `SUSPECT`/`LOST` 恢复时作位置先验，不参与跟踪和因子�
 | `enabled` | 布尔 | `true` | 是否将实时点云转换到 map 系并发布 |
 | `publish_period` | 浮点，s | `0.0` | 实时世界点云的最小发布间隔；须 `≥0`，`0` 每个有效帧都可发布 |
 | `publish_initializing` | 布尔 | `false` | 是否允许初始定位尚未完成时发布世界点云 |
-| `publish_untrusted` | 布尔 | `false` | 是否允许 `SUSPECT` / `LOST` 时发布世界点云；此时使用最后可信位姿变换 |
+| `publish_untrusted` | 布尔 | `false` | 是否允许 `SUSPECT` / `LOST` 时发布世界点云；`SUSPECT` 用里程计前推位姿变换，`LOST` 用最后可信位姿变换 |
 
 #### `storage` · 点云缓存（2 项）
 

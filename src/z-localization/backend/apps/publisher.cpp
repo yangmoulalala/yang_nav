@@ -101,8 +101,11 @@ void Publisher::publishOdometry(const nav_msgs::msg::Odometry& input,
                                       ? projection.pose_covariance
                                       : fallbackFrontendPoseCovariance();
     if (!projection.pose_trusted) {
-        // 冻结位姿只作保守输出，速度清零同时赋予较大方差，避免被解释为高置信静止。
         applyPoseCovarianceFloor(&covariance, 10.0, M_PI);
+    }
+    if (!projection.pose_trusted && !projection.pose_extrapolated) {
+        // 冻结位姿只作保守输出，速度清零同时赋予较大方差，避免被解释为高置信静止。
+        // SUSPECT 前推时位姿随里程计运动，保留前端传感器系速度。
         output.twist = geometry_msgs::msg::TwistWithCovariance{};
         for (int i = 0; i < 6; ++i)
             output.twist.covariance[i * 6 + i] = 1e6;

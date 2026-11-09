@@ -109,8 +109,8 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | `INITIALIZING` | 等待建立初始全局位姿 | 否 |
 | `NORMAL` | 正常定位 | 是 |
 | `OBS_DEGRADED` | 观测与预测短暂冲突，未达阈值 | 是 |
-| `SUSPECT` | 连续冲突/速度异常，尝试恢复，输出冻结 | 否 |
-| `LOST` | 定位丢失，等待重定位 | 否 |
+| `SUSPECT` | 连续冲突/速度异常，尝试恢复；输出由里程计前推（沿用最后可信 `map→lio_odom`），保留速度 | 否 |
+| `LOST` | 定位丢失，等待重定位；输出冻结在最后可信位姿，速度清零 | 否 |
 
 后端另订阅裁判系统 UWB：`/uwb_pose`（`geometry_msgs/PoseStamped`，只用 x、y）与 `/uwb_pose/team`（`std_msgs/String`，己方颜色，transient local），只在 `uwb.enabled` 时订阅，只用于 `SUSPECT`/`LOST` 恢复；没有新鲜 UWB 时不会自动恢复。仿真由 `sentry_gazebo` 的 `uwb_sim` 发布（仅 RMUC）。
 

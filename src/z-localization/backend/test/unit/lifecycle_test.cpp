@@ -23,9 +23,10 @@ TEST(LocalizationLifecycle, ConflictRecoveryAndFaultHistoryHaveDistinctLifetimes
     EXPECT_TRUE(LocalizationStateMachine::poseTrusted(state.status()));
     state.onCorrectionConflict("conflict", 2);
     EXPECT_EQ(state.status(), LocalizationStatus::Suspect);
-    EXPECT_TRUE(LocalizationStateMachine::tfFrozen(state.status()));
+    EXPECT_FALSE(LocalizationStateMachine::tfFrozen(state.status()));
     state.onRecoveryRelocalizationFailure(1, "geometry");
     EXPECT_EQ(state.status(), LocalizationStatus::Lost);
+    EXPECT_TRUE(LocalizationStateMachine::tfFrozen(state.status()));
     state.onEstimatorFailure("numerical failure");
     state.onFrontendResetCompleted();
     state.onTrustedCorrection("new anchor", TrustedCorrectionSource::Relocalization);

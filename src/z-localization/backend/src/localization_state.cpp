@@ -34,9 +34,9 @@ bool LocalizationStateMachine::poseTrusted(const LocalizationStatus status) {
     return status == LocalizationStatus::Normal || status == LocalizationStatus::ObsDegraded;
 }
 
-/// 判断当前状态是否应冻结最后可信的全局位姿。
+/// 判断当前状态是否应冻结最后可信的全局位姿；SUSPECT 用里程计前推，不冻结。
 bool LocalizationStateMachine::tfFrozen(const LocalizationStatus status) {
-    return status == LocalizationStatus::Suspect || status == LocalizationStatus::Lost;
+    return status == LocalizationStatus::Lost;
 }
 
 /// 判断当前状态是否应执行恢复（重定位）流程。

@@ -271,7 +271,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
   <figure><div class="scroll">
   <svg viewBox="0 0 1000 400" role="img" aria-label="五个状态及转移：INITIALIZING 到 NORMAL；NORMAL 与 OBS_DEGRADED 互转；配准无效、速度异常、冲突累计进 SUSPECT；SUSPECT 失败三次进 LOST；重定位成功回 NORMAL。">
     <rect class="box ok" x="560" y="12" width="14" height="14" rx="3"/><text class="ts" x="580" y="24">可信 pose_trusted=true</text>
-    <rect class="box wr" x="760" y="12" width="14" height="14" rx="3"/><text class="ts" x="780" y="24">不可信，输出冻结</text>
+    <rect class="box wr" x="760" y="12" width="14" height="14" rx="3"/><text class="ts" x="780" y="24">不可信（SUSPECT 前推，LOST 冻结）</text>
     <rect class="box sen" x="30" y="55" width="160" height="50" rx="25"/><text class="tm tb" x="110" y="85" text-anchor="middle">INITIALIZING</text>
     <rect class="box ok" x="330" y="55" width="140" height="50" rx="25"/><text class="tm tb" x="400" y="85" text-anchor="middle">NORMAL</text>
     <rect class="box ok dash" x="670" y="55" width="190" height="50" rx="25"/><text class="tm tb" x="765" y="85" text-anchor="middle">OBS_DEGRADED</text>

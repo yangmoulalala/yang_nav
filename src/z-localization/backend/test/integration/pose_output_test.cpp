@@ -45,6 +45,48 @@ TEST(PoseOutput, ReframingPreservesPhysicalProjectionAndRetainedGraphUncertainty
     EXPECT_LT((after.pose_covariance - before.pose_covariance).norm(), 1e-12);
 }
 
+/// SUSPECT 沿用最后可信 map←odom 由里程计前推；LOST 与跨代次时冻结最后可信位姿。
+TEST(PoseOutput, SuspectExtrapolatesWithOdometryWhileLostFreezes) {
+    OdometryProcessNoiseConfig noise;
+    PoseOutput poses(noise);
+    poses.initialize();
+    const auto map_from_odom = testing::scenePose(3, -2, .4, .6);
+    poses.setTransform(map_from_odom);
+    LocalizationStateSnapshot state;
+    state.status = LocalizationStatus::Normal;
+    FrontendFrame trusted;
+    trusted.epoch = 0;
+    trusted.timestamp = 10;
+    trusted.odom_pose = testing::scenePose(1, .5, 0, .2);
+    const auto committed = poses.project(trusted, Timestamp::fromSeconds(10), state, 0);
+    ASSERT_TRUE(committed.pose_trusted);
+
+    // 进入 SUSPECT 后全局规范即使被改动，前推仍使用可信时刻的 map←odom。
+    poses.setTransform(testing::scenePose(50, 50, 0, 1));
+    const auto moved = testing::scenePose(2.5, 1, 0, .7);
+    state.status = LocalizationStatus::Suspect;
+    const auto suspect =
+        poses.projectForOutput(moved, PoseCovariance6d::Identity(), true, 11, 0, state, 0);
+    ASSERT_TRUE(suspect.valid);
+    EXPECT_FALSE(suspect.pose_trusted);
+    EXPECT_TRUE(suspect.pose_extrapolated);
+    EXPECT_LT((suspect.T_map_sensor - map_from_odom * moved).norm(), 1e-12);
+    EXPECT_LT((suspect.T_map_odom - map_from_odom).norm(), 1e-12);
+
+    state.status = LocalizationStatus::Lost;
+    const auto lost =
+        poses.projectForOutput(moved, PoseCovariance6d::Identity(), true, 11, 0, state, 0);
+    EXPECT_LT((lost.T_map_sensor - committed.T_map_sensor).norm(), 1e-12);
+    EXPECT_FALSE(lost.pose_extrapolated);
+
+    // 缓存属于旧代次时无法前推，SUSPECT 也退回冻结。
+    state.status = LocalizationStatus::Suspect;
+    const auto other_epoch =
+        poses.projectForOutput(moved, PoseCovariance6d::Identity(), true, 11, 1, state, 1);
+    EXPECT_LT((other_epoch.T_map_sensor - committed.T_map_sensor).norm(), 1e-12);
+    EXPECT_FALSE(other_epoch.pose_extrapolated);
+}
+
 /// 无可连接图节点时，停车参考仍独立保存全局协方差并按真实后续运动传播。
 TEST(PoseOutput, ParkedCovarianceAnchorSurvivesWarmBoundariesWithoutGraphNodes) {
     OdometryProcessNoiseConfig noise;

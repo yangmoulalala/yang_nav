@@ -377,7 +377,7 @@ backend_node:
         publish_period: 0.0
         # INITIALIZING 时是否发布实时 map 系点云。
         publish_initializing: false
-        # SUSPECT/LOST 时是否发布冻结位姿下的实时点云。
+        # SUSPECT/LOST 时是否发布实时点云（SUSPECT 用里程计前推位姿，LOST 用冻结位姿）。
         publish_untrusted: false
     storage:
       # 原始点云缓存保留预算，单位为 MiB；0 表示不保留缓存。

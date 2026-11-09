@@ -102,8 +102,11 @@ std::optional<RecoveryWork> Localization::captureRecovery() {
     work.identity.epoch = active_epoch_;
     work.predicted_map_pose = poses_.transform() * frames_.latest().odom_pose;
     if (current == LocalizationStatus::Suspect && poses_.trusted().hasPose()) {
-        // SUSPECT 以最后可信位姿为预测（UWB 先验的高度取自预测位姿）。
-        work.predicted_map_pose = poses_.trusted().mapSensorPose();
+        // SUSPECT 以最后可信 map←odom 前推的位姿为预测（UWB 先验的高度取自预测位姿）。
+        work.predicted_map_pose = poses_.trusted()
+                                      .project(current, poses_.transform(),
+                                               frames_.latest().odom_pose, frames_.latest().epoch)
+                                      .T_map_sensor;
     }
     work.startup_hint_prior = makeStartupHintPriorLocked(frames_.latest());
     work.force_startup_hint =
@@ -124,7 +127,11 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
     PoseCorrectionDelta applied_correction;
     Eigen::Matrix4d output_pose_before = poses_.transform() * frames_.latest().odom_pose;
     if (poses_.trusted().hasPose()) {
-        output_pose_before = poses_.trusted().mapSensorPose();
+        // 与恢复前实际发布的输出比较：SUSPECT 为前推位姿，LOST 为冻结位姿。
+        output_pose_before = poses_.trusted()
+                                 .project(state_.status(), poses_.transform(),
+                                          frames_.latest().odom_pose, frames_.latest().epoch)
+                                 .T_map_sensor;
     }
     // 恢复观测属于捕获帧，同状态代内的新帧继续使用校正后的全局规范。
     poses_.setTransform(result.pose * work.frame.odom_pose.inverse());

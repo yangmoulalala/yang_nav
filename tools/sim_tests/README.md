@@ -8,7 +8,7 @@
 | `run_all.sh` | 全量回归：单/双雷达 ×（建图、定位+绑架、原地旋转）+ 双雷达标定，串行运行并打印汇总；单雷达场景自动加 `earlyspin`（建图另加 `spawnspin`） |
 | `zt_run.sh` | 一键启动仿真 + `bringup sim.launch.py`，运行驱动脚本后清理进程组；环境变量 `LIDAR=single\|dual`（默认 dual），`CALIB=1` 时同时启动标定 |
 | `zt_driver.py` | 按真值跟踪路线（补给区 → 中央 → 返回）；`mapping` 结束时调用 `save_map`；`localize` 跑完后用 `set_pose` 瞬移到跑圈终点 1.5 m 外、航向 45°（RMUL (1.25, 5.25)，RMUC (-9.5, -1.5)）并等待恢复（局中恢复在 UWB 位置 2 m 内搜索，只有 RMUC 有 UWB，RMUL 绑架后不会恢复）；`spin` 原地慢转/快转；`calib` 依次停到 5 个拐角/中央点、每处 4 个朝向静止 6 s；第 4 个参数（`zt_run.sh` 第 6 个）为逗号分隔的标志，见下文[单雷达](#单雷达) |
-| `zt_eval.py` | SE(2) 对齐真值与估计（参考样本几乎不动时改用首样本锚定），按阶段输出 RMSE / 最大误差 / 航向误差；`FALSE TRUST` 行统计定位自报可信但误差 > 0.5 m 的样本（错误恢复）；SUSPECT/LOST 时后端把输出冻结在最后可信位姿、误差随行驶距离增长，故每个阶段另列 `trusted` / `untrusted` 统计；`--align YAW_DEG TX TY` 用固定对齐（取建图那次的 alignment） |
+| `zt_eval.py` | SE(2) 对齐真值与估计（参考样本几乎不动时改用首样本锚定），按阶段输出 RMSE / 最大误差 / 航向误差；`FALSE TRUST` 行统计定位自报可信但误差 > 0.5 m 的样本（错误恢复）；SUSPECT 时后端由里程计前推、LOST 时冻结在最后可信位姿（误差随行驶距离增长），故每个阶段另列 `trusted` / `untrusted` 统计；`--align YAW_DEG TX TY` 用固定对齐（取建图那次的 alignment） |
 | `cloud_rate.py` | 不反序列化点云地统计话题频率与 RTF（`ros2 topic hz` 对大点云会严重低估） |
 
 ## 用法
@@ -79,7 +79,7 @@ MID-360 侧装（URDF `mid360_joint` 俯仰约 90°），静止时只看到一�
 
 标定场景本次在第 2.35 s 因 IMU 采样中断（`front-end input discontinuity`）进入 LOST，整场没有恢复。标定节点只读前端 `/odometry`，仍输出了外参，但没有和 URDF 真值做误差对比，所以本次标定精度未确认。
 
-旧参考值（2026-10-31）里先验定位“最大 8.0 cm”用当前 `zt_eval.py` 无法复现：同一次运行重算为最大 36.8 cm，大误差都在 SUSPECT 冻结输出期间。
+旧参考值（2026-10-31）里先验定位“最大 8.0 cm”用当前 `zt_eval.py` 无法复现：同一次运行重算为最大 36.8 cm，大误差都在 SUSPECT 冻结输出期间（当时 SUSPECT 仍冻结；2026-11-09 起改为里程计前推）。
 
 ## 绑架修复验证（2026-11-02，`kidnap-recovery-fix` 分支 `fabbcc5`）
 
