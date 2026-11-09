@@ -86,41 +86,17 @@ void resolveLoopCapability(EffectiveConfig& effective, const bool descriptor_ava
 void resolveOdometryOrigin(EffectiveConfig& effective) {
     Config& config = effective.values;
     const bool pure_odometry =
-        !config.prior_map_enabled && !config.uwb.enabled && !config.loop.enabled;
+        !config.prior_map_enabled && !config.loop.enabled;
     const bool odometry_origin_requested = !config.pure_odometry.origin_xy.isZero(1.0e-12);
     if (odometry_origin_requested && !pure_odometry) {
         config.pure_odometry.origin_xy.setZero();
         recordOverride(&effective, "pure_odometry.origin", "nonzero", "(0, 0)",
-                       "the odometry origin is only defined without prior map, UWB, or "
+                       "the odometry origin is only defined without prior map or "
                        "loop closure");
     } else if (odometry_origin_requested && config.startup_hint.T_map_sensor.has_value()) {
         config.pure_odometry.origin_xy.setZero();
         recordOverride(&effective, "pure_odometry.origin", "nonzero", "(0, 0)",
                        "startup_hint already defines the epoch-0 gauge");
-    }
-}
-
-/// 根据 UWB 输入和先验地图能力解析在线空间与时间标定。
-void resolveUwbCalibration(EffectiveConfig& effective) {
-    Config& config = effective.values;
-    if (config.uwb.estimate_zero_pose_online && !config.uwb.enabled) {
-        config.uwb.estimate_zero_pose_online = false;
-        recordOverride(&effective, "uwb.estimate_zero_pose_online", "true", "false",
-                       "UWB input is disabled");
-    } else if (config.uwb.estimate_zero_pose_online && !config.prior_map_enabled) {
-        config.uwb.estimate_zero_pose_online = false;
-        recordOverride(&effective, "uwb.estimate_zero_pose_online", "true", "false",
-                       "online UWB-frame alignment requires an immutable prior map");
-    }
-
-    if (config.uwb.estimate_time_offset_online && !config.uwb.enabled) {
-        config.uwb.estimate_time_offset_online = false;
-        recordOverride(&effective, "uwb.estimate_time_offset_online", "true", "false",
-                       "UWB input is disabled");
-    } else if (config.uwb.estimate_time_offset_online && !config.prior_map_enabled) {
-        config.uwb.estimate_time_offset_online = false;
-        recordOverride(&effective, "uwb.estimate_time_offset_online", "true", "false",
-                       "online time calibration requires independent prior-map poses");
     }
 }
 
@@ -137,7 +113,7 @@ void resolveGraphHistory(EffectiveConfig& effective) {
 
 }  // namespace
 
-/// 按可用地图、描述子和 UWB 能力解析有效配置并记录覆盖原因。
+/// 按可用地图和描述子能力解析有效配置并记录覆盖原因。
 EffectiveConfig resolveConfig(Config requested, const bool descriptor_available) {
     EffectiveConfig effective;
     effective.values = std::move(requested);
@@ -146,7 +122,6 @@ EffectiveConfig resolveConfig(Config requested, const bool descriptor_available)
     resolveStartupHint(effective);
     resolveLoopCapability(effective, descriptor_available);
     resolveOdometryOrigin(effective);
-    resolveUwbCalibration(effective);
     resolveGraphHistory(effective);
     return effective;
 }
@@ -172,7 +147,7 @@ void fields(Config& config, const Config& defaults, std::initializer_list<double
     for (auto member : members)
         config.*member = rule(config.*member, defaults.*member);
 }
-/// 规范化因果源最小帧数、容量及连续性门限。
+/// 规范化因果源最小帧数、容量及时间、运动累积门限。
 void source(SourceAccumulationConfig& config, const SourceAccumulationConfig& defaults) {
     config.max_frames = std::max(1, config.max_frames);
     config.min_frames = std::clamp(config.min_frames, 1, config.max_frames);
@@ -239,8 +214,7 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
                                d.relocalization.ambiguity_rotation_rad));
     c.recovery.suspect_failures_before_lost = std::max(1, c.recovery.suspect_failures_before_lost);
     fields(c.recovery, d.recovery,
-           {&RecoveryConfig::period, &RecoveryConfig::suspect_search_radius,
-            &RecoveryConfig::lost_search_radius},
+           {&RecoveryConfig::period, &RecoveryConfig::initial_search_radius},
            nonnegativeOr);
     source(c.tracking.source, d.tracking.source);
     source(c.recovery.source, d.recovery.source);
@@ -251,48 +225,22 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
         std::max(0.0, finiteOr(c.recovery.confirm_translation, d.recovery.confirm_translation));
     c.recovery.confirm_rotation_rad =
         std::max(0.0, finiteOr(c.recovery.confirm_rotation_rad, d.recovery.confirm_rotation_rad));
-    c.recovery.confirm_min_translation = std::max(
-        0.0, finiteOr(c.recovery.confirm_min_translation, d.recovery.confirm_min_translation));
-    c.recovery.confirm_min_rotation_rad = std::max(
-        0.0, finiteOr(c.recovery.confirm_min_rotation_rad, d.recovery.confirm_min_rotation_rad));
-    c.recovery.confirm_stationary_max = std::max(0, c.recovery.confirm_stationary_max);
 }
 
-/// 规范化 UWB 时空参数、位置协方差及依赖其数值的启动标定。
+/// 规范化局中恢复 UWB 的时间、半径、偏差门限与固定坐标变换。
 void normalizeUwbNumerics(UwbConfig& uwb, const UwbConfig& ud) {
-    uwb.recovery_candidates = std::max(1, uwb.recovery_candidates);
-    uwb.conflicts_before_suspect = std::max(0, uwb.conflicts_before_suspect);
     fields(uwb, ud,
-           {&UwbConfig::effective_rate_hz, &UwbConfig::time_jitter_std_seconds, &UwbConfig::max_age,
-            &UwbConfig::calibration_max_age, &UwbConfig::recovery_max_offset, &UwbConfig::odom_sync_tolerance, &UwbConfig::recovery_search_radius},
+           {&UwbConfig::max_age, &UwbConfig::odom_sync_tolerance, &UwbConfig::search_radius,
+            &UwbConfig::max_offset},
            nonnegativeOr);
     uwb.time_offset_seconds = finiteOr(uwb.time_offset_seconds, ud.time_offset_seconds);
-    uwb.time_offset_prior_std_seconds =
-        positiveOr(uwb.time_offset_prior_std_seconds, ud.time_offset_prior_std_seconds);
-    if (!uwb.T_sensor_body.allFinite())
-        uwb.T_sensor_body = ud.T_sensor_body;
-    if (!uwb.T_map_uwb_fixed.allFinite())
-        uwb.T_map_uwb_fixed = ud.T_map_uwb_fixed;
-    if (!uwb.antenna_position_sensor.allFinite())
-        uwb.antenna_position_sensor = ud.antenna_position_sensor;
-    Eigen::MatrixXd covariance;
-    uwb.position_covariance = validateAndRegularizeCovariance(uwb.position_covariance, &covariance)
-                                  ? Eigen::Matrix3d(covariance)
-                                  : ud.position_covariance;
-    auto& bootstrap = uwb.bootstrap;
-    bootstrap.use_z = uwb.use_z;
-    bootstrap.max_pairs = std::max(2, bootstrap.max_pairs);
-    bootstrap.min_pairs = std::clamp(bootstrap.min_pairs, 2, bootstrap.max_pairs);
-    fields(
-        bootstrap, ud.bootstrap,
-        {&UwbAlignmentConfig::min_baseline, &UwbAlignmentConfig::inlier_threshold,
-         &UwbAlignmentConfig::max_rmse, &UwbAlignmentConfig::max_yaw_std_rad,
-         &UwbAlignmentConfig::stable_translation_delta, &UwbAlignmentConfig::stable_yaw_delta_rad,
-         &UwbAlignmentConfig::gravity_alignment_std_rad},
-        positiveOr);
-    bootstrap.position_std_xy = std::sqrt(std::max(uwb.position_covariance(0, 0), 1e-12));
-    bootstrap.position_std_z = std::sqrt(std::max(uwb.position_covariance(2, 2), 1e-12));
-    bootstrap.stable_solutions = std::max(1, bootstrap.stable_solutions);
+    uwb.candidates = std::max(1, uwb.candidates);
+    if (!uwb.T_map_uwb_red.allFinite())
+        uwb.T_map_uwb_red = ud.T_map_uwb_red;
+    if (!uwb.T_map_uwb_blue.allFinite())
+        uwb.T_map_uwb_blue = ud.T_map_uwb_blue;
+    if (!uwb.antenna_position_body.allFinite())
+        uwb.antenna_position_body = ud.antenna_position_body;
 }
 
 /// 规范化回环检索、验证门限及一致性历史预算。
@@ -368,6 +316,8 @@ void normalizeBackendConfigNumerics(Config* config) {
     normalizeKeyframeNumerics(c.keyframes, d.keyframes);
     normalizeRelocalizationNumerics(c.relocalization, d.relocalization);
     normalizeObservationNumerics(c, d);
+    if (!c.T_sensor_body.allFinite())
+        c.T_sensor_body = d.T_sensor_body;
     normalizeUwbNumerics(c.uwb, d.uwb);
     normalizeLoopNumerics(c.loop, d.loop);
     normalizeResetNumerics(c.reset, d.reset);

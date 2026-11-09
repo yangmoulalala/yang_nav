@@ -132,20 +132,6 @@ Visualization Manager:
             Reliability Policy: Reliable
             Value: /backend_node/localization_status
           Value: true
-        - Class: rviz_default_plugins/Marker
-          Enabled: true
-          Name: UWB-derived body position
-          Namespaces:
-            uwb_position: true
-          Queue Size: 1
-          Topic:
-            Depth: 1
-            Durability Policy: Transient Local
-            Filter size: 1
-            History Policy: Keep Last
-            Reliability Policy: Reliable
-            Value: /backend_node/uwb_position
-          Value: true
         - Alpha: 0.9
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:

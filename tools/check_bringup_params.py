@@ -35,14 +35,18 @@ PLATFORM_ONLY = {'real': ('livox_driver.yaml', 'robot_state.yaml')}
 SIM_IMU = 'Gazebo IMU 位于 mid360_link 原点；真车为 MID-360 内置 IMU mid360_imu_link'
 SIM_CONVERGENCE = '仿真点云稀疏，真车沿用上游收敛判据'
 BACKEND_PLATFORM = {
-    'backend_node/recovery.suspect_search_radius':
-        '仿真 RMUC 出生点镜像位姿约 18.85 m，半径须小于它（docs/localization_issues.md L6）；真车待实测',
     'backend_node/common.sensor_frame': SIM_IMU,
     'backend_node/registration.max_iterations': SIM_CONVERGENCE,
     'backend_node/registration.convergence_translation': SIM_CONVERGENCE,
     'backend_node/registration.convergence_rotation_deg': SIM_CONVERGENCE,
+    'backend_node/uwb.enabled': '仿真有 uwb_sim；真车 T_map_uwb 未标定，先关闭',
     'backend_node/uwb.time_offset_seconds': '仿真 uwb_sim 延迟 0.2 s；真车待标定',
-    'backend_node/uwb.max_age': '仿真为 1 Hz 裁判系统 UWB（恢复时解算最旧约 1 s）；真车按实际设备；标定配对另用 calibration_max_age',
+    'backend_node/uwb.zero_pose_red.x': '仿真取 maps/sim 的 T_map_uwb；真车按地图包另设',
+    'backend_node/uwb.zero_pose_red.y': '同上',
+    'backend_node/uwb.zero_pose_red.yaw_deg': '同上',
+    'backend_node/uwb.zero_pose_blue.x': '同上',
+    'backend_node/uwb.zero_pose_blue.y': '同上',
+    'backend_node/uwb.zero_pose_blue.yaw_deg': '同上',
 }
 SINGLE_LIDAR = {
     'backend_node/common.scan_context.similarity_normalization':

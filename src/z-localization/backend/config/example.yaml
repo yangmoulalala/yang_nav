@@ -3,7 +3,7 @@
 # 节点消费的每个参数均须在此给出：缺失参数与未知参数都会使启动失败。
 # prior_map.enabled、prior_map.directory、trajectory.save_directory 由 backend.launch.py
 # 的 mode/prior_map/save_dir 参数提供，不在 YAML 中配置。
-# 输入输出话题为固定相对名（frontend/frame、frontend/odometry、frontend/session、uwb_pose、
+# 输入输出话题为固定相对名（frontend/frame、frontend/odometry、frontend/session、
 # localization/lio_world_cloud），需要改名时使用 ROS remap。
 # common.frontend=legacy 时还需提供 common.odom_topic、common.sync_odom_topic、common.cloud_topic、
 # common.odom_cloud_sync.synchronizer_queue_depth 与 common.odom_cloud_sync.max_interval。
@@ -153,10 +153,9 @@ backend_node:
       # 直接进入 SUSPECT 的角速度阈值，单位为弧度每秒。
       suspicious_angular_speed: 30.0
     recovery:
-      # SUSPECT 围绕最后可信位置的候选搜索半径，单位为米。
-      suspect_search_radius: 30.0
-      # LOST 描述子候选的宽域搜索半径，单位为米；0 表示不限。
-      lost_search_radius: 35.0
+      # 开机初始化在里程计推算位置（地图原点或启动提示）附近检索的半径，单位为米；启动提示也用此半径。
+      # 局中恢复（SUSPECT/LOST）只用 UWB，见 uwb.search_radius。
+      initial_search_radius: 2.0
       source:
         # 一次观测成立所需的最少因果点云帧数。
         min_frames: 2
@@ -184,11 +183,11 @@ backend_node:
       target_radius: 8.0
       # 恢复尝试的最小调度周期，单位为秒。
       period: 0.2
-      # 局部召回失败后额外尝试的全局候选数量。
-      global_fallback_candidates: 5
+      # 局部召回失败后额外尝试的全局候选数量；0 不做全局重定位。
+      global_fallback_candidates: 0
       # SUSPECT 升级到 LOST 所需的连续恢复失败次数。
       suspect_failures_before_lost: 3
-      # LOST 状态是否持续自动尝试全局恢复。
+      # LOST 状态是否持续自动尝试重定位（只在推算位置附近搜索）。
       automatic_when_lost: true
       # 提交恢复前要求连续给出一致位姿的次数；1 表示首次匹配即提交。
       confirmations: 2
@@ -196,13 +195,6 @@ backend_node:
       confirm_translation: 0.3
       # 相邻恢复候选 map 到 odom 变换允许的旋转差，单位为度。
       confirm_rotation_deg: 5.0
-      # 运动门：提交恢复前要求自首个候选起车体至少平移该距离（米）或转过下一项角度；两项都为 0 关闭。
-      # 静止时对称/相似场景的错误解会连续自洽，移动后视野变化才能区分。
-      confirm_min_translation: 0.3
-      # 运动门的最小转角，单位为度。
-      confirm_min_rotation_deg: 30.0
-      # 运动门开启时，静止下连续一致候选达到该次数也提交，避免停车时永不恢复；0 表示必须移动。
-      confirm_stationary_max: 15
       # 恢复提交后的试用期（全局观测次数）；期间一次严重冲突即重新进入 SUSPECT；0 关闭。
       probation_observations: 5
       # 歧义检验：存在位姿明显不同且残差不超过最佳残差该倍数的解时推迟恢复；0 关闭；初始化不检验。
@@ -212,79 +204,46 @@ backend_node:
       # 歧义检验中判定两解不同的旋转差，单位为度。
       ambiguity_rotation_deg: 30.0
     uwb:
-      # 是否接入 UWB 位置观测。 [按车调整]
-      enabled: true
-      # 是否信任并使用 UWB 的 Z 方向观测。
-      use_z: false
-      # 有先验图时是否在线联合估计 UWB 坐标系到 map 的变换。
-      estimate_zero_pose_online: true
-      # UWB 消息时刻到物理运动时刻的固定偏置，满足 t_motion=t_header+dt。 [按车调整]
-      time_offset_seconds: -0.15
-      antenna_position_body:
-        # UWB 天线相位中心在 body 坐标系中的 X 位置，单位为米。 [按车调整]
-        x: -0.245
-        # UWB 天线相位中心在 body 坐标系中的 Y 位置，单位为米。 [按车调整]
-        y: -0.0
-        # UWB 天线相位中心在 body 坐标系中的 Z 位置，单位为米。 [按车调整]
-        z: 0.0
-      # 单次 UWB 水平位置观测的标准差，单位为米。
-      position_std_xy: 0.15
-      # UWB 解算位置所属的真实坐标系名称。
+      # 局中恢复（SUSPECT/LOST）是否使用裁判系统 UWB。UWB 只作重定位位置先验，不参与跟踪，也不用于判断定位是否正常；
+      # 开机初始化不用 UWB。关闭或没有新鲜 UWB 时，SUSPECT/LOST 不做重定位，只等待。 [按车调整]
+      enabled: false
+      # UWB 消息的 frame_id，不一致的消息被丢弃。己方颜色从 uwb_pose/team（red/blue）读取。
       frame: uwb
-      zero_pose:
-        # 固定或初始 T_map_uwb 的 X 平移，单位为米。
-        x: 0.0
-        # 固定或初始 T_map_uwb 的 Y 平移，单位为米。
+      # UWB 消息时刻到物理运动时刻的固定偏置，t_motion=t_header+dt，单位为秒。 [按车调整]
+      time_offset_seconds: 0.0
+      antenna_position_body:
+        # UWB 天线在 body 系中的 X 位置，单位为米。 [按车调整]
+        x: -0.245
+        # UWB 天线在 body 系中的 Y 位置，单位为米。 [按车调整]
         y: 0.0
-        # 固定或初始 T_map_uwb 的 Z 平移，单位为米。
+        # UWB 天线在 body 系中的 Z 位置，单位为米。 [按车调整]
         z: 0.0
-        # 固定或初始 T_map_uwb 的水平偏航角，单位为度。
+      # 己方为红方时 UWB 坐标系到 map 的固定变换（与地图包绑定，换地图要重设）。 [按车调整]
+      zero_pose_red:
+        # T_map_uwb 的 X 平移，单位为米。
+        x: 0.0
+        # T_map_uwb 的 Y 平移，单位为米。
+        y: 0.0
+        # T_map_uwb 的航向，单位为度。
         yaw_deg: 0.0
-      # UWB 物理解的有效频率，单位为 Hz；用于识别高频保持重发。
-      effective_rate_hz: 1.0
-      # 有先验图时是否在线联合估计共享静态时间偏置。
-      estimate_time_offset_online: false
-      # 在线时间偏置状态的先验标准差，单位为秒。
-      time_offset_prior_std_seconds: 0.1
-      # 单次 UWB 解算随机时间抖动的标准差，单位为秒。
-      time_jitter_std_seconds: 0.05
-      # 恢复使用 UWB 解算允许的最大年龄，单位为秒。
-      max_age: 0.25
-      # 在线坐标标定与无先验启动对齐中 UWB 与位姿配对允许的最大年龄，单位为秒（应比 max_age 严格）。
-      calibration_max_age: 0.25
-      # 恢复解推算的天线位置与新鲜 UWB 读数允许的最大水平偏差，单位为米；0 关闭。
-      recovery_max_offset: 0.6
-      # 先验地图配准被接受但 UWB 连续严重冲突多少次即进入 SUSPECT；0 关闭。
-      conflicts_before_suspect: 3
-      # UWB 物理时刻到真实前端位姿端点的最大时间差，单位为秒。
+      # 己方为蓝方时 UWB 坐标系到 map 的固定变换。 [按车调整]
+      zero_pose_blue:
+        # T_map_uwb 的 X 平移，单位为米。
+        x: 0.0
+        # T_map_uwb 的 Y 平移，单位为米。
+        y: 0.0
+        # T_map_uwb 的航向，单位为度。
+        yaw_deg: 0.0
+      # UWB 读数（按运动时刻）相对当前帧允许的最大年龄，单位为秒；超出视为没有 UWB。
+      max_age: 1.2
+      # UWB 运动时刻与里程计插值端点的最大时间间隔，单位为秒。
       odom_sync_tolerance: 0.25
-      # 以 UWB 位置召回先验关键帧的搜索半径，单位为米。
-      recovery_search_radius: 2.0
+      # 以 UWB 位置召回先验关键帧的半径，单位为米。
+      search_radius: 2.0
       # UWB 位置召回最多保留的先验关键帧数量。
-      recovery_candidates: 8
-      # 单次 UWB 高度观测或固定高度规范的标准差，单位为米。
-      position_std_z: 0.3
-      bootstrap:
-        # UWB/里程计启动对齐保留的最大时间配对数量。
-        max_pairs: 120
-        # 尝试 UWB/里程计启动对齐所需的最少时间配对数量。
-        min_pairs: 5
-        # UWB/里程计启动对齐要求的最小水平运动基线，单位为米。
-        min_baseline: 3.0
-        # UWB 启动对齐一致性内点阈值，单位为米。
-        inlier_threshold: 0.75
-        # 接受 UWB 启动对齐的最大内点 RMSE，单位为米。
-        max_rmse: 0.45
-        # 接受 UWB 启动对齐的最大 yaw 标准差，单位为度。
-        max_yaw_std_deg: 10.0
-        # 启动放行前要求连续稳定的对齐解数量。
-        stable_solutions: 2
-        # 相邻稳定对齐解允许的最大平移差，单位为米。
-        stable_translation_delta: 0.25
-        # 相邻稳定对齐解允许的最大 yaw 差，单位为度。
-        stable_yaw_delta_deg: 3.0
-        # 无先验 UWB 图保持前端重力轴的 roll/pitch 标准差，单位为度。
-        gravity_alignment_std_deg: 1.0
+      candidates: 8
+      # 恢复解推算的天线位置与 UWB 读数允许的最大水平偏差，单位为米；0 关闭。
+      max_offset: 0.6
     loop:
       # 是否在无先验图时启用运行轨迹回环。
       enabled: true
@@ -421,7 +380,7 @@ backend_node:
         publish_period: 0.0
         # INITIALIZING 时是否发布实时 map 系点云。
         publish_initializing: false
-        # SUSPECT/LOST 时是否发布冻结位姿下的实时点云。
+        # SUSPECT/LOST 时是否发布实时点云（SUSPECT 用里程计前推位姿，LOST 用冻结位姿）。
         publish_untrusted: false
     storage:
       # 原始点云缓存保留预算，单位为 MiB；0 表示不保留缓存。

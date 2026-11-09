@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "backend/math.hpp"
-#include "backend/uwb_fusion.hpp"
 
 namespace backend::ros {
 
@@ -73,17 +72,12 @@ void ParameterReader::loadCommonInput() {
         std::max(1.0e-3, parameters_.input.synchronizer_max_interval);
 }
 
-/// 用启动时的 T_sensor_body 换算启动提示，并给出 UWB 外参与杆臂的回退值。
-/// 运行期间每条 UWB 测量和每次位姿输出都使用各自时刻的外参；这里的值只用于
-/// 未携带时变外参的路径（如启动提示航向还原）。
+/// 用启动时的 T_sensor_body 换算启动提示，并保存为无时变外参时的回退值。
 void ParameterReader::applyBodyExtrinsic(const Eigen::Matrix4d& T_sensor_body) {
     if (!T_sensor_body.allFinite()) {
         throw std::invalid_argument("body extrinsic from TF contains a non-finite value");
     }
-    const UwbMeasurementExtrinsic startup =
-        uwbExtrinsicFromBody(T_sensor_body, parameters_.input.antenna_position_body);
-    parameters_.runtime.uwb.T_sensor_body = startup.T_sensor_body;
-    parameters_.runtime.uwb.antenna_position_sensor = startup.antenna_position_sensor;
+    parameters_.runtime.T_sensor_body = T_sensor_body;
     if (startup_T_map_body_) {
         // 启动提示描述启动时刻的 body 位姿；以启动时外参换算为 T_map_sensor。
         parameters_.runtime.startup_hint.T_map_sensor =
@@ -186,8 +180,7 @@ void ParameterReader::loadTracking() {
 /// 读取 INITIALIZING、SUSPECT 和 LOST 共用的恢复参数。
 void ParameterReader::loadRecovery() {
     getParam("recovery/period", parameters_.runtime.recovery.period);
-    getParam("recovery/suspect_search_radius", parameters_.runtime.recovery.suspect_search_radius);
-    getParam("recovery/lost_search_radius", parameters_.runtime.recovery.lost_search_radius);
+    getParam("recovery/initial_search_radius", parameters_.runtime.recovery.initial_search_radius);
     getParam("recovery/global_fallback_candidates",
              parameters_.runtime.recovery.global_fallback_candidates);
     getParam("recovery/suspect_failures_before_lost",
@@ -197,11 +190,6 @@ void ParameterReader::loadRecovery() {
     getParam("recovery/confirm_translation", parameters_.runtime.recovery.confirm_translation);
     parameters_.runtime.recovery.confirm_rotation_rad =
         degreesToRadians(param<double>("recovery/confirm_rotation_deg"));
-    getParam("recovery/confirm_min_translation",
-             parameters_.runtime.recovery.confirm_min_translation);
-    parameters_.runtime.recovery.confirm_min_rotation_rad =
-        degreesToRadians(param<double>("recovery/confirm_min_rotation_deg"));
-    getParam("recovery/confirm_stationary_max", parameters_.runtime.recovery.confirm_stationary_max);
     getParam("recovery/probation_observations",
              parameters_.runtime.recovery.probation_observations);
     getParam("recovery/ambiguity_rmse_ratio",

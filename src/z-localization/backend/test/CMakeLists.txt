@@ -13,7 +13,6 @@ ament_add_gtest(backend_lifecycle_test unit/lifecycle_test.cpp unit/frontend_ses
     ../apps/frontend_session.cpp)
 ament_add_gtest(backend_graph_test integration/graph_test.cpp)
 ament_add_gtest(backend_innovation_test integration/innovation_test.cpp)
-ament_add_gtest(backend_uwb_factor_test integration/uwb_factor_test.cpp)
 ament_add_gtest(backend_relocalization_test integration/relocalization_test.cpp)
 ament_add_gtest(backend_localization_test
     integration/localization_test.cpp
@@ -29,7 +28,7 @@ target_link_options(backend_storage_test PRIVATE "LINKER:--wrap=fsync")
 ament_add_gtest(backend_cleanup_test tools/cleanup_test.cpp)
 foreach(target backend_fusion_test backend_measurement_test backend_body_test backend_body_extrinsic_test
                backend_lifecycle_test backend_graph_test
-               backend_storage_test backend_cleanup_test backend_innovation_test backend_uwb_factor_test
+               backend_storage_test backend_cleanup_test backend_innovation_test
                backend_relocalization_test backend_localization_test backend_descriptor_test
                backend_calibration_test)
     target_link_libraries(${target} backend_core)
@@ -42,7 +41,7 @@ target_link_libraries(backend_cleanup_test backend_map_cleanup)
 target_include_directories(backend_calibration_test PRIVATE ../tools)
 set_tests_properties(backend_calibration_test PROPERTIES LABELS "tools;integration")
 set_tests_properties(backend_graph_test backend_storage_test backend_innovation_test
-    backend_uwb_factor_test backend_relocalization_test backend_localization_test
+    backend_relocalization_test backend_localization_test
     backend_descriptor_test PROPERTIES LABELS "integration")
 set_tests_properties(backend_cleanup_test PROPERTIES LABELS "geometry;tools")
 ament_add_pytest_test(backend_tools_test tools/test_map_tools.py TIMEOUT 90

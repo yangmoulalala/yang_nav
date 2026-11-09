@@ -7,12 +7,15 @@
 # env: OUT (default /tmp/nav_run), MAP (default maps/sim-rmuc-dual), GUI=true
 WS=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${OUT:-/tmp/nav_run}; MAP=${MAP:-$WS/maps/sim}; GUI=${GUI:-false}
+# TERRAIN: nav_terrain package (terrain_export.py output) used as terrain_dir and for goal registration
+TERRAIN=${TERRAIN:-$MAP/terrain}
 mkdir -p "$OUT"; rm -f "$OUT"/*.log
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=${MESA_D3D12_DEFAULT_ADAPTER_NAME:-NVIDIA}
 # RVIZ=true opens the navigation RViz (WSLg); HOLD=S keeps everything running S seconds after the goals
 RVIZ=${RVIZ:-false}; HOLD=${HOLD:-0}
-# UWB=true (default): referee UWB sim + backend fusion; the point-symmetric RMUC field
-# otherwise lets scan-to-map lock onto the mirrored pose
+# UWB=true (default): start the referee UWB sim (uwb_sim). The backend uses UWB only as the
+# position prior for SUSPECT/LOST recovery (uwb.enabled in bringup/config/sim/backend*.yaml);
+# without it the backend waits in SUSPECT/LOST instead of recovering
 UWB=${UWB:-true}
 export DISPLAY=${DISPLAY:-:0}
 source /opt/ros/jazzy/setup.bash; source "$WS/install/setup.bash"
@@ -50,7 +53,7 @@ for line in sys.stdin:
         buf=""
 ' > "$OUT/truth.log" 2>/dev/null ) & TRUTH=$!
 
-ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=$UWB prior_map:="$MAP" > "$OUT/loc.log" 2>&1 & LOC=$!
+ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP" > "$OUT/loc.log" 2>&1 & LOC=$!
 # Do not start navigation on top of a localization that never came up: without
 # lio_odom the local costmap times out and lifecycle_manager aborts the whole bringup.
 LOC_OK=false
@@ -67,7 +70,7 @@ if [ "$LOC_OK" != true ]; then
   kill $LOC 2>/dev/null; sleep 2
   pkill -9 -f 'bringup sim.launch.py'; pkill -9 -f zlio_node; pkill -9 -f backend_node; pkill -9 -f merge_node
   sleep 2
-  ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=$UWB prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
+  ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
   for i in $(seq 1 90); do
     if timeout 3 ros2 topic echo --once /backend_node/localization_state std_msgs/msg/String 2>/dev/null \
         | grep -q 'pose_trusted=true'; then LOC_OK=true; break; fi
@@ -80,7 +83,7 @@ if ! timeout 8 ros2 run tf2_ros tf2_echo map base_link 2>/dev/null | grep -q 'Tr
 fi
 echo 'TF map -> base_link ok'
 
-ros2 launch nav_bringup navigation.launch.py terrain_dir:="$MAP/nav" rviz:=false > "$OUT/nav.log" 2>&1 & NAV=$!
+ros2 launch nav_bringup navigation.launch.py terrain_dir:="$TERRAIN" rviz:=false > "$OUT/nav.log" 2>&1 & NAV=$!
 for i in $(seq 1 60); do grep -q 'Managed nodes are active' "$OUT/nav.log" && break; sleep 1; done
 grep -q 'Managed nodes are active' "$OUT/nav.log" || { echo 'nav2 did not come up'; tail -40 "$OUT/nav.log"; exit 1; }
 echo 'nav2 active'
@@ -112,7 +115,7 @@ for g in "$@"; do
     kill $LOC 2>/dev/null; sleep 2
     pkill -9 -f 'bringup sim.launch.py'; pkill -9 -f zlio_node; pkill -9 -f backend_node; pkill -9 -f merge_node
     sleep 2
-    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=$UWB prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
+    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP" >> "$OUT/loc.log" 2>&1 & LOC=$!
   fi
   if ! wait_trusted; then
     # not a navigation failure: the backend is LOST (tf frozen), so the robot cannot move
@@ -123,7 +126,7 @@ for g in "$@"; do
     continue
   fi
   echo "=== goal (world) $g   resets so far: $(grep -c 'IMU input interrupted' "$OUT/loc.log")"
-  python3 "$WS/tools/nav_regress/goal.py" $g --frame ${GOAL_FRAME:-world} --nav-dir "$MAP/nav" | tee -a "$OUT/goals.log"
+  python3 "$WS/tools/nav_regress/goal.py" $g --frame ${GOAL_FRAME:-world} --nav-dir "$TERRAIN" | tee -a "$OUT/goals.log"
   if [ "${PIPESTATUS[0]}" = 0 ]; then CONSEC=0; else rc=1; CONSEC=$((CONSEC+1)); fi
   echo "truth: $(tail -1 "$OUT/truth.log")"
   if [ "$CONSEC" -ge 2 ]; then echo "ABORT: 2 consecutive failures, robot likely stuck"; break; fi

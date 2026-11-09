@@ -60,7 +60,7 @@ for k, v in groups.items():
     a = np.array(v, dtype=float)
     line = (f'{k:16s} n={len(a):4d} rmse={math.sqrt((a[:,0]**2).mean()):.3f}m max={a[:,0].max():.3f}m '
             f'last={a[-1,0]:.3f}m yaw_max={a[:,1].max():.2f}deg')
-    # SUSPECT/LOST 时后端冻结输出为最后可信位姿，误差随行驶距离增长；分开统计才能看出定位精度。
+    # SUSPECT 时后端由里程计前推、LOST 时冻结为最后可信位姿，都不反映全局定位精度；分开统计。
     tr, un = a[a[:, 2] > 0], a[a[:, 2] == 0]
     if len(un):
         line += f' | trusted n={len(tr)}'

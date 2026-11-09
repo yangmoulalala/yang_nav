@@ -18,7 +18,7 @@ MID-360 内置 IMU ────────────────────�
 | 包 | 来源 | 作用 |
 | --- | --- | --- |
 | `frontend` | 上游 | ZLIO 激光惯性里程计（`zlio_node`），发布 `lio_odom → base_link` |
-| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位、UWB 辅助（保留，默认关闭） |
+| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位；局中恢复（SUSPECT/LOST）用裁判系统 UWB 作位置先验 |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
 | `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
@@ -127,7 +127,7 @@ LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通�
 
 只是短路线、各一次，说明链路工作正常，不代表全场长时间精度。最新回归结果见 [`tools/sim_tests/README.md`](../../tools/sim_tests/README.md)。
 
-注意：后端 SUSPECT/LOST 时输出冻结在最后可信位姿，行驶中短暂 SUSPECT 也会带来 0.3–0.5 m 的瞬时误差，评估时应分开看可信样本。
+注意：后端 SUSPECT 时沿用最后可信 `map→lio_odom` 由里程计前推输出，LOST 时冻结在最后可信位姿；两者都报 `pose_trusted=false`，评估时应分开看可信样本。旧实现（SUSPECT 也冻结）下行驶中短暂 SUSPECT 会带来 0.3–0.5 m 的瞬时误差。
 
 ## 真车
 
@@ -144,8 +144,9 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 - IMU：MID-360 内置 IMU，`imu_acceleration_scale=9.81`，外参是 URDF 中 `mid360_imu_link` 的 Livox 出厂值。
 - TF：本文件启动 `robot_state_publisher`（URDF）和 `joint_state_publisher`（`bringup/config/real/robot_state.yaml`）。
   云台 `yaw_joint` 取自底盘发布的 `/chassis/joint_states`；该话题没有数据时，所有关节发 0。
-- 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。接 UWB 时在这里打开 `uwb.enabled` 并按
-  `backend/docs/parameters.md` 配置。
+- 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。
+  真车 `uwb.enabled: false`（`uwb.zero_pose_*` 未标定），此时 SUSPECT/LOST 不会自动恢复；接入裁判系统 UWB 后在这里打开，并按
+  `backend/docs/parameters.md` 的 `uwb` 小节配置。
 
 **以下取值未在真车验证（本机无硬件），上车先核对**，改启动参数或 yaml 即可，不用改代码：
 
@@ -206,14 +207,14 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 
 - 后端偶尔打印 `invalid ZLIO observation frame/time/point layout`（一次运行 0–2 条），原因未查，未见对精度的影响。
 - 仿真出生点附近结构少，标定在该处全部因 `degenerate_geometry` 拒收，需开到拐角采集。
-- 绑架后恢复可能锁到对称位置或相似关键帧（场地中心对称）。修复前：双雷达 `FALSE TRUST` 0.6–14 s；单雷达（体素 0.25）12–17 s、结束时仍偏约 12 m。绑架恢复修复（已合入 main）加了严重冲突提前进 `SUSPECT`、恢复试用期、歧义检验和运动门（见 `docs/backend_guide.md` 4.5–4.6、7.3）：恢复期间车或云台转动时，双雷达 5/5 恢复、恢复后可信最大误差 ≤ 0.31 m；单雷达仍只有 1/5 干净恢复，常锁到约 99°/180° 的错误位姿。车不动时运动门不起作用，停车兜底（`recovery.confirm_stationary_max`）可能提交错误解。`recovery.confirmations` 改为 3 无改善。
+- 绑架后恢复可能锁到对称位置或相似关键帧（场地中心对称）。修复前：双雷达 `FALSE TRUST` 0.6–14 s；单雷达（体素 0.25）12–17 s、结束时仍偏约 12 m。绑架恢复修复（已合入 main）加了严重冲突提前进 `SUSPECT`、恢复试用期、歧义检验和运动门（见 `docs/backend_guide.md` 4.5–4.6、7.3）：恢复期间车或云台转动时，双雷达 5/5 恢复、恢复后可信最大误差 ≤ 0.31 m；单雷达仍只有 1/5 干净恢复，常锁到约 99°/180° 的错误位姿。车不动时运动门不起作用，停车兜底可能提交错误解（两者已于 2026-11-08 删除）。`recovery.confirmations` 改为 3 无改善。2026-11-08 起开机初始化只在起点或 `startup_hint` 附近 2 m 内搜索，局中恢复只在 UWB 位置 2 m 内搜索并检查与 UWB 的偏差（`docs/backend_guide.md` 4.2），不做全局重定位；开机位置须在建图起点 2 m 内（或配置 `startup_hint`），没有 UWB 时 SUSPECT/LOST 不会自动恢复。
 - 单雷达有一次绑架后已正确恢复（3 cm），行驶中又跑偏到 8.4 m，原因未查。
 - 跟踪与恢复/重定位共用 `registration.voxel_resolution`：单雷达跟踪需要 0.25，恢复用 0.25 更易误匹配，暂无法分开设置。
 - 单雷达跟踪时配准偶尔把航向拉偏 1–10°（预测航向是准的），推测侧装单雷达偏航约束弱，未单独验证。
 - 单雷达先验定位起点偶尔偏约 22 cm（2 次），原因未查。
 - ZLIO 初始化失败重来时会在转动中重新估计重力；纯原地慢转影响很小，人手推车可能偏差较大，未处理。
-- SUSPECT/LOST 时后端输出冻结在最后可信位姿（`backend/src/pose_output.cpp`），行驶中误差随距离增长；是否改为里程计外推待定。
-- 前端 IMU 采样中断（`front-end input discontinuity`）后，建图模式下后端停在 LOST 直到结束（仿真 2 次）。读代码确认的原因：`notifyFrontendDiscontinuity` → `isolateFrontendLocked` 把 `odometry_connected_` 置为 false，重置完成后 `commitFrontendResetBoundaryLocked` 在无先验地图、无 UWB 时调用 `forceLost`，暖重置返回的 `old_from_new` 也不再用于衔接（`backend/src/reset_coordinator.cpp`）。这是有意设计：`old_from_new` 只对应中断前最后一次后验，补不回断流期间车的运动；若直接用它衔接，车在断流中移动过时会把错误的边写进地图，而状态仍报可信。需要继续建图时，停车后手动调用 `/localization_reset`。
+- 2026-11-09 起 SUSPECT 由里程计前推输出（`backend/src/pose_output.cpp`），尚未跑仿真回归；误进 SUSPECT 时输出仍准，但绑架/错误恢复后前推会沿偏掉的全局变换继续走。LOST（及跨前端代次的 SUSPECT）仍冻结在最后可信位姿，行驶中误差随距离增长。
+- 前端 IMU 采样中断（`front-end input discontinuity`）后，建图模式下后端停在 LOST 直到结束（仿真 2 次）。读代码确认的原因：`notifyFrontendDiscontinuity` → `isolateFrontendLocked` 把 `odometry_connected_` 置为 false，重置完成后 `commitFrontendResetBoundaryLocked` 在无先验地图时调用 `forceLost`，暖重置返回的 `old_from_new` 也不再用于衔接（`backend/src/reset_coordinator.cpp`）。这是有意设计：`old_from_new` 只对应中断前最后一次后验，补不回断流期间车的运动；若直接用它衔接，车在断流中移动过时会把错误的边写进地图，而状态仍报可信。需要继续建图时，停车后手动调用 `/localization_reset`。
 - 真车路径只验证了编译、launch 展开与无驱动启动（外参、云台关节跟随）。
 
 ## 上游文档

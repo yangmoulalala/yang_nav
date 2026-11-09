@@ -33,6 +33,8 @@ struct LocalizationProjection {
     EstimatorFailureHistory estimator_failures{};
     /// 当前输出位姿是否可信。
     bool pose_trusted = false;
+    /// 不可信但仍由最后可信 map←odom 与当前里程计前推（SUSPECT 同代次），速度仍有效。
+    bool pose_extrapolated = false;
     /// 是否具备全局位姿输出：当前位姿可信，或已有可冻结的可信缓存。
     bool global_pose_available = false;
     /// 本次投影是否允许推进全局 TF 发布。

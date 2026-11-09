@@ -60,10 +60,8 @@ set(BACKEND_ROS_DEPS
 
 # 定位算法与运行状态共用一个非 ROS 核心目标。
 add_library(backend_core STATIC
-    src/uwb_alignment.cpp
     src/body.cpp
     src/map_bundle.cpp
-    src/graph_calibration.cpp
     src/pose_conditioning.cpp
     src/config.cpp
     src/loop_consistency.cpp
@@ -74,9 +72,7 @@ add_library(backend_core STATIC
     src/sampling.cpp
     src/descriptor.cpp
     src/graph_estimates.cpp
-    src/uwb_alignment_solver.cpp
     src/frame_history.cpp
-    src/uwb_fusion.cpp
     src/gprobe/descriptor.cpp
     src/gprobe/geometry.cpp
     src/gprobe/retrieval.cpp
@@ -104,10 +100,8 @@ add_library(backend_core STATIC
     src/localization_state.cpp
     src/cloud_storage.cpp
     src/target_cache.cpp
-    src/uwb_timing.cpp
     src/tracking_matcher.cpp
     src/localization_trajectory.cpp
-    src/graph_uwb.cpp
     src/relocalization_verification.cpp
 )
 target_include_directories(backend_core

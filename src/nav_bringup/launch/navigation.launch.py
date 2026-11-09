@@ -1,7 +1,7 @@
 """Sentry navigation v2 on top of z-localization.
 
     ros2 launch sentry_gazebo sim.launch.py arena:=rmuc uwb:=true
-    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization uwb:=true \
+    ros2 launch bringup sim.launch.py lidar:=dual mode:=localization \
          prior_map:=$HOME/yang_nav/maps/sim
     ros2 launch nav_bringup navigation.launch.py terrain_dir:=$HOME/yang_nav/maps/sim/nav
 
@@ -14,8 +14,12 @@ M0 nodes:
 
 collision_monitor is added in M2, when terrain_node provides ground-free obstacles.
 
-Until terrain_builder (M1) exists, terrain_dir points at an old build_nav_map.py output;
-only nav_map.yaml is read.  Live obstacles (terrain_node) arrive in M2.
+terrain_dir is a nav_terrain package (labelled map, HWSentryNav26 style):
+    mesh_to_terrain.py --mesh <field.stl> --registration-from maps/sim/nav/terrain.json \
+        --out maps/sim/terrain.msgpack          (or cloud_to_height_map.py without a field model)
+    terrain_label_editor.py maps/sim/terrain.msgpack   (hand edits survive mesh_to_terrain re-runs)
+    terrain_export.py maps/sim/terrain.msgpack --out maps/sim/terrain
+Only nav_map.yaml is read here.  Live obstacles (terrain_node) arrive in M2.
 """
 import os
 from pathlib import Path

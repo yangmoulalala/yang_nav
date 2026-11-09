@@ -59,8 +59,6 @@ PoseCorrectionDelta Localization::updateGraphLocked(const bool global_factor_add
 
     const std::vector<std::pair<int, Eigen::Matrix4d>> optimized =
         graph_.update(global_factor_added);
-    uwb_.refreshAlignment();
-    uwb_.refreshTimeOffset(global_factor_added);
     trajectory_.updateOptimizedPoses(optimized);
     if (trajectory_.empty()) {
         return applied_correction;
@@ -155,7 +153,7 @@ void Localization::addTrajectoryKeyframeLocked(const FrontendFrame& frame) {
                     std::vector<FrontendFrame>(frames_.history().begin(), frames_.history().end()));
     const Eigen::Matrix4d initial_map_pose = poses_.transform() * frame.odom_pose;
     const bool graph_required =
-        config_.prior_map_enabled || config_.loop.enabled || config_.uwb.enabled;
+        config_.prior_map_enabled || config_.loop.enabled;
     if (!graph_required) {
         // 纯里程计模式保存轨迹和点云，直接按全局规范投影关键帧。
         const std::vector<std::pair<int, Eigen::Matrix4d>> optimized_pose{
@@ -165,12 +163,6 @@ void Localization::addTrajectoryKeyframeLocked(const FrontendFrame& frame) {
         return;
     }
     addTrajectoryConstraintLocked(frame, keyframe, previous, initial_map_pose);
-    if (!config_.prior_map_enabled && config_.uwb.enabled) {
-        // 无先验 UWB 模式使用前端重力方向，约束 map 与 odom 的横滚、俯仰对齐。
-        graph_.addGravityAlignment(keyframe.index, frame.odom_pose,
-                                   config_.uwb.bootstrap.gravity_alignment_std_rad);
-    }
-    uwb_.ensureTimeOffsetState();
     // 此处只提交里程计预测；该关键帧的连续外部观测都相对同一已提交预测检验，
     // 再由全局观测提交阶段一次性插入。
     updateGraphLocked(/*global_factor_added=*/false);
@@ -182,12 +174,11 @@ void Localization::addTrajectoryKeyframeLocked(const FrontendFrame& frame) {
     }
 }
 
-/// 以恢复观测建立独立全位姿锚，并按需验收附加 UWB 因子。
+/// 以恢复观测建立独立全位姿锚。
 void Localization::anchorRecoveredFrameLocked(const FrontendFrame& frame,
                                               const Eigen::Matrix4d& T_map_sensor,
                                               const PoseCovariance6d& covariance,
-                                              std::vector<FrontendFrame> tracking_source_history,
-                                              const bool add_uwb_factor) {
+                                              std::vector<FrontendFrame> tracking_source_history) {
     // 恢复观测会在不可信区间后建立新的绝对分量。重置连续性边只服务于无全局
     // 观测的快速恢复路径，不能跨过该锚点连接到恢复前轨迹。
     pending_epoch_anchor_ = std::monostate{};
@@ -196,14 +187,8 @@ void Localization::anchorRecoveredFrameLocked(const FrontendFrame& frame,
         if (latest.epoch == frame.epoch && std::abs(latest.timestamp - frame.timestamp) <= 1.0e-3 &&
             graph_.hasEstimate(latest.index)) {
             frames_.capture(latest.index, frame, std::move(tracking_source_history));
-            uwb_.ensureTimeOffsetState();
             graph_.addAbsolutePose(latest.index, T_map_sensor, covariance);
             updateGraphLocked(/*global_factor_added=*/true);
-            Keyframe anchored = latest;
-            trajectory_.get(latest.index, &anchored);
-            if (add_uwb_factor && uwb_.addToRecovery(anchored)) {
-                updateGraphLocked(/*global_factor_added=*/true);
-            }
             return;
         }
     }
@@ -213,18 +198,9 @@ void Localization::anchorRecoveredFrameLocked(const FrontendFrame& frame,
     // 定位不可信时不写普通里程计因子，也不事后跨越冻结区间补边；恢复观测建立新的
     // 绝对锚定图分量。
     graph_.addPrior(keyframe.index, T_map_sensor, covariance, keyframe.timestamp);
-    if (!config_.prior_map_enabled && config_.uwb.enabled) {
-        graph_.addGravityAlignment(keyframe.index, frame.odom_pose,
-                                   config_.uwb.bootstrap.gravity_alignment_std_rad);
-    }
-    uwb_.ensureTimeOffsetState();
     keyframe.optimized_pose = T_map_sensor;
     addDescriptorLocked(keyframe);
     updateGraphLocked(/*global_factor_added=*/true);
-    trajectory_.get(keyframe.index, &keyframe);
-    if (add_uwb_factor && uwb_.addToRecovery(keyframe)) {
-        updateGraphLocked(/*global_factor_added=*/true);
-    }
     if (config_.prior_map_enabled) {
         trajectory_.retainLatest(1);
     }

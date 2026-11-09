@@ -86,31 +86,6 @@ TEST_F(LocalizationFlow, AutomaticColdResetDoesNotReconnectAnExistingMap) {
     EXPECT_EQ(trajectory.size(), 1U);
 }
 
-/// 自动冷启动后的 UWB 系统必须用新代次证据重新建立对齐，不能沿用旧位置立即报可信。
-TEST_F(LocalizationFlow, AutomaticColdResetRequiresFreshUwbAlignment) {
-    config.uwb.enabled = true;
-    config.uwb.use_z = false;
-    config.uwb.antenna_position_sensor = Eigen::Vector3d(.3, .1, 0);
-    reset.available = true;
-    start(false);
-    FrontendFrame current;
-    feedUwbTrajectory(testing::scenePose(3, -2, 0, .3), current);
-    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
-    const auto size = trajectory.size();
-    controller->notifyFrontendDiscontinuity(0);
-    reply(FrontendResetOutcome::Completed, 1);
-    const auto alignment = testing::scenePose(8, -4, 0, -.4);
-    const auto first = frame(21.5, alignment, Eigen::Matrix4d::Identity(), 1);
-    ASSERT_TRUE(ingest(first));
-    EXPECT_EQ(controller->status(), LocalizationStatus::Initializing);
-    EXPECT_FALSE(output(first).pose_trusted);
-    EXPECT_EQ(trajectory.size(), size);
-    feedUwbTrajectory(alignment, current, 1, 22);
-    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
-    EXPECT_EQ(trajectory.latest().epoch, 1U);
-    EXPECT_LT((output(current).T_map_sensor - alignment * current.odom_pose).norm(), 1e-4);
-}
-
 /// 普通前端失败锁存同代次输入和恢复，不确定重置仍保持失败直至成功显式换代。
 TEST_F(LocalizationFlow, FrontendFailureRequiresAnExplicitCompletedReset) {
     config.loop.enabled = true;
@@ -148,7 +123,9 @@ TEST_F(LocalizationFlow, FrontendFailureRequiresAnExplicitCompletedReset) {
 /// 未建立可信位置的 LOST 不得产生全局 TF，已验收位置的冻结输出仍允许发布。
 TEST_F(LocalizationFlow, LostWithoutTrustedPoseCannotPublishGlobalTransforms) {
     reset.available = true;
+    config.uwb.enabled = true;
     start(true);
+    ASSERT_TRUE(controller->setUwbTeam("red"));
     ASSERT_TRUE(controller->requestCoordinatedReset());
     reply(FrontendResetOutcome::Completed, 1);
     const auto first = frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity(), 1);
@@ -158,6 +135,7 @@ TEST_F(LocalizationFlow, LostWithoutTrustedPoseCannotPublishGlobalTransforms) {
     EXPECT_FALSE(unknown.global_pose_available);
     EXPECT_FALSE(unknown.should_publish_tf);
     EXPECT_FALSE(output(first).global_pose_available);
+    ASSERT_TRUE(controller->ingestUwbPosition(10, Eigen::Vector3d::Zero()));
     maintain();
     ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
     const auto known = controller->project(first, Timestamp::fromSeconds(10));

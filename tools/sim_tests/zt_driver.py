@@ -1,7 +1,7 @@
 """Drive the simulated sentry with ground-truth feedback, record GT vs map->base_link, optional kidnap.
 
     zt_driver.py mapping  OUT.json [laps]
-    zt_driver.py localize OUT.json [laps]   (drives laps, then kidnaps and watches recovery)
+    zt_driver.py localize OUT.json [laps]   (drives laps, then kidnaps 1.5 m / 45 deg and watches recovery)
     zt_driver.py spin     OUT.json 0        (spins in place at the spawn point, slow then fast)
     zt_driver.py calib    OUT.json 0        (parks at structured spots with varied headings for dual-LiDAR calibration)
     optional 4th argument (zt_run.sh 6th): comma-separated flags
@@ -12,10 +12,12 @@
       kidnapspin after the kidnap, turn slowly while the backend is SUSPECT/LOST (gives recovery new views)
       symkidnap  localize only: instead of the local kidnap, teleport to the point-symmetric mirror of the
                  spawn (other half, heading +pi) and drive the mirrored lap; the LiDAR view is the same, so
-                 only an independent position source (UWB) can notice (tag 'symkidnap')
+                 and UWB is only used once the backend is already SUSPECT/LOST, so the backend is
+                 not expected to notice (tag 'symkidnap')
       uwbdrop    pause uwb_sim (SIGSTOP) for the second half of lap 0 and the lap-end hold (~17 s), then resume
                  (tags 'uwbdrop'); the kidnap that follows has UWB again
       uwbdropkidnap  localize only: pause uwb_sim 2 s before the kidnap, resume after the recovery wait
+      (while uwb_sim is paused, the backend's SUSPECT/LOST recovery waits for fresh UWB)
     ARENA=rmul|rmuc (environment, default rmul) selects the world, route and kidnap pose; zt_run.sh sets it.
     TEAM=red|blue (environment, default = the arena's own spawn: rmul red, rmuc blue) mirrors the route,
     kidnap pose and start heading about the field centre (sentry_gazebo team:=, the fields are point-symmetric).
@@ -46,17 +48,18 @@ from std_srvs.srv import Trigger
 from tf2_ros import Buffer, TransformListener
 
 # 场地：world 名、跑圈路线（从出生点出发并回到出生点）、绑架位姿 (x, y, yaw, 地面 z)、绑架恢复后的行驶路线。
+# 绑架点距跑圈终点 1.5 m、航向 45°。局中恢复只在 UWB 位置 uwb.search_radius（2 m）内搜索；RMUL 没有 UWB，绑架后不会恢复。
 # RMUC：出生点 (-9.5, 0) 后方平地，地面从 y=0 的 0.30 m 向两侧缓降到 y=±2.4 的 0.24 m；
 # 路线绕开 x=-8.2..-7.0 的 0.45 m 小台（小台在 |y|<0.8），不上坡。地面高度取自 field_collision.stl。
 ARENAS = {
     'rmul': {'world': 'rmul_2027',
              'lap': [(1.25, 1.5), (6.5, 1.5), (6.5, 2.5), (1.25, 2.5), (1.25, 6.75)],
-             'kidnap': (6.0, 1.5, math.pi / 2, 0.0),
-             'after': [(6.5, 1.5), (6.5, 2.5), (1.25, 2.5)]},
+             'kidnap': (1.25, 5.25, math.pi / 4, 0.0),
+             'after': [(1.25, 2.5), (6.5, 2.5), (6.5, 1.5)]},
     'rmuc': {'world': 'rmuc_2027',
              'lap': [(-9.5, 1.2), (-5.6, 1.2), (-5.6, -2.4), (-10.2, -2.4), (-10.2, 1.2), (-9.5, 0.0)],
-             'kidnap': (-5.6, -2.0, math.pi / 2, 0.25),
-             'after': [(-5.6, 1.2), (-9.5, 1.2), (-9.5, -2.4)]},
+             'kidnap': (-9.5, -1.5, math.pi / 4, 0.27),
+             'after': [(-10.2, -2.4), (-5.6, -2.4), (-5.6, 1.2), (-9.5, 1.2)]},
 }
 ARENA = os.environ.get('ARENA', 'rmul')
 if ARENA not in ARENAS:

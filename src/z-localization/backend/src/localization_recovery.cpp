@@ -39,60 +39,6 @@ bool Localization::manualRequestAllowsFrameLocked(const FrontendFrame& frame) co
            frame.timestamp > manual_request_->after_timestamp;
 }
 
-/// 将时间对齐的 UWB 天线位置及杆臂构造成恢复位置先验。
-std::optional<RelocalizationPositionPrior> Localization::makeUwbRecoveryPriorLocked(
-    const FrontendFrame& frame) const {
-    const std::optional<UwbObservation>& latest_uwb = uwb_.observations().latest();
-    if (!config_.uwb.enabled || !latest_uwb.has_value() || frames_.odometry().empty()) {
-        return std::nullopt;
-    }
-
-    const double motion_timestamp = uwb_.motionTimestamp(*latest_uwb);
-    const double age = frame.timestamp - motion_timestamp;
-    if (age < -config_.uwb.odom_sync_tolerance || age > config_.uwb.max_age) {
-        return std::nullopt;
-    }
-    const std::optional<Eigen::Matrix4d> timed_odom_pose =
-        frames_.odometry().poseAt(motion_timestamp, config_.uwb.odom_sync_tolerance);
-    if (!timed_odom_pose.has_value()) {
-        return std::nullopt;
-    }
-
-    // 外参与杆臂取该 UWB 测量时刻的值（与源帧相差不超过 max_age）。
-    const Eigen::Matrix4d T_sensor_body = uwb_.sensorBody(*latest_uwb);
-    const Eigen::Matrix3d R_odom_sensor = frame.odom_pose.block<3, 3>(0, 0);
-    const Eigen::Matrix3d R_odom_body = R_odom_sensor * T_sensor_body.block<3, 3>(0, 0);
-    const double body_yaw = yawFromRotation(R_odom_body);
-
-    RelocalizationPositionPrior prior;
-    prior.source = "uwb";
-    prior.use_z = config_.uwb.use_z;
-    prior.map_point = uwb_.positionMap(*latest_uwb);
-    prior.R_yawless_sensor =
-        yawGuess(-body_yaw, Eigen::Vector3d::Zero()).block<3, 3>(0, 0) * R_odom_sensor;
-    const Eigen::Vector3d antenna_odom =
-        timed_odom_pose->block<3, 3>(0, 0) * uwb_.antennaPositionSensor(*latest_uwb) +
-        timed_odom_pose->block<3, 1>(0, 3);
-    prior.runtime_sensor_point = frame.odom_pose.block<3, 3>(0, 0).transpose() *
-                                 (antenna_odom - frame.odom_pose.block<3, 1>(0, 3));
-    // 初始代次的启动提示提供 UWB 分支航向初值，仍需通过恢复验收；后续代次使用当前观测。
-    if (state_.status() == LocalizationStatus::Initializing && frame.epoch == 0 &&
-        config_.startup_hint.T_map_sensor.has_value()) {
-        // 启动提示的 T_map_sensor 在启动时由启动外参换算，故用同一启动外参还原 body 航向。
-        const Eigen::Matrix3d R_map_body = config_.startup_hint.T_map_sensor->block<3, 3>(0, 0) *
-                                           config_.uwb.T_sensor_body.block<3, 3>(0, 0);
-        prior.yaw_seed_rad = yawFromRotation(R_map_body);
-    } else {
-        prior.yaw_seed_rad.reset();
-    }
-    prior.search_radius = config_.uwb.recovery_search_radius;
-    prior.max_candidates = config_.uwb.recovery_candidates;
-    if (!prior.map_point.allFinite() || !prior.runtime_sensor_point.allFinite()) {
-        return std::nullopt;
-    }
-    return prior;
-}
-
 /// 在第零代初始化期间构造待几何验证的启动提示。
 std::optional<RelocalizationPositionPrior> Localization::makeStartupHintPriorLocked(
     const FrontendFrame& frame) const {
@@ -103,7 +49,7 @@ std::optional<RelocalizationPositionPrior> Localization::makeStartupHintPriorLoc
 
     const Eigen::Matrix4d& T_map_sensor = *config_.startup_hint.T_map_sensor;
     const Eigen::Matrix3d R_map_body =
-        T_map_sensor.block<3, 3>(0, 0) * config_.uwb.T_sensor_body.block<3, 3>(0, 0);
+        T_map_sensor.block<3, 3>(0, 0) * config_.T_sensor_body.block<3, 3>(0, 0);
     const double body_yaw = yawFromRotation(R_map_body);
 
     RelocalizationPositionPrior prior;
@@ -114,7 +60,7 @@ std::optional<RelocalizationPositionPrior> Localization::makeStartupHintPriorLoc
                              T_map_sensor.block<3, 3>(0, 0);
     prior.yaw_seed_rad = body_yaw;
     prior.allow_yaw_sweep_fallback = false;
-    prior.search_radius = config_.recovery.suspect_search_radius;
+    prior.search_radius = config_.recovery.initial_search_radius;
     prior.max_candidates = config_.relocalization.relocalization_max_candidates;
     return prior;
 }
@@ -156,13 +102,20 @@ std::optional<RecoveryWork> Localization::captureRecovery() {
     work.identity.epoch = active_epoch_;
     work.predicted_map_pose = poses_.transform() * frames_.latest().odom_pose;
     if (current == LocalizationStatus::Suspect && poses_.trusted().hasPose()) {
-        // SUSPECT 只在最后可信位置附近召回；LOST 保持宽域或全局搜索。
-        work.predicted_map_pose = poses_.trusted().mapSensorPose();
+        // SUSPECT 以最后可信 map←odom 前推的位姿为预测（UWB 先验的高度取自预测位姿）。
+        work.predicted_map_pose = poses_.trusted()
+                                      .project(current, poses_.transform(),
+                                               frames_.latest().odom_pose, frames_.latest().epoch)
+                                      .T_map_sensor;
     }
     work.startup_hint_prior = makeStartupHintPriorLocked(frames_.latest());
     work.force_startup_hint =
         work.startup_hint_prior.has_value() && config_.startup_hint.force_until_matched;
-    work.uwb_prior = makeUwbRecoveryPriorLocked(frames_.latest());
+    // 局中恢复只用 UWB 位置先验；开机初始化不用 UWB（启动提示 / 起点附近描述子）。
+    work.uwb_required =
+        current == LocalizationStatus::Suspect || current == LocalizationStatus::Lost;
+    if (work.uwb_required)
+        work.uwb_prior = makeUwbRecoveryPriorLocked(frames_.latest());
     work.source_history.assign(frames_.history().begin(), frames_.history().end());
     return work;
 }
@@ -174,20 +127,15 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
     PoseCorrectionDelta applied_correction;
     Eigen::Matrix4d output_pose_before = poses_.transform() * frames_.latest().odom_pose;
     if (poses_.trusted().hasPose()) {
-        output_pose_before = poses_.trusted().mapSensorPose();
+        // 与恢复前实际发布的输出比较：SUSPECT 为前推位姿，LOST 为冻结位姿。
+        output_pose_before = poses_.trusted()
+                                 .project(state_.status(), poses_.transform(),
+                                          frames_.latest().odom_pose, frames_.latest().epoch)
+                                 .T_map_sensor;
     }
     // 恢复观测属于捕获帧，同状态代内的新帧继续使用校正后的全局规范。
     poses_.setTransform(result.pose * work.frame.odom_pose.inverse());
     anchorRecoveredFrameLocked(work.frame, result.pose, result.covariance, work.source_history);
-    if (!trajectory_.empty()) {
-        const Keyframe anchored = trajectory_.latest();
-        if (anchored.epoch == work.frame.epoch &&
-            std::abs(anchored.timestamp - work.frame.timestamp) <= 1.0e-3 &&
-            uwb_.observeAnchor(anchored, result.pose)) {
-            // 恢复锚已先提交；第二个事务共同引入 UWB 坐标对齐状态与历史原始观测因子。
-            updateGraphLocked(/*global_factor_added=*/true);
-        }
-    }
     last_tracking_reference_index_ = -1;
     last_lidar_observation_runtime_index_ = trajectory_.latest().index;
     last_global_observation_cycle_time_ = Timestamp();
@@ -207,14 +155,72 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
     return applied_correction;
 }
 
-/// 累计恢复候选；连续给出一致 map←odom 变换达到配置次数后返回 true。
-/// 相似场景下单帧匹配可能给出错误位姿，要求多帧一致可在提交前将其滤除。
+/// 由新鲜 UWB 读数构造局中恢复的位置先验：天线点经固定 T_map_uwb 换算到 map，
+/// 杆臂按测量时刻的里程计与外参换算到当前帧传感器系；航向未知，全圈扫描。
+std::optional<RelocalizationPositionPrior> Localization::makeUwbRecoveryPriorLocked(
+    const FrontendFrame& frame) const {
+    if (!config_.uwb.enabled || !latest_uwb_ || !T_map_uwb_ || frames_.odometry().empty())
+        return std::nullopt;
+    const double motion_timestamp = latest_uwb_->timestamp + config_.uwb.time_offset_seconds;
+    const double age = frame.timestamp - motion_timestamp;
+    if (age < -config_.uwb.odom_sync_tolerance || age > config_.uwb.max_age)
+        return std::nullopt;
+    const std::optional<Eigen::Matrix4d> timed_odom_pose =
+        frames_.odometry().poseAt(motion_timestamp, config_.uwb.odom_sync_tolerance);
+    if (!timed_odom_pose)
+        return std::nullopt;
+
+    const Eigen::Matrix4d T_sensor_body = latest_uwb_->T_sensor_body.value_or(config_.T_sensor_body);
+    const Eigen::Vector3d antenna_sensor =
+        T_sensor_body.block<3, 3>(0, 0) * config_.uwb.antenna_position_body +
+        T_sensor_body.block<3, 1>(0, 3);
+    const Eigen::Matrix3d R_odom_sensor = frame.odom_pose.block<3, 3>(0, 0);
+    const double body_yaw = yawFromRotation(R_odom_sensor * T_sensor_body.block<3, 3>(0, 0));
+
+    RelocalizationPositionPrior prior;
+    prior.source = "uwb";
+    prior.use_z = false;
+    prior.map_point = T_map_uwb_->block<3, 3>(0, 0) * latest_uwb_->position_uwb +
+                      T_map_uwb_->block<3, 1>(0, 3);
+    prior.R_yawless_sensor =
+        yawGuess(-body_yaw, Eigen::Vector3d::Zero()).block<3, 3>(0, 0) * R_odom_sensor;
+    const Eigen::Vector3d antenna_odom =
+        timed_odom_pose->block<3, 3>(0, 0) * antenna_sensor + timed_odom_pose->block<3, 1>(0, 3);
+    prior.runtime_sensor_point =
+        R_odom_sensor.transpose() * (antenna_odom - frame.odom_pose.block<3, 1>(0, 3));
+    prior.yaw_seed_rad.reset();
+    prior.search_radius = config_.uwb.search_radius;
+    prior.max_candidates = config_.uwb.candidates;
+    if (!prior.map_point.allFinite() || !prior.runtime_sensor_point.allFinite())
+        return std::nullopt;
+    return prior;
+}
+
+/// UWB 先验决定召回范围；这里再用同一天线点检查恢复解与 UWB 的水平偏差。
+bool Localization::recoveryConsistentWithUwbLocked(const RecoveryWork& work,
+                                                   const RecoveryResult& result) const {
+    if (!work.uwb_prior || config_.uwb.max_offset <= 0.0)
+        return true;
+    const RelocalizationPositionPrior& prior = *work.uwb_prior;
+    // result.pose 为捕获帧的 T_map_sensor；runtime_sensor_point 为同一帧传感器系中的天线点。
+    const Eigen::Vector3d antenna_map =
+        result.pose.block<3, 3>(0, 0) * prior.runtime_sensor_point + result.pose.block<3, 1>(0, 3);
+    const double offset = (antenna_map - prior.map_point).head<2>().norm();
+    if (std::isfinite(offset) && offset <= config_.uwb.max_offset)
+        return true;
+    BACKEND_WARN_STREAM("recovery candidate rejected: inconsistent with UWB (offset="
+                        << offset << "m > " << config_.uwb.max_offset << "m, via " << result.source
+                        << ")");
+    return false;
+}
+
+/// 累计恢复候选；连续 recovery.confirmations 个候选的 map←odom 一致后返回 true。
+/// 每个新候选须与上一个和第一个候选都一致，防止一致性沿候选链逐步漂移。
 bool Localization::recoveryConfirmedLocked(const RecoveryWork& work,
                                            const RecoveryResult& result) {
     const auto& rc = config_.recovery;
     const int required = rc.confirmations;
-    const bool motion_gate = rc.confirm_min_translation > 0.0 || rc.confirm_min_rotation_rad > 0.0;
-    if (required <= 1 && !motion_gate)
+    if (required <= 1)
         return true;
     const Eigen::Matrix4d T_map_odom = result.pose * work.frame.odom_pose.inverse();
     /// 两个 map←odom 变换在确认门限内一致。
@@ -228,35 +234,20 @@ bool Localization::recoveryConfirmedLocked(const RecoveryWork& work,
     };
     if (pending_recovery_ && pending_recovery_->epoch == work.identity.epoch) {
         double translation = 0.0, rotation = 0.0, anchor_t = 0.0, anchor_r = 0.0;
-        // 同时与上一候选和首个候选比较：防止一致性沿多次候选逐步漂移。
         if (consistent(pending_recovery_->T_map_odom, translation, rotation) &&
             consistent(pending_recovery_->first_T_map_odom, anchor_t, anchor_r)) {
             ++pending_recovery_->confirmations;
             pending_recovery_->T_map_odom = T_map_odom;
-            const Eigen::Matrix4d motion =
-                pending_recovery_->first_odom_pose.inverse() * work.frame.odom_pose;
-            const double moved_t = motion.block<3, 1>(0, 3).norm();
-            const double moved_r = rotationAngleFromMatrix(motion);
-            const bool moved =
-                !motion_gate ||
-                (rc.confirm_min_translation > 0.0 && moved_t >= rc.confirm_min_translation) ||
-                (rc.confirm_min_rotation_rad > 0.0 && moved_r >= rc.confirm_min_rotation_rad);
-            const bool stationary_ok =
-                rc.confirm_stationary_max > 0 &&
-                pending_recovery_->confirmations >= rc.confirm_stationary_max;
-            if (pending_recovery_->confirmations >= required && (moved || stationary_ok)) {
+            if (pending_recovery_->confirmations >= required) {
                 BACKEND_INFO_STREAM("recovery candidate accepted after "
                                     << pending_recovery_->confirmations
-                                    << " consistent candidates, motion=" << moved_t << "m/"
-                                    << moved_r * 180.0 / M_PI << "deg"
-                                    << (moved ? "" : " (stationary limit)"));
+                                    << " consistent candidates via " << result.source);
                 pending_recovery_.reset();
                 return true;
             }
             BACKEND_INFO_STREAM("recovery candidate confirmed "
-                                << pending_recovery_->confirmations << "/" << required
-                                << ", motion=" << moved_t << "m/" << moved_r * 180.0 / M_PI
-                                << "deg via " << result.source);
+                                << pending_recovery_->confirmations << "/" << required << " via "
+                                << result.source);
             return false;
         }
         BACKEND_INFO_STREAM("recovery candidate inconsistent with previous: delta_t="
@@ -264,31 +255,9 @@ bool Localization::recoveryConfirmedLocked(const RecoveryWork& work,
                             << ", vs first: delta_t=" << anchor_t << "m, delta_r_deg="
                             << anchor_r * 180.0 / M_PI << "; restarting confirmation");
     }
-    pending_recovery_ =
-        PendingRecovery{T_map_odom, 1, work.identity.epoch, T_map_odom, work.frame.odom_pose};
+    pending_recovery_ = PendingRecovery{T_map_odom, 1, work.identity.epoch, T_map_odom};
     BACKEND_INFO_STREAM("recovery candidate awaiting confirmation 1/" << required << " via "
                                                                     << result.source);
-    return false;
-}
-
-/// UWB 先验只决定搜索范围（search_radius，2 m）；这里再用同一天线点检查恢复解本身。
-/// 适用于所有恢复来源（UWB 分支、描述子分支），UWB 不新鲜时不检查。
-bool Localization::recoveryConsistentWithUwbLocked(const RecoveryWork& work,
-                                                   const RecoveryResult& result) const {
-    // 在线标定完成前 T_map_uwb 只是初值（如单位阵），UWB 映射到地图的位置不可信，不能用来否决。
-    if (!work.uwb_prior || config_.uwb.recovery_max_offset <= 0.0 || !uwb_.ready())
-        return true;
-    const RelocalizationPositionPrior& prior = *work.uwb_prior;
-    // result.pose 为捕获帧的 T_map_sensor；runtime_sensor_point 为同一帧传感器系中的天线点。
-    const Eigen::Vector3d antenna_map =
-        result.pose.block<3, 3>(0, 0) * prior.runtime_sensor_point + result.pose.block<3, 1>(0, 3);
-    const Eigen::Vector3d delta = antenna_map - prior.map_point;
-    const double offset = prior.use_z ? delta.norm() : delta.head<2>().norm();
-    if (std::isfinite(offset) && offset <= config_.uwb.recovery_max_offset)
-        return true;
-    BACKEND_WARN_STREAM("recovery candidate rejected: inconsistent with UWB (offset="
-                        << offset << "m > " << config_.uwb.recovery_max_offset << "m, via "
-                        << result.source << ")");
     return false;
 }
 
@@ -310,7 +279,7 @@ void Localization::commit(const RecoveryWork& work, const RecoveryResult& result
                 return false;
             }
             if (matched) {
-                // 与新鲜 UWB 不一致的解（偏离的附近关键帧、对称位姿）不参与确认，也不计为失败。
+                // 与 UWB 读数不一致的解（附近相似关键帧）不参与确认，也不计为失败。
                 if (!recoveryConsistentWithUwbLocked(work, result)) {
                     pending_recovery_.reset();
                     return false;
@@ -396,66 +365,6 @@ bool Localization::requestManualRelocalization() {
 /// 清除已经完成或失效的手动恢复请求。
 void Localization::clearManualRelocalizationRequestLocked() {
     manual_request_.reset();
-}
-
-/// 验收可观的 UWB 启动估计并将其协方差传播到恢复位姿锚。
-bool Localization::tryCommitUwbBootstrapLocked(const FrontendFrame& frame) {
-    if (state_.status() != LocalizationStatus::Initializing &&
-        state_.status() != LocalizationStatus::Suspect)
-        return false;
-    const auto estimate = uwb_.bootstrap(frame);
-    if (!estimate)
-        return false;
-    const Eigen::Matrix4d output_pose_before = poses_.transform() * frame.odom_pose;
-    const Eigen::Matrix4d candidate_T_map_odom = estimate->T_map_odom;
-    const Eigen::Matrix4d T_map_sensor = candidate_T_map_odom * frame.odom_pose;
-    PoseCorrectionDelta applied_correction;
-    const Eigen::Matrix4d correction = output_pose_before.inverse() * T_map_sensor;
-    if (correction.allFinite()) {
-        applied_correction.translation = correction.block<3, 1>(0, 3).norm();
-        applied_correction.rotation_rad = rotationAngleFromMatrix(correction);
-    }
-    // 拟合协方差属于 [对齐平移, 对齐 yaw]；先传播到当前传感器位姿，再把得到的
-    // 世界加性协方差转换为 GTSAM 位姿局部切空间。
-    const Eigen::Matrix3d R_map_odom = candidate_T_map_odom.block<3, 3>(0, 0);
-    const Eigen::Vector3d position_odom = frame.odom_pose.block<3, 1>(0, 3);
-    PoseCovariance6d covariance_map =
-        alignmentToPoseCovariance(estimate->covariance, R_map_odom, position_odom);
-    if (frame.pose_covariance_valid) {
-        covariance_map +=
-            rotatePoseCovariance(frame.pose_covariance, candidate_T_map_odom.block<3, 3>(0, 0));
-    }
-    PoseCovariance6d normalized_covariance_map;
-    std::string covariance_error;
-    if (!validateAndRegularizePoseCovariance(covariance_map, &normalized_covariance_map,
-                                             &covariance_error)) {
-        BACKEND_WARN_STREAM("UWB bootstrap covariance rejected ("
-                            << covariance_error << "); remaining in current recovery state");
-        return false;
-    }
-    const PoseCovariance6d covariance =
-        worldAdditiveToLocalPoseCovariance(T_map_sensor, normalized_covariance_map);
-    poses_.setTransform(candidate_T_map_odom);
-
-    // 启动协方差与首个全位姿先验已概括建立规范所用的全部 UWB 配对。
-    uwb_.finishBootstrap(*estimate);
-    anchorRecoveredFrameLocked(
-        frame, T_map_sensor, covariance,
-        std::vector<FrontendFrame>(frames_.history().begin(), frames_.history().end()),
-        /*add_uwb_factor=*/false);
-    const LocalizationTransition transition = state_.onTrustedCorrection(
-        "UWB/odometry alignment became yaw-observable", TrustedCorrectionSource::Relocalization);
-    last_lidar_observation_runtime_index_ = -1;
-    last_global_observation_cycle_time_ = Timestamp();
-    commitCurrentTrustedPoseLocked();
-    BACKEND_INFO_STREAM("UWB bootstrap accepted: pairs="
-                        << estimate->pairs << ", inliers=" << estimate->inliers
-                        << ", baseline=" << estimate->odom_baseline << " m, rmse=" << estimate->rmse
-                        << " m, yaw_std=" << estimate->yaw_std_rad * 180.0 / M_PI
-                        << " deg, delta_t=" << applied_correction.translation
-                        << "m, delta_r_deg=" << applied_correction.rotation_rad * 180.0 / M_PI
-                        << ", state=" << LocalizationStateMachine::statusName(transition.current));
-    return true;
 }
 
 }  // namespace backend

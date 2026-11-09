@@ -104,6 +104,7 @@ void LocalizationNode::configureInputs() {
     zlio_predictions_.reset();
     zlio_identity_.reset();
     uwb_sub_.reset();
+    uwb_team_sub_.reset();
 
     if (parameters_.input.frontend == "zlio") {
         configureZlioInputs(frontend_.epoch());
@@ -154,6 +155,17 @@ void LocalizationNode::configureInputs() {
         uwb_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
             "uwb_pose", rclcpp::QoS(10),
             std::bind(&LocalizationNode::uwbCallback, this, std::placeholders::_1));
+        // 己方颜色（transient local）：选用红/蓝方固定 T_map_uwb。
+        uwb_team_sub_ = create_subscription<std_msgs::msg::String>(
+            "uwb_pose/team", rclcpp::QoS(1).transient_local(),
+            [this](const std_msgs::msg::String::ConstSharedPtr& message) {
+                invoke("UWB team", [&] {
+                    if (message && controller_ && !controller_->setUwbTeam(message->data))
+                        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+                                             "ignoring UWB team '%s'; expected red or blue",
+                                             message->data.c_str());
+                });
+            });
     }
 }
 
@@ -224,12 +236,11 @@ void LocalizationNode::highRateOdomCallback(const nav_msgs::msg::Odometry::Const
     });
 }
 
-/// 验收 UWB 消息坐标系及物理解，并按需发布天线杆臂修正后的诊断位置。
+/// 验收 UWB 消息坐标系与时间，按测量运动时刻查询外参后交给核心；UWB 只供局中恢复。
 void LocalizationNode::uwbCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr& pose) {
     invoke("UWB input", [&] {
-        if (!pose || !controller_ || !validStamp(pose->header.stamp)) {
+        if (!pose || !controller_ || !validStamp(pose->header.stamp))
             return;
-        }
         if (pose->header.frame_id != parameters_.input.uwb_frame) {
             RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
                                  "ignoring UWB observation in frame '%s'; expected '%s'",
@@ -238,30 +249,16 @@ void LocalizationNode::uwbCallback(const geometry_msgs::msg::PoseStamped::ConstS
             return;
         }
         const rclcpp::Time stamp(pose->header.stamp);
-        if (stamp.nanoseconds() == 0) {
+        if (stamp.nanoseconds() == 0)
             return;
-        }
-        Eigen::Vector3d position(pose->pose.position.x, pose->pose.position.y,
-                                 pose->pose.position.z);
-        const bool position_finite =
-            parameters_.runtime.uwb.use_z ? position.allFinite() : position.head<2>().allFinite();
-        if (!position_finite) {
+        const Eigen::Vector3d position(pose->pose.position.x, pose->pose.position.y, 0.0);
+        if (!position.allFinite())
             return;
-        }
-        if (!parameters_.runtime.uwb.use_z) {
-            position.z() = 0.0;
-        }
-        // 天线固定在 body 系；按测量运动时刻（消息时间 + 配置时间偏置）的外参换算到传感器系。
-        std::optional<UwbMeasurementExtrinsic> extrinsic;
-        if (body_extrinsic_) {
-            extrinsic = uwbExtrinsicFromBody(
-                body_extrinsic_->at(stamp.seconds() + parameters_.runtime.uwb.time_offset_seconds),
-                parameters_.input.antenna_position_body);
-        }
-        if (!controller_->ingestUwbPosition(stamp.seconds(), position, extrinsic)) {
-            return;
-        }
-        publisher_.publishUwb(*pose);
+        std::optional<Eigen::Matrix4d> T_sensor_body;
+        if (body_extrinsic_)
+            T_sensor_body =
+                body_extrinsic_->at(stamp.seconds() + parameters_.runtime.uwb.time_offset_seconds);
+        controller_->ingestUwbPosition(stamp.seconds(), position, T_sensor_body);
     });
 }
 

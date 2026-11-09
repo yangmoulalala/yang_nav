@@ -1,4 +1,4 @@
-// 时间索引外参：精确时刻、容差内的最新变换与过期回退，以及按测量时刻换算的 UWB 杆臂。
+// 时间索引外参：精确时刻、容差内的最新变换与过期回退。
 #include <gtest/gtest.h>
 
 #include <tf2/buffer_core.h>
@@ -11,7 +11,6 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include "apps/body_extrinsic.hpp"
-#include "backend/uwb_fusion.hpp"
 
 namespace backend::ros {
 namespace {
@@ -111,58 +110,6 @@ TEST(BodyExtrinsicResolver, StaticChainIsAlwaysValid) {
     EXPECT_NE(result.source, BodyExtrinsicResolver::Source::Stale);
     EXPECT_TRUE(result.T_sensor_body.isApprox(sensorBody(0.3), 1e-9));
     EXPECT_TRUE(f.warnings.empty());
-}
-
-/// 天线固定在 body 系；云台转动后，传感器系杆臂随测量时刻的外参变化，
-/// 而反算回 body 系始终是同一点。
-TEST(UwbLeverArm, FollowsExtrinsicAtMeasurementTime) {
-    const Eigen::Vector3d antenna_body(0.1, -0.15, 0.6);
-    for (const double yaw : {0.0, 0.5, -1.2}) {
-        const UwbMeasurementExtrinsic e = uwbExtrinsicFromBody(sensorBody(yaw), antenna_body);
-        const Eigen::Vector3d back = e.T_sensor_body.inverse().block<3, 3>(0, 0) *
-                                         e.antenna_position_sensor +
-                                     e.T_sensor_body.inverse().block<3, 1>(0, 3);
-        EXPECT_LT((back - antenna_body).norm(), 1e-12);
-    }
-    EXPECT_GT((uwbExtrinsicFromBody(sensorBody(0.0), antenna_body).antenna_position_sensor -
-               uwbExtrinsicFromBody(sensorBody(0.5), antenna_body).antenna_position_sensor)
-                  .norm(),
-              0.05);
-}
-
-/// 因子构造使用观测携带的测量时刻杆臂，而非配置中的启动杆臂。
-TEST(UwbLeverArm, FactorUsesPerMeasurementLeverArm) {
-    const Eigen::Vector3d antenna_body(0.1, -0.15, 0.6);
-    UwbFactorBuilderConfig config;
-    config.antenna_position_sensor =
-        uwbExtrinsicFromBody(sensorBody(0.0), antenna_body).antenna_position_sensor;
-    UwbFactorBuilder builder(config);
-
-    TimedPoseBuffer odometry;
-    odometry.append(10.0, Eigen::Matrix4d::Identity(), 10.0);
-    odometry.append(10.2, Eigen::Matrix4d::Identity(), 10.0);
-    Keyframe keyframe;
-    keyframe.timestamp = 10.1;
-    keyframe.odom_pose = Eigen::Matrix4d::Identity();
-    keyframe.optimized_pose = Eigen::Matrix4d::Identity();
-
-    UwbObservationStream stream({true, true, 0.0});
-    const UwbMeasurementExtrinsic turned = uwbExtrinsicFromBody(sensorBody(0.5), antenna_body);
-    ASSERT_TRUE(stream.ingest(10.1, Eigen::Vector3d(1, 2, 0), turned));
-    const Eigen::Matrix4d T_map_uwb = Eigen::Matrix4d::Identity();
-    const UwbFactorBuildContext context{*stream.latest(), keyframe, odometry, T_map_uwb, {}};
-    const auto input = builder.build(context);
-    ASSERT_TRUE(input.has_value());
-    EXPECT_LT((input->antenna_in_keyframe - turned.antenna_position_sensor).norm(), 1e-9);
-    EXPECT_GT((input->antenna_in_keyframe - config.antenna_position_sensor).norm(), 0.05);
-
-    // 未携带时变外参的观测回退到配置杆臂。
-    UwbObservationStream fixed({true, true, 0.0});
-    ASSERT_TRUE(fixed.ingest(10.1, Eigen::Vector3d(1, 2, 0)));
-    const UwbFactorBuildContext fixed_context{*fixed.latest(), keyframe, odometry, T_map_uwb, {}};
-    const auto fixed_input = builder.build(fixed_context);
-    ASSERT_TRUE(fixed_input.has_value());
-    EXPECT_LT((fixed_input->antenna_in_keyframe - config.antenna_position_sensor).norm(), 1e-9);
 }
 
 }  // namespace

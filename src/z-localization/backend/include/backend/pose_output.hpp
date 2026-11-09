@@ -19,6 +19,8 @@ struct TrustedPoseProjection {
     Eigen::Matrix4d T_map_odom = Eigen::Matrix4d::Identity();
     Eigen::Matrix4d T_map_sensor = Eigen::Matrix4d::Identity();
     bool frozen_from_cache = false;
+    /// SUSPECT 下沿用最后可信 map←odom、由当前里程计前推得到的位姿。
+    bool extrapolated = false;
 };
 
 /// 缓存最后可信的地图系传感器位姿，并按定位状态计算全局输出变换。
@@ -30,26 +32,31 @@ public:
     bool hasPose() const { return has_pose_; }
     /// 返回最后可信的地图系传感器位姿。
     const Eigen::Matrix4d& mapSensorPose() const { return map_from_sensor_; }
+    /// 返回可信位姿提交时的 map←odom，SUSPECT 下据此用里程计前推。
+    const Eigen::Matrix4d& mapOdom() const { return map_from_odom_; }
     /// 返回可信位姿对应的传感器时刻，调用方须先确认缓存有效。
     Timestamp timestamp() const { return stamp_; }
     /// 返回可信位姿所属的前端代次，避免跨代次比较传感器时间。
     std::uint64_t epoch() const { return epoch_; }
 
     /// 仅当 (epoch, stamp) 不回退时更新；先比较代次，再比较该代次内的时间戳。
-    bool updateIfNewer(const Eigen::Matrix4d& T_map_sensor, const Timestamp& stamp,
-                       std::uint64_t epoch);
+    bool updateIfNewer(const Eigen::Matrix4d& T_map_sensor, const Eigen::Matrix4d& T_map_odom,
+                       const Timestamp& stamp, std::uint64_t epoch);
 
     /// 提交已接受的绝对校正，允许新代次首帧使用零时间戳。
-    bool commitCorrection(const Eigen::Matrix4d& T_map_sensor, const Timestamp& stamp,
-                          std::uint64_t epoch);
+    bool commitCorrection(const Eigen::Matrix4d& T_map_sensor, const Eigen::Matrix4d& T_map_odom,
+                          const Timestamp& stamp, std::uint64_t epoch);
 
     /// 按定位状态计算地图系输出位姿；可信时沿用 T_map_odom_nominal。
-    /// 不可信且有缓存时固定 T_map_sensor，并由当前里程计位姿反算 T_map_odom。
-    TrustedPoseProjection project(bool pose_trusted, const Eigen::Matrix4d& T_map_odom_nominal,
-                                  const Eigen::Matrix4d& T_odom_sensor) const;
+    /// SUSPECT 且缓存与当前帧同代次时，沿用最后可信 T_map_odom 由里程计前推；
+    /// 其他不可信状态（LOST 等）有缓存时固定 T_map_sensor，并由当前里程计位姿反算 T_map_odom。
+    TrustedPoseProjection project(LocalizationStatus status,
+                                  const Eigen::Matrix4d& T_map_odom_nominal,
+                                  const Eigen::Matrix4d& T_odom_sensor, std::uint64_t epoch) const;
 
 private:
     Eigen::Matrix4d map_from_sensor_ = Eigen::Matrix4d::Identity();
+    Eigen::Matrix4d map_from_odom_ = Eigen::Matrix4d::Identity();
     std::uint64_t epoch_ = 0;
     Timestamp stamp_;
     bool has_pose_ = false;

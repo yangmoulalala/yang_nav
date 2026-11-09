@@ -19,6 +19,7 @@ namespace backend::ros {
 struct RosInputParameters {
     std::string frontend;
     std::string sensor_frame;
+    /// UWB 原始解的 frame_id；不一致的消息被丢弃。
     std::string uwb_frame;
     std::string map_frame;
     std::string odom_frame;
@@ -34,8 +35,6 @@ struct RosInputParameters {
     /// sensor <- body 外参按消息时间戳从 TF 查询；精确时刻不可用时允许使用的
     /// 最新变换与请求时刻的最大时间差，s（common.body_extrinsic_tolerance）。
     double body_extrinsic_tolerance = 0.0;
-    /// UWB 天线相位中心在 body 系中的固定位置，m；按测量时刻外参换算到传感器系。
-    Eigen::Vector3d antenna_position_body = Eigen::Vector3d::Zero();
 };
 
 /// 描述子类型、姿态整平及各实现的参数。
@@ -93,21 +92,5 @@ struct NodeConfig {
     ServiceParameters services;
     WorldCloudOutputParameters world_cloud;
 };
-
-/// 校验 UWB 输入坐标系名称与固定变换、在线空间标定开关是否一致。
-inline bool uwbFrameContractValid(const UwbConfig& uwb, const std::string& source_frame,
-                                  const std::string& map_frame) {
-    if (!uwb.enabled) {
-        return true;
-    }
-    if (source_frame.empty()) {
-        return false;
-    }
-    if (source_frame != map_frame) {
-        return true;
-    }
-    return !uwb.estimate_zero_pose_online &&
-           uwb.T_map_uwb_fixed.isApprox(Eigen::Matrix4d::Identity(), 1.0e-12);
-}
 
 }  // namespace backend::ros

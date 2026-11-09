@@ -34,12 +34,12 @@ bool LocalizationStateMachine::poseTrusted(const LocalizationStatus status) {
     return status == LocalizationStatus::Normal || status == LocalizationStatus::ObsDegraded;
 }
 
-/// 判断当前状态是否应冻结最后可信的全局位姿。
+/// 判断当前状态是否应冻结最后可信的全局位姿；SUSPECT 用里程计前推，不冻结。
 bool LocalizationStateMachine::tfFrozen(const LocalizationStatus status) {
-    return status == LocalizationStatus::Suspect || status == LocalizationStatus::Lost;
+    return status == LocalizationStatus::Lost;
 }
 
-/// 判断当前状态是否应执行全局恢复流程。
+/// 判断当前状态是否应执行恢复（重定位）流程。
 bool LocalizationStateMachine::recoveryPath(const LocalizationStatus status) {
     return status == LocalizationStatus::Initializing || status == LocalizationStatus::Suspect ||
            status == LocalizationStatus::Lost;
@@ -87,7 +87,6 @@ void LocalizationStateMachine::restoreAfterResetRejected(const LocalizationState
 void LocalizationStateMachine::clearEvidence() {
     consecutive_correction_conflicts_ = 0;
     consecutive_severe_conflicts_ = 0;
-    consecutive_position_disagreements_ = 0;
     probation_remaining_ = 0;
     consecutive_suspect_relocalization_failures_ = 0;
 }
@@ -161,9 +160,6 @@ LocalizationTransition LocalizationStateMachine::onTrustedCorrection(
     consecutive_severe_conflicts_ = 0;
     consecutive_suspect_relocalization_failures_ = 0;
     if (source == TrustedCorrectionSource::Relocalization) {
-        // 新的独立位姿锚：旧位姿下的位置不一致不再适用。普通观测不清零，
-        // 否则锁错时同周期被接受的配准会把位置不一致计数一直清掉。
-        consecutive_position_disagreements_ = 0;
         probation_remaining_ = 0;  // 由调用方按配置重新开始试用期。
     } else if (probation_remaining_ > 0) {
         --probation_remaining_;
@@ -228,41 +224,6 @@ LocalizationTransition LocalizationStateMachine::onCorrectionConflict(
     return transition;
 }
 
-/// 累计独立位置证据与全位姿观测的严重不一致，连续达到阈值进入 SUSPECT。
-LocalizationTransition LocalizationStateMachine::onPositionEvidence(const bool severe_disagreement,
-                                                                    const std::string& reason,
-                                                                    const int threshold) {
-    LocalizationTransition transition;
-    transition.previous = status_;
-    transition.current = status_;
-    transition.reason = reason_;
-    if (!poseTrusted(status_)) {
-        return transition;
-    }
-    if (!severe_disagreement) {
-        consecutive_position_disagreements_ = 0;
-        return transition;
-    }
-    ++consecutive_position_disagreements_;
-    if (threshold <= 0 || consecutive_position_disagreements_ < threshold) {
-        return transition;
-    }
-    std::ostringstream oss;
-    oss << "position evidence disagreed " << consecutive_position_disagreements_ << "/"
-        << threshold << " times with accepted full-pose evidence: " << reason;
-    status_ = LocalizationStatus::Suspect;
-    reason_ = oss.str();
-    clearEvidence();
-
-    transition.current = status_;
-    transition.reason = reason_;
-    transition.changed = transition.previous != transition.current;
-    if (transition.changed) {
-        advanceGeneration();
-    }
-    return transition;
-}
-
 /// 强制进入丢失状态并清空旧证据。
 LocalizationTransition LocalizationStateMachine::forceLost(const std::string& reason) {
     LocalizationTransition transition;
@@ -304,7 +265,7 @@ LocalizationTransition LocalizationStateMachine::onRecoveryRelocalizationFailure
         }
         reason_ = oss.str();
     } else if (status_ == LocalizationStatus::Lost) {
-        reason_ = source_name + " global recovery failed in LOST; front-end reset pending";
+        reason_ = source_name + " recovery failed in LOST; front-end reset pending";
     } else {
         reason_ = "initial localization via " + source_name + " pending";
     }

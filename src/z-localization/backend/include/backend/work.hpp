@@ -17,7 +17,6 @@
 #include "backend/registration.hpp"
 #include "backend/search.hpp"
 #include "backend/types.hpp"
-#include "backend/uwb_fusion.hpp"
 
 namespace backend {
 
@@ -45,7 +44,7 @@ struct ObservationEvidence {
     std::string reason;
 };
 
-/// 普通全局观测周期的先验图匹配输入与已捕获 UWB 因子。
+/// 普通全局观测周期的先验图匹配输入。
 struct GlobalObservationWork {
     Keyframe runtime;
     std::uint64_t state_generation = 0;
@@ -59,8 +58,6 @@ struct GlobalObservationWork {
     double source_span_seconds = 0.0;
     Eigen::Matrix4d predicted_map_pose = Eigen::Matrix4d::Identity();
     Cloud::ConstPtr target;
-    /// 捕获时可用的新鲜 UWB 因子；提交前再次核对消费水位。
-    std::optional<UwbFactorInput> uwb;
     ObservationEvidence prior_input;
 };
 
@@ -81,13 +78,11 @@ struct GlobalObservationCommit {
     bool stale = false;
     bool graph_node_unavailable = false;
     bool prior_accepted = false;
-    bool uwb_accepted = false;
     bool had_conflict = false;
     bool model_invalid = false;
     PoseCorrectionDelta applied_correction;
     InnovationAssessment joint_innovation;
     InnovationAssessment prior_innovation;
-    InnovationAssessment uwb_innovation;
     LocalizationTransition transition;
 };
 
@@ -110,12 +105,14 @@ struct RecoveryWork {
     RecoveryIdentity identity;
     Eigen::Matrix4d predicted_map_pose = Eigen::Matrix4d::Identity();
     std::optional<RelocalizationPositionPrior> startup_hint_prior;
+    /// 局中恢复（SUSPECT/LOST）：只用 UWB 位置先验重定位；为 true 且没有 uwb_prior 时只等待。
+    bool uwb_required = false;
     std::optional<RelocalizationPositionPrior> uwb_prior;
     std::vector<FrontendFrame> source_history;
     int accumulated_frames = 0;
     double source_span_seconds = 0.0;
     /// 恢复源与普通传感器观测使用同一证据语义：历史尚未形成时为
-    /// UNAVAILABLE，连续性门拒绝已有历史时为 MODEL_INVALID，可执行匹配时为
+    /// UNAVAILABLE，累积门限（时间、运动、代次）拒绝已有历史时为 MODEL_INVALID，可执行匹配时为
     /// MEASUREMENT。
     ObservationEvidence source_evidence;
     bool force_startup_hint = false;

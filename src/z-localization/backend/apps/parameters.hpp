@@ -36,7 +36,7 @@ public:
 private:
     /// 读取输入传输与坐标系名称。
     void loadCommonInput();
-    /// 以启动时 T_sensor_body 派生启动提示位姿及 UWB 外参的回退值。
+    /// 以启动时 T_sensor_body 派生启动提示位姿及启动时外参。
     void applyBodyExtrinsic(const Eigen::Matrix4d& T_sensor_body);
     /// 读取地图、关键帧和统一配准参数。
     void loadMapTrajectoryAndRegistration();
@@ -44,14 +44,10 @@ private:
     void loadTracking();
     /// 读取状态机恢复路径参数。
     void loadRecovery();
-    /// 读取 UWB 测量、外参和在线标定参数。
+    /// 读取局中恢复用的 UWB 参数及红/蓝方固定 T_map_uwb。
     void loadUwb();
-    /// 读取在线坐标标定开关及固定 UWB 坐标变换。
-    void loadUwbFrameCalibration();
-    /// 读取天线杆臂及位置测量噪声模型。
-    void loadUwbMeasurementModel();
-    /// 读取 UWB 启动对齐的配对与稳定性参数。
-    void loadUwbBootstrap();
+    /// 读取一方的 uwb.zero_pose_<team>（x、y、yaw_deg）并构造 T_map_uwb。
+    Eigen::Matrix4d loadUwbZeroPose(const std::string& team);
     /// 读取回环与因子图参数。
     void loadLoopAndGraph();
     /// 读取图先验、过程噪声、鲁棒核及固定窗口参数。

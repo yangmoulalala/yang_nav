@@ -3,7 +3,7 @@
 <package format="3">
   <name>backend</name>
   <version>0.0.1</version>
-  <description>融合前端里程计、点云地图、回环和 UWB 的因子图定位后端。</description>
+  <description>融合前端里程计、点云地图和回环的因子图定位后端。</description>
 
   <maintainer email="zhujunheng2005@gmail.com">mozihe</maintainer>
   <author email="zhujunheng2005@gmail.com">mozihe</author>

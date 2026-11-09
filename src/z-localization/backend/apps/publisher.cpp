@@ -70,8 +70,6 @@ void Publisher::configure() {
             "~/map_axes", rclcpp::QoS(1).transient_local());
     }
     if (parameters_.visualization.enabled) {
-        uwb_marker_pub_ = node_.create_publisher<visualization_msgs::msg::Marker>(
-            "~/uwb_position", rclcpp::QoS(1).transient_local());
         status_marker_pub_ = node_.create_publisher<visualization_msgs::msg::Marker>(
             "~/localization_status", rclcpp::QoS(1).transient_local());
     }
@@ -103,8 +101,11 @@ void Publisher::publishOdometry(const nav_msgs::msg::Odometry& input,
                                       ? projection.pose_covariance
                                       : fallbackFrontendPoseCovariance();
     if (!projection.pose_trusted) {
-        // 冻结位姿只作保守输出，速度清零同时赋予较大方差，避免被解释为高置信静止。
         applyPoseCovarianceFloor(&covariance, 10.0, M_PI);
+    }
+    if (!projection.pose_trusted && !projection.pose_extrapolated) {
+        // 冻结位姿只作保守输出，速度清零同时赋予较大方差，避免被解释为高置信静止。
+        // SUSPECT 前推时位姿随里程计运动，保留前端传感器系速度。
         output.twist = geometry_msgs::msg::TwistWithCovariance{};
         for (int i = 0; i < 6; ++i)
             output.twist.covariance[i * 6 + i] = 1e6;
@@ -113,43 +114,6 @@ void Publisher::publishOdometry(const nav_msgs::msg::Odometry& input,
         for (int j = 0; j < 6; ++j)
             output.pose.covariance[6 * i + j] = covariance(i, j);
     odometry_pub_->publish(output);
-}
-
-/// 将已接纳的 UWB 位置转换为诊断标记，普通显示异常跳过本次输出。
-void Publisher::publishUwb(const geometry_msgs::msg::PoseStamped& pose) {
-    publishOptional("UWB visualization", [&] {
-        const rclcpp::Time stamp(pose.header.stamp);
-        const std::optional<Eigen::Vector3d> position_map = controller_->latestUwbBodyPositionMap();
-        if (!uwb_marker_pub_ || !position_map.has_value()) {
-            return;
-        }
-        visualization_msgs::msg::Marker marker;
-        marker.header = pose.header;
-        marker.header.frame_id = parameters_.input.map_frame;
-        // 标记使用时间偏置补偿后的运动时刻，与核心接纳的 UWB 位置保持一致。
-        const std::optional<double> motion_timestamp = controller_->latestUwbMotionTimestamp();
-        if (motion_timestamp.has_value() && *motion_timestamp > 0.0) {
-            marker.header.stamp =
-                rclcpp::Time(static_cast<std::int64_t>(std::llround(*motion_timestamp * 1.0e9)),
-                             stamp.get_clock_type());
-        }
-        marker.ns = "uwb_position";
-        marker.id = 0;
-        marker.type = visualization_msgs::msg::Marker::SPHERE;
-        marker.action = visualization_msgs::msg::Marker::ADD;
-        marker.pose.position.x = position_map->x();
-        marker.pose.position.y = position_map->y();
-        marker.pose.position.z = position_map->z();
-        marker.pose.orientation.w = 1.0;
-        marker.scale.x = 0.4;
-        marker.scale.y = 0.4;
-        marker.scale.z = 0.4;
-        marker.color.r = 0.1F;
-        marker.color.g = 0.65F;
-        marker.color.b = 1.0F;
-        marker.color.a = 0.95F;
-        uwb_marker_pub_->publish(marker);
-    });
 }
 
 /// 在发布锁内发送同步投影，再在锁外准备可选世界点云。

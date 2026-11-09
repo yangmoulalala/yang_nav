@@ -68,10 +68,6 @@ void PoseGraph::reset(const PoseGraphConfig& config) {
     pending_values_ = gtsam::Values();
     pose_timestamps_.clear();
     pending_new_indices_.clear();
-    uwb_alignment_initialized_ = false;
-    uwb_alignment_use_z_ = false;
-    uwb_alignment_fixed_z_ = 0.0;
-    uwb_time_offset_initialized_ = false;
     timestamp_offset_ = 0.0;
     last_input_timestamp_ = std::numeric_limits<double>::quiet_NaN();
     latest_graph_timestamp_ = std::numeric_limits<double>::quiet_NaN();
@@ -207,21 +203,6 @@ Eigen::Matrix4d PoseGraph::fromGtsam(const gtsam::Pose3& pose) {
     out(1, 3) = pose.translation().y();
     out(2, 3) = pose.translation().z();
     return out;
-}
-
-/// 返回全图唯一的 UWB 平面对齐变量键。
-gtsam::Key PoseGraph::uwbAlignmentKey() {
-    return gtsam::Symbol('u', 0);
-}
-
-/// 返回全图唯一的 UWB 高度对齐变量键。
-gtsam::Key PoseGraph::uwbAlignmentZKey() {
-    return gtsam::Symbol('h', 0);
-}
-
-/// 返回全图唯一的 UWB 时间偏置变量键。
-gtsam::Key PoseGraph::uwbTimeOffsetKey() {
-    return gtsam::Symbol('d', 0);
 }
 
 }  // namespace backend

@@ -17,13 +17,6 @@ Eigen::Matrix<double, 6, 1> priorVariancesGtsamOrder(const PoseGraphConfig& conf
 /// 在后端平移、旋转顺序与 GTSAM 旋转、平移顺序之间转换。
 gtsam::Matrix rosToGtsamOrder(const PoseCovariance6d& covariance);
 
-/// 从合法的 SE(2)+可选 Z 齐次变换提取平面对齐状态。
-gtsam::Pose2 planarAlignmentFromMatrix(const Eigen::Matrix4d& T_map_uwb);
-
-/// 将世界加性对齐协方差约化到共享平面状态的局部坐标。
-gtsam::Matrix alignmentPriorCovarianceLocal(const PoseCovariance6d& world_covariance,
-                                            const gtsam::Pose2& planar_alignment, bool use_z);
-
 /// 构造协方差噪声；无效输入使用显式保守回退。
 gtsam::SharedNoiseModel covarianceNoiseOrFallback(const gtsam::Matrix& covariance,
                                                   const gtsam::Matrix& fallback,

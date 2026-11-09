@@ -12,83 +12,37 @@
 
 namespace backend::ros {
 
-/// 读取 UWB 坐标、时间、噪声、外参和启动对齐参数。
+/// 读取局中恢复用的 UWB 输入、杆臂、时间与门限参数。
 void ParameterReader::loadUwb() {
-    getParam("uwb/enabled", parameters_.runtime.uwb.enabled);
-    getParam("uwb/use_z", parameters_.runtime.uwb.use_z);
+    UwbConfig& uwb = parameters_.runtime.uwb;
+    getParam("uwb/enabled", uwb.enabled);
     getParam("uwb/frame", parameters_.input.uwb_frame);
-    if (parameters_.input.uwb_frame.empty()) {
+    if (parameters_.input.uwb_frame.empty())
         throw std::invalid_argument("uwb.frame must not be empty");
-    }
-    loadUwbFrameCalibration();
-    getParam("uwb/effective_rate_hz", parameters_.runtime.uwb.effective_rate_hz);
-    getParam("uwb/time_offset_seconds", parameters_.runtime.uwb.time_offset_seconds);
-    getParam("uwb/estimate_time_offset_online",
-             parameters_.runtime.uwb.estimate_time_offset_online);
-    getParam("uwb/time_offset_prior_std_seconds",
-             parameters_.runtime.uwb.time_offset_prior_std_seconds);
-    getParam("uwb/time_jitter_std_seconds", parameters_.runtime.uwb.time_jitter_std_seconds);
-    getParam("uwb/max_age", parameters_.runtime.uwb.max_age);
-    getParam("uwb/calibration_max_age", parameters_.runtime.uwb.calibration_max_age);
-    getParam("uwb/conflicts_before_suspect", parameters_.runtime.uwb.conflicts_before_suspect);
-    getParam("uwb/recovery_max_offset", parameters_.runtime.uwb.recovery_max_offset);
-    getParam("uwb/odom_sync_tolerance", parameters_.runtime.uwb.odom_sync_tolerance);
-    getParam("uwb/recovery_search_radius", parameters_.runtime.uwb.recovery_search_radius);
-    getParam("uwb/recovery_candidates", parameters_.runtime.uwb.recovery_candidates);
-    loadUwbMeasurementModel();
-    loadUwbBootstrap();
-}
-
-/// 读取在线坐标标定开关及固定 UWB 到地图坐标变换。
-void ParameterReader::loadUwbFrameCalibration() {
-    getParam("uwb/estimate_zero_pose_online", parameters_.runtime.uwb.estimate_zero_pose_online);
-    const Eigen::Vector3d uwb_zero_position(param<double>("uwb/zero_pose/x"),
-                                            param<double>("uwb/zero_pose/y"),
-                                            param<double>("uwb/zero_pose/z"));
-    const double uwb_zero_yaw_deg = param<double>("uwb/zero_pose/yaw_deg");
-    if (!uwb_zero_position.allFinite() || !std::isfinite(uwb_zero_yaw_deg)) {
-        throw std::invalid_argument("uwb.zero_pose calibration contains a non-finite value");
-    }
-    parameters_.runtime.uwb.T_map_uwb_fixed =
-        yawGuess(degreesToRadians(uwb_zero_yaw_deg), uwb_zero_position);
-}
-
-/// 读取天线机体位置并构造位置测量协方差；换算到传感器系由 applyBodyExtrinsic() 完成。
-void ParameterReader::loadUwbMeasurementModel() {
-    getParam("uwb/antenna_position_body/x", parameters_.input.antenna_position_body.x());
-    getParam("uwb/antenna_position_body/y", parameters_.input.antenna_position_body.y());
-    getParam("uwb/antenna_position_body/z", parameters_.input.antenna_position_body.z());
-    if (!parameters_.input.antenna_position_body.allFinite()) {
+    getParam("uwb/time_offset_seconds", uwb.time_offset_seconds);
+    getParam("uwb/max_age", uwb.max_age);
+    getParam("uwb/odom_sync_tolerance", uwb.odom_sync_tolerance);
+    getParam("uwb/search_radius", uwb.search_radius);
+    getParam("uwb/candidates", uwb.candidates);
+    getParam("uwb/max_offset", uwb.max_offset);
+    getParam("uwb/antenna_position_body/x", uwb.antenna_position_body.x());
+    getParam("uwb/antenna_position_body/y", uwb.antenna_position_body.y());
+    getParam("uwb/antenna_position_body/z", uwb.antenna_position_body.z());
+    if (!uwb.antenna_position_body.allFinite())
         throw std::invalid_argument("uwb.antenna_position_body contains a non-finite value");
-    }
-    const double uwb_xy_std = param<double>("uwb/position_std_xy");
-    const double uwb_z_std = param<double>("uwb/position_std_z");
-    // 非法取值直接拒绝启动，不再告警后改用代码内的替代值。
-    if (!std::isfinite(uwb_xy_std) || uwb_xy_std <= 0.0)
-        throw std::invalid_argument("uwb.position_std_xy must be finite and > 0");
-    if (!std::isfinite(uwb_z_std) || uwb_z_std <= 0.0)
-        throw std::invalid_argument("uwb.position_std_z must be finite and > 0");
-    parameters_.runtime.uwb.position_covariance =
-        Eigen::Vector3d(uwb_xy_std * uwb_xy_std, uwb_xy_std * uwb_xy_std, uwb_z_std * uwb_z_std)
-            .asDiagonal();
+    uwb.T_map_uwb_red = loadUwbZeroPose("red");
+    uwb.T_map_uwb_blue = loadUwbZeroPose("blue");
 }
 
-/// 读取启动配对、鲁棒验收及稳定性参数，并转换偏航和重力角度单位。
-void ParameterReader::loadUwbBootstrap() {
-    getParam("uwb/bootstrap/max_pairs", parameters_.runtime.uwb.bootstrap.max_pairs);
-    getParam("uwb/bootstrap/min_pairs", parameters_.runtime.uwb.bootstrap.min_pairs);
-    getParam("uwb/bootstrap/min_baseline", parameters_.runtime.uwb.bootstrap.min_baseline);
-    getParam("uwb/bootstrap/inlier_threshold", parameters_.runtime.uwb.bootstrap.inlier_threshold);
-    getParam("uwb/bootstrap/max_rmse", parameters_.runtime.uwb.bootstrap.max_rmse);
-    parameters_.runtime.uwb.bootstrap.max_yaw_std_rad =
-        degreesToRadians(param<double>("uwb/bootstrap/max_yaw_std_deg"));
-    getParam("uwb/bootstrap/stable_solutions", parameters_.runtime.uwb.bootstrap.stable_solutions);
-    getParam("uwb/bootstrap/stable_translation_delta",
-             parameters_.runtime.uwb.bootstrap.stable_translation_delta);
-    parameters_.runtime.uwb.bootstrap.stable_yaw_delta_rad =
-        degreesToRadians(param<double>("uwb/bootstrap/stable_yaw_delta_deg"));
-    parameters_.runtime.uwb.bootstrap.gravity_alignment_std_rad =
-        degreesToRadians(param<double>("uwb/bootstrap/gravity_alignment_std_deg"));
+/// 读取一方的固定 UWB 到地图变换（水平平移与航向）。
+Eigen::Matrix4d ParameterReader::loadUwbZeroPose(const std::string& team) {
+    const std::string base = "uwb/zero_pose_" + team + "/";
+    const double x = param<double>(base + "x");
+    const double y = param<double>(base + "y");
+    const double yaw_deg = param<double>(base + "yaw_deg");
+    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(yaw_deg))
+        throw std::invalid_argument("uwb.zero_pose_" + team + " contains a non-finite value");
+    return yawGuess(degreesToRadians(yaw_deg), Eigen::Vector3d(x, y, 0.0));
 }
 
 /// 读取回环验证与因子图噪声、鲁棒核和窗口参数。

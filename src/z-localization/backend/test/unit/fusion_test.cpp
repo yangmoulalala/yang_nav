@@ -1,70 +1,10 @@
-// UWB 的物理解、图消费水位与观测接纳拥有不同生命周期。
+// 全局观测集合的联合接纳策略。
 #include <gtest/gtest.h>
 
 #include "backend/observation.hpp"
-#include "backend/pose_graph.hpp"
-#include "backend/uwb_fusion.hpp"
-#include "geometry.hpp"
 
 namespace backend {
 namespace {
-/// 同一 UWB 位置解的高频保持重发不推进有效观测时间。
-TEST(UwbStream, HeldTransmissionsDoNotCreateNewPhysicalSamples) {
-    UwbObservationStream stream({true, false, 1});
-    const Eigen::Vector3d position(1, 2, 0);
-    ASSERT_TRUE(stream.ingest(10, position));
-    EXPECT_FALSE(stream.ingest(10.1, position));
-    EXPECT_DOUBLE_EQ(stream.latest()->timestamp, 10);
-    EXPECT_FALSE(stream.ingest(9, position));
-    EXPECT_TRUE(stream.ingest(10.2, Eigen::Vector3d(1.1, 2, 0)));
-    EXPECT_DOUBLE_EQ(stream.latest()->timestamp, 10.2);
-}
-
-/// 用恒速运动与固定杆臂验证时间偏置下的天线位置和速度。
-TEST(UwbTimeSupport, OffsetAndVelocityMatchAnalyticConstantMotionWithLeverArm) {
-    UwbTimeOffsetSupport support;
-    support.measurement_timestamp = 2;
-    support.keyframe_odom_pose = testing::translation(1);
-    support.antenna_position_sensor = Eigen::Vector3d(.3, .2, 0);
-    support.odometry = {{1, testing::translation(0)}, {3, testing::translation(4)}};
-    Eigen::Vector3d point, velocity;
-    ASSERT_TRUE(support.evaluate(.25, &point, &velocity));
-    EXPECT_LT((point - Eigen::Vector3d(1.8, .2, 0)).norm(), 1e-12);
-    EXPECT_LT((velocity - Eigen::Vector3d(2, 0, 0)).norm(), 1e-12);
-    Eigen::Vector3d plus, minus;
-    ASSERT_TRUE(support.evaluate(.25 + 1e-5, &plus));
-    ASSERT_TRUE(support.evaluate(.25 - 1e-5, &minus));
-    EXPECT_LT(((plus - minus) / 2e-5 - velocity).norm(), 1e-9);
-}
-
-/// 换代和图重置保留 UWB 消费水位，完整重置清空观测历史。
-TEST(UwbLifecycle, EpochAndGraphResetPreserveConsumptionButFullResetClearsIt) {
-    PoseGraph graph;
-    TimedPoseBuffer odometry;
-    UwbFusionConfig config;
-    config.uwb.enabled = true;
-    UwbFusion fusion(config, graph, odometry);
-    ASSERT_TRUE(fusion.ingest(10, Eigen::Vector3d(1, 2, 0)));
-    UwbFactorInput input;
-    input.timestamp = 10;
-    InnovationAssessment rejected;
-    rejected.valid = true;
-    rejected.degrees_of_freedom = 2;
-    rejected.upper_tail_probability = 0;
-    fusion.finishAssessment(input, rejected);
-    EXPECT_DOUBLE_EQ(fusion.lastConsumed(), 10);
-    fusion.resetEpoch();
-    ASSERT_TRUE(fusion.observations().latest());
-    EXPECT_DOUBLE_EQ(fusion.observations().latest()->timestamp, 10);
-    EXPECT_DOUBLE_EQ(fusion.lastConsumed(), 10);
-    fusion.resetGraph();
-    EXPECT_DOUBLE_EQ(fusion.lastConsumed(), 10);
-    EXPECT_TRUE(fusion.observations().latest());
-    fusion.resetAll();
-    EXPECT_FALSE(fusion.observations().latest());
-    EXPECT_LT(fusion.lastConsumed(), 10);
-}
-
 /// 缺少时间或几何支撑的观测保持不可用状态，不累计冲突。
 TEST(ObservationPolicy, UnavailableEvidenceIsNotAConflictVote) {
     ObservationBatch batch;
@@ -73,67 +13,34 @@ TEST(ObservationPolicy, UnavailableEvidenceIsNotAConflictVote) {
     EXPECT_FALSE(batch.conclusion().had_conflict);
 }
 
-/// 检查多来源观测的联合接纳，以及逐项诊断数量不完整时的拒绝。
-TEST(ObservationPolicy, JointAssessmentControlsAcceptanceAcrossSources) {
+/// 联合一致时接受全部条目；逐项诊断数量不完整时拒绝。
+TEST(ObservationPolicy, JointAssessmentControlsAcceptance) {
     ObservationBatch batch;
-    batch.entries = {{ObservationSource::PriorMap, "map", {}, false},
-                     {ObservationSource::Uwb, "uwb", {}, false}};
+    batch.entries = {{ObservationSource::PriorMap, "map", {}, false}};
     InnovationBatchAssessment assessment;
-    assessment.joint = {true, 3, .2, .9, {}};
-    assessment.individual = {{true, 1, .1, .9, {}}, {true, 2, .1, .9, {}}};
+    assessment.joint = {true, 6, .2, .9, {}};
+    assessment.individual = {{true, 6, .2, .9, {}}};
     ASSERT_TRUE(batch.validate(assessment));
     batch.classify(assessment, .001);
     EXPECT_EQ(batch.conclusion().outcome, ObservationOutcome::Accepted);
     EXPECT_TRUE(batch.entries[0].accepted);
-    EXPECT_TRUE(batch.entries[1].accepted);
     ObservationBatch inconsistent;
     inconsistent.entries = batch.entries;
-    assessment.individual.pop_back();
+    assessment.individual.clear();
     EXPECT_FALSE(inconsistent.validate(assessment));
 }
 
-/// 先验地图冲突时，单独接受的 UWB（只约束位置）不能把系统判为可信，仍按冲突计数。
-TEST(ObservationPolicy, PositionOnlyUwbCannotConfirmPoseAgainstConflictingMap) {
+/// 先验地图与预测冲突时结论为冲突。
+TEST(ObservationPolicy, ConflictingMapIsAConflict) {
     ObservationBatch batch;
-    batch.entries = {{ObservationSource::PriorMap, "map", {}, false},
-                     {ObservationSource::Uwb, "uwb", {}, false}};
+    batch.entries = {{ObservationSource::PriorMap, "map", {}, false}};
     InnovationBatchAssessment assessment;
-    assessment.joint = {true, 8, 300, 1e-50, {}};
-    assessment.individual = {{true, 6, 290, 1e-50, {}}, {true, 2, .5, .8, {}}};
+    assessment.joint = {true, 6, 290, 1e-50, {}};
+    assessment.individual = {{true, 6, 290, 1e-50, {}}};
     ASSERT_TRUE(batch.validate(assessment));
     batch.classify(assessment, .001);
     EXPECT_FALSE(batch.entries[0].accepted);
-    EXPECT_TRUE(batch.entries[1].accepted);  // UWB 因子仍可写入图
-    const ObservationConclusion conclusion = batch.conclusion();
-    EXPECT_EQ(conclusion.outcome, ObservationOutcome::Conflict);
-    EXPECT_TRUE(conclusion.had_conflict);
-}
-
-/// 物理修正上限等直接冲突（无地图条目）时，单独的 UWB 同样不能确认位姿。
-TEST(ObservationPolicy, PositionOnlyUwbCannotConfirmPoseAgainstCappedMapCorrection) {
-    ObservationBatch batch;
-    batch.conflicts.push_back("prior scan-to-map physical correction cap");
-    batch.entries = {{ObservationSource::Uwb, "uwb", {}, false}};
-    InnovationBatchAssessment assessment;
-    assessment.joint = {true, 2, .5, .8, {}};
-    assessment.individual = {{true, 2, .5, .8, {}}};
-    ASSERT_TRUE(batch.validate(assessment));
-    batch.classify(assessment, .001);
-    EXPECT_TRUE(batch.entries[0].accepted);
     EXPECT_EQ(batch.conclusion().outcome, ObservationOutcome::Conflict);
-}
-
-/// 没有地图冲突时，UWB 单独接受仍是可信校正（无先验地图或配准不可用的周期）。
-TEST(ObservationPolicy, PositionOnlyUwbWithoutConflictIsAccepted) {
-    ObservationBatch batch;
-    batch.unavailable.push_back("prior scan-to-map unavailable");
-    batch.entries = {{ObservationSource::Uwb, "uwb", {}, false}};
-    InnovationBatchAssessment assessment;
-    assessment.joint = {true, 2, .5, .8, {}};
-    assessment.individual = {{true, 2, .5, .8, {}}};
-    ASSERT_TRUE(batch.validate(assessment));
-    batch.classify(assessment, .001);
-    EXPECT_EQ(batch.conclusion().outcome, ObservationOutcome::Accepted);
 }
 }  // namespace
 }  // namespace backend

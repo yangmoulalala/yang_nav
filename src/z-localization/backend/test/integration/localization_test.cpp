@@ -1,4 +1,4 @@
-// 验证先验恢复、常规跟踪、回环及 UWB 融合的完整提交。
+// 验证先验恢复、常规跟踪与回环的完整提交。
 #include "localization_fixture.hpp"
 
 namespace backend {
@@ -58,7 +58,9 @@ TEST_F(LocalizationFlow, LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
     config.startup_hint.T_map_sensor = Eigen::Matrix4d::Identity();
     config.recovery.suspect_failures_before_lost = 1;
     config.recovery.automatic_when_lost = false;
+    config.uwb.enabled = true;
     start(true);
+    ASSERT_TRUE(controller->setUwbTeam("red"));
     auto first = frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
     ASSERT_TRUE(ingest(first));
     maintain();
@@ -66,6 +68,7 @@ TEST_F(LocalizationFlow, LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
     const auto prior_revision = prior.revision();
     auto sparse = frame(11, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
     sparse.cloud_local->resize(1);
+    ASSERT_TRUE(controller->ingestUwbPosition(11, Eigen::Vector3d::Zero()));
     ASSERT_TRUE(ingest(sparse, Eigen::Vector3d(10, 0, 0)));
     EXPECT_EQ(controller->status(), LocalizationStatus::Suspect);
     maintain();
@@ -78,6 +81,7 @@ TEST_F(LocalizationFlow, LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
     maintain();
     EXPECT_EQ(controller->status(), LocalizationStatus::Lost);
     next.timestamp = 13;
+    ASSERT_TRUE(controller->ingestUwbPosition(13, Eigen::Vector3d::Zero()));
     ASSERT_TRUE(ingest(next));
     maintain();
     EXPECT_EQ(controller->status(), LocalizationStatus::Normal);
@@ -147,94 +151,34 @@ TEST_F(LocalizationFlow, InconsistentLoopCannotRewriteOdometryOrDegradeTrackingH
     EXPECT_LT((output(current).T_map_sensor - current.odom_pose).norm(), 1e-10);
 }
 
-/// LiDAR 局部模型失效时立即进入恢复，同周期通过的 UWB 观测不能抵消该事件。
-TEST_F(LocalizationFlow, InvalidLidarModelCannotBeHiddenByConsistentUwbEvidence) {
+
+/// 局中恢复只在有新鲜 UWB 时进行：没有 UWB 时保持 SUSPECT 等待，不计失败、不进 LOST；
+/// 收到 UWB 后在其位置附近匹配恢复。UWB 不用于判断定位是否正常。
+TEST_F(LocalizationFlow, InGameRecoveryWaitsForUwbAndThenRecoversNearIt) {
     config.startup_hint.T_map_sensor = Eigen::Matrix4d::Identity();
+    config.recovery.suspect_failures_before_lost = 1;
     config.uwb.enabled = true;
     start(true);
-    ASSERT_TRUE(controller->ingestUwbPosition(10, Eigen::Vector3d::Zero()));
-    ASSERT_TRUE(ingest(frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity())));
+    ASSERT_TRUE(controller->setUwbTeam("red"));
+    auto first = frame(10, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
+    ASSERT_TRUE(ingest(first));
     maintain();
     ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
-    auto invalid_geometry =
-        frame(11, testing::scenePose(300, 0, 0, 0), testing::scenePose(.1, 0, 0, 0));
-    ASSERT_TRUE(controller->ingestUwbPosition(11, Eigen::Vector3d(.1, 0, 0)));
-    ASSERT_TRUE(ingest(invalid_geometry));
-    const auto before = output(invalid_geometry);
-    maintain();
-    EXPECT_EQ(controller->status(), LocalizationStatus::Suspect);
-    const auto frozen = output(invalid_geometry);
-    EXPECT_FALSE(frozen.pose_trusted);
-    EXPECT_LT((frozen.T_map_sensor - before.T_map_sensor).norm(), 1e-10);
-    EXPECT_FALSE(controller->projectionIsCurrent(before));
-}
-
-/// 通过先验地图位姿约束，联合标定原始 UWB 坐标并检查对齐结果。
-TEST_F(LocalizationFlow, PriorTrackingCalibratesRawUwbCoordinatesFromIndependentAnchors) {
-    config.startup_hint.T_map_sensor = Eigen::Matrix4d::Identity();
-    config.uwb.enabled = true;
-    config.uwb.use_z = false;
-    config.uwb.estimate_zero_pose_online = true;
-    config.uwb.estimate_time_offset_online = true;
-    start(true);
-    const auto T_map_uwb = testing::scenePose(1, -2, 0, .25);
-    FrontendFrame current;
-    for (int index = 0; index < 14; ++index) {
-        const auto truth = testing::scenePose(.35 * index, .15 * (index % 3), 0, 0);
-        const Eigen::Vector3d raw = T_map_uwb.block<3, 3>(0, 0).transpose() *
-                                    (truth.block<3, 1>(0, 3) - T_map_uwb.block<3, 1>(0, 3));
-        ASSERT_TRUE(controller->ingestUwbPosition(10 + index, raw));
-        current = frame(10 + index, truth, truth);
-        ASSERT_TRUE(ingest(current));
+    auto next = frame(11, Eigen::Matrix4d::Identity(), Eigen::Matrix4d::Identity());
+    ASSERT_TRUE(ingest(next, Eigen::Vector3d(10, 0, 0)));
+    ASSERT_EQ(controller->status(), LocalizationStatus::Suspect);
+    for (int i = 0; i < 3; ++i) {
+        next.timestamp = 12 + i;
+        ASSERT_TRUE(ingest(next));
         maintain();
-        ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+        EXPECT_EQ(controller->status(), LocalizationStatus::Suspect);
     }
-    const auto position = controller->latestUwbBodyPositionMap();
-    ASSERT_TRUE(position);
-    EXPECT_LT((position->head<2>() - current.odom_pose.block<2, 1>(0, 3)).norm(), .03);
-    EXPECT_LT((output(current).T_map_sensor - current.odom_pose).norm(), .01);
-}
-
-/// UWB 启动对齐拒绝离群样本后，继续使用新观测建立可信定位。
-TEST_F(LocalizationFlow, UwbBootstrapRejectsAnOutlierOnceThenAcceptsFreshEvidence) {
-    config.innovation.conflicts_before_suspect = 2;
-    config.uwb.enabled = true;
-    config.uwb.use_z = false;
-    config.uwb.antenna_position_sensor = Eigen::Vector3d(.3, .1, 0);
-    start(false);
-    const auto alignment = testing::scenePose(3, -2, 0, .3);
-    FrontendFrame current;
-    for (int index = 0; index < 12; ++index) {
-        const auto odom = testing::scenePose(.5 * index, .15 * (index % 3), 0, 0);
-        const Eigen::Matrix4d truth = alignment * odom;
-        const Eigen::Vector3d antenna =
-            truth.block<3, 3>(0, 0) * config.uwb.antenna_position_sensor + truth.block<3, 1>(0, 3);
-        ASSERT_TRUE(controller->ingestUwbPosition(10 + index, antenna));
-        current = frame(10 + index, truth, odom);
-        ASSERT_TRUE(ingest(current));
-        maintain();
-    }
-    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
-    EXPECT_LT((output(current).T_map_sensor - alignment * current.odom_pose).norm(), 1e-4);
-    current.timestamp = 22;
-    ASSERT_TRUE(controller->ingestUwbPosition(22, Eigen::Vector3d(100, 100, 0)));
-    ASSERT_TRUE(ingest(current));
-    const auto before = output(current);
-    maintain();
-    EXPECT_EQ(controller->status(), LocalizationStatus::ObsDegraded);
-    EXPECT_LT((output(current).T_map_sensor - before.T_map_sensor).norm(), 1e-10);
-    const auto generation = controller->snapshot().localization.generation;
-    maintain();
-    EXPECT_EQ(controller->snapshot().localization.generation, generation);
-    current.timestamp = 23;
-    const Eigen::Matrix4d truth = alignment * current.odom_pose;
-    const Eigen::Vector3d antenna =
-        truth.block<3, 3>(0, 0) * config.uwb.antenna_position_sensor + truth.block<3, 1>(0, 3);
-    ASSERT_TRUE(controller->ingestUwbPosition(23, antenna));
-    ASSERT_TRUE(ingest(current));
+    next.timestamp = 15;
+    ASSERT_TRUE(controller->ingestUwbPosition(15, Eigen::Vector3d::Zero()));
+    ASSERT_TRUE(ingest(next));
     maintain();
     EXPECT_EQ(controller->status(), LocalizationStatus::Normal);
-    EXPECT_TRUE(controller->latestUwbBodyPositionMap());
+    EXPECT_LT((output(next).T_map_sensor - Eigen::Matrix4d::Identity()).norm(), 2e-4);
 }
 }  // namespace
 }  // namespace backend

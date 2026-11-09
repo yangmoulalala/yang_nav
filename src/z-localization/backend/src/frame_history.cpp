@@ -29,13 +29,7 @@ bool FrameHistory::accepts(const FrontendFrame& frame, std::uint64_t epoch) cons
 /// 保存最新同步帧并按配置裁剪点云历史及里程计时间支撑。
 void FrameHistory::append(const FrontendFrame& frame) {
     latest_frame_ = frame;
-
-    const double history_duration = std::max(
-        2.0, std::max(timing_.max_age, timing_.calibration_max_age) + timing_.odom_sync_tolerance + std::abs(timing_.time_offset_seconds) +
-                 (timing_.estimate_time_offset_online ? 4.0 * timing_.time_offset_prior_std_seconds
-                                                      : 0.0) +
-                 1.0);
-    odom_history_.append(frame.timestamp, frame.odom_pose, history_duration);
+    odom_history_.append(frame.timestamp, frame.odom_pose, odometry_seconds_);
 
     if (!frame_history_.empty() && (frame.epoch != frame_history_.back().epoch ||
                                     frame.timestamp + 1.0e-3 < frame_history_.back().timestamp)) {
@@ -166,7 +160,7 @@ Cloud::ConstPtr cloudOf(const Keyframe& frame) {
     return frame.cloud.load();
 }
 
-/// 按代次、时间和运动门限累计源点云并记录实际时间跨度。
+/// 按代次、时间和运动范围门限累计源点云并记录实际时间跨度。
 /// 同步帧按时间、关键帧按编号选择历史前缀。
 template <class Frame>
 SourceAccumulationResult accumulate(const Frame& reference, const std::vector<Frame>& history,

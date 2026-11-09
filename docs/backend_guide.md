@@ -6,7 +6,7 @@
 - 全部参数（含离线工具）见 `src/z-localization/backend/docs/parameters.md`。
 - 仿真回归测试见 `tools/sim_tests/README.md`。
 
-内容对应 `main`（已包含单雷达支持与绑架恢复修复：严重冲突、恢复试用期、歧义检验和恢复运动门）。
+内容对应 `feat/loc-cad-map` 分支（2026-11-08）。相对 `main`：UWB 不再融合进因子图，只在 `SUSPECT`/`LOST` 局中恢复时作位置先验；开机初始化只在起点或启动提示附近 2 m 内搜索；不做全局重定位；删除了恢复运动门（第 4.2、4.5 节）。
 
 ---
 
@@ -19,7 +19,7 @@
 | 建图 `mapping` | 用关键帧建位姿图，Scan Context 检索回环，iSAM2 优化；可保存地图包 | `map → lio_odom`，`map` 原点 = 前端起点 |
 | 定位 `localization` | 加载不可变的先验地图包，周期性做 scan-to-map 配准修正漂移；丢失时重定位 | `map → lio_odom`，`map` = 先验地图坐标系 |
 
-输入只有三个话题：`/frontend/frame`（去畸变点云 + 位姿）、`/frontend/odometry`（高频预测）、`/frontend/session`（前端身份、代次、中断/失败通知）。可选 UWB 输入 `/uwb_pose`。
+主输入是三个话题：`/frontend/frame`（去畸变点云 + 位姿）、`/frontend/odometry`（高频预测）、`/frontend/session`（前端身份、代次、中断/失败通知）。`uwb.enabled` 时另订阅裁判系统 UWB：`/uwb_pose`（位置）和 `/uwb_pose/team`（己方颜色），只用于局中恢复（第 4.2 节）。
 
 主要输出：
 
@@ -103,10 +103,10 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 | `INITIALIZING` | 还没有全局位姿 | false | 不发布位姿、世界点云 |
 | `NORMAL` | 正常 | true | 正常发布 |
 | `OBS_DEGRADED` | 全局观测与预测冲突，但未达阈值 | true | 继续用里程计外推输出 |
-| `SUSPECT` | 怀疑出错，正在局部重定位 | false | 冻结在最后可信位姿；`/localization/odometry` 速度清零、协方差放大 |
-| `LOST` | 丢失，等待全局重定位 | false | 同上 |
+| `SUSPECT` | 怀疑出错，正在局部重定位 | false | 沿用最后可信 `map→lio_odom`，由里程计前推（`tf_frozen=false`）；`/localization/odometry` 保留前端速度，位姿协方差放大到至少 10 m / π。前端重置跨代次后旧 `map←odom` 不再适用，退回冻结（同 `LOST`） |
+| `LOST` | 丢失，等待重定位（需要新鲜 UWB，UWB 位置附近 2 m） | false | 冻结在最后可信位姿（`tf_frozen=true`）；`/localization/odometry` 速度清零、协方差放大 |
 
-**导航必须订阅 `localization_state`，`pose_trusted=false` 时停车或降级。** 冻结期间车如果还在动，输出位姿与真实位姿的误差会随时间增大（实测原地 0.6 rad/s 自转时每 0.2 s 增加约 8°）。
+**导航必须订阅 `localization_state`，`pose_trusted=false` 时停车或降级。** `SUSPECT` 前推的精度取决于进入 `SUSPECT` 前的全局位姿是否正确：误判无效（如 7.2）时输出仍准，绑架或错误恢复后会沿着偏掉的 `map←odom` 继续走。`LOST` 冻结期间车如果还在动，输出位姿与真实位姿的误差会随时间增大（实测原地 0.6 rad/s 自转时每 0.2 s 增加约 8°，该数据测于 SUSPECT 也冻结的旧实现）。
 
 `localization_state` 是分号分隔的 `key=value`：
 
@@ -130,7 +130,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
    ③ OBS_DEGRADED 冲突达阈值                   │             │
                                                │ 连续失败 ≥ 3│
                                                ▼             │
-   估计器失败 / 前端输入中断 ───────────────▶ LOST ──────────┘ 全局重定位成功
+   估计器失败 / 前端输入中断 ───────────────▶ LOST ──────────┘ 重定位成功
 ```
 
 | 事件 | 条件 | 结果 |
@@ -140,9 +140,8 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | 严重冲突 | 冲突且配准对应比例 ≥ `innovation.severe_min_support_ratio`（0.6），并触发校正上限或 NIS p < `severe_rejection_probability`（1e-8）。配准可靠而修正极端，典型于绑架或错误恢复 | 连续冲突中累计 `severe_conflicts_before_suspect`（2）次即进 `SUSPECT`，不必等 7 次（日志 `(severe 2/2)`） |
 | 恢复试用期内严重冲突 | 恢复提交后 `recovery.probation_observations`（5）次全局观测内 | 一次即进 `SUSPECT`（日志 `during recovery probation`） |
 | **观测模型无效** | 配准不收敛、信息矩阵无效、或 rmse 超出局部模型范围 | **一次就进 `SUSPECT`**（不计数） |
-| 速度异常 | 只在有先验地图或开启 UWB 时检查：线速度 > `tracking.suspicious_linear_speed`（10 m/s）或角速度 > `suspicious_angular_speed`（30 rad/s） | 进 `SUSPECT` |
-| UWB 位置证据冲突 | 开启 UWB 且先验配准被接受时，UWB 的 NIS p < `innovation.severe_rejection_probability`，连续 `uwb.conflicts_before_suspect`（3）次 | 进 `SUSPECT` |
-| `SUSPECT` 下重定位失败 | 连续 `recovery.suspect_failures_before_lost`（3）次（源点云帧数不够不计；源点云被连续性门拒绝算一次） | 进 `LOST` |
+| 速度异常 | 只在有先验地图时检查：线速度 > `tracking.suspicious_linear_speed`（10 m/s）或角速度 > `suspicious_angular_speed`（30 rad/s） | 进 `SUSPECT` |
+| `SUSPECT` 下重定位失败 | 连续 `recovery.suspect_failures_before_lost`（3）次（源点云帧数不够、没有新鲜 UWB、结果有歧义都不计；有历史帧但都被累积门限排除算一次） | 进 `LOST` |
 | 估计器失败 / 前端输入中断 | 例如前端报告 `reset_required` 或 `failed` | 进 `LOST` |
 | 重定位成功 | 见第 4 节 | 回 `NORMAL` |
 
@@ -156,7 +155,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.1 何时运行
 
-- 状态是 `INITIALIZING`、`SUSPECT` 或 `LOST`，且加载了先验地图时，维护周期运行恢复流程；`NORMAL`/`OBS_DEGRADED` 下不运行重定位，只做常规跟踪。没有先验地图时这条恢复流程不运行：纯里程计在收到首帧时直接进 `NORMAL`，纯 UWB 系统在收帧时尝试 UWB/里程计对齐（`localization.cpp`、`localization_recovery.cpp`）。
+- 状态是 `INITIALIZING`、`SUSPECT` 或 `LOST`，且加载了先验地图时，维护周期运行恢复流程；`NORMAL`/`OBS_DEGRADED` 下不运行重定位，只做常规跟踪。没有先验地图时这条恢复流程不运行：纯里程计在收到首帧时直接进 `NORMAL`（`localization.cpp`）。
 - 调度间隔 `recovery.period`（0.2 s），且必须有新的同步帧。
 - 源点云：累积最近 `recovery.source.min_frames`～`max_frames`（2～5）帧、时间跨度 ≤ 0.5 s、平移 ≤ 1.5 m。帧数不够时等待（日志 `waiting for recovery source`），本周期直接跳过，不计为失败。
 - `LOST` 下若 `recovery.automatic_when_lost=false`，只在手动调用 `/backend_node/relocalize` 后才尝试。
@@ -164,18 +163,29 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.2 候选来源（责任链，按优先级）
 
-1. **启动提示** `startup_hint`（只在第 0 代初始化时，需 `enabled: true`）：在给定位姿附近验证。`force_until_matched: true` 时只用它，直到成功。
-2. **UWB 位置先验**（`uwb.enabled`）：在 UWB 位置 `uwb.recovery_search_radius`（2 m）内召回最多 `recovery_candidates`（8）个关键帧。
-3. **Scan Context 描述子**：
-   - `SUSPECT`：只在最后可信位置周围 `recovery.suspect_search_radius`（30 m）内找，不做全局补充；
-   - `INITIALIZING` / `LOST`：在预测位置周围 `lost_search_radius`（35 m）内找，失败再补 `global_fallback_candidates`（5）个全局候选；
-   - 描述子距离上限：初始化 `initial_max_descriptor_distance`，恢复 `descriptor_distance_limit`（都是 0.8）。
+开机初始化（`INITIALIZING`）和局中恢复（`SUSPECT` / `LOST`）走不同的分支（`recovery_matcher.cpp`）。
 
-日志里 `recovered via Scan Context + scan-to-map` 表示第 3 条路径成功。
+**开机初始化**（不用 UWB）：
+
+1. **启动提示** `startup_hint`（只在第 0 代初始化时，需 `enabled: true`）：在给定位姿附近验证。`force_until_matched: true` 时只用它，直到成功。搜索半径用 `recovery.initial_search_radius`（2 m）。
+2. **Scan Context 描述子**：在里程计推算位置周围 `recovery.initial_search_radius`（2 m）内找。未配 `startup_hint` 时 `map ← odom` 为单位阵，推算位置就是地图原点（建图起点），所以开机位置必须在建图起点 2 m 内。`global_fallback_candidates: 0` 时附近找不到也不补全局候选，继续等待。描述子距离上限 `initial_max_descriptor_distance`（0.8）。
+
+**局中恢复**（`SUSPECT` / `LOST`，只用 UWB）：
+
+- 需要 `uwb.enabled: true`、已收到己方颜色（`/uwb_pose/team`，选用 `uwb.zero_pose_red` 或 `zero_pose_blue` 作为固定 `T_map_uwb`），且有新鲜的 `/uwb_pose`：按运动时刻（消息时间 + `uwb.time_offset_seconds`）不早于当前帧 `uwb.max_age`（1.2 s），并能在 `uwb.odom_sync_tolerance`（0.25 s）内插值到里程计。
+- 满足时，天线点换算到 map，在 `uwb.search_radius`（2 m）内召回最多 `uwb.candidates`（8）个先验关键帧，航向未知，全圈扫描。不再用描述子分支。
+- 不满足时不做重定位：结果为推迟（`waiting for fresh UWB`），不计失败，状态保持 `SUSPECT`/`LOST`。所以 `uwb.enabled: false`（真车当前配置）或没有 UWB 的场地（仿真 RMUL）上，进入 `SUSPECT` 后不会自动恢复。
+- UWB 不参与跟踪和因子图，也不用于判断定位是否正常。
+
+日志里 `recovered via Scan Context + scan-to-map` 是初始化描述子分支成功，`recovered via UWB + scan-to-map` 是局中恢复成功；附近没有先验关键帧时日志为 `no prior KFs within radius`。
+
+**为什么不做全局搜索**：RMUC/RMUL 场地中心对称，全局搜索容易锁到对称位置；UWB 给出独立的位置，对称位置（RMUC 相距约 19 m）不会成为候选。代价：开机位置须在建图起点 2 m 内（真车建议按出生点配置 `startup_hint`），局中恢复依赖 UWB。
+
+**UWB 参数**：`uwb.zero_pose_red` / `zero_pose_blue` 是裁判系统坐标系到地图包 `map` 的固定变换（x、y、yaw），与地图包绑定，换地图要重设；不再在线估计。`uwb.antenna_position_body` 为天线在 `base_link` 中的位置，按测量时刻从 TF 查外参换算杆臂。
 
 ### 4.3 航向假设
 
-每个候选关键帧先用描述子给出的 yaw 作初值；不通过时按 `recovery.yaw_sweep_count`（6，即每 60°）扫一圈。日志中 `hypothesis=descriptor_yaw+120deg` 即来自扫描。每次最多验证 `max_candidates`（15）个候选，`parallel_candidates`（16）路并行，实际并行数不超过 CPU 硬件线程数。
+描述子分支的每个候选关键帧先用描述子给出的 yaw 作初值；不通过时按 `recovery.yaw_sweep_count`（6，即每 60°）扫一圈。日志中 `hypothesis=descriptor_yaw+120deg` 即来自扫描。UWB 分支没有航向初值，直接全圈扫描。启动提示只试提示航向。每次最多验证 `max_candidates`（15）个候选，`parallel_candidates`（16）路并行，实际并行数不超过 CPU 硬件线程数。
 
 ### 4.4 几何验证
 
@@ -190,17 +200,16 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | 水平覆盖扇区 | `registration.min_coverage_sectors` | 6 / 36 |
 | 可观性 | 6 自由度满秩，协方差有效 | — |
 
-### 4.5 连续确认与运动门
+### 4.5 UWB 一致性与连续确认
 
-通过验证的位姿不会立即提交，而是先换算成 `map ← odom` 变换，满足下面全部条件才提交并回到 `NORMAL`：
+通过验证的位姿不会立即提交，满足下面两个条件才提交并回到 `NORMAL`：
 
-1. **连续一致**：连续 `recovery.confirmations`（2）个候选一致。每个新候选与**上一个**和**第一个**候选的差都不超过 `confirm_translation`（0.3 m）和 `confirm_rotation_deg`（5°），防止沿候选链逐步漂移；不一致则从头计数（日志 `recovery candidate inconsistent with previous ... vs first ...; restarting confirmation`）。
-2. **运动门**：自第一个候选起，里程计平移 ≥ `confirm_min_translation`（0.3 m）或转角 ≥ `confirm_min_rotation_deg`（30°）。车静止时，对称或相似场景的错误解会连续自洽；视野变化后错误解才会和里程计对不上。两项都设 0 关闭运动门。
-3. **停车兜底**：运动门开启但车一直不动时，一致候选累计 `confirm_stationary_max`（15）次也提交（日志带 `(stationary limit)`）；设 0 则必须移动。仿真中停车兜底有时会提交错误解。
+1. **与 UWB 一致**（只对 UWB 分支）：用恢复解推算的天线位置与 UWB 读数的水平偏差 ≤ `uwb.max_offset`（0.6 m）。超出时丢弃该候选并清空待确认候选，不计失败（日志 `recovery candidate rejected: inconsistent with UWB`）。`0` 关闭。
+2. **连续一致**：连续 `recovery.confirmations`（2）个候选一致。每个新候选与**上一个**和**第一个**候选的差都不超过 `confirm_translation`（0.3 m）和 `confirm_rotation_deg`（5°），防止沿候选链逐步漂移；不一致则从头计数（日志 `recovery candidate inconsistent with previous ... vs first ...; restarting confirmation`）。
 
-提交时日志为 `recovery candidate accepted after N consistent candidates, motion=..m/..deg`。`confirmations: 1` 且关闭运动门即恢复“首次匹配就提交”。
+提交时日志为 `recovery candidate accepted after N consistent candidates via <来源>`。`confirmations: 1` 即“首次匹配就提交”。
 
-**建议**：`SUSPECT`/`LOST` 期间让车或云台（`yaw_link`）慢转，给运动门提供视角变化。仿真用 `zt_driver.py` 的 `kidnapspin` 标志模拟。
+原来的运动门（`confirm_min_translation` / `confirm_min_rotation_deg` / `confirm_stationary_max`）已于 2026-11-08 删除：UWB 提供了独立位置，不再靠车移动来排除对称解。开机初始化不做 UWB 检查，只靠 2 m 搜索半径和连续确认。
 
 ### 4.6 歧义检验与恢复试用期
 
@@ -209,15 +218,15 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.7 失败与升级
 
-- `SUSPECT` 下没有任何候选通过（或源点云被连续性门拒绝）：失败计数 +1，达到 3 次进 `LOST`。结果有歧义时只推迟，候选通过但确认门还没满足时只记下候选，都不计失败。
-- 进入 `LOST` 时，后端会向前端发协调重置（`/zlio/reset_internal`）；之后 `LOST` 下每次全局重定位失败都会再请求一次，由挂起事务和 `reset.min_gap`（10 s）限流。
-- 重置完成后：有先验地图时状态保持 `LOST`，靠全局重定位恢复。没有先验地图时取决于里程计连续性标记（`odometry_connected_`）：前端输入中断走的 `notifyFrontendDiscontinuity` 会先把它清掉，所以无论前端做暖重置还是冷启动，后端都会 `forceLost`（开启 UWB 时改为进 `INITIALIZING` 等 UWB 对齐）。手动 `/localization_reset` 不清这个标记：暖重置边界有效时用 `old_from_new` 衔接，否则按停车假设用最后可信位姿衔接，然后进 `INITIALIZING`，下一帧回到 `NORMAL`（`reset_coordinator.cpp`）。**所以建图模式（无先验地图、无 UWB）下前端一旦输入中断，后端会一直保持 LOST。**
+- `SUSPECT` 下有新鲜 UWB 但没有任何候选通过（或有历史帧但都被累积门限排除）：失败计数 +1，达到 3 次进 `LOST`。没有新鲜 UWB、结果有歧义时只推迟；候选与 UWB 不一致、或通过但确认门还没满足时只丢弃或记下候选，都不计失败。
+- 进入 `LOST` 时，后端会向前端发协调重置（`/zlio/reset_internal`）；之后 `LOST` 下每次重定位失败（等待 UWB 不算失败）都会再请求一次，由挂起事务和 `reset.min_gap`（10 s）限流。
+- 重置完成后：有先验地图时状态保持 `LOST`，靠 UWB 引导的重定位恢复（UWB 位置附近 2 m）。没有先验地图时取决于里程计连续性标记（`odometry_connected_`）：前端输入中断走的 `notifyFrontendDiscontinuity` 会先把它清掉，所以无论前端做暖重置还是冷启动，后端都会 `forceLost`。手动 `/localization_reset` 不清这个标记：暖重置边界有效时用 `old_from_new` 衔接，否则按停车假设用最后可信位姿衔接，然后进 `INITIALIZING`，下一帧回到 `NORMAL`（`reset_coordinator.cpp`）。**所以建图模式（无先验地图）下前端一旦输入中断，后端会一直保持 LOST。**
 
 ### 4.8 手动操作
 
 | 服务 | 作用 |
 | --- | --- |
-| `/backend_node/relocalize` | 只在 `LOST` 下有效：请求在下一有效帧做一次全局重定位 |
+| `/backend_node/relocalize` | 只在 `LOST` 下有效：请求在下一有效帧做一次重定位（同样需要新鲜 UWB，只在 UWB 位置附近搜索） |
 | `/localization_reset` | 前后端协调重置；**调用期间必须停车**（无法暖重置时后端假设车静止来衔接位姿） |
 
 ---
@@ -255,7 +264,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | --- | --- |
 | `odom_frame` | 前端里程计帧；bringup 设为 `lio_odom` |
 | `sensor_frame` | 前端位姿/点云所在帧，与前端 `frames.imu` 一致（仿真 `mid360_link`，真车 `mid360_imu_link`） |
-| `body_frame` | 车体帧（`base_link`）。传感器到车体外参不在 yaml 中：按消息时间戳从 TF（URDF）查询 `sensor_frame ← body_frame`，云台 `yaw_joint` 变化被跟踪（位姿输出与 UWB 杆臂）。重新标定（`body_calibration.launch.py`）后把结果写入 URDF |
+| `body_frame` | 车体帧（`base_link`）。传感器到车体外参不在 yaml 中：按消息时间戳从 TF（URDF）查询 `sensor_frame ← body_frame`，云台 `yaw_joint` 变化被跟踪（位姿输出）。重新标定（`body_calibration.launch.py`）后把结果写入 URDF |
 | `scan_context.lidar_height` | 雷达离地高度（0.2 m），影响描述子 |
 | `descriptor_type` | `scan_context`（默认）或 `gprobe` |
 
@@ -297,19 +306,30 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 | 参数 | 默认 | 说明 |
 | --- | --- | --- |
 | `period` | 0.2 s | 尝试间隔 |
-| `suspect_search_radius` / `lost_search_radius` | 30 / 35 m | 候选搜索半径 |
-| `global_fallback_candidates` | 5 | LOST/初始化时的全局补充候选 |
-| `descriptor_distance_limit` / `initial_max_descriptor_distance` | 0.8 | 描述子门限 |
+| `initial_search_radius` | 2 m | 开机初始化（启动提示、描述子）的搜索半径（第 4.2 节） |
+| `global_fallback_candidates` | 0 | 初始化时的全局补充候选；0 不做全局重定位 |
+| `descriptor_distance_limit` / `initial_max_descriptor_distance` | 0.8 | 描述子门限（描述子只在初始化时用，实际生效的是后者） |
 | `yaw_sweep_count` | 6 | 航向扫描档数 |
 | `max_candidates` / `parallel_candidates` | 15 / 16 | 每次验证数量 |
 | `target_keyframes` / `target_radius` | 11 / 8 m | 验证用子图 |
 | `suspect_failures_before_lost` | 3 | `SUSPECT` → `LOST` |
-| `automatic_when_lost` | true | LOST 时是否自动全局重定位 |
+| `automatic_when_lost` | true | LOST 时是否自动重定位 |
 | `confirmations` / `confirm_translation` / `confirm_rotation_deg` | 2 / 0.3 m / 5° | 连续确认（第 4.5 节） |
-| `confirm_min_translation` / `confirm_min_rotation_deg` / `confirm_stationary_max` | 0.3 m / 30° / 15 | 运动门与停车兜底（第 4.5 节） |
 | `probation_observations` | 5 | 恢复试用期（第 4.6 节） |
 | `ambiguity_rmse_ratio` / `ambiguity_translation` / `ambiguity_rotation_deg` | 1.15 / 1 m / 30° | 歧义检验（第 4.6 节） |
 | `source.min_frames` / `max_frames` / `max_time` / `max_translation` | 2 / 5 / 0.5 s / 1.5 m | 源点云累积 |
+
+### 6.5a 局中恢复 UWB `uwb`
+
+| 参数 | 仿真 / 真车 | 说明 |
+| --- | --- | --- |
+| `enabled` | true / false | 是否订阅 `/uwb_pose`、`/uwb_pose/team`；关闭或没有新鲜 UWB 时 `SUSPECT`/`LOST` 不重定位、只等待 |
+| `zero_pose_red` / `zero_pose_blue` | 仿真 (23.42, 8.27, 180.15°)；真车未标定 | 裁判坐标系到 `map` 的固定变换，按己方颜色选用；与地图包绑定 |
+| `time_offset_seconds` | -0.2 / -0.15 | 运动时刻 = 消息时间 + 此值 |
+| `max_age` / `odom_sync_tolerance` | 1.2 / 0.25 s | UWB 读数的最大年龄（1 Hz 时须大于 1 s）、与里程计插值的最大时间差 |
+| `search_radius` / `candidates` | 2 m / 8 | 围绕 UWB 位置召回关键帧的半径与数量 |
+| `max_offset` | 0.6 m | 恢复解与 UWB 的最大水平偏差（第 4.5 节） |
+| `antenna_position_body` | (-0.245, 0, 0) | 天线在 `base_link` 中的位置 |
 
 ### 6.6 回环 `loop`
 
@@ -326,11 +346,9 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 | 参数 | 说明 |
 | --- | --- |
-| `uwb.*` | 默认配置里启用，bringup 已关闭。接入时配置话题、天线位置、零位 |
 | `startup_hint.*` | 已知出生点时可开启，给初始化一个位姿先验（出生点固定的比赛场景很有用） |
 | `output.world_cloud.*` | 世界点云开关、频率、不可信时是否发布 |
 | `visualization.*` | `rviz:=true` 时 launch 会自动打开 |
-| `services.*` | 服务名 |
 
 ---
 
@@ -355,11 +373,11 @@ MID-360 侧倾安装、视场不对称。建图时车头朝向不变，地图里
 
 - 原因：配准收敛判据（`registration_solver.cpp`）要求在最终对应集上再解一步的步长 ≤ `registration.convergence_translation` 且 ≤ `convergence_rotation_deg`。当时用的是上游值 5 mm / 0.1°、`max_iterations` 16，转动时这些观测跑满迭代仍未满足，被判“无效”；而“无效”一次就进 `SUSPECT`（第 3.1 节）。
 - 现状：仿真配置已放宽为 0.02 m / 0.5°、30 次迭代（见 `src/z-localization/README.md`），本文未复测；真车仍为上游值。
-- 影响：期间输出冻结，导航拿到的是停住的位姿。
+- 影响：期间 `pose_trusted=false`，按可信标记停车的导航会停下。输出位姿由里程计前推，不再停住（2026-11-09 前为冻结）。
 - 候选修法：把单次无效当作“本周期无观测”、连续 N 次才进 `SUSPECT`；或放宽/改写收敛判据。
 - 已试无效：限制累积窗口转角 `source.max_rotation_deg: 10`。
 
-### 7.3 绑架与场地 180° 中心对称（双雷达已缓解，单雷达未修）
+### 7.3 绑架与场地 180° 中心对称（2026-11-08 起改为 UWB 引导的局部搜索，见本节末）
 
 RMUL 场地红蓝两半绕中心旋转 180° 相同，另有局部几何相似的关键帧。仿真绑架（`set_pose` 瞬移）排查出三处根因：
 
@@ -367,7 +385,7 @@ RMUL 场地红蓝两半绕中心旋转 180° 相同，另有局部几何相似�
 | --- | --- | --- |
 | 瞬移后约 4 s 才进 `SUSPECT`，期间报可信 | 冲突再严重也要连续 7 次 | 严重冲突累计 2 次即升级（第 3.1 节） |
 | 恢复后仍偏几米却报可信（双雷达约 3.7 m） | 修正上限挡掉后续正确修正 | 恢复试用期（第 4.6 节） |
-| 恢复锁到对称位姿或相似关键帧 | 只要求相邻候选一致，车不动时错误解也能连续一致 | 运动门（第 4.5 节），歧义检验只部分有效 |
+| 恢复锁到对称位姿或相似关键帧 | 只要求相邻候选一致，车不动时错误解也能连续一致 | 当时加了运动门（已删除）；现在用 UWB 先验与一致性检查（第 4.2、4.5 节），歧义检验只部分有效 |
 
 仿真结果（2026-11-02，`fabbcc5`，`kidnapspin`，各 5 场，详见 `tools/sim_tests/README.md`）：
 
@@ -377,7 +395,9 @@ RMUL 场地红蓝两半绕中心旋转 180° 相同，另有局部几何相似�
 
 试过但撤回：最佳候选补验航向翻转 180° 的解（单雷达略有改善，双雷达恢复后误差退回 4–7 m）；`confirmations` 改为 3（无改善）。
 
-待做：单雷达需要更强的区分手段，例如并行保留多个假设、随车移动淘汰，或把运动门转角提高到 ≥ 90°；单雷达配置可考虑 `confirm_stationary_max: 0`。也可以用 UWB / `startup_hint` 提供区分信息。
+当时的待做（单雷达需要更强的区分手段）现在由 UWB 位置先验承担。
+
+**2026-11-08 更新**：上面是远距离绑架（5–7 m）加全局搜索、运动门时的数据。现在局中恢复只在 UWB 位置 2 m 内搜索、不做全局重定位（第 4.2 节），对称位置（RMUC 相距约 19 m）不会成为候选；仿真绑架也改为离跑圈终点 1.5 m、航向 45°（`zt_driver.py`）。没有 UWB 时（RMUL、真车当前配置）保持 `SUSPECT`/`LOST`。这套实现尚未跑仿真回归。
 
 ### 7.4 其他注意事项
 
@@ -404,7 +424,9 @@ ros2 run tf2_ros tf2_echo map base_link
 | `observation model invalid` | 单次配准无效 → `SUSPECT` | `rmse`、`ratio`、`weak=`；转动时频发属 7.2 |
 | `correction conflict k/7` | 观测与预测冲突 | NIS、校正量；外参、地图是否过期 |
 | `recovery candidate inconsistent` | 连续确认未通过 | 偏差是否约 90°/180°（地图覆盖、对称） |
-| `local recovery failed k/3 in SUSPECT` | 局部重定位失败 | 是否在地图覆盖范围内 |
+| `local recovery failed k/3 in SUSPECT` | 局部重定位失败 | 是否在地图覆盖范围内、`uwb.zero_pose_*` 是否与地图包匹配 |
+| `waiting for fresh UWB` | 局中恢复在等 UWB | `/uwb_pose` 有无数据、`/uwb_pose/team` 是否已发、`uwb.max_age` |
+| `inconsistent with UWB` | 恢复解与 UWB 不一致被丢弃 | `offset` 大小；`zero_pose`、天线位置、`time_offset_seconds` |
 | `front-end input discontinuity` | 前端输入中断 → `LOST` | IMU/雷达是否断流、是否有重复节点 |
 | `loop scan-to-map accepted` | 回环接受（建图） | `delta_t` 是否异常大 |
 | `Prior map does not exist` | 启动报错 | `map_dir` / `prior_map` 路径 |

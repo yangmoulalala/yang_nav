@@ -275,26 +275,11 @@ void reportTracking(const GlobalObservationWork& work, const PriorMapObservation
 
     if (prior_observation.evidence.configured)
         reportPriorTracking(work, prior_observation, commit, config, measurement_elapsed_ms);
-    if (work.uwb) {
-        if (commit.uwb_accepted) {
-            BACKEND_INFO_STREAM("UWB factor accepted in system transaction: runtime="
-                                << work.runtime.index << ", NIS=" << commit.uwb_innovation.nis
-                                << "/" << commit.uwb_innovation.degrees_of_freedom
-                                << ", p=" << commit.uwb_innovation.upper_tail_probability);
-        } else if (commit.uwb_innovation.valid) {
-            BACKEND_WARN_STREAM("UWB factor conflicted in system transaction: runtime="
-                                << work.runtime.index << ", NIS=" << commit.uwb_innovation.nis
-                                << "/" << commit.uwb_innovation.degrees_of_freedom
-                                << ", p=" << commit.uwb_innovation.upper_tail_probability);
-        }
-    }
-    if (commit.prior_accepted || commit.uwb_accepted) {
+    if (commit.prior_accepted) {
         BACKEND_INFO_STREAM(
             "global correction committed: runtime="
             << work.runtime.index
-            << ", sources=" << (commit.prior_accepted ? "prior_scan_to_map" : "")
-            << (commit.prior_accepted && commit.uwb_accepted ? "+" : "")
-            << (commit.uwb_accepted ? "uwb" : "")
+            << ", sources=prior_scan_to_map"
             << (commit.joint_innovation.valid
                     ? ", joint_NIS=" + std::to_string(commit.joint_innovation.nis) + "/" +
                           std::to_string(commit.joint_innovation.degrees_of_freedom)
