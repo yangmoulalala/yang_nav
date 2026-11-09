@@ -35,7 +35,7 @@ from terrain_map import (DIRECTIONAL, FIRST_DIRECTIONAL, LABEL_COUNT, LABELS, OB
                          TerrainMap, decode_angle, is_directional)
 
 COLORS = {0: (76, 175, 80), 1: (244, 67, 54), 2: (255, 152, 0), 3: (255, 235, 59), 4: (156, 39, 176),
-          5: (0, 188, 212), 6: (0, 242, 255), 7: (63, 81, 181)}
+          5: (0, 188, 212), 6: (0, 242, 255), 7: (63, 81, 181), 8: (233, 30, 99)}
 
 
 def validate_inflation(full, cutoff, decay, cap=None):
