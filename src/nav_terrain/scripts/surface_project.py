@@ -11,8 +11,9 @@ Nothing is guessed: a new patch is not annotated.  Re-running the segmentation h
 patch the annotation of the old patch it overlaps most (> half of its cells); the extent edits are
 replaced by the new segmentation.
 
-A prior-cloud project (frame 'map') can be registered onto a field-model project (frame 'field')
-and take over its annotations: p_field = R p_map + t.
+A prior-cloud project (frame 'map') can be registered onto a field-model project (frame 'field'),
+p_field = R p_map + t, and then adopt the model's patches and annotations: a sparse cloud splits one
+surface into many fragments, the model's patches are exact.  The cloud keeps its own heights.
 
 Export: terrain = annotated type; not passable, no data and not annotated -> OBSTACLE (everything is
 an obstacle until the operator opens it up; not annotated cells are counted in the report), then terrain_export (Nav2 maps, direction field, zones).
@@ -467,45 +468,36 @@ class Project:
         out[ok] = field_proj.owner[fr[ok], fc[ok]]
         return out
 
-    def transfer_from(self, field_proj, overwrite=False, min_share=0.5, log=print):
-        """Annotations of the field project -> patches of this project, by majority of covered cells.
+    def adopt_from(self, field_proj, log=print):
+        """Replace this project's patches by the field model's (same ids) and copy its annotations.
 
-        The extent is not copied: the cloud patches keep their own outline; use the overlay and the
-        brush where the cloud segmentation differs from the model."""
+        Every cloud cell takes the model patch under its centre; cells outside the model or without
+        cloud data get no patch (obstacle on export).  Directions are rotated into the map frame; a
+        multi-direction slope on its geometric direction stays per face.  Like a re-segmentation this
+        resets the undo history and the 'restore' extent (now the model patches)."""
         if self.reg is None:
             raise ValueError('register first')
+        before = len(self.ids())
         look = self.field_lookup(field_proj)
+        look[~np.isfinite(self.surf.z)] = 0
+        self.owner = look.astype(np.int32)
+        self.seg = self.owner.copy()
+        self.refresh()
         yaw = math.degrees(matrix_rpy(reg_matrix(self.reg)[0])[2])
-        keys = {}
+        present = set(int(v) for v in np.unique(self.owner))
+        ann = {}
         for fp, a in field_proj.ann.items():
-            keys[fp] = (a['type'], bool(a['passable']))
-        self.begin()
-        done = 0
-        for pid in self.ids():
-            if not overwrite and pid in self.ann:
+            if fp not in present:
                 continue
-            under = look[self.owner == pid]
-            under = under[under > 0]
-            if not under.size:
-                continue
-            u, cnt = np.unique(under, return_counts=True)
-            votes = {}
-            for fp, c in zip(u, cnt):
-                k = keys.get(int(fp), (UNSET, True))
-                votes.setdefault(k, [0, int(fp)])[0] += int(c)
-            (typ, passable), (c, fp) = max(votes.items(), key=lambda kv: kv[1][0])
-            if typ == UNSET or c < min_share * (self.owner == pid).sum():
-                continue
-            rev = False
-            if typ in DIRECTIONAL and field_proj.is_local(fp):
-                d, rev = None, bool(field_proj.a(fp).get('rev'))   # multi-direction slope: per face here too
-            else:
-                d = (field_proj.direction(fp) - yaw) % 360.0 if typ in DIRECTIONAL else None
-            self.ann[pid] = {'type': typ, 'passable': passable, 'dir': d, 'rev': rev}
-            done += 1
-        self.commit()
-        log('%d 个面片继承了场地标注' % done)
-        return done
+            b = dict(a)
+            if a['type'] in DIRECTIONAL and not field_proj.is_local(fp):
+                b['dir'], b['rev'] = (field_proj.direction(fp) - yaw) % 360.0, False
+            ann[fp] = b
+        self.ann = ann
+        self.undo_stack, self.redo_stack = [], []
+        log('采用模型面片：%d 个点云面片 -> %d 个模型面片，%d 个标注（模型共 %d 个）'
+            % (before, len(self.ids()), len(ann), len(field_proj.ann)))
+        return len(ann)
 
     # ------------------------------------------------------------------ output
     def label_grids(self):

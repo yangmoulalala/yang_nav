@@ -140,8 +140,10 @@ def test_cloud_registration_transfer():
     c.register_to(f, [0.45, -0.15, 0.0], math.degrees(yaw) + 2.0, log=lambda *_: None)
     Rr, tr = sp.reg_matrix(c.reg)
     assert np.allclose(tr[:2], t[:2], atol=0.03) and abs(math.atan2(Rr[1, 0], Rr[0, 0]) - yaw) < math.radians(0.5)
-    assert c.transfer_from(f, log=lambda *_: None) >= 2
+    assert c.adopt_from(f, log=lambda *_: None) == 2
     pm = R.T @ (np.array([1.5, 1.0, 0.0]) - t)
+    assert pid_at(c, pm[0], pm[1]) == ramp                    # model patch, not a cloud fragment
+    assert set(c.ids()) <= set(f.ids())
     a = c.a(pid_at(c, pm[0], pm[1]))
     assert a['type'] == SLOPE and abs(a['dir'] - (90 - math.degrees(yaw))) < 2
     pm = R.T @ (np.array([0.5, 3.5, 0.0]) - t)
