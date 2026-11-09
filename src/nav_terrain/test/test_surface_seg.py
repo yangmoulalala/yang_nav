@@ -140,7 +140,10 @@ def test_cloud_registration_transfer():
     c.register_to(f, [0.45, -0.15, 0.0], math.degrees(yaw) + 2.0, log=lambda *_: None)
     Rr, tr = sp.reg_matrix(c.reg)
     assert np.allclose(tr[:2], t[:2], atol=0.03) and abs(math.atan2(Rr[1, 0], Rr[0, 0]) - yaw) < math.radians(0.5)
+    hole = c.surf.cell_of(*(R.T @ (np.array([1.5, 0.8, 0.0]) - t))[:2])
+    c.surf.z[hole[1] - 2:hole[1] + 3, hole[0] - 2:hole[0] + 3] = np.nan     # scan shadow on the ramp
     assert c.adopt_from(f, log=lambda *_: None) == 2
+    assert c.patch_at(*hole) == ramp and np.isfinite(c.surf.z[hole[1], hole[0]])
     pm = R.T @ (np.array([1.5, 1.0, 0.0]) - t)
     assert pid_at(c, pm[0], pm[1]) == ramp                    # model patch, not a cloud fragment
     assert set(c.ids()) <= set(f.ids())
@@ -240,6 +243,12 @@ def test_studio_gui(tmp_path, monkeypatch):
     p = s.p
     ramp, top = pid_at(p, 1.5, 1.0), pid_at(p, 1.5, 2.0)
     s.click_cell(p.surf.cell_of(1.5, 1.0), Qt_mod(st))
+    if s.sel == [ramp]:
+        s.set_type(SLOPE)
+        s.dir_spin.setValue(30.0)                  # arrows / wheel apply without Enter
+        assert abs(p.direction(ramp) - 30.0) < 0.05
+        s.set_dir(None)
+        s.set_type(sp.UNSET)
     assert s.sel == [ramp]
     s.set_type(SLOPE)
     assert p.a(ramp)['type'] == SLOPE and 'Slope' not in s.info.text()

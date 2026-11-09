@@ -378,7 +378,10 @@ if W is not None:
             self.dir_spin.setToolTip('坡道：上坡方向；台阶：由低到高；隧道 / 起伏：通行方向。0° = +x，逆时针。\n'
                                      '多向坡（如堡垒六边形坡）保持“用几何方向”即按各坡面分别给方向，R 整体反向；'
                                      '输入角度则整块统一成一个方向')
-            self.dir_spin.editingFinished.connect(lambda: self.set_dir(self.dir_spin.value()))
+            # arrows / wheel / Enter all apply at once (editingFinished alone needs Enter or a focus change,
+            # and the canvas never takes focus); typing applies on Enter
+            self.dir_spin.setKeyboardTracking(False)
+            self.dir_spin.valueChanged.connect(self._dir_edited)
             g.addWidget(self.dir_spin, 2, 1)
             row = W.QHBoxLayout()
             b = W.QPushButton('反向  R')
@@ -895,6 +898,13 @@ if W is not None:
             kw = {'dir': None, 'rev': False} if deg is None else {'dir': float(deg) % 360.0}
             if self._need_sel() and self.p.set_ann(self.sel, **kw):
                 self._changed('方向 → %s' % ('几何方向' if deg is None else '%.1f°' % deg))
+
+        def _dir_edited(self, deg):
+            if self._updating or self.p is None or not self.sel:
+                return
+            if all(abs((self.p.direction(s) - deg + 180.0) % 360.0 - 180.0) < 0.05 for s in self.sel):
+                return
+            self.set_dir(deg)
 
         def flip_dir(self):
             if self._need_sel() and self.p.flip_dir(self.sel):
