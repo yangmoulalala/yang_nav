@@ -66,6 +66,21 @@
 - `dual_localization`：行驶中自报可信最大偏 0.69 m（0.2 s）。`rmuc_dual_localization` 正常（最大 0.18 m）。
 - 属定位端问题（主要是单雷达），尚未分析日志；与导航无关。
 
+## L8 没有 UWB 时 SUSPECT 永不恢复（2026-11-09 全量回归 `/tmp/zt_all3`，`c0872b6`）
+
+- 配置：局中恢复（SUSPECT/LOST）只用 UWB 位置先验；RMUL 不模拟 UWB，真车 `uwb.enabled: false`。
+- `single_localization`（RMUL 单雷达）：开机约 4 s 由 Scan Context 恢复，3 s 后一次 `observation model invalid`（rmse 0.026 m、ratio 0.67，匹配本身是好的，同 backend_guide 7.2）进 SUSPECT，之后整场停在 SUSPECT：跑圈、绑架、绑架后全部不可信。
+- `dual_localization`（RMUL 双雷达）：跑圈正常（RMSE 3.4 cm），绑架后进 SUSPECT 不再恢复（预期内）。
+- 影响：没有 UWB 的地方，任何一次误进 SUSPECT 都变成永久不可信，导航一直停车。旧实现会在最后可信位置 2 m 内用描述子恢复。
+- 待定：没有 UWB 时的兜底（需改代码）。
+
+## L9 UWB 恢复后反复 SUSPECT ↔ NORMAL（2026-11-09 RMUC 回归 `/tmp/zt_all3/rmuc_*_localization`）
+
+- UWB 恢复本身有效：绑架（1.5 m / 45°）后单、双雷达都在进 SUSPECT 后约 0.4 s 由 `UWB + scan-to-map` 恢复，恢复后误差 5.5 / 4.5 cm；未出现 `waiting for fresh UWB`、`inconsistent with UWB`；`uwb_sim` 对真值 RMSE 约 0.15 m。
+- 绑架瞬间到进 SUSPECT 之间 `FALSE TRUST` 2.4 / 2.6 s（最大 1.58 / 1.57 m），即严重冲突累计 2 次所需时间。
+- 绑架后行驶中两种雷达都又进 SUSPECT 3 次（严重冲突、试用期内冲突），每次 0.4–0.6 s 内由 UWB 恢复，恢复修正多为 0.23–0.46 m / 1.5–5.3°。行驶段可信样本最大误差：单雷达 0.42 m，双雷达 0.17 m。
+- 怀疑：UWB 引导的恢复解可在 `uwb.max_offset`（0.6 m）内偏几十厘米，随后跟踪的正确修正被判冲突，触发试用期升级；尚未分析日志确认。
+
 ## 对导航测试的影响
 
 M0 平地验收的失败中，由定位引起的：`nav_m0_pass` 目标 3、4（L1），`nav_m0_norviz`、`nav_optfail3` 全部（L5）。
