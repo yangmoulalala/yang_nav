@@ -214,7 +214,7 @@ def export(m, out, cfg):
                       'decay_rate': cfg.decay_rate, 'non_body_cap': cfg.non_body_cap,
                       'max_band_cost': cfg.max_band_cost, 'terrain_cost': cfg.terrain_cost},
         'speed_limits': cfg.speed_limits, 'direction_overlap_cells': overlap,
-        # world <- map from mesh_to_terrain (tools/nav_regress/goal.py converts world goals with it)
+        # map -> field registration from surface_studio (tools/nav_regress/goal.py converts world goals with it)
         'registration': m.extra.get('registration'),
     }
     (out / 'terrain.json').write_text(json.dumps(meta, indent=2))

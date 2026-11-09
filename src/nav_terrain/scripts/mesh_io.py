@@ -7,7 +7,7 @@ Formats  .stl          binary or ascii
                        cached under $XDG_CACHE_HOME/nav_terrain keyed by path, size, mtime, deflection
 STEP coordinates are millimetres: p = (p_step_mm - offset_mm) / 1000.  RMUC2027_V1.0.0.step has the
 field centre at offset_mm = (0, 1624.3, -1941): floor at z = 0 like field_collision.stl.
-Triangle winding follows the outward face normal (reversed faces are flipped); mesh_to_terrain relies
+Triangle winding follows the outward face normal (reversed faces are flipped); surface_seg relies
 on it to tell floors (up-facing) from ceilings.
 """
 import hashlib
