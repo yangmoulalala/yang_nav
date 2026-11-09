@@ -525,7 +525,7 @@ if W is not None:
             w = W.QWidget()
             v = W.QVBoxLayout(w)
             note = W.QLabel('点云工程可以配准到官方场地模型：先打开模型并标注，再打开点云（模型自动作为参考），'
-                            '配准后把模型上的标注搬到点云面片上，再人工修正。')
+                            '配准后点云改用模型的面片和标注（点云自己的分割被替换），再人工修正。')
             note.setWordWrap(True)
             v.addWidget(note)
             self.ref_label = W.QLabel('参考场地：无')
@@ -549,9 +549,7 @@ if W is not None:
             self.reg_label = W.QLabel('未配准')
             self.reg_label.setWordWrap(True)
             v.addWidget(self.reg_label)
-            self.overwrite = W.QCheckBox('覆盖点云上已有的标注')
-            v.addWidget(self.overwrite)
-            b = W.QPushButton('搬运场地标注到点云')
+            b = W.QPushButton('采用模型面片和标注')
             b.clicked.connect(self.transfer)
             v.addWidget(b)
             v.addStretch(1)
@@ -1051,8 +1049,11 @@ if W is not None:
             if self.p is None or self.p.reg is None or self.ref is None:
                 self.warn('先载入参考场地并完成配准')
                 return
-            n = self.p.transfer_from(self.ref, overwrite=self.overwrite.isChecked(), log=self.log)
-            self._changed('搬运完成：%d 个面片' % n)
+            if self.p.ann and W.QMessageBox.question(self, '采用模型面片', '点云上的面片和标注会被模型的替换（不能撤销），继续？') != W.QMessageBox.Yes:
+                return
+            n = self.p.adopt_from(self.ref, log=self.log)
+            self.sel = []
+            self._changed('已采用模型面片：%d 个标注' % n)
 
         # -------------------------------------------------------------- panel
         def update_panel(self):
