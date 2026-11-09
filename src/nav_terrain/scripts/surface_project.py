@@ -449,8 +449,9 @@ class Project:
                self.reg['residual_p50'], self.reg['residual_p90'], 100 * self.reg['inlier_ratio_8cm']))
         return self.reg
 
-    def field_lookup(self, field_proj):
-        """Field patch id under the centre of every cell of this (map-frame) project."""
+    def field_lookup(self, field_proj, grid=None):
+        """Field patch id (or a value of another field grid) under the centre of every cell of this
+        (map-frame) project; 0 / NaN outside the field grid."""
         R, t = reg_matrix(self.reg)
         h, w = self.shape
         rr, cc = np.mgrid[0:h, 0:w]
@@ -464,21 +465,32 @@ class Project:
         fr = np.floor((fy - fs.origin[1]) / fs.resolution).astype(np.int64)
         fh, fw = field_proj.shape
         ok = (fc >= 0) & (fc < fw) & (fr >= 0) & (fr < fh)
-        out = np.zeros((h, w), np.int64)
-        out[ok] = field_proj.owner[fr[ok], fc[ok]]
+        src = field_proj.owner if grid is None else grid
+        out = np.zeros((h, w), np.int64) if grid is None else np.full((h, w), np.nan)
+        out[ok] = src[fr[ok], fc[ok]]
         return out
 
     def adopt_from(self, field_proj, log=print):
         """Replace this project's patches by the field model's (same ids) and copy its annotations.
 
-        Every cloud cell takes the model patch under its centre; cells outside the model or without
-        cloud data get no patch (obstacle on export).  Directions are rotated into the map frame; a
+        Every cloud cell takes the model patch under its centre.  Cells of a model patch without cloud
+        data (tunnel floors under the roof, scan shadows) take the model height, so the patch stays
+        whole; cells outside the model get no patch (obstacle on export).  Directions are rotated into the map frame; a
         multi-direction slope on its geometric direction stays per face.  Like a re-segmentation this
         resets the undo history and the 'restore' extent (now the model patches)."""
         if self.reg is None:
             raise ValueError('register first')
         before = len(self.ids())
         look = self.field_lookup(field_proj)
+        hole = (look > 0) & ~np.isfinite(self.surf.z)
+        if hole.any():
+            fz = self.field_lookup(field_proj, field_proj.surf.z)
+            R, t = reg_matrix(self.reg)
+            z = self.surf.z.copy()
+            z[hole] = (fz[hole] - t[2]) / max(R[2, 2], 1e-6)     # field height back into the map frame
+            self.surf.z = z.astype(self.surf.z.dtype)
+            self.grad = ss.cell_gradient(self.surf, self.params)
+            log('%d 个格子点云无数据，用模型高程补齐' % int(hole.sum()))
         look[~np.isfinite(self.surf.z)] = 0
         self.owner = look.astype(np.int32)
         self.seg = self.owner.copy()
