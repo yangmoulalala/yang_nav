@@ -8,7 +8,7 @@
 WS=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${OUT:-/tmp/nav_run}; MAP=${MAP:-$WS/maps/sim}; GUI=${GUI:-false}
 # TERRAIN: nav_terrain package (terrain_export.py output) used as terrain_dir and for goal registration
-TERRAIN=${TERRAIN:-$MAP/terrain}
+TERRAIN=${TERRAIN:-$MAP}
 mkdir -p "$OUT"; rm -f "$OUT"/*.log
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=${MESA_D3D12_DEFAULT_ADAPTER_NAME:-NVIDIA}
 # RVIZ=true opens the navigation RViz (WSLg); HOLD=S keeps everything running S seconds after the goals

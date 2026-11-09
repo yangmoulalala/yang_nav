@@ -3,7 +3,7 @@
     ros2 launch sentry_gazebo sim.launch.py arena:=rmuc uwb:=true
     ros2 launch bringup sim.launch.py lidar:=dual mode:=localization \
          prior_map:=$HOME/yang_nav/maps/sim
-    ros2 launch nav_bringup navigation.launch.py terrain_dir:=$HOME/yang_nav/maps/sim/nav
+    ros2 launch nav_bringup navigation.launch.py terrain_dir:=$HOME/yang_nav/maps/sim
 
 M0 nodes:
     odom_adapter      /odometry (imu)  -> /nav_odom (base_link)
@@ -79,7 +79,7 @@ def build(context):
 def generate_launch_description():
     home = os.path.expanduser('~')
     return LaunchDescription([
-        DeclareLaunchArgument('terrain_dir', default_value=os.path.join(home, 'yang_nav/maps/sim/nav'),
+        DeclareLaunchArgument('terrain_dir', default_value=os.path.join(home, 'yang_nav/maps/sim'),
                               description='offline terrain package for the prior map in use'),
         DeclareLaunchArgument('params_file', default_value='', description='Nav2 parameters'),
         DeclareLaunchArgument('use_sim_time', default_value='true'),

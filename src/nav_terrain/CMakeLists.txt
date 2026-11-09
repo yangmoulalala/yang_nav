@@ -7,6 +7,7 @@ find_package(ament_cmake REQUIRED)
 install(PROGRAMS
           scripts/terrain_map.py
           scripts/terrain_export.py
+          scripts/tunnel_zones.py
           scripts/mesh_io.py
           scripts/surface_seg.py
           scripts/surface_project.py

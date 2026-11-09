@@ -43,7 +43,7 @@ def main():
     ap.add_argument('yaw', type=float, nargs='?', default=0.0)
     ap.add_argument('--frame', choices=['world', 'map'], default='world')
     ap.add_argument('--timeout', type=float, default=180.0)
-    ap.add_argument('--nav-dir', default=os.path.expanduser('~/yang_nav/maps/sim-rmuc-dual/nav'))
+    ap.add_argument('--nav-dir', default=os.path.expanduser('~/yang_nav/maps/sim'))
     args = ap.parse_args()
     reg = json.load(open(os.path.join(args.nav_dir, 'terrain.json')))['registration']
     yaw = math.radians(args.yaw)
