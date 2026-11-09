@@ -25,13 +25,19 @@ start tf.log ros2 run tf2_ros static_transform_publisher --frame-id map --child-
 start map.log ros2 run nav2_map_server map_server --ros-args -r __node:=nav_map_server --params-file "$PARAMS" \
   -p yaml_filename:="$TERRAIN/nav_map.yaml" -p use_sim_time:=false
 start planner.log ros2 run nav2_planner planner_server --ros-args --params-file "$PARAMS" -p use_sim_time:=false
+NODES="'nav_map_server','planner_server'"
+if [ -n "${SMOOTHER:-}" ]; then   # SMOOTHER=zone_shaper: also run smoother_server and shape every plan
+  start smoother.log ros2 run nav2_smoother smoother_server --ros-args --params-file "$PARAMS" -p use_sim_time:=false \
+    -p zone_shaper.zones_file:="$TERRAIN/zones.yaml"
+  NODES="$NODES,'smoother_server'"
+fi
 start lm.log ros2 run nav2_lifecycle_manager lifecycle_manager --ros-args -r __node:=lm_plan -p autostart:=true \
-  -p node_names:="['nav_map_server','planner_server']" -p bond_timeout:=0.0
+  -p node_names:="[$NODES]" -p bond_timeout:=0.0
 for i in $(seq 1 40); do grep -q 'Managed nodes are active' "$OUT/lm.log" && break; sleep 0.5; done
 if ! grep -q 'Managed nodes are active' "$OUT/lm.log"; then
   echo 'planner did not come up'; tail -n 20 "$OUT/lm.log" "$OUT/planner.log"; exit 2
 fi
 sleep 3   # global costmap: first static map + inflation
-python3 "$WS/tools/nav_regress/plan_tunnels.py" --terrain-dir "$TERRAIN" "${@:2}"
+python3 "$WS/tools/nav_regress/plan_tunnels.py" --terrain-dir "$TERRAIN" ${SMOOTHER:+--smoother "$SMOOTHER"} "${@:2}"
 rc=$?
 exit $rc

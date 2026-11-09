@@ -209,12 +209,29 @@ planner_server:
 
 smoother_server:
   ros__parameters:
-    smoother_plugins: [simple_smoother]
+    smoother_plugins: [simple_smoother, zone_shaper]
     simple_smoother:
       plugin: nav2_smoother::SimpleSmoother
       tolerance: 1.0e-10
       max_its: 1000
       do_refinement: true
+    zone_shaper:
+      # M3b: tunnel stretches -> lead-in / zone axis / lead-out with headings (nav_behaviors)
+      plugin: nav_behaviors::ZonePathShaper
+      zones_file: ""        # set by navigation.launch.py: <terrain_dir>/zones.yaml
+      min_cells: 50          # smaller tunnel zones are label fragments
+      axis_margin: 0.5       # straight axis beyond each mouth, m
+      lead_length: 1.5       # planner path replaced by each lead curve, m (turn spread over it)
+      lead_growth: 1.5
+      max_retries: 2
+      spacing: 0.025
+      max_body_offset: 0.03  # lateral shift allowed inside the tunnel (opening 0.8 m, robot 0.62 m padded)
+      max_side_offset: 0.06  # lateral shift at the outer end of each 0.5 m margin (one-sided wall bumps)
+      offset_step: 0.01
+      tangent_window: 0.25   # Smac tangent averaged over +- this arc length
+      footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
+      footprint_padding: 0.01
+      collision_tolerance: 0.04   # shaper ignores wall contact up to 4 cm; MPPI handles the rest
 
 behavior_server:
   ros__parameters:

@@ -1,7 +1,7 @@
 <!--
   M0 behaviour tree: plan once, replan only when the path becomes invalid (replanning at a
   fixed rate flip-flops between symmetric routes on the RMUC field), simple recoveries.
-  M3/M4 replace this with the zone-aware tree (PassTunnel / ClimbRamp).
+  M3b: every new path goes through the zone_shaper smoother (tunnel lead-in / axis / lead-out).
 -->
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
@@ -21,7 +21,10 @@
                 </Inverter>
                 <IsPathValid path="{path}"/>
               </ReactiveSequence>
-              <ComputePathToPose goal="{goal}" path="{path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+              <Sequence name="PlanAndShape">
+                <ComputePathToPose goal="{goal}" path="{path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+                <SmoothPath unsmoothed_path="{path}" smoothed_path="{path}" smoother_id="zone_shaper" check_for_collisions="false" error_code_id="{smoother_error_code}"/>
+              </Sequence>
             </Fallback>
             <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
           </RecoveryNode>

@@ -17,7 +17,7 @@ collision_monitor is added in M2, when terrain_node provides ground-free obstacl
 terrain_dir is a nav_terrain package, written by surface_studio (src/nav_terrain/terrain_studio.md):
     surface_studio.py <field model | prior map>   annotate patches, 导出 Nav2 -> terrain_dir
     terrain_export.py <terrain_dir>/terrain.msgpack --out <terrain_dir>   (re-export with other parameters)
-Only nav_map.yaml is read here.  Live obstacles (terrain_node) arrive in M2.
+nav_map.yaml feeds the costmaps, zones.yaml the tunnel path shaper (nav_behaviors).  Live obstacles (terrain_node) arrive in M2.
 """
 import os
 from pathlib import Path
@@ -54,7 +54,8 @@ def build(context):
         nav2('nav2_map_server', 'map_server', 'nav_map_server',
              extra={'yaml_filename': str(terrain_dir / 'nav_map.yaml')}),
         nav2('nav2_controller', 'controller_server', remap=[('cmd_vel', 'cmd_vel_nav')]),
-        nav2('nav2_smoother', 'smoother_server'),
+        nav2('nav2_smoother', 'smoother_server', extra={
+            'zone_shaper.zones_file': str(terrain_dir / 'zones.yaml')}),
         nav2('nav2_planner', 'planner_server'),
         nav2('nav2_behaviors', 'behavior_server', remap=[('cmd_vel', 'cmd_vel_nav')]),
         nav2('nav2_velocity_smoother', 'velocity_smoother', remap=[('cmd_vel', 'cmd_vel_nav')]),

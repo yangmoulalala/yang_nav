@@ -1,0 +1,5 @@
+<library path="zone_path_shaper">
+  <class type="nav_behaviors::ZonePathShaper" base_class_type="nav2_core::Smoother">
+    <description>Replaces the stretch of a path through a tunnel zone with lead-in, zone axis and lead-out</description>
+  </class>
+</library>
