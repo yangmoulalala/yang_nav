@@ -8,11 +8,50 @@ import pytest
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / 'scripts'))
-sys.path.insert(0, str(HERE))
 import surface_project as sp  # noqa: E402
 import surface_seg as ss  # noqa: E402
 from terrain_map import OBSTACLE, SLOPE, TUNNEL, UNDULATION, FLAT, TerrainMap, decode_angle, encode_angle  # noqa: E402
-from test_mesh_to_terrain import field, quad  # noqa: E402
+
+
+def quad(p0, p1, p2, p3):
+    """Two triangles, counter-clockwise seen from the side the normal points to."""
+    return [[p0, p1, p2], [p0, p2, p3]]
+
+
+def box(x0, x1, y0, y1, z0, z1):
+    """Closed box with outward normals."""
+    t = []
+    t += quad((x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1))     # top, up
+    t += quad((x0, y0, z0), (x0, y1, z0), (x1, y1, z0), (x1, y0, z0))     # bottom, down
+    t += quad((x0, y0, z0), (x1, y0, z0), (x1, y0, z1), (x0, y0, z1))
+    t += quad((x1, y1, z0), (x0, y1, z0), (x0, y1, z1), (x1, y1, z1))
+    t += quad((x0, y1, z0), (x0, y0, z0), (x0, y0, z1), (x0, y1, z1))
+    t += quad((x1, y0, z0), (x1, y1, z0), (x1, y1, z1), (x1, y0, z1))
+    return t
+
+
+def field():
+    """6 x 4 m floor; tunnel along x at x 3.5..4.5, y 2.6..3.4 (roof 0.30); ramp up along +y."""
+    t = []
+    t += quad((0, 0, 0), (6, 0, 0), (6, 4, 0), (0, 4, 0))
+    t += box(3.5, 4.5, 2.0, 2.6, 0, 0.6)          # tunnel walls
+    t += box(3.5, 4.5, 3.4, 4.0, 0, 0.6)
+    t += box(3.5, 4.5, 2.6, 3.4, 0.30, 0.6)       # roof
+    # ramp 1.0 m wide, rises 0.20 m over 1.0 m along +y (11.3 deg), then a plateau
+    t += quad((1.0, 0.5, 0.0), (2.0, 0.5, 0.0), (2.0, 1.5, 0.2), (1.0, 1.5, 0.2))
+    t += quad((1.0, 1.5, 0.2), (2.0, 1.5, 0.2), (2.0, 2.5, 0.2), (1.0, 2.5, 0.2))
+    return np.array(t, float)
+
+
+def sample_mesh(tri, n, rng):
+    """n points uniformly on the mesh surface (synthetic prior cloud)."""
+    a, b, c = tri[:, 0], tri[:, 1], tri[:, 2]
+    area = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
+    idx = rng.choice(len(tri), n, p=area / area.sum())
+    u, v = rng.random(n), rng.random(n)
+    flip = u + v > 1
+    u[flip], v[flip] = 1 - u[flip], 1 - v[flip]
+    return a[idx] + u[:, None] * (b[idx] - a[idx]) + v[:, None] * (c[idx] - a[idx])
 
 
 def params():
@@ -96,8 +135,7 @@ def test_cloud_registration_transfer():
     f.set_ann([pid_at(f, 0.5, 3.5)], type=UNDULATION, dir=30.0)
     yaw, t = 0.3, np.array([0.4, -0.2, 0.0])
     R = sp.rot_z(yaw)
-    import mesh_to_terrain as mt
-    pts_f = mt.sample_mesh(field(), 120000, np.random.default_rng(1))
+    pts_f = sample_mesh(field(), 120000, np.random.default_rng(1))
     c = sp.Project.from_cloud((pts_f - t) @ R, params(), 'c.pcd', log=lambda *_: None)   # p_f = R p_m + t
     c.register_to(f, [0.45, -0.15, 0.0], math.degrees(yaw) + 2.0, log=lambda *_: None)
     Rr, tr = sp.reg_matrix(c.reg)
@@ -162,8 +200,7 @@ def test_cut_level_select_default_obstacle():
 
 
 def test_cloud_surface_floor_under_roof():
-    import mesh_to_terrain as mt
-    pts = mt.sample_mesh(field(), 200000, np.random.default_rng(2))
+    pts = sample_mesh(field(), 200000, np.random.default_rng(2))
     s = ss.cloud_surface(pts, params(), log=lambda *_: None)
     c, r = s.cell_of(4.0, 3.0)
     assert abs(s.z[r, c]) < 0.01 and abs(s.clearance[r, c] - 0.30) < 0.03       # floor, not roof

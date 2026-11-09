@@ -14,11 +14,9 @@ M0 nodes:
 
 collision_monitor is added in M2, when terrain_node provides ground-free obstacles.
 
-terrain_dir is a nav_terrain package (labelled map, HWSentryNav26 style):
-    mesh_to_terrain.py --mesh <field.stl> --registration-from maps/sim/nav/terrain.json \
-        --out maps/sim/terrain.msgpack          (or cloud_to_height_map.py without a field model)
-    terrain_label_editor.py maps/sim/terrain.msgpack   (hand edits survive mesh_to_terrain re-runs)
-    terrain_export.py maps/sim/terrain.msgpack --out maps/sim/terrain
+terrain_dir is a nav_terrain package, written by surface_studio (docs/terrain_studio.md):
+    surface_studio.py <field model | prior map>   annotate patches, 导出 Nav2 -> terrain_dir
+    terrain_export.py <terrain_dir>/terrain.msgpack --out <terrain_dir>   (re-export with other parameters)
 Only nav_map.yaml is read here.  Live obstacles (terrain_node) arrive in M2.
 """
 import os

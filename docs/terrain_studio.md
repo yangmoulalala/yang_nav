@@ -56,7 +56,7 @@ STEP 需要 `cadquery-ocp`，三维预览需要 `open3d`（虚拟环境 `~/.venv
 
 | 文件 | 内容 |
 |---|---|
-| `terrain.msgpack` | 合成后的标注地图（terrain / direction / elevation），可用其他 nav_terrain 工具继续处理 |
+| `terrain.msgpack` | 合成后的标注地图（terrain / direction / elevation），可用 `terrain_export.py` 换参数重新导出 |
 | `nav_map.pgm` / `.yaml` | Nav2 静态地图（scale 模式）。障碍致命；障碍旁膨胀带上限 `max_band_cost`；方向地形本体代价 `terrain_cost` |
 | `speed_mask.pgm` / `.yaml` | 限速百分比（raw 模式）：隧道 35、坡道 60、起伏路段 50，其余 0 = 不限速 |
 | `direction_map.png` | 三通道：方向角编码 / 强度 / 标签（HWSentryNav26 格式） |

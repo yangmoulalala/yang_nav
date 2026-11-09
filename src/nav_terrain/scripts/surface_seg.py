@@ -11,8 +11,9 @@ lower-left corner, in the field frame (model) or the map frame (prior cloud).
 Height grid
   model  vertical rays through every cell; ground = lowest up-facing surface with at least
          min_clear headroom (the floor inside a tunnel, not its roof); clearance = that headroom
-  cloud  highest point per cell, small holes filled, bilateral filter (cloud_to_height_map); no
-         clearance (a tunnel roof hides the floor below it - less precise than the model)
+  cloud  per cell the top of the lowest point cluster with at least min_clear empty space above it
+         (clearance = that gap), small holes filled, edge-preserving bilateral filter; coarser grid
+         (cloud_res) and less precise than the model
 
 Segmentation (4-neighbour graph on the height grid)
   1 a link is cut where the height jumps by more than `jump` (step, wall) or where one side is
@@ -25,17 +26,12 @@ Segmentation (4-neighbour graph on the height grid)
   5 one least-squares plane per patch -> incline, uphill azimuth, rms residual
 """
 import math
-import sys
 from dataclasses import asdict, dataclass, fields
-from pathlib import Path
 
 import numpy as np
 from scipy import ndimage, sparse
 from scipy.sparse.csgraph import connected_components
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import mesh_to_terrain as mt  # noqa: E402
-from cloud_to_height_map import bilateral, fill_small_holes, grid_bounds  # noqa: E402
+from scipy.spatial import cKDTree
 
 
 @dataclass
@@ -82,9 +78,92 @@ class Surface:
         return (self.origin[0] + (col + 0.5) * self.resolution, self.origin[1] + (row + 0.5) * self.resolution)
 
 
+# ----------------------------------------------------------------------------- grid helpers
+def grid_bounds(points, resolution, margin):
+    lo = np.floor((points[:, :2].min(0) - margin) / resolution) * resolution
+    hi = points[:, :2].max(0) + margin
+    width = int(math.ceil((hi[0] - lo[0]) / resolution))
+    height = int(math.ceil((hi[1] - lo[1]) / resolution))
+    return (float(lo[0]), float(lo[1])), width, height
+
+
+def fill_small_holes(hm, resolution, fill_radius, hole_area, k=10):
+    """NaN holes smaller than hole_area cells -> mean of the observed cells within fill_radius."""
+    valid = np.isfinite(hm)
+    labels, n = ndimage.label(~valid)
+    if n == 0 or not valid.any():
+        return hm, 0
+    sizes = ndimage.sum(np.ones_like(labels), labels, np.arange(n + 1))
+    small = (sizes < hole_area)[labels] & ~valid
+    rows, cols = np.nonzero(small)
+    if rows.size == 0:
+        return hm, 0
+    vr, vc = np.nonzero(valid)
+    tree = cKDTree(np.column_stack([vc, vr]) * resolution)
+    dist, idx = tree.query(np.column_stack([cols, rows]) * resolution, k=min(k, vr.size),
+                           distance_upper_bound=fill_radius)
+    dist = dist.reshape(rows.size, -1)
+    idx = idx.reshape(rows.size, -1)
+    good = np.isfinite(dist)
+    vz = hm[vr, vc]
+    z = np.where(good, vz[np.minimum(idx, vz.size - 1)], 0.0)
+    cnt = good.sum(1)
+    out = hm.copy()
+    fill = cnt > 0
+    out[rows[fill], cols[fill]] = (z.sum(1)[fill] / cnt[fill]).astype(np.float32)
+    return out, int(fill.sum())
+
+
+def bilateral(hm, d, sigma_color, sigma_space):
+    """Edge-preserving smoothing of the observed cells (NaN stays NaN)."""
+    import cv2
+    valid = np.isfinite(hm)
+    if not valid.any() or d <= 0:
+        return hm
+    tmp = np.where(valid, hm, np.nanmean(hm)).astype(np.float32)
+    filt = cv2.bilateralFilter(tmp, d=d, sigmaColor=sigma_color, sigmaSpace=sigma_space)
+    out = hm.copy()
+    out[valid] = filt[valid]
+    return out
+
+
+def surfaces(cells, zs, ups, ncell, layers, eps=0.005):
+    """Ray hits sorted by (cell, z) -> free up-facing surfaces per column: Z, CLEAR [layers, ncell]
+    bottom-up (NaN = none, inf = open sky), TOP [ncell] = highest hit."""
+    Z = np.full((layers, ncell), np.nan)
+    C = np.full((layers, ncell), np.nan)
+    top = np.full(ncell, np.nan)
+    if cells.size == 0:
+        return Z, C, top
+    bounds = np.flatnonzero(np.diff(cells)) + 1
+    starts = np.concatenate([[0], bounds])
+    ends = np.concatenate([bounds, [len(cells)]])
+    top[cells[ends - 1]] = zs[ends - 1]
+    for s, e in zip(starts, ends):
+        z, up = zs[s:e], ups[s:e]
+        found = []
+        for i in range(len(z)):
+            if not up[i]:
+                continue
+            j, dup = i + 1, False
+            while j < len(z) and z[j] <= z[i] + eps:
+                dup |= bool(up[j])
+                j += 1
+            if dup:
+                continue
+            if j == len(z):
+                found.append((z[i], np.inf))
+            elif not up[j]:
+                found.append((z[i], z[j] - z[i]))
+        for k, (zz, cc) in enumerate(found[-layers:]):
+            Z[k, cells[s]] = zz
+            C[k, cells[s]] = cc
+    return Z, C, top
+
+
 # ----------------------------------------------------------------------------- height grids
 def raycast_ids(tri, x0, y0, res, nx, ny, chunk=4_000_000):
-    # as mesh_to_terrain.raycast, plus the triangle index of every hit
+    # vertical rays through the cell centres -> hit cell, z, up-facing, triangle index (sorted by cell, z)
     a = tri[:, 0]
     e1, e2 = tri[:, 1] - a, tri[:, 2] - a
     den = e1[:, 0] * e2[:, 1] - e1[:, 1] * e2[:, 0]
@@ -138,7 +217,7 @@ def mesh_surface(tri, p, log=print):
     ny = int(math.ceil((hi[1] - y0) / res)) + 1
     log('高程栅格 %d × %d @ %.3f m，垂直射线求交 %d 个三角形' % (nx, ny, res, len(tri)))
     cells, zs, ups, tid = raycast_ids(tri, x0, y0, res, nx, ny)
-    Z, C, top = mt.surfaces(cells, zs, ups, nx * ny, layers=4)
+    Z, C, top = surfaces(cells, zs, ups, nx * ny, layers=4)
     ok = np.isfinite(Z) & (C >= p.min_clear)
     has = ok.any(0)
     k = np.argmax(ok, 0)                       # layers are stored bottom-up: first free one = lowest

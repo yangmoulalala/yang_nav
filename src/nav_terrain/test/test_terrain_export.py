@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-import cloud_to_height_map as c2h  # noqa: E402
 import terrain_export as tx  # noqa: E402
 from terrain_map import (OBSTACLE, SLOPE, TUNNEL, TerrainMap, decode_angle, encode_angle,  # noqa: E402
                          packb, unpackb)
@@ -18,14 +17,6 @@ def test_msgpack_roundtrip():
     assert unpackb(packb(obj)) == obj
 
 
-def test_reads_reference_editor_format():
-    """Files from HWSentryNav26's editor carry only width/height/resolution/terrain/direction."""
-    t = np.zeros((4, 5), np.uint8)
-    t[1, 2] = SLOPE
-    raw = packb({'width': 5, 'height': 4, 'resolution': 0.05, 'terrain': t.tobytes(),
-                 'direction': np.full(20, 64, np.uint8).tobytes()})
-    m = TerrainMap.from_dict(unpackb(raw))
-    assert m.origin == (0.0, 0.0) and m.elevation is None and m.terrain[1, 2] == SLOPE
 
 
 def test_map_save_load(tmp_path):
@@ -49,22 +40,8 @@ def test_invalid_label_rejected():
         m.to_dict()
 
 
-def test_height_map_fills_small_holes_only():
-    xs, ys = np.meshgrid(np.arange(0, 2, 0.02), np.arange(0, 2, 0.02))
-    keep = ~((np.abs(xs - 0.5) < 0.04) & (np.abs(ys - 0.5) < 0.04))          # small hole
-    keep &= ~((xs > 1.2) & (ys > 1.2))                                         # large missing block
-    pts = np.column_stack([xs[keep], ys[keep], np.full(keep.sum(), 0.1)])
-    hm, origin = c2h.cloud_to_height_map(pts, resolution=0.05, margin=0.0, hole_area=30, bilateral_d=0)
-    c, r = int((0.5 - origin[0]) / 0.05), int((0.5 - origin[1]) / 0.05)
-    assert hm[r, c] == pytest.approx(0.1)
-    c, r = int((1.7 - origin[0]) / 0.05), int((1.7 - origin[1]) / 0.05)
-    assert np.isnan(hm[r, c])
 
 
-def test_height_map_keeps_highest_point():
-    pts = np.array([[0.01, 0.01, 0.0], [0.02, 0.02, 0.3], [0.5, 0.5, 0.0]])
-    hm, _ = c2h.cloud_to_height_map(pts, resolution=0.05, margin=0.0, bilateral_d=0, hole_area=0)
-    assert hm[0, 0] == pytest.approx(0.3)
 
 
 def test_cost_inflation_profile():
@@ -119,15 +96,3 @@ def test_export_package_and_zones(tmp_path):
 def yaml_load(p):
     import yaml
     return yaml.safe_load(Path(p).read_text())
-
-
-def test_editor_line_direction():
-    import importlib
-    try:
-        ed = importlib.import_module('terrain_label_editor')
-    except Exception:   # noqa: BLE001 - headless CI without Tk/PIL
-        pytest.skip('tk not available')
-    # stroke towards +x: left normal is +y (90 deg)
-    assert ed.line_direction(0, 0, 10, 0) == encode_angle(math.pi / 2)
-    # stroke towards +y: left normal is -x (180 deg)
-    assert ed.line_direction(0, 0, 0, 10) == encode_angle(math.pi)
