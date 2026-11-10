@@ -4,14 +4,15 @@
 #   controller_server / behavior_server -> cmd_vel_nav -> velocity_smoother -> cmd_vel_smoothed
 #   -> cmd_gate (localization gate, watchdog, per-mode limits) -> /cmd_vel
 # collision_monitor joins in M2 once terrain_node publishes ground-free obstacles.
-# Frames: map (backend) -> lio_odom (ZLIO) -> base_link.  Odometry: /nav_odom (odom_adapter).
+# Frames: map (backend) -> lio_odom (ZLIO) -> base_link.  Odometry: /localization/odometry
+# (map <- base_link, body-frame twist).
 # Costmaps in M0: static traversability layer (/nav_map) + inflation only.
 
 bt_navigator:
   ros__parameters:
     global_frame: map
     robot_base_frame: base_link
-    odom_topic: /nav_odom
+    odom_topic: /localization/odometry
     bt_loop_duration: 10
     default_server_timeout: 200   # ms; 20 ms timed out follow_path while the controller was busy
     wait_for_service_timeout: 1000
@@ -31,7 +32,7 @@ controller_server:
     min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.5
-    odom_topic: /nav_odom
+    odom_topic: /localization/odometry
     progress_checker_plugins: [progress_checker]
     goal_checker_plugins: [goal_checker]
     controller_plugins: [FollowPath]
@@ -267,7 +268,7 @@ velocity_smoother:
     min_velocity: [-1.6, -1.6, -2.5]
     max_accel: [3.0, 3.0, 4.0]
     max_decel: [-3.0, -3.0, -4.0]
-    odom_topic: /nav_odom
+    odom_topic: /localization/odometry
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 0.5

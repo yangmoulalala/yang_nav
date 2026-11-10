@@ -9,6 +9,7 @@
 #include "apps/ros.hpp"
 #include "backend/covariance.hpp"
 #include "backend/localization.hpp"
+#include "backend/math.hpp"
 
 namespace backend::ros {
 namespace {
@@ -155,37 +156,44 @@ void Publisher::publishProjection(const LocalizationProjection& projection,
                              projection.pose_revision);
 }
 
-/// 将传感器位姿及协方差传播到机体原点并发布。
+/// 按输出时刻外参把传感器位姿与协方差传播到车体。
+Publisher::BodyProjection Publisher::bodyProjection(
+    const LocalizationProjection& projection,
+    const builtin_interfaces::msg::Time& stamp) const {
+    BodyProjection result;
+    // 外参取输出时刻值：T_map_body = T_map_sensor * T_sensor_body(stamp)。
+    result.T_sensor_body = body_extrinsic_ ? body_extrinsic_->at(rclcpp::Time(stamp).seconds())
+                                           : parameters_.runtime.T_sensor_body;
+    result.T_map_body = projection.T_map_sensor * result.T_sensor_body;
+    result.covariance = projection.pose_covariance_valid
+                            ? projection.pose_covariance
+                            : fallbackFrontendPoseCovariance();
+    const Eigen::Vector3d lever_map =
+        result.T_map_body.block<3, 1>(0, 3) - projection.T_map_sensor.block<3, 1>(0, 3);
+    result.covariance = propagateLeverArmCovariance(result.covariance, lever_map);
+    if (!projection.pose_trusted) {
+        applyPoseCovarianceFloor(&result.covariance, 10.0, M_PI);
+    }
+    result.covariance = 0.5 * (result.covariance + result.covariance.transpose());
+    return result;
+}
+
+/// 发布按输出时刻外参换算并做杆臂传播的车体位姿及协方差。
 void Publisher::publishPoseWithCovariance(const LocalizationProjection& projection,
                                           const builtin_interfaces::msg::Time& stamp) {
     if (!pose_covariance_pub_) {
         return;
     }
-    // 外参取输出时刻值：T_map_body = T_map_sensor * T_sensor_body(stamp)。
-    const Eigen::Matrix4d T_sensor_body =
-        body_extrinsic_ ? body_extrinsic_->at(rclcpp::Time(stamp).seconds())
-                        : parameters_.runtime.T_sensor_body;
-    const Eigen::Matrix4d T_map_body = projection.T_map_sensor * T_sensor_body;
-    PoseCovariance6d covariance = projection.pose_covariance_valid
-                                      ? projection.pose_covariance
-                                      : fallbackFrontendPoseCovariance();
-    const Eigen::Vector3d lever_map =
-        T_map_body.block<3, 1>(0, 3) - projection.T_map_sensor.block<3, 1>(0, 3);
-    covariance = propagateLeverArmCovariance(covariance, lever_map);
-    if (!projection.pose_trusted) {
-        applyPoseCovarianceFloor(&covariance, 10.0, M_PI);
-    }
-    covariance = 0.5 * (covariance + covariance.transpose());
-
+    const BodyProjection body = bodyProjection(projection, stamp);
     geometry_msgs::msg::PoseWithCovarianceStamped message;
     message.header.frame_id = parameters_.input.map_frame;
     message.header.stamp = stamp;
-    const Eigen::Vector3d translation = T_map_body.block<3, 1>(0, 3);
+    const Eigen::Vector3d translation = body.T_map_body.block<3, 1>(0, 3);
     {
         std::lock_guard<std::mutex> lock(output_mutex_);
         last_visualized_body_position_ = translation;
     }
-    Eigen::Quaterniond orientation(T_map_body.block<3, 3>(0, 0));
+    Eigen::Quaterniond orientation(body.T_map_body.block<3, 3>(0, 0));
     orientation.normalize();
     message.pose.pose.position.x = translation.x();
     message.pose.pose.position.y = translation.y();
@@ -194,7 +202,7 @@ void Publisher::publishPoseWithCovariance(const LocalizationProjection& projecti
     message.pose.pose.orientation.y = orientation.y();
     message.pose.pose.orientation.z = orientation.z();
     message.pose.pose.orientation.w = orientation.w();
-    writePoseCovariance(covariance, &message.pose.covariance);
+    writePoseCovariance(body.covariance, &message.pose.covariance);
     pose_covariance_pub_->publish(message);
 }
 

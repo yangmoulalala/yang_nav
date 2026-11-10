@@ -27,7 +27,7 @@
 | --- | --- |
 | TF `map → lio_odom` | 与 ZLIO 发的 `lio_odom → base_link` 组成 `map → base_link`，导航首选 |
 | `/backend_node/localization_pose` | map 系车体位姿 + 协方差 |
-| `/localization/odometry` | map 系传感器（`common.sensor_frame`）位姿，高频 |
+| `/localization/odometry` | map 系车体位姿 + 车体系速度，高频 |
 | `/backend_node/localization_state` | 状态文本，含 `pose_trusted`（transient local） |
 | `/localization/lio_world_cloud` | map 系实时点云 |
 
@@ -103,8 +103,8 @@ ros2 topic info /lidar/points                            # 启动后 Publisher c
 | `INITIALIZING` | 还没有全局位姿 | false | 不发布位姿、世界点云 |
 | `NORMAL` | 正常 | true | 正常发布 |
 | `OBS_DEGRADED` | 全局观测与预测冲突，但未达阈值 | true | 继续用里程计外推输出 |
-| `SUSPECT` | 怀疑出错，正在局部重定位 | false | 沿用最后可信 `map→lio_odom`，由里程计前推（`tf_frozen=false`）；`/localization/odometry` 保留前端速度，位姿协方差放大到至少 10 m / π。前端重置跨代次后旧 `map←odom` 不再适用，退回冻结（同 `LOST`） |
-| `LOST` | 丢失，等待重定位（需要新鲜 UWB，UWB 位置附近 2 m） | false | 冻结在最后可信位姿（`tf_frozen=true`）；`/localization/odometry` 速度清零、协方差放大 |
+| `SUSPECT` | 怀疑出错，正在局部重定位 | false | 沿用最后可信 `map→lio_odom`，由里程计前推（`tf_frozen=false`）；`/localization/odometry` 保留前端速度（已转到车体系），位姿协方差放大到至少 10 m / π。前端重置跨代次后旧 `map←odom` 不再适用，退回冻结（同 `LOST`） |
+| `LOST` | 丢失，等待重定位（需要新鲜 UWB，UWB 位置附近 2 m） | false | 冻结在最后可信位姿（`tf_frozen=true`）；`/localization/odometry` 车体速度清零、协方差放大 |
 
 **导航必须订阅 `localization_state`，`pose_trusted=false` 时停车或降级。** `SUSPECT` 前推的精度取决于进入 `SUSPECT` 前的全局位姿是否正确：误判无效（如 7.2）时输出仍准，绑架或错误恢复后会沿着偏掉的 `map←odom` 继续走。`LOST` 冻结期间车如果还在动，输出位姿与真实位姿的误差会随时间增大（实测原地 0.6 rad/s 自转时每 0.2 s 增加约 8°，该数据测于 SUSPECT 也冻结的旧实现）。
 

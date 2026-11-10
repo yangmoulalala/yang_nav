@@ -22,6 +22,7 @@
 
 #include "apps/body_extrinsic.hpp"
 #include "apps/config.hpp"
+#include "backend/covariance.hpp"
 #include "backend/ports.hpp"
 
 namespace backend {
@@ -51,7 +52,7 @@ public:
     void publishFrame(const FrontendFrame& frame, const LocalizationProjection& projection,
                       const builtin_interfaces::msg::Time& stamp,
                       const builtin_interfaces::msg::Time& cloud_stamp);
-    /// 复核高频投影身份，发布传感器里程计与车体位姿。
+    /// 复核高频投影身份，发布车体里程计与车体位姿。
     void publishPrediction(const nav_msgs::msg::Odometry& odom,
                            const LocalizationProjection& projection);
     /// 复核状态快照的代次与输出版本后发布定位诊断。
@@ -79,7 +80,16 @@ private:
     }
     /// 按异常类型记录本次输出失败，或交由节点统一处理。
     void handleOptionalFailure(const char* name, std::exception_ptr failure);
-    /// 更新 map 系传感器位姿与协方差，不可信时清零速度并放大不确定度。
+    /// 输出时刻的车体位姿、外参和杆臂传播后的位姿协方差。
+    struct BodyProjection {
+        Eigen::Matrix4d T_sensor_body = Eigen::Matrix4d::Identity();
+        Eigen::Matrix4d T_map_body = Eigen::Matrix4d::Identity();
+        PoseCovariance6d covariance = PoseCovariance6d::Zero();
+    };
+    /// 按输出时刻外参把传感器位姿与协方差传播到车体。
+    BodyProjection bodyProjection(const LocalizationProjection& projection,
+                                  const builtin_interfaces::msg::Time& stamp) const;
+    /// 更新 map 系车体位姿与协方差，不可信时清零速度并放大不确定度。
     void publishOdometry(const nav_msgs::msg::Odometry& input,
                          const LocalizationProjection& projection);
     /// 发布允许推进的 map → odom TF 及同版本定位状态。
@@ -95,7 +105,7 @@ private:
                                   const rclcpp::Time& stamp, const bool tf_published,
                                   const std::uint64_t epoch, const std::uint64_t state_generation,
                                   const std::uint64_t pose_revision);
-    /// 将传感器位姿及协方差按车体杆臂传播到车体原点后发布。
+    /// 发布按输出时刻外参换算并做杆臂传播的车体位姿及协方差。
     void publishPoseWithCovariance(const LocalizationProjection& projection,
                                    const builtin_interfaces::msg::Time& stamp);
     /// 在发布锁外变换点云，发送前再次复核投影身份与限频水位。

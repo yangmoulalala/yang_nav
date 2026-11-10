@@ -97,7 +97,7 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 
 | 话题 | 类型 | 说明 |
 | --- | --- | --- |
-| `/localization/odometry` | `nav_msgs/Odometry` | map 系的**传感器**位姿 + 传感器系速度 + 协方差（高频） |
+| `/localization/odometry` | `nav_msgs/Odometry` | map 系的**车体**位姿 + 车体系速度 + 协方差（高频）；`child_frame_id` 为 `base_link` |
 | `/backend_node/localization_pose` | `geometry_msgs/PoseWithCovarianceStamped` | map 系的**车体**位姿及协方差 |
 | `/backend_node/localization_state` | `std_msgs/String` | 分号分隔 `key=value`：状态、`pose_trusted`、代次、输出版本、故障信息 |
 | `/localization/lio_world_cloud` | `sensor_msgs/PointCloud2` | 变换到 map 系的实时点云（供导航/障碍物使用），由 `output.world_cloud` 控制 |
@@ -147,8 +147,8 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | --- | --- | --- | --- | --- |
 | **车体全局位姿（首选）** | TF `map → base_link` | tf2 | `map` | 由 `map → lio_odom`（后端）+ `lio_odom → base_link`（ZLIO）组成；Nav2 的 `global_frame: map`、`robot_base_frame: base_link` 直接可用 |
 | 车体全局位姿（话题） | `/backend_node/localization_pose` | `geometry_msgs/PoseWithCovarianceStamped` | `map` | 带协方差，适合不用 TF 的上层模块（决策、裁判系统通信） |
-| 传感器全局里程计 | `/localization/odometry` | `nav_msgs/Odometry` | pose 在 `map`，twist 在 `imu` | 高频（随 IMU）；注意描述的是 **imu**，不是车体 |
-| 局部里程计 / 速度 | `/odometry` | `nav_msgs/Odometry` | pose 在 `lio_odom`，twist 在 `imu` | 高频、连续不跳变；局部规划、控制器的速度反馈用它，`odom_frame` 设为 `lio_odom` |
+| 车体全局里程计 | `/localization/odometry` | `nav_msgs/Odometry` | pose 在 `map`，twist 在 `base_link` | 高频（随 IMU）；Nav2 的 `odom_topic` 直接用它 |
+| 前端原始里程计 | `/odometry` | `nav_msgs/Odometry` | pose 在 `lio_odom`，twist 在 `imu` | 高频、连续不跳变；标定工具使用，导航不再直接使用 |
 | 定位是否可信 | `/backend_node/localization_state` | `std_msgs/String` | — | 解析 `pose_trusted=true/false`；为 false（`INITIALIZING`/`SUSPECT`/`LOST`）时导航应停车或降级 |
 | 障碍物点云 | `/localization/lio_world_cloud` | `sensor_msgs/PointCloud2` | `map` | 当前帧去畸变点云，做 costmap 障碍层 / 地形分析输入 |
 | 障碍物点云（传感器系） | `/lidar/points` | `sensor_msgs/PointCloud2` | `mid360_link` | 未去畸变的原始合并点云，可配合 TF 给 costmap 使用 |
@@ -163,8 +163,8 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 
 ### 4.3 Nav2 / 上层对接要点
 
-- 全局帧用 `map`，里程计帧用 `lio_odom`，车体帧用 `base_link`；**不要**再让别的节点发布 `odom → base_link` 或 `map → odom`。
-- 需要 map 系车体速度时：取 `/odometry` 的 twist（imu 系）经 TF 旋转到 `map`，或对 `map → base_link` 差分。
+- 全局帧用 `map`，车体帧用 `base_link`，TF 的里程计帧保持 `lio_odom`；`/localization/odometry` 作为 Nav2 的 `odom_topic`（pose 在 `map`、twist 在 `base_link`）。**不要**再让别的节点发布 `odom → base_link` 或 `map → odom`。
+- 需要 map 系车体速度时：`/localization/odometry` 的 twist 在 `base_link`，乘 `T_map_base` 的旋转即可；或对 `map → base_link` 差分。
 - 订阅 `localization_state` 判断可信性（`pose_trusted=true` 才能使用位姿）。
 - 订阅 transient local 话题（`localization_state`、`prior_map`、可视化话题）时 QoS 也需设为 transient local 才能收到最近一次消息。
 

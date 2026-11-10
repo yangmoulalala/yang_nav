@@ -10,32 +10,20 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_ros REQUIRED)
-find_package(Eigen3 REQUIRED)
-
-add_executable(odom_adapter src/odom_adapter.cpp)
-target_include_directories(odom_adapter PRIVATE include)
-target_link_libraries(odom_adapter Eigen3::Eigen)
-ament_target_dependencies(odom_adapter rclcpp nav_msgs tf2 tf2_ros)
 
 add_executable(cmd_gate src/cmd_gate.cpp)
 target_include_directories(cmd_gate PRIVATE include)
 ament_target_dependencies(cmd_gate rclcpp geometry_msgs std_msgs)
 
-install(TARGETS odom_adapter cmd_gate DESTINATION lib/${PROJECT_NAME})
+install(TARGETS cmd_gate DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_gate_logic test/test_gate_logic.cpp)
   target_include_directories(test_gate_logic PRIVATE include)
-  ament_add_gtest(test_odom_math test/test_odom_math.cpp)
-  target_include_directories(test_odom_math PRIVATE include)
-  target_link_libraries(test_odom_math Eigen3::Eigen)
 endif()
 
 ament_package()

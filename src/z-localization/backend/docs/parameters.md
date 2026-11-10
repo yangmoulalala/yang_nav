@@ -64,11 +64,11 @@
 完整系统中该变换由 URDF（`src/sentry_description/urdf/sentry_robot.urdf`）经 `robot_state_publisher` 提供，
 外参只在 URDF 中维护。云台 `yaw_joint` 等可动关节由 `joint_state_publisher` 发布到 TF，后端按时间跟踪：
 
-- `~/localization_pose` 的车体位姿使用输出时间戳处的外参（`T_map_body = T_map_sensor · T_sensor_body(t)`）；
+- `~/localization_pose` 和 `/localization/odometry` 的车体位姿、速度使用输出时间戳处的外参（`T_map_body = T_map_sensor · T_sensor_body(t)`）；
 - UWB 天线固定在 body 系，每条 UWB 测量按其运动时刻（消息时间 + `uwb.time_offset_seconds`）的外参换算传感器系杆臂，
   只用于局中恢复的位置先验和 UWB 一致性检查；
 - `startup_hint` 描述启动时刻的车体位姿，用**启动时**的外参换算为传感器位姿（启动到首帧期间应保持云台不动）；
-- 关键帧、配准、描述子整平与 map → odom TF 均在传感器系中计算，不依赖车体外参。
+- 关键帧、配准、描述子整平与 map → odom TF 均在传感器系中计算；`~/localization_pose`、`/localization/odometry` 和 UWB 杆臂才使用车体外参。
 
 精确时刻不在 TF 缓存中时使用最新变换；其时间戳与请求时刻相差超过 `common.body_extrinsic_tolerance` 时节流告警并沿用上次有效外参。
 外参变化超过约 2° 或 1 cm 时节流输出 `body extrinsic changed` 信息日志。单独运行时可用 `static_transform_publisher`

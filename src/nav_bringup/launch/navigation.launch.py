@@ -6,7 +6,6 @@
     ros2 launch nav_bringup navigation.launch.py terrain_dir:=$HOME/yang_nav/maps/sim
 
 M0 nodes:
-    odom_adapter      /odometry (imu)  -> /nav_odom (base_link)
     nav_map_server    <terrain_dir>/nav_map.yaml -> /nav_map  (static traversability cost)
     Nav2              planner (Smac2D), controller (MPPI Omni), smoother, behaviours,
                       bt_navigator, velocity_smoother
@@ -49,8 +48,6 @@ def build(context):
                     parameters=[params, dict(common, **(extra or {}))], remappings=remap or [])
 
     actions = [
-        Node(package='nav_safety', executable='odom_adapter', name='odom_adapter', output='screen',
-             parameters=[common], remappings=[('input', '/odometry'), ('output', '/nav_odom')]),
         nav2('nav2_map_server', 'map_server', 'nav_map_server',
              extra={'yaml_filename': str(terrain_dir / 'nav_map.yaml')}),
         nav2('nav2_controller', 'controller_server', remap=[('cmd_vel', 'cmd_vel_nav')]),

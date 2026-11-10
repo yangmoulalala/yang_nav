@@ -135,6 +135,9 @@ class TestMapService(unittest.TestCase):
         self.wait_until(
             lambda: any(m.header.stamp.sec == header.stamp.sec for m in received),
             drive=lambda: predictor.publish(prediction))
+        output = next(m for m in received if m.header.stamp.sec == header.stamp.sec)
+        self.assertEqual(output.header.frame_id, 'map')
+        self.assertEqual(output.child_frame_id, 'body')
 
     def test_save_failure_retry_and_reload(self, root, parameters, test_args):
         """覆盖实际保存、权限失败、重试与第二个节点重载，核对地图内容。"""
