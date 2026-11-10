@@ -46,7 +46,29 @@ controller_server:
       yaw_goal_tolerance: 0.30
       stateful: true
     FollowPath:
-      plugin: nav2_mppi_controller::MPPIController
+      # M3c: MPPI (parameters below) outside tunnels, deterministic omni tracker through them
+      plugin: nav_behaviors::ZoneAwareController
+      zone:
+        zones_file: ""          # set by navigation.launch.py: <terrain_dir>/zones.yaml
+        min_cells: 50
+        inner_plugin: nav2_mppi_controller::MPPIController
+        window_before: 2.0       # tracker takes over this far (path arc length) before the mouth
+        window_after: 0.6        # ... and hands back this far after the far mouth
+        blend: 0.4               # linear mix MPPI <-> tracker over this distance at both ends
+        align_before: 0.8        # heading locked when the centre is this far before the mouth (front 0.4 m)
+        tunnel_speed: 0.6        # m/s through the body (raise after M3d)
+        approach_speed: 1.0
+        decel: 1.5
+        front_extent: 0.39       # footprint reach ahead of the centre; the gate works on the robot front
+        gate_dist: 0.3           # entry check zone (robot front) before the mouth
+        gate_stop: 0.03          # misaligned: full stop with the front this far before the mouth
+        lat_tol: 0.03
+        yaw_tol_deg: 3.0
+        k_lat: 3.0
+        max_lat_speed: 0.3
+        k_yaw: 3.0
+        max_wz: 1.0
+        search_dist: 1.0
       motion_model: Omni
       # old branch: 2000 x 56 ran at 5 Hz on this machine, 1000 x 40 keeps 20 Hz
       time_steps: 40
@@ -283,6 +305,6 @@ cmd_gate:
     mode_topic: /nav_mode
     limits:
       normal:   {max_linear: 1.6, max_angular: 2.5}
-      tunnel:   {max_linear: 0.6, max_angular: 1.0}
+      tunnel:   {max_linear: 0.8, max_angular: 1.0}   # backstop above zone.tunnel_speed + lateral correction
       ramp:     {max_linear: 2.0, max_angular: 2.5}
       recovery: {max_linear: 0.6, max_angular: 1.5}

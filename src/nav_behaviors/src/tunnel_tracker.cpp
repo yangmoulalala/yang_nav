@@ -1,0 +1,201 @@
+#include "nav_behaviors/tunnel_tracker.hpp"
+
+#include <algorithm>
+#include <cmath>
+
+namespace nav_behaviors
+{
+
+namespace
+{
+
+double smooth01(double w)
+{
+  w = std::clamp(w, 0.0, 1.0);
+  return w * w * (3.0 - 2.0 * w);
+}
+
+double dsmooth01(double w)
+{
+  return (w <= 0.0 || w >= 1.0) ? 0.0 : 6.0 * w * (1.0 - w);
+}
+
+}  // namespace
+
+void TunnelTracker::setPath(const std::vector<Pose2> & path)
+{
+  std::vector<Crossing> old;
+  old.swap(crossings_);
+  path_ = path;
+  s_.assign(path_.size(), 0.0);
+  for (size_t i = 1; i < path_.size(); ++i) {
+    s_[i] = s_[i - 1] + std::hypot(path_[i].x - path_[i - 1].x, path_[i].y - path_[i - 1].y);
+  }
+  have_nearest_ = false;
+  const size_t n = path_.size();
+  for (size_t k = 0; k < tunnels_.size(); ++k) {
+    const Tunnel & t = tunnels_[k];
+    auto inside = [&](size_t j) {
+        double u, v;
+        t.toLocal(path_[j].x, path_[j].y, u, v);
+        return std::abs(u) <= 0.5 * t.depth && std::abs(v) < 0.5 * t.width;
+      };
+    size_t i = 0;
+    while (i < n) {
+      if (!inside(i)) {
+        ++i;
+        continue;
+      }
+      const size_t f = i;
+      while (i + 1 < n && inside(i + 1)) {
+        ++i;
+      }
+      const size_t l = i++;
+      if (f == 0 || l + 1 >= n) {
+        continue;   // path starts or ends in the tunnel: nothing to track through
+      }
+      double ub, ua, v;
+      t.toLocal(path_[f - 1].x, path_[f - 1].y, ub, v);
+      t.toLocal(path_[l + 1].x, path_[l + 1].y, ua, v);
+      const int dir = (ub < 0 && ua > 0) ? 1 : (ub > 0 && ua < 0) ? -1 : 0;
+      if (dir == 0) {
+        continue;
+      }
+      Crossing c;
+      c.tunnel = k;
+      c.s0 = s_[f];
+      c.s1 = s_[l];
+      c.dir = dir;
+      for (const auto & o : old) {   // a replan inside the window keeps the heading already chosen
+        if (o.tunnel == k && o.dir == dir && o.locked) {
+          c.locked = true;
+          c.lock = o.lock;
+          c.entry_yaw = o.entry_yaw;
+          c.entry_s = o.entry_s;
+        }
+      }
+      crossings_.push_back(c);
+    }
+  }
+  std::sort(crossings_.begin(), crossings_.end(), [](const Crossing & a, const Crossing & b) {return a.s0 < b.s0;});
+}
+
+TrackerOutput TunnelTracker::compute(const Pose2 & r, double v_cap)
+{
+  TrackerOutput o;
+  const size_t n = path_.size();
+  if (n < 2 || crossings_.empty()) {
+    return o;
+  }
+  // nearest point on the path (segment projection), searched forward from the last one
+  auto search = [&](size_t a, size_t b, size_t & bj, double & bf) {
+      double best = std::numeric_limits<double>::infinity();
+      for (size_t j = a; j < b; ++j) {
+        const double dx = path_[j + 1].x - path_[j].x, dy = path_[j + 1].y - path_[j].y, l2 = dx * dx + dy * dy;
+        const double f = l2 > 1e-12 ? std::clamp(((r.x - path_[j].x) * dx + (r.y - path_[j].y) * dy) / l2, 0.0, 1.0) : 0.0;
+        const double ex = path_[j].x + f * dx - r.x, ey = path_[j].y + f * dy - r.y, d2 = ex * ex + ey * ey;
+        if (d2 < best) {
+          best = d2;
+          bj = j;
+          bf = f;
+        }
+      }
+      return best;
+    };
+  size_t bj = 0;
+  double bf = 0.0, best;
+  if (have_nearest_) {
+    const size_t a = nearest_ > 40 ? nearest_ - 40 : 0;
+    size_t b = a + 1;
+    while (b < n - 1 && s_[b] - s_[nearest_] < prm_.search_dist) {
+      ++b;
+    }
+    best = search(a, std::min(b, n - 1), bj, bf);
+    if (best > 0.25) {
+      best = search(0, n - 1, bj, bf);
+    }
+  } else {
+    best = search(0, n - 1, bj, bf);
+  }
+  nearest_ = bj;
+  have_nearest_ = true;
+
+  const Pose2 & A = path_[bj], & B = path_[bj + 1];
+  const double seg = std::hypot(B.x - A.x, B.y - A.y);
+  const double tx = seg > 1e-9 ? (B.x - A.x) / seg : std::cos(A.yaw);
+  const double ty = seg > 1e-9 ? (B.y - A.y) / seg : std::sin(A.yaw);
+  const double px = A.x + bf * (B.x - A.x), py = A.y + bf * (B.y - A.y);
+  const double s_r = s_[bj] + bf * seg;
+  const double e_lat = tx * (r.y - py) - ty * (r.x - px);
+  o.e_lat = e_lat;
+
+  Crossing * c = nullptr;
+  for (auto & x : crossings_) {
+    if (s_r >= x.s0 - prm_.window_before && s_r <= x.s1 + prm_.window_after) {
+      c = &x;
+      break;
+    }
+  }
+  if (!c) {
+    return o;
+  }
+  const Tunnel & t = tunnels_[c->tunnel];
+  const double s_rel = s_r - c->s0, body = c->s1 - c->s0, end_rel = body + prm_.window_after;
+  double w = 1.0;
+  if (s_rel < -prm_.window_before + prm_.blend) {
+    w = smooth01((s_rel + prm_.window_before) / prm_.blend);
+  } else if (s_rel > end_rel - prm_.blend) {
+    w = smooth01((end_rel - s_rel) / prm_.blend);
+  }
+  if (!c->locked) {
+    const double ax = normAngle(t.yaw + (c->dir < 0 ? M_PI : 0.0)), alt = normAngle(ax + M_PI);
+    c->lock = std::abs(normAngle(ax - r.yaw)) <= std::abs(normAngle(alt - r.yaw)) ? ax : alt;
+    c->entry_yaw = r.yaw;
+    c->entry_s = s_rel;
+    c->locked = true;
+  }
+  // heading reference: entry yaw -> lock until align_before before the mouth
+  const double s_al = -prm_.align_before;
+  double yaw_ref = c->lock, dyaw_ds = 0.0;
+  if (s_rel < s_al && c->entry_s < s_al) {
+    const double span = s_al - c->entry_s, q = (s_rel - c->entry_s) / span, d = normAngle(c->lock - c->entry_yaw);
+    yaw_ref = normAngle(c->entry_yaw + d * smooth01(q));
+    dyaw_ds = d * dsmooth01(q) / span;
+  }
+  // speed profile
+  const double ts = prm_.tunnel_speed;
+  double v = ts;
+  if (s_rel < s_al) {
+    v = std::min(prm_.approach_speed, std::sqrt(ts * ts + 2.0 * prm_.decel * (s_al - s_rel)));
+  } else if (s_rel > body + 0.1) {
+    v = std::min(prm_.approach_speed, std::sqrt(ts * ts + 2.0 * prm_.decel * (s_rel - body - 0.1)));
+  }
+  v = std::min(v, v_cap);
+  v = std::min(v, std::sqrt(2.0 * prm_.decel * std::max(0.0, s_.back() - s_r)));
+  const double e_yaw = normAngle(r.yaw - yaw_ref);
+  const double front_rel = s_rel + prm_.front_extent;   // robot front relative to the mouth
+  if (front_rel >= -prm_.gate_dist && front_rel < 0.0 &&
+    (std::abs(e_lat) > prm_.lat_tol || std::abs(e_yaw) > prm_.yaw_tol))
+  {
+    const double span = std::max(1e-3, prm_.gate_dist - prm_.gate_stop);
+    v *= std::clamp((-front_rel - prm_.gate_stop) / span, 0.0, 1.0);
+    o.gated = true;
+  }
+  const double vl = std::clamp(-prm_.k_lat * e_lat, -prm_.max_lat_speed, prm_.max_lat_speed);
+  const double vwx = v * tx - vl * ty, vwy = v * ty + vl * tx;
+  const double cy = std::cos(r.yaw), sy = std::sin(r.yaw);
+  o.vx = cy * vwx + sy * vwy;
+  o.vy = -sy * vwx + cy * vwy;
+  o.wz = std::clamp(dyaw_ds * v - prm_.k_yaw * e_yaw, -prm_.max_wz, prm_.max_wz);
+  o.weight = w;
+  o.tunnel_mode = s_rel >= -prm_.front_extent - prm_.gate_dist - 0.1 && s_rel <= body + 0.1;
+  o.in_body = s_rel >= 0.0 && s_rel <= body;
+  o.tunnel_id = t.id;
+  o.s_rel = s_rel;
+  o.e_yaw = e_yaw;
+  o.v_ref = v;
+  o.lock = c->lock;
+  return o;
+}
+
+}  // namespace nav_behaviors

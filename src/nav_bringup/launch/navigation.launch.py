@@ -50,7 +50,8 @@ def build(context):
     actions = [
         nav2('nav2_map_server', 'map_server', 'nav_map_server',
              extra={'yaml_filename': str(terrain_dir / 'nav_map.yaml')}),
-        nav2('nav2_controller', 'controller_server', remap=[('cmd_vel', 'cmd_vel_nav')]),
+        nav2('nav2_controller', 'controller_server', remap=[('cmd_vel', 'cmd_vel_nav')], extra={
+            'FollowPath.zone.zones_file': str(terrain_dir / 'zones.yaml')}),
         nav2('nav2_smoother', 'smoother_server', extra={
             'zone_shaper.zones_file': str(terrain_dir / 'zones.yaml')}),
         nav2('nav2_planner', 'planner_server'),

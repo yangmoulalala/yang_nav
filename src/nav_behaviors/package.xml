@@ -3,7 +3,7 @@
 <package format="3">
   <name>nav_behaviors</name>
   <version>0.1.0</version>
-  <description>Zone-aware navigation plugins: tunnel path shaping (M3)</description>
+  <description>Zone-aware navigation plugins: tunnel path shaping and tracking (M3)</description>
   <maintainer email="yang@example.com">yang</maintainer>
   <license>Proprietary</license>
 
@@ -17,6 +17,8 @@
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>yaml-cpp</depend>
+  <depend>std_msgs</depend>
+  <exec_depend>nav2_mppi_controller</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
 

@@ -13,8 +13,6 @@
 #include <string>
 #include <vector>
 
-#include <yaml-cpp/yaml.h>
-
 #include "nav2_core/smoother.hpp"
 #include "nav2_costmap_2d/cost_values.hpp"
 #include "nav2_costmap_2d/costmap_subscriber.hpp"
@@ -23,6 +21,7 @@
 #include "nav2_costmap_2d/footprint_subscriber.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "nav_behaviors/path_shaper.hpp"
+#include "nav_behaviors/zones_yaml.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
@@ -153,26 +152,10 @@ private:
       RCLCPP_WARN(logger_, "ZonePathShaper: zones_file not set, paths pass through unchanged");
       return;
     }
-    const YAML::Node root = YAML::LoadFile(file);
-    for (const auto & z : root["zones"]) {
-      if (z["type"].as<std::string>() != "tunnel") {
-        continue;
-      }
-      const int cells = z["cells"] ? z["cells"].as<int>() : 0;
-      const auto id = z["id"].as<std::string>();
-      if (cells < min_cells) {
-        RCLCPP_WARN(logger_, "ZonePathShaper: dropping %s (%d cells < %d, label fragment)", id.c_str(),
-          cells, min_cells);
-        continue;
-      }
-      Tunnel t;
-      t.id = id;
-      t.cx = z["centre"][0].as<double>();
-      t.cy = z["centre"][1].as<double>();
-      t.yaw = z["yaw_deg"].as<double>() * M_PI / 180.0;
-      t.depth = z["size"][0].as<double>();
-      t.width = z["size"][1].as<double>();
-      tunnels_.push_back(t);
+    std::vector<std::string> dropped;
+    tunnels_ = loadTunnels(file, min_cells, &dropped);
+    for (const auto & d : dropped) {
+      RCLCPP_WARN(logger_, "ZonePathShaper: dropping %s, label fragment", d.c_str());
     }
     RCLCPP_INFO(logger_, "ZonePathShaper: %zu tunnels from %s", tunnels_.size(), file.c_str());
   }
