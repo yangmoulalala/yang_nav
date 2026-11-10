@@ -30,7 +30,7 @@ velocity_smoother ─▶ cmd_gate (定位可信门、看门狗、按 /nav_mode �
 | M1 地形包 | surface_studio 手工标注 → terrain_export | 地形包可被 Nav2 加载 | ✅ 已提交 |
 | M3a 隧道规划检查 | plan_tunnels（不开仿真） | 12/12 路径过隧道 | ✅ 已提交 |
 | M3b 区域路径整形 | ZonePathShaper | 12/12 路径整形成功，11 个单测 | ✅ 已提交 |
-| **M3c 隧道通行** | ① tunnel_tracker 改状态机，ALIGN 起不再混 MPPI；② 区域内暂停重规划（BT 条件节点读控制器状态）；③ 无 ROS 运动学闭环测试（全向运动学 + 位姿/执行噪声，6 隧道 × 正反向）；④ Gazebo 验收 | 闭环测试 12/12；Gazebo 6 隧道正反向 12/12，隧道体内横向误差 ≤ 3 cm、航向误差 ≤ 3° | 进行中（代码未提交；tunnel_3 反向失败待修） |
+| **M3c 隧道通行** | ① tunnel_tracker 改状态机，ALIGN 起不再混 MPPI；② 区域内暂停重规划（BT 条件节点读控制器状态）；③ 无 ROS 运动学闭环测试（全向运动学 + 位姿/执行噪声，6 隧道 × 正反向）；④ Gazebo 验收 | 闭环测试 12/12；Gazebo 6 隧道正反向 12/12，隧道体内横向误差 ≤ 3 cm、航向误差 ≤ 3° | ①②已提交（c1e5570，单测 5/5）；③④未做，Gazebo 仍报 tunnel_3 反向失败 |
 | M3d 隧道提速 | 体内速度 0.6 → 目标值，收紧检查门参数 | 同 M3c 验收标准，耗时下降 | 未开始 |
 | **M4 坡道** | 通行模块泛化到 `slope` 区域：方向约束（direction_map 代价层或整形器处理单向）、坡道速度曲线、`/nav_mode=ramp` | 所有标注坡道上/下（允许方向）通过；闭环测试 + Gazebo | 未开始 |
 | M4b 限速地图 | Nav2 SpeedFilter 接 `speed_mask` | 限速区实测速度符合掩码 | 未开始 |
