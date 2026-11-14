@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Official field CAD (STEP tessellation or STL) -> point cloud in the localization map frame.
+r"""Official field CAD (STEP tessellation or STL) -> point cloud in the localization map frame.
 
 Input mesh is in the field/world frame. With --registration-from (terrain.json, map->world), the
-cloud is moved into the SLAM map frame so it can replace / be compared with maps/<m>/map.pcd.
+cloud is moved into the SLAM map frame for comparison with maps/<m>/map.pcd.
+This writes a PCD file, not a backend map bundle with keyframes and descriptors.
 
-    python3 tools/cad_map/cad_to_cloud.py --mesh /home/yang/drone/assets/field/mesh.npz \
-        --registration-from maps/sim/nav/terrain.json --voxel 0.05 --out /tmp/cad/cad_map.pcd \
+    python3 tools/cad_map/cad_to_cloud.py --mesh /absolute/path/field_mesh.npz \
+        --registration-from maps/sim/terrain/terrain.json --voxel 0.05 --out /tmp/cad/cad_map.pcd \
         --compare maps/sim/map.pcd
 """
 import argparse

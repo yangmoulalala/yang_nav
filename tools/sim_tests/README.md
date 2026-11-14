@@ -56,6 +56,10 @@ MID-360 侧装（URDF `mid360_joint` 俯仰约 90°），静止时只看到一�
 
 单雷达后端读 `bringup/config/sim/backend_single.yaml`（launch 按 `lidar` 选择），与 `backend.yaml` 的差异写在该文件开头。
 
+## 当前实现补充（2026-11-14）
+
+组合定位由后端在同一消息内发布两条动态 TF，前端关闭 TF 发布。同代次 `SUSPECT` 且有可信位姿缓存时，UWB 恢复先尝试连续预测航向，失败再全圈搜索；`LOST` 或跨代次保持全圈搜索。跟踪切换参考失败时可在原半径内按相同门限重试上一参考。详见[后端指南](../../docs/backend_guide.md)；下方日期章节保留各次改动和历史结果，不表示这些场景在当前代码上重新通过。
+
 ## 2026-11-08 变更
 
 - 后端：UWB 只在 `SUSPECT`/`LOST` 局中恢复时作位置先验：在 UWB 位置 `uwb.search_radius`（2 m）内召回关键帧、航向全圈扫描，与 UWB 偏差超过 `uwb.max_offset`（0.6 m）的解丢弃；没有新鲜 UWB 时只等待，不计失败。UWB 不参与跟踪和因子图。开机初始化不用 UWB，只在起点或 `startup_hint` 附近 `recovery.initial_search_radius`（2 m）内搜索。运动门、里程计连续性门已删除（`docs/backend_guide.md` 4.2、4.5）。

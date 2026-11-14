@@ -36,3 +36,6 @@ __pycache__/
 *~
 .DS_Store
 .claude/
+# ---- local recordings and accidental Windows paths -------------------------
+/bags/
+/NUL/
