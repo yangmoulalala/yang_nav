@@ -5,10 +5,51 @@
 
 #include "backend/scan_context.hpp"
 #include "backend/search.hpp"
+#include "backend/matching.hpp"
 #include "scene.hpp"
 
 namespace backend {
 namespace {
+TEST(TrackingReference, InvalidNewSubmapRetriesThePreviousReferenceWithoutRelaxingGates) {
+    const auto world = testing::roomCloud();
+    KeyframeMap prior;
+    const Eigen::Matrix4d identity = Eigen::Matrix4d::Identity();
+    prior.add(testing::sceneFrame(*world, 1, identity, identity));
+    auto plane = Cloud::Ptr(new Cloud);
+    for (auto p : *world)
+        if (p.z == -2.F) {
+            p.z += 100.F;
+            plane->push_back(p);
+        }
+    const auto truth = testing::scenePose(.2, -.15, .1, .12);
+    prior.add(testing::sceneFrame(*plane, 2, truth, truth));
+    RelocalizationTargetCache cache{8, 8U * 1024U * 1024U};
+    TrackingMatcherConfig config;
+    config.tracking.target_keyframes = 1;
+    config.tracking.nearest_reference_radius = 2;
+    config.registration.max_iterations = 16;
+    TrackingMatcher matcher(config, prior, cache);
+    GlobalObservationWork work;
+    work.previous_reference_index = 0;
+    ASSERT_TRUE(prior.get(1, &work.reference));
+    work.predicted_map_pose = truth;
+    work.source = testing::sceneFrame(*world, 10, truth, truth).cloud_local;
+    work.accumulated_frames = 1;
+    work.prior_input.configured = true;
+    const auto observation = matcher.compute(work);
+    EXPECT_EQ(observation.evidence.disposition, ObservationDisposition::Measurement);
+    EXPECT_EQ(work.reference.index, 0);
+    EXPECT_LT((observation.measured_map_pose - truth).norm(), .03);
+    // An out-of-range old reference is never used to conceal an invalid model.
+    config.tracking.nearest_reference_radius = .1;
+    TrackingMatcher bounded(config, prior, cache);
+    ASSERT_TRUE(prior.get(1, &work.reference));
+    work.target.reset();
+    const auto rejected = bounded.compute(work);
+    EXPECT_NE(rejected.evidence.disposition, ObservationDisposition::Measurement);
+    EXPECT_EQ(work.reference.index, 1);
+}
+
 /// 为地点检索与几何验证提供独立的地图、里程计和真实传感器位姿。
 class RelocalizationSearch : public ::testing::Test {
 protected:

@@ -65,6 +65,7 @@ ALLOWED = {
     ('sim/backend.yaml', 'sim/backend_single.yaml'): {**SINGLE_LIDAR, **SIM_SINGLE_VOXEL},
     ('sim/frontend.yaml', 'real/frontend.yaml'): {
         'zlio/frames.imu': SIM_IMU,
+        'zlio/filter.gyro_variance': 'Gazebo gyro stddev is 0.002 rad/s (variance 4e-6); keep hardware noise independent until measured',
         'zlio/input.imu_acceleration_scale': 'gz IMU 单位为 m/s²，MID-360 为 g',
         'zlio/sensor.minimum_range': '仿真雷达量程设置',
         'zlio/sensor.maximum_range': '仿真雷达量程设置',
@@ -179,6 +180,18 @@ def check_values():
 def main():
     failed = check_keys()
     failed = check_values() or failed
+    for platform in PLATFORMS:
+        frontend = flat(CONFIG / platform / 'frontend.yaml')
+        frontend_tf = frontend.get('zlio/output.publish_tf')
+        for name in VARIANTS['backend']:
+            backend = flat(CONFIG / platform / name)
+            paired_tf = backend.get('backend_node/common.publish_odom_tf')
+            if frontend_tf is not False or paired_tf is not True:
+                print(f'BAD  TF ownership {platform}/{name}: combined bringup requires '
+                      'frontend output.publish_tf=false and backend common.publish_odom_tf=true')
+                failed = True
+            else:
+                print(f'OK   TF ownership {platform}/{name} (paired backend publication)')
     return 1 if failed else 0
 
 

@@ -6,7 +6,7 @@
 - 全部参数（含离线工具）见 `src/z-localization/backend/docs/parameters.md`。
 - 仿真回归测试见 `tools/sim_tests/README.md`。
 
-内容对应 `feat/loc-cad-map` 分支（2026-11-08）。相对 `main`：UWB 不再融合进因子图，只在 `SUSPECT`/`LOST` 局中恢复时作位置先验；开机初始化只在起点或启动提示附近 2 m 内搜索；不做全局重定位；删除了恢复运动门（第 4.2、4.5 节）。
+恢复流程、参考帧回退与 TF 接线已于 2026-11-14 按当前源码复核。当前行为：UWB 不再融合进因子图，只在 `SUSPECT`/`LOST` 局中恢复时作位置先验；开机初始化只在起点或启动提示附近 2 m 内搜索；不做全局重定位；删除了恢复运动门（第 4.2、4.5 节）。
 
 ---
 
@@ -25,7 +25,7 @@
 
 | 输出 | 说明 |
 | --- | --- |
-| TF `map → lio_odom` | 与 ZLIO 发的 `lio_odom → base_link` 组成 `map → base_link`，导航首选 |
+| TF `map → lio_odom → base_link` | 组合启动由后端在同一 TFMessage 中发布两条动态边，导航首选 |
 | `/backend_node/localization_pose` | map 系车体位姿 + 协方差 |
 | `/localization/odometry` | map 系车体位姿 + 车体系速度，高频 |
 | `/backend_node/localization_state` | 状态文本，含 `pose_trusted`（transient local） |
@@ -60,7 +60,7 @@ ros2 launch bringup real.launch.py lidar:=single mode:=mapping
 
 ### 2.2 单独启动后端
 
-前端已在运行时，可以只启动/重启 backend 包的 launch（调参时只重启它）。用 bringup 的参数文件即可与全套启动一致：
+前端已在运行时，可以只启动/重启 backend 包的 launch（调参时只重启它）。用 bringup 的参数文件即可与全套启动一致。该配置开启 `common.publish_odom_tf`，前端必须关闭 `output.publish_tf`；若前端独立发布 TF，则改用后端 `common.publish_odom_tf: false` 的完整参数文件：
 
 ```bash
 ros2 launch backend backend.launch.py \
@@ -173,7 +173,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 **局中恢复**（`SUSPECT` / `LOST`，只用 UWB）：
 
 - 需要 `uwb.enabled: true`、已收到己方颜色（`/uwb_pose/team`，选用 `uwb.zero_pose_red` 或 `zero_pose_blue` 作为固定 `T_map_uwb`），且有新鲜的 `/uwb_pose`：按运动时刻（消息时间 + `uwb.time_offset_seconds`）不早于当前帧 `uwb.max_age`（1.2 s），并能在 `uwb.odom_sync_tolerance`（0.25 s）内插值到里程计。
-- 满足时，天线点换算到 map，在 `uwb.search_radius`（2 m）内召回最多 `uwb.candidates`（8）个先验关键帧，航向未知，全圈扫描。不再用描述子分支。
+- 满足时，天线点换算到 map，在 `uwb.search_radius`（2 m）内召回最多 `uwb.candidates`（8）个先验关键帧。同代次 `SUSPECT` 且存在可信位姿缓存时，先尝试最后可信全局变换与连续里程计前推得到的车体航向，失败再全圈扫描；`LOST` 或跨代次时直接全圈扫描。不再用描述子分支。
 - 不满足时不做重定位：结果为推迟（`waiting for fresh UWB`），不计失败，状态保持 `SUSPECT`/`LOST`。所以 `uwb.enabled: false`（真车当前配置）或没有 UWB 的场地（仿真 RMUL）上，进入 `SUSPECT` 后不会自动恢复。
 - UWB 不参与跟踪和因子图，也不用于判断定位是否正常。
 
@@ -185,7 +185,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 
 ### 4.3 航向假设
 
-描述子分支的每个候选关键帧先用描述子给出的 yaw 作初值；不通过时按 `recovery.yaw_sweep_count`（6，即每 60°）扫一圈。日志中 `hypothesis=descriptor_yaw+120deg` 即来自扫描。UWB 分支没有航向初值，直接全圈扫描。启动提示只试提示航向。每次最多验证 `max_candidates`（15）个候选，`parallel_candidates`（16）路并行，实际并行数不超过 CPU 硬件线程数。
+描述子分支的每个候选关键帧先用描述子给出的 yaw 作初值；不通过时按 `recovery.yaw_sweep_count`（6，即每 60°）扫一圈。日志中 `hypothesis=descriptor_yaw+120deg` 即来自扫描。UWB 位置本身不测航向；同代次 `SUSPECT` 有可信位姿缓存时，先验证连续预测的航向，失败再回退完整扫描。`LOST`、跨代次或无可信缓存时没有该航向初值，直接全圈扫描。所有分支沿用相同几何和校正门限，不硬性限制恢复航向。启动提示只试提示航向。每次最多验证 `max_candidates`（15）个候选，`parallel_candidates`（16）路并行，实际并行数不超过 CPU 硬件线程数。
 
 ### 4.4 几何验证
 
@@ -236,7 +236,7 @@ status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;genera
 ### 5.1 定位模式：常规跟踪
 
 - 每个新的运行关键帧最多做一次全局观测，两次观测至少隔 `tracking.correction_period`（0.5 s，且受维护周期 `common.maintenance_period` 限制）。源点云取该关键帧及之前 ≤5 帧，在离预测位置最近（`nearest_reference_radius` 7 m 内）的先验关键帧附近子图上做 scan-to-map。
-- 参考关键帧切换带 `target_hysteresis_distance`（0.5 m）滞回，避免来回跳。
+- 参考关键帧切换带 `target_hysteresis_distance`（0.5 m）滞回，避免来回跳。新参考未产生可用观测时，若上一参考仍存在且在 `nearest_reference_radius` 范围内，再用相同几何、创新和校正门限重试上一参考；只有其通过才采用，否则保留原失败结果。
 - 结果按 3.1 节分为接受 / 冲突 / 无效。被接受的观测作为先验因子进图（日志 `prior scan-to-map factor accepted` + `global correction committed`）。
 
 ### 5.2 建图模式：关键帧与回环

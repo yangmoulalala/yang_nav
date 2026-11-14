@@ -167,6 +167,8 @@ void Publisher::publishPrediction(const nav_msgs::msg::Odometry& odom,
     std::lock_guard<std::mutex> lock(publication_mutex_);
     if (!controller_->projectionIsCurrent(projection))
         return;
+    if (parameters_.input.publish_odom_tf)
+        publishTransforms(projection, odom.header.stamp);
     if (projection.status != LocalizationStatus::Initializing) {
         publishPoseWithCovariance(projection, odom.header.stamp);
         publishOdometry(odom, projection);

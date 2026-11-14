@@ -17,8 +17,8 @@ MID-360 内置 IMU ────────────────────�
 
 | 包 | 来源 | 作用 |
 | --- | --- | --- |
-| `frontend` | 上游 | ZLIO 激光惯性里程计（`zlio_node`），发布 `lio_odom → base_link` |
-| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位；局中恢复（SUSPECT/LOST）用裁判系统 UWB 作位置先验 |
+| `frontend` | 上游 | ZLIO 激光惯性里程计（`zlio_node`），输出观测与高频预测；组合启动关闭其 TF 发布 |
+| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位；组合启动成对发布两条动态 TF；局中恢复（SUSPECT/LOST）用裁判系统 UWB 作位置先验 |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
 | `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
@@ -32,7 +32,7 @@ MID-360 内置 IMU ────────────────────�
 - 参数：前端不再读自定义 `lio.yaml`，前后端都只读标准 ROS 参数文件，代码无默认值，缺失/未知参数启动即失败；
   话题改为固定相对名由 launch remap。
 - 外参：前端 `sensor.body_from_lidar`、后端 `common.body.*` 删除，改为从 TF（URDF）查询；
-  前端自己发布 `world → base`（替代原 `lidar_fusion/base_tf` 节点），后端按消息时间查车体外参。
+  组合启动由后端按消息时间查车体外参并成对发布 `map → lio_odom → base_link`；独立前端仍可发布 `world → base`。
 
 ## 依赖与编译（Ubuntu 24.04 / ROS 2 Jazzy）
 
@@ -107,14 +107,15 @@ MID-360 侧装（`mid360_joint` 俯仰约 90°），静止时只看到一侧，�
 | `backend*.yaml` `registration.max_iterations` | 30 | 16 | 同上 |
 
 LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通的树 `map → lio_odom → base_link → URDF 树`：
-`lio_odom → base_link` 由 ZLIO 直接发布（`output.publish_tf: true`、`frames.base: base_link`）：里程计 `lio_odom → frames.imu`
-乘以按里程计时间戳从 TF 查到的 `frames.imu ← base_link`，云台 `yaw_joint` 转动也会跟随。IMU 系在 URDF 里已有父帧，
-所以里程计接在树根 `base_link` 上，而不是直接发 `lio_odom → frames.imu`。
+组合启动时，前端 `output.publish_tf: false`，后端 `common.publish_odom_tf: true`。后端从同一不可变位姿投影、
+同一时间戳，在一个 TFMessage 中发布 `map → lio_odom` 和 `lio_odom → base_link`，避免重置期间拼接不同代次的两条边。
+高频预测也通过此发布路径。独立运行前端时，示例配置仍可开启 `output.publish_tf`；此时后端必须关闭
+`common.publish_odom_tf`，每条 TF 边只能有一个发布者。IMU 系在 URDF 里已有父帧，里程计应接到树根 `base_link`。
 不再有手写的 `imu` 静态 TF：MID-360 内置 IMU 是 URDF 中的 `mid360_imu_link`（Livox 出厂外参），
 前端启动时从 TF 查一次 `frames.imu ← frames.lidar`（同在雷达上，固定）；后端按每条消息的时间戳查
 `common.sensor_frame ← common.body_frame`（`base_link`），超过 `common.body_extrinsic_tolerance` 时沿用上次有效值并告警，
-所以云台 `yaw_joint` 转动时车体位姿与 UWB 杆臂也跟随（启动位姿提示仍用启动时外参）。后端只发布 `map → lio_odom`，
-不发 `map → base_link`。Gazebo 不发布真值 `/odom` / `odom` 帧。
+所以云台 `yaw_joint` 转动时车体位姿、TF 与 UWB 杆臂也跟随（启动位姿提示仍用启动时外参）。后端不发布
+直接的 `map → base_link` 边。TF 发布归属可用 `python3 tools/check_bringup_params.py` 检查。Gazebo 不发布真值 `/odom` / `odom` 帧。
 
 ### 仿真实测（2026-10-27，RTX 4060 Ti，RTF 1.0）
 

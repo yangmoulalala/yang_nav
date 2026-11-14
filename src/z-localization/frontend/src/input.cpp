@@ -342,6 +342,14 @@ std::optional<Time> Input::nextEnd(bool flush) {
             continue;
         }
         const auto packet = packets_.front();
+        // A flash scan observes one instant, not an interval of continuous returns.
+        // Updating at a synthetic window boundary extrapolates past its evidence
+        // and can also create empty updates when the next window falls in a gap.
+        if (packet.first == packet.second) {
+            if (packet.second <= available)
+                return packet.second;
+            break;
+        }
         if (packet.second - packet.first < minimum) {
             if (points_.nextEnd() <= available)
                 return points_.nextEnd();

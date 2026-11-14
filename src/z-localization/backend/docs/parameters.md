@@ -37,7 +37,7 @@
 输入输出话题不再通过参数配置：`frontend/frame`、`frontend/odometry`、`frontend/session`、`uwb_pose`、`uwb_pose/team`、
 `localization/lio_world_cloud` 为节点内固定的相对名，需要改名时在 launch 中使用 ROS remap。
 
-#### `common` · 坐标与输入（14 项）
+#### `common` · 坐标与输入（16 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -46,6 +46,7 @@
 | `odom_frame` | 字符串 | `odom` | 前端里程计父坐标系名称，须与输入消息一致 |
 | `sensor_frame` | 字符串 | `imu` | 前端位姿所描述的传感器坐标系，须与里程计子坐标系一致；完整系统中为前端 `frames.imu` |
 | `body_frame` | 字符串 | `body` | 车体坐标系名称，用于车体位姿输出；完整系统为 `base_link`。外参从 TF 读取，见下文 |
+| `publish_odom_tf` | 布尔 | `false` | 是否由后端在同一 TFMessage 内成对发布 map → odom 与 odom → body；完整 bringup 为 `true`，须同时关闭前端 `output.publish_tf`。同步观测与高频预测均使用同一投影及时间戳；不能与其他节点重复发布 odom → body |
 | `odom_topic` | 字符串 | 仅 legacy | `legacy` 高频里程计话题，用于输出实时位姿 |
 | `sync_odom_topic` | 字符串 | 仅 legacy | `legacy` 扫描末端里程计话题，用于与点云配对 |
 | `cloud_topic` | 字符串 | 仅 legacy | `legacy` 去畸变点云输入话题 |
@@ -68,13 +69,13 @@
 - UWB 天线固定在 body 系，每条 UWB 测量按其运动时刻（消息时间 + `uwb.time_offset_seconds`）的外参换算传感器系杆臂，
   只用于局中恢复的位置先验和 UWB 一致性检查；
 - `startup_hint` 描述启动时刻的车体位姿，用**启动时**的外参换算为传感器位姿（启动到首帧期间应保持云台不动）；
-- 关键帧、配准、描述子整平与 map → odom TF 均在传感器系中计算；`~/localization_pose`、`/localization/odometry` 和 UWB 杆臂才使用车体外参。
+- 关键帧、配准、描述子整平与 map → odom TF 均在传感器系中计算；车体位姿、里程计、UWB 杆臂及 `common.publish_odom_tf=true` 时附带的 odom → body TF 使用车体外参。
 
 精确时刻不在 TF 缓存中时使用最新变换；其时间戳与请求时刻相差超过 `common.body_extrinsic_tolerance` 时节流告警并沿用上次有效外参。
 外参变化超过约 2° 或 1 cm 时节流输出 `body extrinsic changed` 信息日志。单独运行时可用 `static_transform_publisher`
 发布该变换，见 [README](../README.md#快速开始)。
 
-#### `common.scan_context` · Scan Context（14 项）
+#### `common.scan_context` · Scan Context（15 项）
 
 地点描述子是用于识别重访位置的点云摘要。本组仅在 `common.descriptor_type=scan_context` 时使用。
 配置中只保留所选描述子的参数组；未知参数或多余的描述子参数组会导致启动失败。
@@ -146,7 +147,7 @@
 达到 `min_interval` 后，平移、旋转或时间条件满足任意一项即可插入关键帧。
 若三个条件都关闭，代码会将定时间隔恢复为 `max(1 s, min_interval)`。
 
-#### `registration` · 点到面配准（17 项）
+#### `registration` · 点到面配准（19 项）
 
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -178,7 +179,7 @@
 | `target_keyframes` | 整数，帧 | `11` | 拼接目标子图时最多使用的邻近先验关键帧数；须 `≥1` |
 | `target_radius` | 浮点，m | `8.0` | 围绕参考关键帧选取目标子图的半径；须 `≥0`，`0` 不限半径 |
 | `nearest_reference_radius` | 浮点，m | `7.0` | 当前预测位置到先验参考关键帧的最大距离；须 `≥0`，`0` 不限距离 |
-| `target_hysteresis_distance` | 浮点，m | `0.5` | 新参考帧比旧参考帧至少近多少才切换；须 `≥0`，`0` 始终选最近帧 |
+| `target_hysteresis_distance` | 浮点，m | `0.5` | 新参考帧比旧参考帧至少近多少才切换；须 `≥0`，`0` 始终选最近帧。新参考失败后，可在参考半径内按相同门限重试上一参考；这不放宽几何或创新门限 |
 | `source.min_frames` | 整数，帧 | `1` | 至少累积多少帧点云才进行匹配；须在 `[1,source.max_frames]` |
 | `source.max_frames` | 整数，帧 | `5` | 一次匹配最多累积的同步观测帧数，含当前帧；须 `≥1` |
 | `source.max_time` | 浮点，s | `0.5` | 参与累积的历史帧与当前帧的最大时间差；须 `≥0`，`0` 不限 |

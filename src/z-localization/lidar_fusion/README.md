@@ -2,7 +2,7 @@
 
 把单/双雷达合并成 ZLIO 需要的一路带逐点时间的点云。
 外参只从 tf2（URDF / robot_state_publisher）读取，本包不保存任何外参数值。
-`lio_odom → base_link` TF 由 ZLIO 前端直接发布（`frames.base`），见 [frontend/docs/parameters.md](../frontend/docs/parameters.md)。
+组合启动时，后端在同一 TFMessage 中发布 `map → lio_odom → base_link`，前端关闭 TF 发布；本包只消费传感器外参。独立前端的可选 TF 发布见 [frontend/docs/parameters.md](../frontend/docs/parameters.md)。
 
 | 节点 | 可执行文件 | 作用 |
 | --- | --- | --- |

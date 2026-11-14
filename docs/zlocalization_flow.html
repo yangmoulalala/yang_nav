@@ -57,7 +57,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
 <header>
   <div class="eyebrow">yang_nav · src/z-localization · 易懂版</div>
   <h1><code>z-localization</code> 程序流程</h1>
-  <p class="lede">前端 ZLIO 输出局部、连续、会慢慢漂移的里程计；后端把它放进全局地图坐标系，只发布 <code>map → lio_odom</code> 这一个修正量。五张图从整体讲到状态机和重置。数值取自 <code>bringup/config/sim/*.yaml</code>，坐标系名是 bringup 的配置值。各步骤的函数级细节见<a href="zlocalization_flow_detail.html">细节版</a>。</p>
+  <p class="lede">前端 ZLIO 输出局部、连续、会慢慢漂移的里程计；后端把它放进全局地图坐标系；组合启动由后端在同一消息中发布 <code>map → lio_odom → base_link</code> 两条动态边。五张图从整体讲到状态机和重置。数值取自 <code>bringup/config/sim/*.yaml</code>，坐标系名是 bringup 的配置值。各步骤的函数级细节见<a href="zlocalization_flow_detail.html">细节版</a>。</p>
   <div class="legend">
     <span><i class="sw" style="background:var(--sen-soft);border-color:var(--line)"></i>传感器 / 外部</span>
     <span><i class="sw" style="background:var(--fe-soft);border-color:var(--fe)"></i>前端 zlio_node</span>
@@ -90,7 +90,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <text class="ts" x="535" y="222" text-anchor="middle">局部 · 连续 · 会慢慢漂移</text>
     <text class="tm ts" x="535" y="252" text-anchor="middle">apps/node.cpp</text>
     <rect class="box" x="440" y="30" width="190" height="56" rx="8"/>
-    <text class="tm" x="535" y="53" text-anchor="middle">TF lio_odom → base_link</text>
+    <text class="tm" x="535" y="53" text-anchor="middle">前端 TF：组合启动关闭</text>
     <text class="tm ts" x="535" y="73" text-anchor="middle">/odometry 高频预测</text>
     <path class="ln ln-fe" d="M535 150 V88" marker-end="url(#ah-fe)"/>
     <path class="ln ln-fe" d="M620 175 H748" marker-end="url(#ah-fe)"/><text class="tm ts" x="685" y="169" text-anchor="middle">/frontend/frame</text>
@@ -102,7 +102,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <text class="ts" x="835" y="222" text-anchor="middle">全局 · 修正漂移</text>
     <text class="tm ts" x="835" y="252" text-anchor="middle">src/localization.cpp</text>
     <rect class="box" x="735" y="30" width="200" height="56" rx="8"/>
-    <text class="tm" x="835" y="53" text-anchor="middle">TF map → lio_odom</text>
+    <text class="tm" x="835" y="53" text-anchor="middle">TF map → odom → base</text>
     <text class="tm ts" x="835" y="73" text-anchor="middle">localization_state</text>
     <path class="ln ln-be" d="M835 150 V88" marker-end="url(#ah-be)"/>
     <path class="ln ln-be dash" d="M835 270 V312 H535 V273" marker-end="url(#ah-be)"/>
@@ -114,10 +114,10 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <rect class="box" x="600" y="378" width="120" height="34" rx="8"/><text class="tm" x="660" y="399" text-anchor="middle">base_link</text>
     <rect class="box sen" x="810" y="378" width="120" height="34" rx="8"/><text x="870" y="399" text-anchor="middle">传感器 links</text>
     <path class="ln ln-be" d="M300 395 H388" marker-end="url(#ah-be)"/><text class="ts" x="344" y="387" text-anchor="middle">后端</text>
-    <path class="ln ln-fe" d="M510 395 H598" marker-end="url(#ah-fe)"/><text class="ts" x="554" y="387" text-anchor="middle">前端</text>
+    <path class="ln ln-be" d="M510 395 H598" marker-end="url(#ah-be)"/><text class="ts" x="554" y="387" text-anchor="middle">后端</text>
     <path class="ln" d="M720 395 H808" marker-end="url(#ah)"/><text class="ts" x="764" y="387" text-anchor="middle">URDF</text>
   </svg></div>
-  <figcaption>前端负责“局部准、连续”，后端负责“全局对”。后端不直接发 <code>map → base_link</code>，只发 <code>map → lio_odom</code>，和前端的 <code>lio_odom → base_link</code> 串起来。位姿不可信时后端不再更新这个 TF。</figcaption>
+  <figcaption>前端负责“局部准、连续”，后端负责“全局对”。组合启动关闭前端 TF，后端以同一投影、时间戳和消息发布两条动态边。SUSPECT 同代次沿用最后可信全局变换前推；LOST 有可信缓存时保持传感器全局位姿并继续发布补偿 TF，不能把冻结位姿理解为停止发 TF。首次尚无全局位姿时不发全局 TF。</figcaption>
   </figure>
   <div class="notes">
     <div><b>/frontend/frame</b>一次已提交观测：后验位姿 + 去畸变点云 + 匹配数，带 instance_id / epoch / sequence。</div>
@@ -138,7 +138,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <text class="tm tb" x="58" y="176">onImu(msg)</text>
     <text class="ts" x="58" y="198">加速度 × imu_acceleration_scale</text>
     <text class="tm" x="58" y="222">predictor.addImu()</text>
-    <text class="ts" x="58" y="242">→ 立即发布 /odometry · /frontend/odometry · TF</text>
+    <text class="ts" x="58" y="242">→ 发布 /odometry · /frontend/odometry；TF 可选</text>
     <text class="tm" x="58" y="268">queue.push(imu)</text>
     <rect class="box" x="460" y="62" width="110" height="88" rx="10"/><text class="tm tb" x="515" y="101" text-anchor="middle">InputQueue</text><text class="ts" x="515" y="121" text-anchor="middle">按序事件</text>
     <rect class="box fe" x="460" y="200" width="110" height="70" rx="10"/><text class="tm tb" x="515" y="231" text-anchor="middle">Predictor</text><text class="ts" x="515" y="251" text-anchor="middle">高频预测器</text>
@@ -243,7 +243,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <rect class="box wr" x="330" y="20" width="650" height="125" rx="10"/>
     <text class="tb" x="350" y="44">重定位 recovery</text><text class="ts" x="490" y="44">至少隔 0.2 s · 只在有先验地图时运行</text>
     <text x="350" y="68">候选：初始化 startup_hint → Scan Context（2 m 内）；SUSPECT/LOST 只用 UWB 位置 2 m 内</text>
-    <text x="350" y="90">每个候选先用描述子航向，不过再每 60° 扫一圈 → 并行点到面验证 → 歧义检验</text>
+    <text x="350" y="90">描述子或同代 SUSPECT 先试航向初值，失败扫全圈；无初值直接扫全圈 → 几何与歧义检验</text>
     <text x="350" y="112">与 UWB 偏差 ≤0.6 m，连续 2 次一致 → 回 NORMAL，进入 5 次观测试用期</text>
     <text class="twr" x="350" y="134">源点云不够、没有 UWB 只等待；SUSPECT 失败 3 次 → LOST，LOST 下失败即请求前端重置</text>
     <rect class="box ok" x="330" y="155" width="650" height="90" rx="10"/>
@@ -262,7 +262,7 @@ svg .mk{fill:var(--muted)}svg .mk-fe{fill:var(--fe)}svg .mk-be{fill:var(--be)}sv
     <rect class="box" x="800" y="370" width="170" height="46" rx="8"/><text class="tm tb" x="885" y="389" text-anchor="middle">commit()</text><text class="ts" x="885" y="407" text-anchor="middle">持锁复核并写回</text>
     <path class="ln" d="M190 393 H213" marker-end="url(#ah)"/><path class="ln" d="M385 393 H408" marker-end="url(#ah)"/><path class="ln" d="M580 393 H603" marker-end="url(#ah)"/><path class="ln" d="M775 393 H798" marker-end="url(#ah)"/>
   </svg></div>
-  <figcaption>重定位和跟踪互斥：只有 NORMAL / OBS_DEGRADED 才跑跟踪和回环。虚线框是回环任务跳过的两步。耗时的 <code>compute()</code> 在锁外执行，不会阻塞前端帧的接入和高频输出。</figcaption>
+  <figcaption>重定位和跟踪互斥：只有 NORMAL / OBS_DEGRADED 才跑跟踪和回环。UWB 仅提供位置；同代 SUSPECT 的航向初值来自连续预测。新跟踪参考失败时可在原半径内按相同门限重试上一参考，通过才采用。虚线框是回环任务跳过的两步。耗时的 <code>compute()</code> 在锁外执行，不会阻塞前端帧的接入和高频输出。</figcaption>
   </figure>
 </section>
 

@@ -23,20 +23,20 @@
           lidar_calibration                                                          backend/backend_node
         （标定，订阅 /odometry）                                          (全局定位 / 建图 / 回环 / 重定位)
                                                                                    │
-            TF: map → lio_odom、/localization/odometry、~/localization_pose、~/localization_state、可视化话题 ...
+            TF: map → lio_odom → base_link、/localization/odometry、~/localization_pose、~/localization_state、可视化话题 ...
 ```
 
 TF 树（仿真与真车一致）：
 
 ```
-map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──(robot_state_publisher, URDF)──▶ yaw_link ──▶ mid360_link ──▶ mid360_imu_link
+map ──(backend_node)──▶ lio_odom ─(backend_node)─▶ base_link ──(robot_state_publisher, URDF)──▶ yaw_link ──▶ mid360_link ──▶ mid360_imu_link
                                                                                                       └─▶ l2_link
 ```
 
 - 不再有手写的 `imu` 静态 TF：MID-360 内置 IMU 是 URDF 中的 `mid360_imu_link`（Livox 出厂外参）。
   前端 IMU 坐标系 `frames.imu` 仿真为 `mid360_link`（gz IMU 与雷达同原点），真车为 `mid360_imu_link`；下文“`imu` 系”均指它。
-- `lio_odom → base_link` 由 ZLIO 直接发布（`output.publish_tf: true`、`frames.base: base_link`）：里程计 `lio_odom → frames.imu` 乘以按里程计时间戳从 TF 查到的 `frames.imu ← base_link`，云台 `yaw_joint` 转动也会跟随。
-  IMU 系在 URDF 里已有父帧，所以不直接发 `lio_odom → frames.imu`，否则 IMU 坐标系会有两个父帧。
+- 组合启动关闭前端 `output.publish_tf`，开启后端 `common.publish_odom_tf`。后端在一个 TFMessage 内、用同一代同一时间戳的位姿投影发布两条动态边；高频预测也走此路径。
+  后端按输出时间戳换算车体外参，因此跟随云台运动。独立前端仍可开启 TF，但此时后端须关闭 `common.publish_odom_tf`。IMU 系在 URDF 里已有父帧，里程计接到树根 `base_link`。
 - 前端启动时从 TF 查一次 `frames.imu ← frames.lidar`，后端按消息时间戳查询 `common.sensor_frame ← base_link`，跟踪云台 `yaw_joint`（容差 `common.body_extrinsic_tolerance`）。
 - 后端不发布 `map → body`，树里只有 `base_link` 一个车体帧。
 
@@ -50,7 +50,7 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | `sentry_gazebo` | `sim.launch.py`、`gz_bridge`、`robot_state_publisher`、`joint_state_publisher` | Gazebo Harmonic 仿真（RMUL 场地），桥接雷达/IMU/时钟/`cmd_vel`；**不提供真值位姿** |
 | `livox_ros_driver2` | `livox_ros_driver2_node` | 真车 MID-360 驱动，输出 `/livox/lidar`、`/livox/imu` |
 | `lidar_fusion` | `merge_node`（节点名 `lidar_merge`） | 把 MID-360 与可选 L2 点云按 tf2 外参合并到 `mid360_link`，输出带逐点时间 `offset_time` 的 `/lidar/points` |
-| `frontend` (ZLIO) | `zlio_node`、`zlio_visualizer` | 激光惯性里程计：IMU 预测 + 点面配准滤波，输出高频里程计和去畸变观测帧，并发布 TF `lio_odom → base_link` |
+| `frontend` (ZLIO) | `zlio_node`、`zlio_visualizer` | 激光惯性里程计：IMU 预测 + 点面配准滤波，输出高频里程计和去畸变观测帧；组合启动关闭其 TF 发布 |
 | `backend` | `backend_node`、`body_calibration_node` | 全局定位后端：先验地图定位或在线建图、Scan Context 回环、位姿图优化、丢失恢复（局中恢复用裁判系统 UWB 作位置先验） |
 | `localization_interfaces` | — | 前后端协议消息：`FrontendFrame`、`FrontendOdometry`、`FrontendSession`、`ResetFrontend.srv` |
 | `lidar_calibration` | `calibrate` | 雷达/车体外参标定工具（订阅 `/odometry`） |
@@ -78,7 +78,7 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 | --- | --- | --- |
 | `/robot_description` | `robot_state_publisher` | URDF 字符串（transient local），RViz RobotModel 使用 |
 | `/joint_states` | `joint_state_publisher` | 关节角；仿真中云台固定，发零位。真车从 `/chassis/joint_states`（底盘通信节点）取云台角，没有时发 0 |
-| `/tf` | `robot_state_publisher`、`zlio`、`backend_node` | 动态 TF：URDF 可动关节、`lio_odom → base_link`、`map → lio_odom` |
+| `/tf` | `robot_state_publisher`、`backend_node` | 动态 TF：URDF 可动关节；后端成对发布 `map → lio_odom` 与 `lio_odom → base_link` |
 | `/tf_static` | `robot_state_publisher`、各 `static_transform_publisher` | 固定外参（含 `mid360_link → mid360_imu_link`）与驱动/gz 传感器帧别名 |
 
 ### 3.3 前端 ZLIO（`zlio_node`）
@@ -145,10 +145,10 @@ map ──(backend_node)──▶ lio_odom ─(zlio_node)─▶ base_link ──
 
 | 用途 | 话题 / TF | 类型 | 坐标系 | 说明 |
 | --- | --- | --- | --- | --- |
-| **车体全局位姿（首选）** | TF `map → base_link` | tf2 | `map` | 由 `map → lio_odom`（后端）+ `lio_odom → base_link`（ZLIO）组成；Nav2 的 `global_frame: map`、`robot_base_frame: base_link` 直接可用 |
+| **车体全局位姿（首选）** | TF `map → base_link` | tf2 | `map` | 由后端同一消息内的 `map → lio_odom` + `lio_odom → base_link` 组成；Nav2 的 `global_frame: map`、`robot_base_frame: base_link` 直接可用 |
 | 车体全局位姿（话题） | `/backend_node/localization_pose` | `geometry_msgs/PoseWithCovarianceStamped` | `map` | 带协方差，适合不用 TF 的上层模块（决策、裁判系统通信） |
 | 车体全局里程计 | `/localization/odometry` | `nav_msgs/Odometry` | pose 在 `map`，twist 在 `base_link` | 高频（随 IMU）；Nav2 的 `odom_topic` 直接用它 |
-| 前端原始里程计 | `/odometry` | `nav_msgs/Odometry` | pose 在 `lio_odom`，twist 在 `imu` | 高频、连续不跳变；标定工具使用，导航不再直接使用 |
+| 前端原始里程计 | `/odometry` | `nav_msgs/Odometry` | pose 在 `lio_odom`，twist 在 `imu` | 高频局部预测，重置可改变原点；标定工具使用，导航使用后端输出 |
 | 定位是否可信 | `/backend_node/localization_state` | `std_msgs/String` | — | 解析 `pose_trusted=true/false`；为 false（`INITIALIZING`/`SUSPECT`/`LOST`）时导航应停车或降级 |
 | 障碍物点云 | `/localization/lio_world_cloud` | `sensor_msgs/PointCloud2` | `map` | 当前帧去畸变点云，做 costmap 障碍层 / 地形分析输入 |
 | 障碍物点云（传感器系） | `/lidar/points` | `sensor_msgs/PointCloud2` | `mid360_link` | 未去畸变的原始合并点云，可配合 TF 给 costmap 使用 |

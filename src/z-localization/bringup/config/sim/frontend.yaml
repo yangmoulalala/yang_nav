@@ -49,7 +49,7 @@ zlio:
       # 导出去畸变点云的采样体素边长，m；0 输出空点云。
       resolution: 0.10
       # 是否发布 frames.world → frames.base 的高频预测 TF。
-      publish_tf: true
+      publish_tf: false  # backend publishes both dynamic TF edges from one projection
       # 按时间查不到 imu ← base 时，最新变换与里程计时间允许的最大差，s；超过则沿用上次有效值并告警。
       base_extrinsic_tolerance: 0.2
 
@@ -168,7 +168,9 @@ zlio:
       # 导航状态变化的收敛限值，使用对应 SI 单位。
       convergence_tolerance: 0.001
       # 原始 IMU 区间的角速度有效方差，rad²/s²。
-      gyro_variance: 0.25
+      # Match Gazebo's 0.002 rad/s gyro standard deviation (sdf_builder.imu_xml).
+      # An inflated gyro variance lets ambiguous scan geometry rotate the estimate.
+      gyro_variance: 0.000004
       # 原始 IMU 区间的比力有效方差，m²/s⁴。
       accel_variance: 0.5
       # 陀螺偏置随机游走强度，rad²/s³。

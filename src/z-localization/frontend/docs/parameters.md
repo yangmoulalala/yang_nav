@@ -181,7 +181,7 @@ LiDAR → IMU 外参不是参数。节点构造时从 TF 查询
 | 键 | 类型 / 单位 | 示例值 | 说明 |
 | --- | --- | --- | --- |
 | `output.resolution` | 浮点，m | `0.10` | 导出去畸变点云的采样体素边长；允许 `0` 或 `≥1e-4 m`，`0` 输出空点云 |
-| `output.publish_tf` | 布尔 | `true` | 是否发布 `frames.world → frames.base` 的高频预测 TF（随 `/odometry` 发布） |
+| `output.publish_tf` | 布尔 | `true` | 是否发布 `frames.world → frames.base` 的高频预测 TF（随 `/odometry` 发布）；完整 bringup 设为 `false`，由后端成对发布动态 TF |
 | `output.base_extrinsic_tolerance` | 浮点，s | `0.2` | 按里程计时间戳查不到 `frames.imu ← frames.base` 时，最新变换与该时间戳允许的最大差；超过则沿用上次有效值并限频告警，尚无有效值时不发 TF。有限且 `≥0`；`frames.base = frames.imu` 时不使用 |
 
 #### `session` · 会话与重置（3 项）

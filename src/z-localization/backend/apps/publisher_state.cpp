@@ -142,18 +142,45 @@ void Publisher::publishState(const LocalizationSnapshot& snapshot) {
                              snapshot.localization.generation, snapshot.pose_revision);
 }
 
-/// 发布允许推进的 map → odom TF 及同版本定位状态。
+/// 发布允许推进的 TF 投影及同版本定位状态；可选在同一消息中附带 odom → body。
 void Publisher::publishProjection(const LocalizationProjection& projection,
                                   const builtin_interfaces::msg::Time& stamp) {
     if (!projection.should_publish_tf || !tf_broadcaster_) {
         return;
     }
-    tf_broadcaster_->sendTransform(toRosTransform(
-        projection.T_map_odom, parameters_.input.map_frame, parameters_.input.odom_frame, stamp));
+    publishTransforms(projection, stamp);
     publishLocalizationState(projection.status, projection.reason, projection.estimator_failures,
                              rclcpp::Time(stamp),
                              /*tf_published=*/true, projection.epoch, projection.state_generation,
                              projection.pose_revision);
+}
+
+void Publisher::publishTransforms(const LocalizationProjection& projection,
+                                  const builtin_interfaces::msg::Time& stamp) {
+    if (!tf_broadcaster_ || !projection.valid || !projection.global_pose_available ||
+        projection.status == LocalizationStatus::Initializing)
+        return;
+    const auto ns = rclcpp::Time(stamp).nanoseconds();
+    if (ns <= 0 || projection.epoch < last_tf_epoch_ ||
+        (projection.epoch == last_tf_epoch_ && ns <= last_tf_stamp_ns_))
+        return;
+    auto map_odom = toRosTransform(projection.T_map_odom, parameters_.input.map_frame,
+                                   parameters_.input.odom_frame, stamp);
+    if (parameters_.input.publish_odom_tf) {
+        // Both edges use one immutable projection and one transport message.
+        // Resetting an odom origin across independent publishers can otherwise
+        // compose a new map edge with an old base edge for an entire scan period.
+        const auto body = bodyProjection(projection, stamp);
+        auto odom_body = toRosTransform(projection.T_map_odom.inverse() * body.T_map_body,
+                                        parameters_.input.odom_frame,
+                                        parameters_.input.body_frame, stamp);
+        tf_broadcaster_->sendTransform(
+            std::vector<geometry_msgs::msg::TransformStamped>{map_odom, odom_body});
+    } else {
+        tf_broadcaster_->sendTransform(map_odom);
+    }
+    last_tf_epoch_ = projection.epoch;
+    last_tf_stamp_ns_ = ns;
 }
 
 /// 按输出时刻外参把传感器位姿与协方差传播到车体。

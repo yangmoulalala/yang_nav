@@ -23,6 +23,7 @@ backend_node:
       input_cloud_in_local_frame: true
       # 车体输出坐标系名称；sensor_frame <- body_frame 外参由 URDF 经 TF 提供，按消息时间戳查询（跟踪云台关节）。 [按车调整]
       body_frame: body
+      publish_odom_tf: false  # true only when the frontend's TF publisher is disabled
       # 外参精确时刻不可用时，允许使用的最新 TF 与请求时刻的最大时间差，单位为秒；
       # 超出时节流告警并沿用上次有效外参。须 ≥0。
       body_extrinsic_tolerance: 0.2

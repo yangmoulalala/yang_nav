@@ -24,6 +24,8 @@ struct RosInputParameters {
     std::string map_frame;
     std::string odom_frame;
     std::string body_frame;
+    /// Own both dynamic TF edges in one message; frontend TF must be disabled.
+    bool publish_odom_tf = false;
     std::string odom_topic;
     std::string sync_odom_topic;
     std::string cloud_topic;

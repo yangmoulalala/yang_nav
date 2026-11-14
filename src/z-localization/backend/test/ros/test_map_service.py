@@ -25,6 +25,7 @@ import rclpy
 from sensor_msgs_py import point_cloud2
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
+from tf2_msgs.msg import TFMessage
 import yaml
 
 _resources = ExitStack()
@@ -57,6 +58,7 @@ def generate_test_description():
     parameters = {
         'common.frontend': 'zlio', 'common.odom_frame': 'odom', 'common.sensor_frame': 'imu',
         'common.body_frame': 'body', 'common.input_cloud_in_local_frame': True,
+        'common.publish_odom_tf': True,
         'loop.enabled': False,
         'trajectory.save_on_shutdown': False, 'trajectory.map_voxel_resolution': 0.0,
         'trajectory.keyframe.min_interval': 0.0, 'trajectory.keyframe.max_interval': 0.1,
@@ -147,8 +149,10 @@ class TestMapService(unittest.TestCase):
         publisher = self.node.create_publisher(FrontendFrame, '/frontend/frame', 10)
         predictor = self.node.create_publisher(FrontendOdometry, '/frontend/odometry', 10)
         received = []
+        transforms = []
         subscription = self.node.create_subscription(
             Odometry, '/localization/odometry', received.append, 20)
+        tf_subscription = self.node.create_subscription(TFMessage, '/tf', transforms.append, 200)
         try:
             self.assertTrue(client.wait_for_service(timeout_sec=10))
             self.assertFalse(self.save(client).success,
@@ -157,6 +161,20 @@ class TestMapService(unittest.TestCase):
                             and predictor.get_subscription_count() > 0)
             for sequence in range(1, 4):
                 self.publish_frame(publisher, predictor, received, sequence)
+            self.wait_until(lambda: any(
+                m.transforms and m.transforms[0].header.stamp.sec == 13 for m in transforms))
+            paired = [m for m in transforms if any(t.header.frame_id == 'map' for t in m.transforms)]
+            self.assertTrue(paired)
+            for message in paired:
+                self.assertEqual(len(message.transforms), 2, 'dynamic edges must share one TFMessage')
+                parent, child = message.transforms
+                self.assertEqual((parent.header.frame_id, parent.child_frame_id), ('map', 'odom'))
+                self.assertEqual((child.header.frame_id, child.child_frame_id), ('odom', 'body'))
+                self.assertEqual(parent.header.stamp, child.header.stamp)
+                # The fixture translates along odom x and has a nonzero sensor/body lever arm.
+                sequence = parent.header.stamp.sec - 10
+                self.assertAlmostEqual(child.transform.translation.x, .5 * sequence + .1, places=5)
+                self.assertAlmostEqual(child.transform.translation.y, -.05, places=5)
             self.assertTrue(self.save(client).success)
             before = fingerprint(destination)
             self.assertIn('map.pcd', before)
@@ -214,6 +232,7 @@ class TestMapService(unittest.TestCase):
             self.assertEqual(fingerprint(destination), before)
         finally:
             self.node.destroy_subscription(subscription)
+            self.node.destroy_subscription(tf_subscription)
             self.node.destroy_publisher(publisher)
             self.node.destroy_publisher(predictor)
             self.node.destroy_client(client)

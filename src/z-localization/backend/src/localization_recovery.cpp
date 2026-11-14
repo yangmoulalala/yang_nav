@@ -155,8 +155,8 @@ PoseCorrectionDelta Localization::applyRecoveryLocked(const RecoveryWork& work,
     return applied_correction;
 }
 
-/// 由新鲜 UWB 读数构造局中恢复的位置先验：天线点经固定 T_map_uwb 换算到 map，
-/// 杆臂按测量时刻的里程计与外参换算到当前帧传感器系；航向未知，全圈扫描。
+/// Build a fresh UWB position prior with the antenna lever arm at measurement time.
+/// Same-epoch SUSPECT tries continuous heading first; LOST retains the full yaw sweep.
 std::optional<RelocalizationPositionPrior> Localization::makeUwbRecoveryPriorLocked(
     const FrontendFrame& frame) const {
     if (!config_.uwb.enabled || !latest_uwb_ || !T_map_uwb_ || frames_.odometry().empty())
@@ -189,6 +189,23 @@ std::optional<RelocalizationPositionPrior> Localization::makeUwbRecoveryPriorLoc
     prior.runtime_sensor_point =
         R_odom_sensor.transpose() * (antenna_odom - frame.odom_pose.block<3, 1>(0, 3));
     prior.yaw_seed_rad.reset();
+    // SUSPECT still has a continuous same-epoch orientation estimate. UWB only
+    // measures position: do not discard that heading and start with an unconstrained
+    // full-circle search through similar tunnel geometry. The existing search
+    // falls back to the full sweep if this seed cannot establish a valid anchor.
+    if (state_.status() == LocalizationStatus::Suspect && poses_.trusted().hasPose() &&
+        poses_.trusted().epoch() == frame.epoch) {
+        const Eigen::Matrix4d predicted = poses_.trusted()
+                                              .project(state_.status(), poses_.transform(),
+                                                       frame.odom_pose, frame.epoch)
+                                              .T_map_sensor;
+        const double predicted_yaw = yawFromRotation(
+            predicted.block<3, 3>(0, 0) * T_sensor_body.block<3, 3>(0, 0));
+        prior.R_yawless_sensor =
+            yawGuess(-predicted_yaw, Eigen::Vector3d::Zero()).block<3, 3>(0, 0) *
+            predicted.block<3, 3>(0, 0);
+        prior.yaw_seed_rad = predicted_yaw;
+    }
     prior.search_radius = config_.uwb.search_radius;
     prior.max_candidates = config_.uwb.candidates;
     if (!prior.map_point.allFinite() || !prior.runtime_sensor_point.allFinite())

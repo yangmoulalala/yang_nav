@@ -95,6 +95,9 @@ private:
     /// 发布允许推进的 map → odom TF 及同版本定位状态。
     void publishProjection(const LocalizationProjection& projection,
                            const builtin_interfaces::msg::Time& stamp);
+    /// Publish same-epoch TF edges together, without regressing their time watermark.
+    void publishTransforms(const LocalizationProjection& projection,
+                           const builtin_interfaces::msg::Time& stamp);
     /// 在最近一次车体位置上方显示状态、原因和累计故障信息。
     void publishStatusMarker(LocalizationStatus status, const std::string& reason,
                              const EstimatorFailureHistory& estimator_failures,
@@ -125,6 +128,8 @@ private:
     BodyExtrinsicProvider* body_extrinsic_ = nullptr;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    std::uint64_t last_tf_epoch_ = 0;
+    std::int64_t last_tf_stamp_ns_ = 0;
 
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr state_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr

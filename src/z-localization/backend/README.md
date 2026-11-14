@@ -125,7 +125,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `~/localization_status` | `visualization_msgs/msg/Marker` | reliable，1，transient local | 定位状态文字标记；由 `visualization.enabled` 控制 |
 | `~/debug/aligned_source` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准后的源点云；由 `visualization.publish_debug_registration` 控制 |
 | `~/debug/target` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 最近一次配准的目标点云；由 `visualization.publish_debug_registration` 控制 |
-| `/tf` | `tf2_msgs/msg/TFMessage` | tf2 默认 QoS | map → `common.odom_frame`（bringup 为 `map → lio_odom`） |
+| `/tf` | `tf2_msgs/msg/TFMessage` | tf2 默认 QoS | map → `common.odom_frame`；`common.publish_odom_tf=true` 时在同一消息中附带 odom → `common.body_frame`（bringup 为 `map → lio_odom → base_link`），此时前端须关闭 TF 发布 |
 
 ### 标定与 ROS 通用话题
 

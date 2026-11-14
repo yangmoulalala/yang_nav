@@ -15,7 +15,7 @@ backend_node:
       # 全局地点描述子类型，可选 scan_context 或 gprobe。 [按车调整]
       descriptor_type: scan_context
       # 前端里程计坐标系。
-      # LIO 里程计系；lio_odom -> base_link 由 ZLIO 前端发布（frames.base）。 [按车调整]
+      # LIO 里程计系；组合启动由后端成对发布 map -> lio_odom -> base_link。 [按车调整]
       odom_frame: lio_odom
       # 同步观测和预测使用的传感器坐标系。 [按车调整]
       sensor_frame: mid360_link
@@ -23,6 +23,7 @@ backend_node:
       input_cloud_in_local_frame: true
       # 车体输出坐标系名称；sensor_frame <- body_frame 外参由 URDF 经 TF 提供，按消息时间戳查询（跟踪云台关节）。 [按车调整]
       body_frame: base_link
+      publish_odom_tf: true
       # 外参精确时刻不可用时，允许使用的最新 TF 与请求时刻的最大时间差，单位为秒；
       # 超出时节流告警并沿用上次有效外参。须 ≥0。
       body_extrinsic_tolerance: 0.2

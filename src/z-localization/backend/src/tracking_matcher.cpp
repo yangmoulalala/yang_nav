@@ -48,6 +48,37 @@ void TrackingMatcher::prepare(GlobalObservationWork& work) const {
 }
 /// 计算先验地图点面观测并按预测增量判定几何冲突。
 PriorMapObservation TrackingMatcher::compute(GlobalObservationWork& work) {
+    const auto input = work.prior_input;
+    auto observation = computeReference(work);
+    if (observation.evidence.disposition == ObservationDisposition::Measurement ||
+        !input.configured || work.previous_reference_index < 0 ||
+        work.previous_reference_index == work.reference.index)
+        return observation;
+    Keyframe previous;
+    if (!prior_map_.get(work.previous_reference_index, &previous))
+        return observation;
+    const double distance = (previous.optimized_pose.block<3, 1>(0, 3) -
+                             work.predicted_map_pose.block<3, 1>(0, 3)).norm();
+    if (config_.tracking.nearest_reference_radius > 0.0 &&
+        distance > config_.tracking.nearest_reference_radius)
+        return observation;
+    auto retry = work;
+    retry.reference = previous;
+    retry.target.reset();
+    retry.prior_input = input;
+    auto alternative = computeReference(retry);
+    if (alternative.evidence.disposition == ObservationDisposition::Measurement) {
+        BACKEND_INFO_STREAM("prior scan-to-map reference switch " << work.reference.index
+                            << " rejected; previous reference " << previous.index
+                            << " passed unchanged geometry and correction gates");
+        alternative.elapsed_ms += observation.elapsed_ms;
+        work = std::move(retry);
+        return alternative;
+    }
+    return observation;
+}
+
+PriorMapObservation TrackingMatcher::computeReference(GlobalObservationWork& work) {
     if (work.prior_input.configured && work.reference.index >= 0) {
         const auto target = target_cache_.getOrPrepare(
             work.reference.index, static_cast<int>(config_.tracking.target_keyframes),

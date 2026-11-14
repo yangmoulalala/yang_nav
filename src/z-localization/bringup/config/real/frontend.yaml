@@ -47,7 +47,7 @@ zlio:
       # 导出去畸变点云的采样体素边长，m；0 输出空点云。
       resolution: 0.10
       # 是否发布 frames.world → frames.base 的高频预测 TF。
-      publish_tf: true
+      publish_tf: false  # backend publishes both dynamic TF edges from one projection
       # 按时间查不到 imu ← base 时，最新变换与里程计时间允许的最大差，s；超过则沿用上次有效值并告警。
       base_extrinsic_tolerance: 0.2
 

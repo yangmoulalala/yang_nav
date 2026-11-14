@@ -5,6 +5,36 @@ namespace backend {
 namespace {
 using testing::LocalizationFlow;
 
+TEST_F(LocalizationFlow, UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading) {
+    const auto anchor = testing::scenePose(.2, -.1, .05, 1.1);
+    config.startup_hint.T_map_sensor = anchor;
+    config.uwb.enabled = true;
+    // A coarse full sweep cannot replace the continuous heading in this scene.
+    config.relocalization.relocalization_yaw_sweep_count = 1;
+    start(true);
+    ASSERT_TRUE(controller->setUwbTeam("red"));
+    auto first = frame(10, anchor, Eigen::Matrix4d::Identity());
+    ASSERT_TRUE(ingest(first));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+
+    // Interrupt full-pose evidence while retaining continuous odometry and UWB.
+    auto sparse = frame(11, anchor, testing::scenePose(.4, 0, 0, .01));
+    sparse.cloud_local->resize(1);
+    ASSERT_TRUE(controller->ingestUwbPosition(11, anchor.block<3, 1>(0, 3)));
+    ASSERT_TRUE(ingest(sparse, Eigen::Vector3d(10, 0, 0)));
+    ASSERT_EQ(controller->status(), LocalizationStatus::Suspect);
+
+    const Eigen::Matrix4d truth = anchor * testing::scenePose(.1, 0, 0, .02);
+    auto restored = frame(12, truth, testing::scenePose(.5, 0, 0, .02));
+    ASSERT_TRUE(controller->ingestUwbPosition(12, truth.block<3, 1>(0, 3)));
+    ASSERT_TRUE(ingest(restored));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+    EXPECT_LT((output(restored).T_map_sensor - truth).norm(), 2e-4);
+    EXPECT_TRUE(output(restored).pose_trusted);
+}
+
 /// 验证先验重定位、后续跟踪及输出版本更新，同一几何观测只提交一次。
 TEST_F(LocalizationFlow, PriorRecoveryAndTrackingCommitGeometryOnce) {
     const auto anchor = testing::scenePose(.2, -.1, .05, .05);

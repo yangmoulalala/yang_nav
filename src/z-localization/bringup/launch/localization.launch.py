@@ -13,7 +13,7 @@
   secondary_topic┘ (dual)                         ├─ zlio ─ /frontend/* ─ backend_node
   imu_topic ────────────────────────────────────┘
 
-TF：map → lio_odom（后端）→ base_link（ZLIO 前端，frames.base）→ URDF 树。
+TF：map → lio_odom → base_link（两条动态边由后端同一消息发布）→ URDF 树。
 外参全部来自 URDF：前端启动时查 frames.imu ← frames.lidar，后端查 sensor_frame ← body_frame。
 """
 

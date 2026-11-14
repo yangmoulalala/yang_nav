@@ -43,6 +43,7 @@ void ParameterReader::loadCommonInput() {
     getParam("common/map_frame", parameters_.input.map_frame);
     getParam("common/odom_frame", parameters_.input.odom_frame);
     getParam("common/body_frame", parameters_.input.body_frame);
+    getParam("common/publish_odom_tf", parameters_.input.publish_odom_tf);
     if (parameters_.input.sensor_frame.empty() || parameters_.input.body_frame.empty())
         throw std::invalid_argument("common.sensor_frame and common.body_frame must not be empty");
     getParam("common/body_extrinsic_tolerance", parameters_.input.body_extrinsic_tolerance);

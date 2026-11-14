@@ -38,6 +38,8 @@ public:
     PriorMapObservation compute(GlobalObservationWork& work);
 
 private:
+    /// Evaluate one reference without changing the fallback policy.
+    PriorMapObservation computeReference(GlobalObservationWork& work);
     /// 按当前工作流的因果规则准备配准源点云。
     bool prepareSource(GlobalObservationWork& work) const;
     /// 按距离与切换滞回选择先验地图参考关键帧。

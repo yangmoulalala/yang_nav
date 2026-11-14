@@ -85,7 +85,7 @@ QoS 中的数字表示 keep-last 队列深度；未标注 transient local 的话
 | `/frontend/frame` | `localization_interfaces/msg/FrontendFrame` | `/zlio` 发布；可视化节点订阅 | 发布 reliable，64；订阅 best effort，5 | 同一次观测的位姿、去畸变点云与更新状态 |
 | `/frontend/odometry` | `localization_interfaces/msg/FrontendOdometry` | `/zlio` 发布 | reliable，200 | 带进程身份和代次的高频预测 |
 | `/frontend/session` | `localization_interfaces/msg/FrontendSession` | `/zlio` 发布；可视化节点订阅 | reliable，1，transient local | 进程与重置代次、输入中断和处理失败通知 |
-| `/tf` | `tf2_msgs/msg/TFMessage` | `/zlio` 发布并在启动时订阅；RViz 订阅 | tf2 动态广播器／监听器默认 QoS | 发布 `frames.world → frames.base`（示例 `frames.base=imu`，即 `odom → imu`；bringup 为 `lio_odom → base_link`），由 `output.publish_tf` 控制；`frames.base` 与 `frames.imu` 不同时还按里程计时间戳查询 `frames.imu ← frames.base` |
+| `/tf` | `tf2_msgs/msg/TFMessage` | `/zlio` 发布并在启动时订阅；RViz 订阅 | tf2 动态广播器／监听器默认 QoS | 发布 `frames.world → frames.base`（示例 `frames.base=imu`，即 `odom → imu`；bringup 为 `lio_odom → base_link`），由 `output.publish_tf` 控制；组合 bringup 将它设为 `false`，改由后端同一消息发布两条动态边；`frames.base` 与 `frames.imu` 不同时还按里程计时间戳查询 `frames.imu ← frames.base` |
 | `/tf_static` | `tf2_msgs/msg/TFMessage` | `/zlio` 启动时订阅；RViz 订阅 | tf2 静态监听器默认 QoS | 外部节点发布的静态坐标变换，须包含 `frames.imu ← frames.lidar` |
 | `/frontend/cloud_registered` | `sensor_msgs/msg/PointCloud2` | 可视化节点发布；RViz 按显示配置订阅 | 发布 reliable，1 | 当前观测的 odom 系点云 |
 | `/frontend/cloud_map` | `sensor_msgs/msg/PointCloud2` | 可视化节点发布；RViz 订阅 | 发布 reliable，1，transient local | 用于显示的累计点云，保留量可配置 |

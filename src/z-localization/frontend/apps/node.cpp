@@ -525,12 +525,7 @@ void OdometryNode::work() {
 void OdometryNode::publish(const Estimate& estimate, const Vec3& angular_velocity) {
     const auto odometry = makeOdometryMessage(estimate, angular_velocity, frames_,
                                               config_.noise.gyro_sample_variance);
-    odom_pub_->publish(odometry);
-    localization_interfaces::msg::FrontendOdometry message;
-    message.instance_id = reset_cache_.frontendInstanceId();
-    message.epoch = epoch_;
-    message.odometry = odometry;
-    prediction_pub_->publish(message);
+    std::optional<geometry_msgs::msg::TransformStamped> transform;
     if (broadcaster_) {
         // world → base = (world → imu) · (imu ← base)；IMU 系在 URDF 树上已有父帧，
         // 故把里程计接到树根 base，而不是直接发 world → imu。
@@ -539,25 +534,41 @@ void OdometryNode::publish(const Estimate& estimate, const Vec3& angular_velocit
         const Eigen::Quaterniond world_imu_rotation(q.w, q.x, q.y, q.z);
         Vec3 position(p.x, p.y, p.z);
         Eigen::Quaterniond rotation = world_imu_rotation;
+        bool have_base_transform = true;
         if (base_frame_ != frames_.body) {
             Pose imu_base;
-            if (!imuFromBase(odometry.header.stamp, imu_base))
-                return;
-            position += world_imu_rotation * imu_base.position;
-            rotation = (world_imu_rotation * imu_base.rotation).normalized();
+            if (imuFromBase(odometry.header.stamp, imu_base)) {
+                position += world_imu_rotation * imu_base.position;
+                rotation = (world_imu_rotation * imu_base.rotation).normalized();
+            } else {
+                // Preserve the historical behavior of publishing odometry even when
+                // the optional IMU→base lookup is temporarily unavailable.
+                have_base_transform = false;
+            }
         }
-        geometry_msgs::msg::TransformStamped transform;
-        transform.header = odometry.header;
-        transform.child_frame_id = base_frame_;
-        transform.transform.translation.x = position.x();
-        transform.transform.translation.y = position.y();
-        transform.transform.translation.z = position.z();
-        transform.transform.rotation.x = rotation.x();
-        transform.transform.rotation.y = rotation.y();
-        transform.transform.rotation.z = rotation.z();
-        transform.transform.rotation.w = rotation.w();
-        broadcaster_->sendTransform(transform);
+        if (have_base_transform) {
+            transform.emplace();
+            transform->header = odometry.header;
+            transform->child_frame_id = base_frame_;
+            transform->transform.translation.x = position.x();
+            transform->transform.translation.y = position.y();
+            transform->transform.translation.z = position.z();
+            transform->transform.rotation.x = rotation.x();
+            transform->transform.rotation.y = rotation.y();
+            transform->transform.rotation.z = rotation.z();
+            transform->transform.rotation.w = rotation.w();
+            // Standalone frontend mode: make TF available before notifying consumers.
+            // The combined bringup disables this publisher; its backend sends both
+            // dynamic TF edges together to avoid mixed epochs at a reset boundary.
+            broadcaster_->sendTransform(*transform);
+        }
     }
+    odom_pub_->publish(odometry);
+    localization_interfaces::msg::FrontendOdometry message;
+    message.instance_id = reset_cache_.frontendInstanceId();
+    message.epoch = epoch_;
+    message.odometry = odometry;
+    prediction_pub_->publish(message);
 }
 
 /// 发布当前会话身份，通知失败不改变已经完成的重置终态。

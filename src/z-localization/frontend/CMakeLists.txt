@@ -102,4 +102,10 @@ install(EXPORT zlioTargets NAMESPACE zlio:: DESTINATION share/zlio/cmake)
 
 localization_enable_warnings()
 
+if(BUILD_TESTING)
+    find_package(ament_cmake_gtest REQUIRED)
+    ament_add_gtest(frontend_input_timing_test test/input_timing_test.cpp)
+    target_link_libraries(frontend_input_timing_test zlio)
+endif()
+
 ament_package()

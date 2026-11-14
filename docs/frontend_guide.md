@@ -15,7 +15,6 @@ ZLIO 是激光惯性里程计（LIO）：用 IMU 做高频运动预测，用 LiD
 /lidar_mid360/points ─┐
 /lidar_l2/points ─────┴─▶ lidar_merge ──/lidar/points──┐
 /lidar_mid360/imu（真车 /livox/imu）────────────────────┴─▶ /zlio ─┬─ /odometry          ─▶ 标定工具
-                                                                   ├─ /tf                ─▶ lio_odom → base_link（frames.base）
                                                                    ├─ /lidar_odometry
                                                                    ├─ /frontend/frame    ─▶ backend_node（观测）
                                                                    ├─ /frontend/odometry ─▶ backend_node（高频预测）
@@ -24,13 +23,13 @@ ZLIO 是激光惯性里程计（LIO）：用 IMU 做高频运动预测，用 LiD
 
 | 输出 | 频率 | 内容 |
 | --- | --- | --- |
-| `/odometry` | ≈ IMU 频率 | 随每个 IMU 样本更新的**预测**位姿、速度、协方差。pose 在 `lio_odom`，twist 在 `imu` 系。连续不跳变，适合控制和局部规划 |
+| `/odometry` | ≈ IMU 频率 | 随每个 IMU 样本更新的**预测**位姿、速度、协方差。pose 在 `lio_odom`，twist 在 `imu` 系。重置可改变原点，消费者须处理代次边界；当前导航使用后端 `/localization/odometry` |
 | `/lidar_odometry` | ≈ 激光更新频率 | 每次激光观测更新后的**后验**估计 |
 | `/frontend/frame` | 同上 | 一次已提交观测：位姿 + 去畸变到该时刻 `imu` 系的点云 + 匹配数 + `lidar_updated`，带 `instance_id/epoch/sequence` |
 | `/frontend/odometry` | ≈ IMU 频率 | `/odometry` 加上进程身份和代次，供后端区分新旧数据 |
 | `/frontend/session` | 事件触发 | transient local；启动、重置、输入中断（`reset_required`）、处理失败（`failed`）时发布 |
 
-在 bringup 中 ZLIO 直接发布 `lio_odom → base_link` TF（`output.publish_tf: true`、`frames.base: base_link`）：IMU 坐标系（`frames.imu`，仿真 `mid360_link`，真车 `mid360_imu_link`）在 URDF 树上已有父帧，直接发 `lio_odom → frames.imu` 会让它有两个父帧，所以 ZLIO 把里程计乘以按里程计时间戳从 TF 查到的 `frames.imu ← base_link`，接到树根 `base_link`，云台 `yaw_joint` 转动也会跟随。下文的“`imu` 系”均指 `frames.imu`。
+在 bringup 中 ZLIO 的 `output.publish_tf: false`，后端开启 `common.publish_odom_tf: true`，从同一代、同一时间戳的位姿投影，在一个 TFMessage 中发布 `map → lio_odom` 与 `lio_odom → base_link`。这样前端重置原点时，两条边能一起切换。后端按消息时间查询 `common.sensor_frame ← base_link`，跟踪云台关节。独立前端可开启自身 TF 发布，但不能与后端重复发布同一条边。IMU 坐标系在 URDF 树上已有父帧，动态里程计应接在树根 `base_link`。下文的“`imu` 系”均指 `frames.imu`（仿真 `mid360_link`，真车 `mid360_imu_link`）。
 
 ---
 
@@ -59,8 +58,8 @@ bringup 的 `localization.launch.py` include `frontend/launch/frontend.launch.py
 | `frames.world` / `frames.imu` / `frames.lidar` | `lio_odom` / `mid360_link` / `mid360_link` | `lio_odom` / `mid360_imu_link` / `mid360_link` | `world`、`imu` 与后端 `common.odom_frame` / `common.sensor_frame` 一致 |
 | `session.coordinated_reset` | `true` | `true` | 输入中断由后端协调重置（第 4 节） |
 | `frames.base` | `base_link` | `base_link` | TF 输出子坐标系（URDF 树根），见第 1 节 |
-| `output.publish_tf` | `true` | `true` | 发布 `lio_odom → base_link`，见第 1 节 |
-| `output.base_extrinsic_tolerance` | `0.2` | `0.2` | 按时间戳查不到 `frames.imu ← base_link` 时，最新变换允许的最大时差（s）；超过则沿用上次有效值并告警 |
+| `output.publish_tf` | `false` | `false` | 组合启动由后端成对发布两条动态 TF，见第 1 节 |
+| `output.base_extrinsic_tolerance` | `0.2` | `0.2` | 仅前端自身开启 TF 时使用；按时间戳查不到 `frames.imu ← base_link` 时，最新变换允许的最大时差（s）；超过则沿用上次有效值并告警 |
 
 `input.point_time_*` 为 `offset_time`、`1e-9`、相对时间，正好对应 `lidar_merge` 的输出格式。各雷达原始的时间字段约定在 `lidar_merge` 里处理（`bringup/config/<platform>/lidar_fusion.yaml` 的 `primary.*`、`secondary.*`）。
 

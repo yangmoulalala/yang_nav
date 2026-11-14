@@ -1,4 +1,5 @@
 %YAML 1.2
+---
 # ROS <-> Gazebo bridge for the sentry simulation.
 #
 # gz -> ros
