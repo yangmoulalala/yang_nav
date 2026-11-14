@@ -1,0 +1,10 @@
+{
+  "git_whitespace": "passed",
+  "original_staging_preserved": true,
+  "localization_and_maps_unchanged": true,
+  "python_syntax_files": 30,
+  "bash_syntax_files": 6,
+  "removed_cpp_symbols": "no references",
+  "markdown_local_links_files": 10,
+  "scope": "navigation code cleanup; no full-field or physical acceptance claim"
+}

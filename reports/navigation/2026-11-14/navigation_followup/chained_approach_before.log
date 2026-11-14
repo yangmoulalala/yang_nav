@@ -1,0 +1,34 @@
+[ 50%] Built target gtest_main
+[ 66%] Built target directional_zone_core
+[ 83%] Built target gtest
+[ 91%] Building CXX object CMakeFiles/test_slope.dir/test/test_slope.cpp.o
+[100%] Linking CXX executable test_slope
+[100%] Built target test_slope
+Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+Note: Google Test filter = Slope.TunnelLeadOutCanAlsoBeTheNextRampApproach
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from Slope
+[ RUN      ] Slope.TunnelLeadOutCanAlsoBeTheNextRampApproach
+/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp:303: Failure
+Value of: events[1].shaped
+  Actual: false
+Expected: true
+downhill on a one-way slope, planner path kept
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp:304: Failure
+Expected equality of these values:
+  events[1].direction
+    Which is: 0
+  1
+
+[  FAILED  ] Slope.TunnelLeadOutCanAlsoBeTheNextRampApproach (0 ms)
+[----------] 1 test from Slope (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 0 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] Slope.TunnelLeadOutCanAlsoBeTheNextRampApproach
+
+ 1 FAILED TEST

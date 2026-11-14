@@ -1,0 +1,42 @@
+[
+  {
+    "goal": "goal map (8.66, -3.61, 0 deg)",
+    "result": "result status 4 (SUCCEEDED) error_code 0, 24.2 s",
+    "stationary_intervals_at_least_2s": [],
+    "sampled_distance_m": 12.967235174489685,
+    "stationary_intervals_at_least_2s_before_goal_tolerance": [],
+    "endpoint_settling_intervals_at_least_2s": []
+  },
+  {
+    "goal": "goal map (12.78, -3.86, 0 deg)",
+    "result": "result status 4 (SUCCEEDED) error_code 0, 23.7 s",
+    "stationary_intervals_at_least_2s": [
+      {
+        "seconds": 2.0,
+        "at": [
+          12.74,
+          -3.91
+        ]
+      }
+    ],
+    "sampled_distance_m": 7.781524737062247,
+    "stationary_intervals_at_least_2s_before_goal_tolerance": [],
+    "endpoint_settling_intervals_at_least_2s": [
+      {
+        "seconds": 2.0,
+        "at": [
+          12.74,
+          -3.91
+        ]
+      }
+    ]
+  },
+  {
+    "goal": "goal map (8.31, -3.65, 0 deg)",
+    "result": "result status 4 (SUCCEEDED) error_code 0, 19.7 s",
+    "stationary_intervals_at_least_2s": [],
+    "sampled_distance_m": 7.722870624094293,
+    "stationary_intervals_at_least_2s_before_goal_tolerance": [],
+    "endpoint_settling_intervals_at_least_2s": []
+  }
+]

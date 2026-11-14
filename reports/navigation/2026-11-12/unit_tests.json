@@ -1,0 +1,72 @@
+{
+  "packages": {
+    "nav_behaviors": {
+      "test_costmap_collision": {
+        "cases": 3,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_path_shaper": {
+        "cases": 17,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_zone_tracker": {
+        "cases": 12,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_slope": {
+        "cases": 10,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_zone_state": {
+        "cases": 8,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_recovery_policy": {
+        "cases": 8,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_zone_recovery": {
+        "cases": 9,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_zone_drive": {
+        "cases": 5,
+        "failures": 0,
+        "skipped": 0
+      }
+    },
+    "nav_safety": {
+      "test_gate_logic": {
+        "cases": 9,
+        "failures": 0,
+        "skipped": 0
+      }
+    },
+    "nav_terrain": {
+      "test_terrain_export": {
+        "cases": 9,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_surface_seg": {
+        "cases": 9,
+        "failures": 0,
+        "skipped": 0
+      },
+      "test_obstacle_filter": {
+        "cases": 8,
+        "failures": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "cases": 107,
+  "passed": true
+}

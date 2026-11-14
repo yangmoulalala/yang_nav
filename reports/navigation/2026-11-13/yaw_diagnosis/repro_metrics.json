@@ -1,0 +1,36 @@
+{
+  "/cmd_vel_nav": {
+    "correlation": 0.957554714255125,
+    "best_lag_s": 0.47000000000000003,
+    "wz_rmse_rad_s": 0.20718525566130153
+  },
+  "/cmd_vel_smoothed": {
+    "correlation": 0.9798641893418998,
+    "best_lag_s": 0.36,
+    "wz_rmse_rad_s": 0.1410629253663111
+  },
+  "/cmd_vel_collision_checked": {
+    "correlation": 0.9910346012371631,
+    "best_lag_s": 0.14,
+    "wz_rmse_rad_s": 0.09070134841723113
+  },
+  "/cmd_vel": {
+    "correlation": 0.9898400601077993,
+    "best_lag_s": 0.05,
+    "wz_rmse_rad_s": 0.09414695269223061
+  },
+  "fixed_reference_window": {
+    "sim_t_range": [
+      63.4,
+      67.3
+    ],
+    "reference_range_deg": [
+      -89.60000000000005,
+      -89.60000000000005
+    ],
+    "truth_range_deg": [
+      -114.38391389131166,
+      -10.29383317661545
+    ]
+  }
+}

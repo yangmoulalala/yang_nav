@@ -1,0 +1,141 @@
+{
+  "method": "Exploratory integration of world acceleration using ground-truth attitude and a fixed base-to-IMU extrinsic; 24ms truth interpolated, initial velocity from centered 96ms truth finite difference; noise and interpolation approximations remain. Not a proof of sensor or algorithm defect.",
+  "windows": [
+    {
+      "window": [
+        45.6,
+        55
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        0.015991239744199887,
+        -0.08403921834943062,
+        0.16197115747977267
+      ],
+      "integrated_position_error_at_end_m": [
+        -0.06377919806169263,
+        0.2204189781581256,
+        1.150279525026442
+      ],
+      "accel_norm_max": 50.1543432814617
+    },
+    {
+      "window": [
+        60,
+        85
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        0.09623031286896491,
+        -0.06483965065155088,
+        -0.04463325807479007
+      ],
+      "integrated_position_error_at_end_m": [
+        1.7524997596137544,
+        -0.7959803292160235,
+        -0.7893831379059753
+      ],
+      "accel_norm_max": 26.45378490255299
+    },
+    {
+      "window": [
+        90,
+        93
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        0.010668915279572574,
+        0.17373517143024358,
+        -0.35262588328111394
+      ],
+      "integrated_position_error_at_end_m": [
+        -0.10803359250306332,
+        -0.13557847838031378,
+        -0.763051961995012
+      ],
+      "accel_norm_max": 77.72571281848654
+    },
+    {
+      "window": [
+        93,
+        94
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        0.049483685092891416,
+        -0.146430040074656,
+        -0.5978031034981663
+      ],
+      "integrated_position_error_at_end_m": [
+        -0.00023313639748856474,
+        0.03730093916207888,
+        -0.3580666605203981
+      ],
+      "accel_norm_max": 105.22781997835119
+    },
+    {
+      "window": [
+        94.3,
+        96
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        -0.0012108093402509734,
+        0.10680464950119228,
+        0.0916557555140975
+      ],
+      "integrated_position_error_at_end_m": [
+        -0.029666568543365024,
+        0.12001181737317701,
+        -0.01040318242626681
+      ],
+      "accel_norm_max": 48.69852684212638
+    },
+    {
+      "window": [
+        96,
+        98.4
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        0.055980736640989445,
+        0.04626502344542518,
+        -0.06706582971100383
+      ],
+      "integrated_position_error_at_end_m": [
+        0.12076597340660777,
+        -0.04061447698448983,
+        0.005179956547027076
+      ],
+      "accel_norm_max": 55.119266146707346
+    },
+    {
+      "window": [
+        98.6,
+        110
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        0.01140673987791483,
+        0.04219302676969049,
+        -0.03852689822535003
+      ],
+      "integrated_position_error_at_end_m": [
+        0.13972095206309554,
+        0.47948645435131265,
+        -0.3832627637956196
+      ],
+      "accel_norm_max": 13.696572002795127
+    },
+    {
+      "window": [
+        113.5,
+        117.5
+      ],
+      "integrated_velocity_error_at_end_m_s": [
+        -0.10020772844134124,
+        -0.0587431558480338,
+        0.24063196554834512
+      ],
+      "integrated_position_error_at_end_m": [
+        -0.38447279459518,
+        -0.04576917761380184,
+        0.6340269153762425
+      ],
+      "accel_norm_max": 63.63776540175999
+    }
+  ]
+}

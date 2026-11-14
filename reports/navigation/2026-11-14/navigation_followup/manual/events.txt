@@ -1,0 +1,111 @@
+4863:[map_server-1] [INFO] [1794593041.717969396] [map_io]: negate: 0
+4876:[map_server-2] [INFO] [1794593041.736606510] [map_io]: negate: 0
+4884:[controller_server-5] [INFO] [1794593041.757564405] [controller_server]: getting goal checker plugins..
+4899:[controller_server-5] [INFO] [1794593040.489700645] [controller_server]: Created goal checker : goal_checker of type nav2_controller::SimpleGoalChecker
+4900:[controller_server-5] [INFO] [1794593040.491821328] [controller_server]: Controller Server has goal_checker  goal checkers available.
+5022:[bt_navigator-11] [INFO] [1794593179.385367544] [bt_navigator]: Begin navigating from current location (-0.06, 0.19) to (8.66, -3.61)
+5026:[controller_server-5] [INFO] [1794593179.457392500] [controller_server]: Received a goal, begin computing control effort.
+5027:[controller_server-5] [WARN] [1794593179.457448880] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded goal_checker . This warning will appear once.
+5048:[cmd_gate-13] [INFO] [1794593187.363581797] [cmd_gate]: mode normal -> tunnel
+5049:[controller_server-5] [WARN] [1794593188.563557639] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+5050:[controller_server-5] [WARN] [1794593191.363524332] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+5051:[cmd_gate-13] [INFO] [1794593191.663305943] [cmd_gate]: mode tunnel -> normal
+5058:[cmd_gate-13] [INFO] [1794593194.263451577] [cmd_gate]: mode normal -> ramp
+5059:[controller_server-5] [WARN] [1794593195.163255114] [controller_server]: ZoneAwareController: step_l1_1 gate: lateral +0.028 m, heading -13.25 deg, slowing down
+5060:[cmd_gate-13] [INFO] [1794593196.463469717] [cmd_gate]: mode ramp -> normal
+5062:[controller_server-5] [INFO] [1794593200.263232927] [controller_server]: Reached the goal!
+5065:[bt_navigator-11] [INFO] [1794593208.617754204] [bt_navigator]: Begin navigating from current location (8.72, -3.72) to (12.78, -3.86)
+5069:[controller_server-5] [INFO] [1794593208.669539115] [controller_server]: Received a goal, begin computing control effort.
+5086:[controller_server-5] [ERROR] [1794593244.026920581] [controller_server]: Failed to make progress
+5091:[controller_server-5] [INFO] [1794593244.059040362] [controller_server]: Received a goal, begin computing control effort.
+5119:[cmd_gate-13] [INFO] [1794593250.309766919] [cmd_gate]: mode normal -> tunnel
+5125:[controller_server-5] [WARN] [1794593250.509909137] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5127:[controller_server-5] [WARN] [1794593251.109550201] [controller_server]: ZoneAwareController: slope_17+tunnel_4 gate: lateral -0.112 m, heading -2.44 deg, slowing down
+5149:[controller_server-5] [WARN] [1794593255.609915133] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5150:[controller_server-5] [WARN] [1794593255.809670665] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5153:[controller_server-5] [WARN] [1794593256.109790014] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5164:[controller_server-5] [WARN] [1794593258.659826157] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5166:[controller_server-5] [WARN] [1794593258.859861001] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5172:[controller_server-5] [WARN] [1794593259.159825959] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5175:[controller_server-5] [WARN] [1794593259.359822296] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5178:[controller_server-5] [WARN] [1794593259.559786175] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5181:[controller_server-5] [WARN] [1794593259.759843020] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5184:[controller_server-5] [WARN] [1794593260.059899885] [controller_server]: ZoneAwareController: slope_17+tunnel_4 obstacle on the path ahead, stopping
+5191:[cmd_gate-13] [INFO] [1794593263.309771817] [cmd_gate]: mode tunnel -> normal
+5197:[controller_server-5] [INFO] [1794593290.630524711] [controller_server]: Reached the goal!
+5200:[bt_navigator-11] [INFO] [1794593523.569201489] [bt_navigator]: Begin navigating from current location (12.77, -3.93) to (8.31, -3.65)
+5204:[controller_server-5] [INFO] [1794593523.610826807] [controller_server]: Received a goal, begin computing control effort.
+5218:[controller_server-5] [WARN] [1794593525.518746439] [controller_server]: ZoneAwareController: inner controller failed in the blend zone (Optimizer fail to compute path), tracker only
+5220:[controller_server-5] [WARN] [1794593525.811443240] [controller_server]: ZoneAwareController: slope_1+tunnel_2 gate: lateral +0.070 m, heading +22.12 deg, slowing down
+5222:[controller_server-5] [WARN] [1794593528.211701642] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5225:[controller_server-5] [WARN] [1794593533.311806173] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5235:[cmd_gate-13] [INFO] [1794593535.811970442] [cmd_gate]: mode normal -> tunnel
+5237:[controller_server-5] [WARN] [1794593536.211640475] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5243:[controller_server-5] [WARN] [1794593541.361585000] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5244:[controller_server-5] [WARN] [1794593543.811592270] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5247:[controller_server-5] [WARN] [1794593544.111585048] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5257:[controller_server-5] [WARN] [1794593548.011553256] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5260:[controller_server-5] [WARN] [1794593548.611713566] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5262:[controller_server-5] [WARN] [1794593553.711596536] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5263:[controller_server-5] [ERROR] [1794593555.961262452] [controller_server]: Failed to make progress
+5266:[cmd_gate-13] [INFO] [1794593555.961807407] [cmd_gate]: mode tunnel -> normal
+5269:[controller_server-5] [INFO] [1794593555.994994999] [controller_server]: Received a goal, begin computing control effort.
+5273:[cmd_gate-13] [INFO] [1794593556.005551754] [cmd_gate]: mode normal -> tunnel
+5274:[controller_server-5] [WARN] [1794593556.005683204] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5282:[controller_server-5] [WARN] [1794593561.096169664] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5283:[controller_server-5] [ERROR] [1794593563.815700620] [controller_server]: Failed to make progress
+5286:[cmd_gate-13] [INFO] [1794593563.816606737] [cmd_gate]: mode tunnel -> normal
+5287:[bt_navigator-11] [WARN] [1794593563.830312417] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 1/5 -> clear (in a zone, no motion)
+5302:[controller_server-5] [INFO] [1794593564.911868798] [controller_server]: Received a goal, begin computing control effort.
+5303:[cmd_gate-13] [INFO] [1794593564.912276531] [cmd_gate]: mode normal -> tunnel
+5304:[controller_server-5] [WARN] [1794593564.912380118] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5306:[controller_server-5] [WARN] [1794593570.012423233] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5307:[controller_server-5] [ERROR] [1794593574.962483235] [controller_server]: Failed to make progress
+5310:[cmd_gate-13] [INFO] [1794593574.963004035] [cmd_gate]: mode tunnel -> normal
+5313:[controller_server-5] [INFO] [1794593574.993855021] [controller_server]: Received a goal, begin computing control effort.
+5318:[cmd_gate-13] [INFO] [1794593575.024658550] [cmd_gate]: mode normal -> tunnel
+5319:[controller_server-5] [WARN] [1794593575.024749159] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5326:[controller_server-5] [WARN] [1794593580.094558846] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5327:[controller_server-5] [ERROR] [1794593585.044292263] [controller_server]: Failed to make progress
+5330:[cmd_gate-13] [INFO] [1794593585.044940444] [cmd_gate]: mode tunnel -> normal
+5331:[bt_navigator-11] [WARN] [1794593585.060300164] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 2/5 -> clear (in a zone, no motion)
+5346:[controller_server-5] [INFO] [1794593586.142104392] [controller_server]: Received a goal, begin computing control effort.
+5347:[cmd_gate-13] [INFO] [1794593586.142582614] [cmd_gate]: mode normal -> tunnel
+5348:[controller_server-5] [WARN] [1794593586.142679663] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5350:[controller_server-5] [WARN] [1794593591.242640631] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5351:[controller_server-5] [ERROR] [1794593594.704136092] [controller_server]: Failed to make progress
+5354:[cmd_gate-13] [INFO] [1794593594.705514580] [cmd_gate]: mode tunnel -> normal
+5357:[controller_server-5] [INFO] [1794593594.736305432] [controller_server]: Received a goal, begin computing control effort.
+5361:[cmd_gate-13] [INFO] [1794593594.746926027] [cmd_gate]: mode normal -> tunnel
+5362:[controller_server-5] [WARN] [1794593594.747040395] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5370:[controller_server-5] [WARN] [1794593599.836946553] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5371:[controller_server-5] [ERROR] [1794593604.786688618] [controller_server]: Failed to make progress
+5374:[cmd_gate-13] [INFO] [1794593604.787271127] [cmd_gate]: mode tunnel -> normal
+5375:[bt_navigator-11] [WARN] [1794593604.802075865] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 3/5 -> clear (in a zone, no motion)
+5390:[controller_server-5] [INFO] [1794593605.883422777] [controller_server]: Received a goal, begin computing control effort.
+5391:[cmd_gate-13] [INFO] [1794593605.883905842] [cmd_gate]: mode normal -> tunnel
+5392:[controller_server-5] [WARN] [1794593605.884004201] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5394:[controller_server-5] [WARN] [1794593610.984036375] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5395:[controller_server-5] [ERROR] [1794593615.933952452] [controller_server]: Failed to make progress
+5398:[cmd_gate-13] [INFO] [1794593615.934661971] [cmd_gate]: mode tunnel -> normal
+5401:[controller_server-5] [INFO] [1794593615.966616664] [controller_server]: Received a goal, begin computing control effort.
+5406:[cmd_gate-13] [INFO] [1794593615.987222765] [cmd_gate]: mode normal -> tunnel
+5407:[controller_server-5] [WARN] [1794593615.987315801] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5414:[controller_server-5] [WARN] [1794593621.067179683] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5415:[controller_server-5] [ERROR] [1794593626.017048465] [controller_server]: Failed to make progress
+5418:[cmd_gate-13] [INFO] [1794593626.017667508] [cmd_gate]: mode tunnel -> normal
+5419:[bt_navigator-11] [WARN] [1794593626.031942687] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 4/5 -> clear (in a zone, no motion)
+5434:[controller_server-5] [INFO] [1794593627.113622545] [controller_server]: Received a goal, begin computing control effort.
+5435:[cmd_gate-13] [INFO] [1794593627.114093428] [cmd_gate]: mode normal -> tunnel
+5436:[controller_server-5] [WARN] [1794593627.114162738] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5438:[controller_server-5] [WARN] [1794593632.214353904] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5439:[controller_server-5] [ERROR] [1794593637.164043302] [controller_server]: Failed to make progress
+5442:[cmd_gate-13] [INFO] [1794593637.164689318] [cmd_gate]: mode tunnel -> normal
+5445:[controller_server-5] [INFO] [1794593637.194899056] [controller_server]: Received a goal, begin computing control effort.
+5451:[cmd_gate-13] [INFO] [1794593637.235595343] [cmd_gate]: mode normal -> tunnel
+5452:[controller_server-5] [WARN] [1794593637.235721914] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5458:[controller_server-5] [WARN] [1794593640.047615811] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+5459:[controller_server-5] [ERROR] [1794593644.997490673] [controller_server]: Failed to make progress
+5462:[cmd_gate-13] [INFO] [1794593644.998270438] [cmd_gate]: mode tunnel -> normal
+5463:[bt_navigator-11] [WARN] [1794593645.014081211] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 5/5 -> clear (in a zone, no motion)
+5487:[bt_navigator-11] [WARN] [1794593646.058927789] [bt_navigator]: [navigate_to_pose] [ActionServer] Requested to deactivate server but goal is still executing. Should check if action server is running before deactivating.

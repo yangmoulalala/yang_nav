@@ -1,0 +1,98 @@
+{
+  "repro": {
+    "start_sim": 56.976000000000006,
+    "start_wall": 1794578322.883312,
+    "duration_wall": 25.0,
+    "/cmd_vel_nav": {
+      "median_interval_s": 0.04998457431793213,
+      "p90_interval_s": 0.05062346458435059
+    },
+    "/cmd_vel_smoothed": {
+      "median_interval_s": 0.033007264137268066,
+      "p90_interval_s": 0.03326327800750732
+    },
+    "/cmd_vel_collision_checked": {
+      "median_interval_s": 0.20232415199279785,
+      "p90_interval_s": 0.20547354221343994
+    },
+    "/cmd_vel": {
+      "median_interval_s": 0.033355712890625,
+      "p90_interval_s": 0.0336298942565918
+    },
+    "/cmd_vel_nav -> /cmd_vel_smoothed": {
+      "correlation": 0.9791555639581194,
+      "best_lag_s": 0.09,
+      "rmse": 0.14339845473870053
+    },
+    "/cmd_vel_smoothed -> /cmd_vel_collision_checked": {
+      "correlation": 0.9904739593963968,
+      "best_lag_s": 0.21,
+      "rmse": 0.09569586933794365
+    },
+    "/cmd_vel_collision_checked -> /cmd_vel": {
+      "correlation": 0.9800279238705732,
+      "best_lag_s": 0.09,
+      "rmse": 0.13242837126502666
+    },
+    "active_zone_error_wall_5_20s": {
+      "n": 252,
+      "max_abs_deg": 104.8,
+      "p95_abs_deg": 86.15499999999997
+    },
+    "goal_result_tail": [
+      "t= 98.1 map (  5.03,  -4.42, z -0.24)  world ( -4.42,  -4.69)  dist 2.91",
+      "t= 99.1 map (  5.03,  -4.42, z -0.24)  world ( -4.42,  -4.68)  dist 2.91",
+      "timeout, cancelling",
+      "truth: 1794578417.26 -4.4827 -4.7438 0.2594 -94.77",
+      "holding 3 s for inspection"
+    ]
+  },
+  "ab_latest_tf": {
+    "start_sim": 53.02,
+    "start_wall": 1794578579.7530365,
+    "duration_wall": 25.0,
+    "/cmd_vel_nav": {
+      "median_interval_s": 0.049989938735961914,
+      "p90_interval_s": 0.05051922798156738
+    },
+    "/cmd_vel_smoothed": {
+      "median_interval_s": 0.033004045486450195,
+      "p90_interval_s": 0.03317351341247558
+    },
+    "/cmd_vel_collision_checked": {
+      "median_interval_s": 0.033011674880981445,
+      "p90_interval_s": 0.0332944393157959
+    },
+    "/cmd_vel": {
+      "median_interval_s": 0.03334355354309082,
+      "p90_interval_s": 0.033492207527160645
+    },
+    "/cmd_vel_nav -> /cmd_vel_smoothed": {
+      "correlation": 0.9918928587571536,
+      "best_lag_s": 0.06,
+      "rmse": 0.05280343889380466
+    },
+    "/cmd_vel_smoothed -> /cmd_vel_collision_checked": {
+      "correlation": 0.9944461284065125,
+      "best_lag_s": 0.0,
+      "rmse": 0.048491473166298
+    },
+    "/cmd_vel_collision_checked -> /cmd_vel": {
+      "correlation": 0.9942853905181803,
+      "best_lag_s": 0.02,
+      "rmse": 0.04327227547171612
+    },
+    "active_zone_error_wall_5_20s": {
+      "n": 299,
+      "max_abs_deg": 16.9,
+      "p95_abs_deg": 16.8
+    },
+    "goal_result_tail": [
+      "t= 36.0 map (  8.35,  -5.28, z -0.11)  world ( -1.11,  -5.57)  dist 2.15",
+      "t= 37.0 map (  8.36,  -5.27, z -0.11)  world ( -1.10,  -5.56)  dist 2.14",
+      "timeout, cancelling",
+      "truth: 1794578612.51 -1.0872 -5.6384 0.3987 60.87",
+      "holding 3 s for inspection"
+    ]
+  }
+}

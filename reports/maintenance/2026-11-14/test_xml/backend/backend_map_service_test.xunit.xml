@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="backend.test_map_service" tests="2" failures="0" errors="0" time="3.969"><testsuite name="backend.test_map_service.launch_tests" tests="2" failures="0" errors="0" skipped="0" time="3.969"><testcase classname="backend.TestMapService" name="test_save_failure_retry_and_reload" time="3.969" /><testcase classname="backend.TestBackendExit" name="test_clean_exit" time="0.0" /></testsuite></testsuites>

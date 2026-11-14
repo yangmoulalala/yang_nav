@@ -1,0 +1,56 @@
+{
+  "zone_margin_m": 0.55,
+  "poses": [
+    {
+      "label": "goal3 estimated",
+      "x": 4.52,
+      "y": -5.24,
+      "expanded_zone_hits": [
+        [
+          "slope_3",
+          0.634,
+          -0.417
+        ],
+        [
+          "tunnel_3",
+          -0.263,
+          0.282
+        ]
+      ]
+    },
+    {
+      "label": "goal4 estimated",
+      "x": 4.59,
+      "y": -5.27,
+      "expanded_zone_hits": [
+        [
+          "slope_3",
+          0.665,
+          -0.348
+        ],
+        [
+          "tunnel_3",
+          -0.294,
+          0.212
+        ]
+      ]
+    },
+    {
+      "label": "registered truth",
+      "x": 4.836,
+      "y": -5.4,
+      "expanded_zone_hits": [
+        [
+          "step_l1_1",
+          -0.539,
+          3.443
+        ],
+        [
+          "tunnel_3",
+          -0.425,
+          -0.033
+        ]
+      ]
+    }
+  ]
+}

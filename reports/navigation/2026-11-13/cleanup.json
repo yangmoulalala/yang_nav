@@ -1,0 +1,19 @@
+{
+  "removed_paths": 179,
+  "removed_bytes": 33223281,
+  "archive": "/home/yang/yang_nav/backup/navigation-cleanup-2026-11-13.tar.gz",
+  "scope": "obsolete nav documents/script, navigation-only colcon sessions, own audit outputs, caches and removed-test artifacts",
+  "build_passed": true,
+  "installation_checks_passed": true,
+  "smoke_checks_passed": 8,
+  "executable_cpp_unchanged": true,
+  "yaml_values_unchanged": true,
+  "bt_nodes_unchanged": true,
+  "removed_files": [
+    "docs/nav_m3c_design.md",
+    "tools/nav_regress/analyze_test_results.sh"
+  ],
+  "renamed": {
+    "src/nav_bringup/behavior_trees/navigate_m0.xml": "src/nav_bringup/behavior_trees/navigate_to_pose.xml"
+  }
+}

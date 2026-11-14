@@ -1,0 +1,15 @@
+{
+  "directory": "/tmp/nav_audit_accept_final/terrain",
+  "errors": [],
+  "warnings": [],
+  "size": [
+    280,
+    240
+  ],
+  "resolution": 0.05,
+  "traversable_cells": 62592,
+  "tunnel_cells": 400,
+  "missing_traversable_ground_cells": 0,
+  "finite_tunnel_clearance_cells": 400,
+  "passed": true
+}

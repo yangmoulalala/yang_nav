@@ -1,0 +1,16 @@
+PASS moving cross traffic is avoided without footprint contact
+PASS path blocker permits safe reroute and continues after it moves away
+FAIL footprint collision: clearance=-0.005832595991872538
+{
+  "passed": false,
+  "checks": [
+    "moving cross traffic is avoided without footprint contact",
+    "path blocker permits safe reroute and continues after it moves away"
+  ],
+  "metrics": {
+    "crossing_min_clearance_m": 0.0212182102372674,
+    "crossing_total_seconds": 6.910855551999703,
+    "fixed_min_clearance_m": 0.36564416400884797
+  },
+  "error": "footprint collision: clearance=-0.005832595991872538"
+}

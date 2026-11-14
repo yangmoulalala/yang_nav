@@ -1,0 +1,464 @@
+# Nav2 (Jazzy) parameters, sentry v2, RMUC sim, omni chassis.
+#
+# cmd_vel chain:
+#   controller_server / behavior_server -> cmd_vel_nav -> velocity_smoother -> cmd_vel_smoothed
+#   -> collision_monitor -> cmd_gate (trust gate, watchdog, per-mode limits) -> /cmd_vel
+# terrain_obstacles supplies ground-relative live obstacle clouds.
+# Frames: map (backend) -> lio_odom (ZLIO) -> base_link.  Odometry: /localization/odometry
+# (map <- base_link, body-frame twist).
+# Costmaps: static traversability (/nav_map), inflation, SpeedFilter; local live obstacle layer.
+
+bt_navigator:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /localization/odometry
+    bt_loop_duration: 10
+    default_server_timeout: 200   # ms; 20 ms timed out follow_path while the controller was busy
+    wait_for_service_timeout: 1000
+    action_server_result_timeout: 900.0
+    plugin_lib_names: [zone_bt_nodes]   # ZoneReplanPaused (nav_behaviors): keep the path inside a zone stretch
+    navigators: [navigate_to_pose, navigate_through_poses]
+    navigate_to_pose:
+      plugin: nav2_bt_navigator::NavigateToPoseNavigator
+    navigate_through_poses:
+      plugin: nav2_bt_navigator::NavigateThroughPosesNavigator
+    error_code_names: [compute_path_error_code, follow_path_error_code, smoother_error_code]
+
+controller_server:
+  ros__parameters:
+    controller_frequency: 20.0   # = 1 / model_dt
+    costmap_update_timeout: 0.30
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.5
+    odom_topic: /localization/odometry
+    progress_checker_plugins: [progress_checker]
+    goal_checker_plugins: [goal_checker]
+    controller_plugins: [FollowPath]
+    progress_checker:
+      plugin: nav2_controller::SimpleProgressChecker
+      required_movement_radius: 0.3
+      movement_time_allowance: 10.0
+    goal_checker:
+      plugin: nav2_controller::SimpleGoalChecker
+      xy_goal_tolerance: 0.15   # 0.10 left the footprint-checked robot hovering 0.1-0.2 m off goals near walls
+      yaw_goal_tolerance: 0.30
+      stateful: true
+    FollowPath:
+      # MPPI outside zone windows; deterministic omni tracking inside configured terrain
+      plugin: nav_behaviors::ZoneAwareController
+      zone:
+        zones_file: ""          # set by navigation.launch.py: <terrain_dir>/zones.yaml
+        min_cells: 50
+        slope_min_cells: 50
+        types: [tunnel, slope, step_l1, step_l2, step_high, fly_slope, undulation]
+        inner_plugin: nav2_mppi_controller::MPPIController
+        speed_limit_reference: 1.5  # percent masks use the nominal MPPI vx_max
+        window_before: 2.0       # tracker takes over this far (path arc length) before the mouth
+        window_after: 0.9        # ... and hands back this far after the far mouth (blend starts with the rear 0.19 m clear)
+        blend: 0.4               # linear mix MPPI <-> tracker over this distance at both ends
+        align_weight: 1.0        # from this weight on the tracker alone drives (ALIGN -> traverse)
+        phase_heartbeat: 0.5     # /nav_zone_state re-publish period, s (the BT condition expires in 1.5 s)
+        align_before: 0.8        # heading error gone when the centre is this far before the mouth (front 0.4 m)
+        tunnel_speed: 0.6        # m/s through the body; physical clearance and braking still need validation
+        approach_speed: 1.0
+        decel: 1.5
+        front_extent: 0.39       # footprint reach ahead of the centre; the gate works on the leading edge
+        rear_extent: 0.31        # ... behind it (leading edge when the robot passes backwards)
+        check_margin: 0.3        # obstacle check of the path ahead: stopping distance + this, m
+        collision_tolerance: 0.0   # full physical footprint, matching zone_shaper
+        block_timeout: 5.0       # blocked this long -> controller failure, BT recovers / replans
+        trace: true             # per-cycle ZTRACE log inside the window (set true to debug a crossing)
+        gate_dist: 0.3           # entry check zone (robot front) before the mouth
+        gate_stop: 0.03          # misaligned: full stop with the front this far before the mouth
+        lat_tol: 0.03
+        yaw_tol_deg: 3.0
+        k_lat: 3.0
+        max_lat_speed: 0.3
+        k_yaw: 3.0
+        max_wz: 1.0
+        search_dist: 1.0
+        # Open terrain: align to the annotated uphill heading on approach.
+        # Opposite-direction descent currently stays with MPPI; physics is not validated here.
+        ramp_speed: 1.4          # m/s through a slope body (cmd_gate ramp limit is 1.6)
+        ramp_approach_speed: 1.4 # no slow crawl on the run-up to a wide ramp
+        ramp_decel: 2.0
+        ramp_align_before: 1.5   # finish heading alignment with a clear run-up before the slope
+        ramp_lat_tol: 0.12
+        ramp_window_before: 6.0  # allow enough distance to turn before the slope approach
+        ramp_window_after: 0.6
+        # zones that touch are shaped as one stretch (tunnel_2+slope_1, tunnel_3+slope_3, tunnel_4+slope_17,
+        # tunnel_5+slope_19): no turn between a tunnel and the ramp behind it
+        chain_gap: 1.0
+        chain_angle_deg: 12.0
+        chain_lat: 0.30
+      motion_model: Omni
+      # old branch: 2000 x 56 ran at 5 Hz on this machine, 1000 x 40 keeps 20 Hz
+      time_steps: 40
+      model_dt: 0.05
+      batch_size: 1000
+      iteration_count: 1
+      retry_attempt_limit: 3   # re-sample when every rollout collides (tight spots by walls)
+      vx_std: 0.25
+      vy_std: 0.25
+      wz_std: 0.4
+      vx_max: 1.5
+      vx_min: -1.5
+      vy_max: 1.5
+      wz_max: 2.0
+      ax_max: 3.0
+      ax_min: -3.0
+      ay_max: 3.0
+      ay_min: -3.0
+      az_max: 4.0
+      temperature: 0.3
+      gamma: 0.015
+      # map -> lio_odom arrives at LiDAR rate (10 Hz); 0.1 s aborts with extrapolation errors
+      transform_tolerance: 0.5
+      visualize: false
+      regenerate_noises: true
+      reset_period: 1.0
+      critics: [ConstraintCritic, CostCritic, GoalCritic, GoalAngleCritic, PathAlignCritic,
+                PathFollowCritic, PathAngleCritic, TwirlingCritic]
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+      GoalCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 8.0   # hold position while the final rotation finishes
+        threshold_to_consider: 1.4
+      GoalAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.0
+        threshold_to_consider: 1.5   # rotate during the approach; a 150 deg turn at the goal made MPPI wander off it
+      CostCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.81
+        near_collision_cost: 253
+        critical_cost: 300.0
+        # footprint check: the 0.68 x 0.60 box (turret to x 0.38) is not a circle; checking only the
+        # centre let the corners reach walls. (The old 5 Hz loop was the map->lio_odom TF wait, not this.)
+        consider_footprint: true
+        collision_cost: 1000000.0
+        near_goal_distance: 1.0
+        trajectory_point_step: 2
+      PathAlignCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 14.0
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 4
+        threshold_to_consider: 0.5
+        offset_from_furthest: 20
+        use_path_orientations: false
+      PathFollowCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        offset_from_furthest: 5
+        threshold_to_consider: 1.4
+      PathAngleCritic:
+        # mode 2: long axis on the path, either direction (omni, no preferred front)
+        enabled: false   # omni: no heading needed in normal mode; rotating near edges swept the footprint corner into lethal cells
+        cost_power: 1
+        cost_weight: 2.0
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 0.5
+        mode: 2
+      TwirlingCritic:
+        enabled: true
+        twirling_cost_power: 1
+        twirling_cost_weight: 6.0
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 20.0
+      publish_frequency: 20.0
+      global_frame: map   # not lio_odom: MPPI would wait in canTransform for map->lio_odom (8.3 Hz) and run at ~5 Hz
+      robot_base_frame: base_link
+      transform_tolerance: 0.5
+      rolling_window: true
+      width: 8    # > 2 x MPPI reach (1.5 m/s x 2 s); off-grid rollout poses count as collisions
+      height: 8
+      resolution: 0.025
+      # chassis 0.594 m square + turret reaching x 0.374 (URDF meshes, turret at zero)
+      footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
+      footprint_padding: 0.01
+      plugins: [static_layer, obstacle_layer, inflation_layer]
+      filters: [speed_filter]
+      speed_filter:
+        plugin: nav2_costmap_2d::SpeedFilter
+        filter_info_topic: /speed_filter_info
+        speed_limit_topic: /speed_limit
+      obstacle_layer:
+        plugin: nav2_costmap_2d::ObstacleLayer
+        observation_sources: terrain_hits terrain_rays
+        max_obstacle_height: 10.0
+        terrain_hits:
+          topic: /nav/obstacles
+          data_type: PointCloud2
+          marking: true
+          clearing: false
+          min_obstacle_height: -10.0  # ground-relative filtering already performed in map frame
+          max_obstacle_height: 10.0
+          obstacle_max_range: 6.0
+          obstacle_min_range: 0.0
+        terrain_rays:
+          topic: /nav/clearing
+          data_type: PointCloud2
+          marking: false
+          clearing: true
+          min_obstacle_height: -10.0
+          max_obstacle_height: 10.0
+          raytrace_max_range: 6.0
+          raytrace_min_range: 0.0
+      static_layer:
+        plugin: nav2_costmap_2d::StaticLayer
+        map_topic: /nav_map
+        map_subscribe_transient_local: true
+        trinary_costmap: false
+      inflation_layer:
+        plugin: nav2_costmap_2d::InflationLayer
+        inflation_radius: 0.65   # > circumscribed radius 0.49 + padding
+        cost_scaling_factor: 4.0
+      always_send_full_costmap: true
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 2.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      transform_tolerance: 0.5
+      resolution: 0.025
+      track_unknown_space: false
+      footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
+      footprint_padding: 0.01
+      plugins: [static_layer, obstacle_layer, inflation_layer]
+      obstacle_layer:
+        plugin: nav2_costmap_2d::ObstacleLayer
+        observation_sources: terrain_hits terrain_rays
+        max_obstacle_height: 10.0
+        terrain_hits:
+          topic: /nav/obstacles
+          data_type: PointCloud2
+          marking: true
+          clearing: false
+          min_obstacle_height: -10.0
+          max_obstacle_height: 10.0
+          obstacle_max_range: 6.0
+          obstacle_min_range: 0.0
+        terrain_rays:
+          topic: /nav/clearing
+          data_type: PointCloud2
+          marking: false
+          clearing: true
+          min_obstacle_height: -10.0
+          max_obstacle_height: 10.0
+          raytrace_max_range: 6.0
+          raytrace_min_range: 0.0
+      static_layer:
+        plugin: nav2_costmap_2d::StaticLayer
+        map_topic: /nav_map
+        map_subscribe_transient_local: true
+        trinary_costmap: false
+      inflation_layer:
+        plugin: nav2_costmap_2d::InflationLayer
+        inflation_radius: 0.90   # slow decay keeps Smac (point robot) paths mid-corridor
+        cost_scaling_factor: 1.5
+      always_send_full_costmap: true
+
+speed_mask_server:
+  ros__parameters:
+    topic_name: /speed_filter_mask
+    frame_id: map
+    yaml_filename: ""
+
+speed_filter_info_server:
+  ros__parameters:
+    type: 1  # percentage: 0 = unrestricted, 1..100 = percent of nominal speed
+    filter_info_topic: /speed_filter_info
+    mask_topic: /speed_filter_mask
+    base: 0.0
+    multiplier: 1.0
+
+terrain_obstacles:
+  ros__parameters:
+    terrain_file: ""
+    map_frame: map
+    base_frame: base_link
+    min_height: 0.06
+    max_height: 0.24
+    ground_tolerance: 0.04
+    ceiling_tolerance: 0.01
+    max_range: 6.0
+    max_age: 0.5
+
+nav_map_server:
+  ros__parameters:
+    topic_name: /nav_map
+    frame_id: map
+    yaml_filename: ""   # set by the launch file
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 5.0
+    planner_plugins: [GridBased]
+    GridBased:
+      # omni chassis: 2-D search; cost-aware so grey (slope) cells are avoided when cheap
+      plugin: nav2_smac_planner::SmacPlanner2D
+      tolerance: 0.15
+      downsample_costmap: false
+      allow_unknown: false
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 2.0
+      cost_travel_multiplier: 3.0
+      use_final_approach_orientation: false
+      smoother:
+        max_iterations: 1000
+        w_smooth: 0.3
+        w_data: 0.2
+        tolerance: 1.0e-10
+
+smoother_server:
+  ros__parameters:
+    smoother_plugins: [simple_smoother, zone_shaper]
+    simple_smoother:
+      plugin: nav2_smoother::SimpleSmoother
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: true
+    zone_shaper:
+      # Directional zone stretches -> lead-in / axis / lead-out with explicit headings
+      plugin: nav_behaviors::ZonePathShaper
+      zones_file: ""        # set by navigation.launch.py: <terrain_dir>/zones.yaml
+      min_cells: 50          # smaller tunnel zones are label fragments
+      slope_min_cells: 50    # ... and slope zones
+      types: [tunnel, slope, step_l1, step_l2, step_high, fly_slope, undulation]
+      axis_margin: 0.5       # straight axis beyond each mouth, m
+      lead_length: 2.5       # planner path replaced by each lead curve, m (increased from 1.5)
+      lead_growth: 1.5
+      max_retries: 3         # increased from 2
+      spacing: 0.025
+      max_body_offset: 0.03  # lateral shift allowed inside the tunnel (opening 0.8 m, robot 0.62 m padded)
+      max_side_offset: 0.06  # lateral shift at the outer end of each 0.5 m margin (one-sided wall bumps)
+      offset_step: 0.01
+      tangent_window: 0.25   # Smac tangent averaged over +- this arc length
+      # slopes: the face is up to 6 m wide, so the shaped stretch keeps the planner path's own line
+      slope_lead_length: 2.5    # start shaping the approach early enough for the yaw transition
+      slope_axis_margin: 0.3
+      slope_max_body_offset: 0.06
+      chain_gap: 1.0         # touching zones -> one stretch (tunnel_3+slope_3 ...)
+      chain_angle_deg: 12.0
+      chain_lat: 0.30
+      footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
+      footprint_padding: 0.01
+      collision_tolerance: 0.0   # full padded footprint; tracker owns constrained regions
+
+behavior_server:
+  ros__parameters:
+    local_costmap_topic: local_costmap/costmap_raw
+    global_costmap_topic: global_costmap/costmap_raw
+    local_footprint_topic: local_costmap/published_footprint
+    global_footprint_topic: global_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: [spin, backup, drive_on_heading, wait]
+    spin:
+      plugin: nav2_behaviors::Spin
+    backup:
+      plugin: nav2_behaviors::BackUp
+    drive_on_heading:
+      plugin: nav2_behaviors::DriveOnHeading
+    wait:
+      plugin: nav2_behaviors::Wait
+    local_frame: map   # must match local_costmap global_frame, else backup fails with "Pose Goes Off Grid"
+    global_frame: map
+    robot_base_frame: base_link
+    transform_tolerance: 0.5
+    simulate_ahead_time: 1.0
+    max_rotational_vel: 1.5
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
+
+velocity_smoother:
+  ros__parameters:
+    smoothing_frequency: 30.0
+    scale_velocities: false
+    feedback: OPEN_LOOP
+    max_velocity: [1.6, 1.6, 2.5]
+    min_velocity: [-1.6, -1.6, -2.5]
+    max_accel: [3.0, 3.0, 4.0]
+    max_decel: [-3.0, -3.0, -4.0]
+    odom_topic: /localization/odometry
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 0.5
+
+collision_monitor:
+  ros__parameters:
+    base_frame_id: base_link
+    odom_frame_id: map
+    cmd_vel_in_topic: cmd_vel_smoothed
+    cmd_vel_out_topic: cmd_vel_collision_checked
+    state_topic: /collision_monitor_state
+    enable_stamped_cmd_vel: false
+    transform_tolerance: 0.5
+    # /nav/obstacles is stamped with the frontend frame's acquisition time, but the commit ->
+    # terrain_obstacles pipeline adds up to ~0.45 s (frame window + TF wait + filter). 0.5 s made
+    # the source flap invalid ("timestamps differ") and stop the robot mid-tunnel; the ground truth
+    # cost is one extra frame of latency, ~0.1 m at tunnel speed.
+    source_timeout: 1.0
+    base_shift_correction: true
+    stop_pub_timeout: 1.0
+    polygons: [FootprintApproach]
+    FootprintApproach:
+      type: polygon
+      action_type: approach
+      footprint_topic: /local_costmap/published_footprint
+      time_before_collision: 1.0
+      simulation_time_step: 0.05
+      min_points: 1
+      visualize: false
+      enabled: true
+    observation_sources: [terrain]
+    terrain:
+      type: pointcloud
+      topic: /nav/obstacles
+      min_height: -10.0
+      max_height: 10.0
+      use_global_height: false
+      enabled: true
+
+cmd_gate:
+  ros__parameters:
+    rate: 30.0
+    input_timeout: 0.25
+    # /backend_node/localization_state is republished only when the state changes (transient
+    # local); a quiet NORMAL state must not expire the gate. 2 s covers any backend commit gap.
+    state_timeout: 2.0
+    require_observation: true
+    observation_timeout: 0.5
+    speed_limit_reference: 1.5
+    idle_stop_time: 0.5
+    state_topic: /backend_node/localization_state
+    mode_topic: /nav_mode
+    limits:
+      normal:   {max_linear: 1.6, max_angular: 2.5}
+      tunnel:   {max_linear: 0.8, max_angular: 1.0}   # backstop above zone.tunnel_speed + lateral correction
+      ramp:     {max_linear: 1.6, max_angular: 1.5}   # backstop above zone.ramp_speed (the charge up a slope)
+      recovery: {max_linear: 0.6, max_angular: 1.5}
+    # NOTE: /nav_mode is published only by ZoneAwareController (normal|tunnel|ramp) and it never
+    # publishes "recovery", so this row is a reserved backstop, not the active cap. Recovery motion is
+    # bounded by behavior_server instead (max_rotational_vel 1.5 = this row, back-up 0.15 m/s). Do not
+    # let the BT write /nav_mode: it would overwrite the tunnel/ramp backstop and the controller would
+    # not republish its own mode until it changes again.

@@ -1,0 +1,102 @@
+{
+  "run": "command_fixture1",
+  "first_motion_sim": 40.704,
+  "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+  "states": [
+    {
+      "sim": 0.636,
+      "wall": 1794591134.992166,
+      "state": "status=INITIALIZING",
+      "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+    },
+    {
+      "sim": 2.9280000000000004,
+      "wall": 1794591137.2847745,
+      "state": "status=NORMAL",
+      "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+    },
+    {
+      "sim": 28.864,
+      "wall": 1794591162.1496873,
+      "state": "status=LOST",
+      "text": "status=LOST;pose_trusted=false;tf_frozen=true;tf_published=false;epoch=0;generation=3;pose_revision=84;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=manual coordinated front-end reset"
+    },
+    {
+      "sim": 32.536,
+      "wall": 1794591165.820863,
+      "state": "status=NORMAL",
+      "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=5;pose_revision=87;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 52.912000000000006,
+      "wall": 1794591184.85374,
+      "state": "status=SUSPECT",
+      "text": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=1;generation=6;pose_revision=160;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.0844723, support=260/342, ratio=0.760234, sectors=18, min_eig=0.0908441, rank=6/6, observable=true, schur_t=11.0079, schur_r=5.80439, weak=001000, converged=false, iterations=30, final_step=0.0218669m/0.229092deg, pred_offset=0.0432632m/0.364303deg"
+    },
+    {
+      "sim": 53.328,
+      "wall": 1794591185.2699022,
+      "state": "status=NORMAL",
+      "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=7;pose_revision=161;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    }
+  ],
+  "frontend_epochs_during_motion": [
+    1
+  ],
+  "samples": {
+    "recorder_started": 1,
+    "tf_static": 7,
+    "frontend_session": 2,
+    "imu": 23734,
+    "truth": 4945,
+    "/backend_node/localization_state": 1289,
+    "frontend_prediction": 3693,
+    "tf": 23254,
+    "frontend_frame": 1109,
+    "localization_odom": 22053,
+    "/nav_zone_state": 2,
+    "/cmd_vel_nav": 1,
+    "/cmd_vel": 5960
+  },
+  "frontend": {
+    "frames": 789,
+    "lidar_rejected": 0,
+    "empty_clouds": 0,
+    "matches_min": 969,
+    "matches_median": 1253.0
+  },
+  "lio": {
+    "max_position_error_m": 0.20952659216552694,
+    "time_max_sim": 111.156,
+    "error_xyz_at_max_m": [
+      0.2080626133436514,
+      -0.023815955949691325,
+      -0.006643944258619333
+    ],
+    "max_yaw_error_deg": 0.3269254749595165,
+    "final_error_m": 0.005261427607019867,
+    "baseline_sim": 39.708,
+    "first_over_0.1m_sim": 111.052,
+    "first_over_0.25m_sim": null,
+    "first_over_0.5m_sim": null,
+    "first_over_1.0m_sim": null,
+    "first_over_2.0m_sim": null
+  },
+  "global": {
+    "max_position_error_m": 0.2330419600245331,
+    "time_max_sim": 111.256,
+    "error_xyz_at_max_m": [
+      0.2072437080595977,
+      0.10474610021391761,
+      0.019668632178172885
+    ],
+    "max_yaw_error_deg": 1.0280853024267542,
+    "final_error_m": 0.05175424057565743,
+    "baseline_sim": 39.708,
+    "first_over_0.1m_sim": 61.74,
+    "first_over_0.25m_sim": null,
+    "first_over_0.5m_sim": null,
+    "first_over_1.0m_sim": null,
+    "first_over_2.0m_sim": null
+  }
+}

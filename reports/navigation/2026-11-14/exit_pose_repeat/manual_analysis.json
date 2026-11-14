@@ -1,0 +1,118 @@
+[
+  {
+    "epoch": 1794587229.7729728,
+    "local_time": "00:27:09.772",
+    "line": 3308,
+    "message": "[backend_node-3] [WARN] [1794587229.772972768] [backend]: localization state -> OBS_DEGRADED (correction conflict 1/7 (severe 1/2): all available global observations conflicted: prior scan-to-map NIS=57.1592/6, p=1.69624e-10; joint system NIS=57.1592/6, p=1.69624e-10)",
+    "truth_reference_map_xy": [
+      6.379275359727156,
+      -5.582898010187156
+    ],
+    "truth_bracket": {
+      "start": 1794587229.67,
+      "end": 1794587229.85,
+      "displacement_3d_m": 0.136803508726933,
+      "yaw_delta_deg": 0.1599999999999966
+    }
+  },
+  {
+    "epoch": 1794587230.3718145,
+    "local_time": "00:27:10.371",
+    "line": 3310,
+    "message": "[backend_node-3] [WARN] [1794587230.371814375] [backend]: localization state -> SUSPECT (correction conflict 2/7 (severe 2/2): all available global observations conflicted: prior scan-to-map NIS=224.227/6, p=1.30529e-45; joint system NIS=224.227/6, p=1.30529e-45)",
+    "truth_reference_map_xy": [
+      6.788494337546632,
+      -5.509673163363251
+    ],
+    "truth_bracket": {
+      "start": 1794587230.27,
+      "end": 1794587230.45,
+      "displacement_3d_m": 0.12347639450518472,
+      "yaw_delta_deg": 0.18999999999999773
+    }
+  },
+  {
+    "epoch": 1794587230.787771,
+    "local_time": "00:27:10.787",
+    "line": 3316,
+    "message": "[backend_node-3] [INFO] [1794587230.787771030] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.48s, delta_t=1.19752m, delta_r_deg=1.34399)",
+    "translation_3d_m": 1.19752,
+    "rotation_3d_deg": 1.34399,
+    "truth_reference_map_xy": [
+      6.867348695480447,
+      -5.4298303162519055
+    ],
+    "truth_bracket": {
+      "start": 1794587230.69,
+      "end": 1794587230.87,
+      "displacement_3d_m": 0.01963822802597004,
+      "yaw_delta_deg": -0.06999999999999318
+    }
+  },
+  {
+    "epoch": 1794587231.9720473,
+    "local_time": "00:27:11.972",
+    "line": 3319,
+    "message": "[backend_node-3] [WARN] [1794587231.972047251] [backend]: localization state -> SUSPECT (correction conflict 1/7 (severe 1/2, during recovery probation): all available global observations conflicted: prior scan-to-map NIS=102.475/6, p=7.63622e-20; joint system NIS=102.475/6, p=7.63622e-20)",
+    "truth_reference_map_xy": [
+      6.760141384974874,
+      -5.306196653464776
+    ],
+    "truth_bracket": {
+      "start": 1794587231.89,
+      "end": 1794587232.07,
+      "displacement_3d_m": 0.04079387208883247,
+      "yaw_delta_deg": 3.0500000000000114
+    }
+  },
+  {
+    "epoch": 1794587232.982219,
+    "local_time": "00:27:12.982",
+    "line": 3329,
+    "message": "[backend_node-3] [INFO] [1794587232.982218930] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.48s, delta_t=0.959883m, delta_r_deg=3.58724)",
+    "translation_3d_m": 0.959883,
+    "rotation_3d_deg": 3.58724,
+    "truth_reference_map_xy": [
+      6.739424205516038,
+      -5.304164788491324
+    ],
+    "truth_bracket": {
+      "start": 1794587232.91,
+      "end": 1794587233.09,
+      "displacement_3d_m": 0.0,
+      "yaw_delta_deg": 0.0
+    }
+  },
+  {
+    "epoch": 1794587234.773067,
+    "local_time": "00:27:14.773",
+    "line": 3334,
+    "message": "[backend_node-3] [WARN] [1794587234.773067004] [backend]: localization state -> OBS_DEGRADED (correction conflict 1/7: all available global observations conflicted: prior scan-to-map NIS=27.891/6, p=9.85097e-05; joint system NIS=27.891/6, p=9.85097e-05)",
+    "truth_reference_map_xy": [
+      7.6202066749672195,
+      -5.286113154009203
+    ],
+    "truth_bracket": {
+      "start": 1794587234.71,
+      "end": 1794587234.89,
+      "displacement_3d_m": 0.24550417511724726,
+      "yaw_delta_deg": 10.469999999999999
+    }
+  },
+  {
+    "epoch": 1794587235.9739172,
+    "local_time": "00:27:15.973",
+    "line": 3339,
+    "message": "[backend_node-3] [WARN] [1794587235.973917192] [backend]: localization state -> NORMAL (system global observation accepted: prior scan-to-map NIS=22.3909/6, p=0.00102838)",
+    "truth_reference_map_xy": [
+      8.360043763163262,
+      -3.735755345975972
+    ],
+    "truth_bracket": {
+      "start": 1794587235.91,
+      "end": 1794587236.09,
+      "displacement_3d_m": 0.2778288321970921,
+      "yaw_delta_deg": 0.4099999999999966
+    }
+  }
+]

@@ -1,0 +1,76 @@
+{
+  "run": "reproduction_2",
+  "first_motion_sim": 68.12,
+  "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+  "states": [
+    {
+      "sim": 0.332,
+      "wall": 1794587654.7222714,
+      "state": "status=INITIALIZING",
+      "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+    },
+    {
+      "sim": 3.048,
+      "wall": 1794587657.4381642,
+      "state": "status=NORMAL",
+      "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+    }
+  ],
+  "frontend_epochs_during_motion": [
+    0
+  ],
+  "samples": {
+    "recorder_started": 1,
+    "tf_static": 7,
+    "truth": 6135,
+    "/backend_node/localization_state": 1443,
+    "frontend_prediction": 4784,
+    "tf": 29982,
+    "frontend_frame": 1210,
+    "localization_odom": 28668,
+    "/nav_zone_state": 148,
+    "/cmd_vel_nav": 1341,
+    "/cmd_vel": 659
+  },
+  "frontend": {
+    "frames": 670,
+    "lidar_rejected": 4,
+    "empty_clouds": 4,
+    "matches_min": 0,
+    "matches_median": 1342.0
+  },
+  "lio": {
+    "max_position_error_m": 0.12316727230131085,
+    "time_max_sim": 69.76,
+    "error_xyz_at_max_m": [
+      -0.043124534845537354,
+      -0.11531451584289687,
+      -0.0036074778474131097
+    ],
+    "max_yaw_error_deg": 0.7043686273097833,
+    "final_error_m": 0.013268457542395827,
+    "baseline_sim": 67.12,
+    "first_over_0.1m_sim": 69.688,
+    "first_over_0.25m_sim": null,
+    "first_over_0.5m_sim": null,
+    "first_over_1.0m_sim": null,
+    "first_over_2.0m_sim": null
+  },
+  "global": {
+    "max_position_error_m": 0.15881088887439831,
+    "time_max_sim": 78.46,
+    "error_xyz_at_max_m": [
+      0.010166696169726208,
+      0.15809296455909738,
+      0.011142318923139022
+    ],
+    "max_yaw_error_deg": 0.77461471647175,
+    "final_error_m": 0.08646999291013542,
+    "baseline_sim": 67.12,
+    "first_over_0.1m_sim": 69.648,
+    "first_over_0.25m_sim": null,
+    "first_over_0.5m_sim": null,
+    "first_over_1.0m_sim": null,
+    "first_over_2.0m_sim": null
+  }
+}

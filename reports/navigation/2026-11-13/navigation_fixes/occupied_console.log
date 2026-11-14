@@ -1,0 +1,13 @@
+PASS overlapping corner escapes without rotation and reaches target
+PASS fresh goal after overlapping corner succeeds
+PASS occupied centre inside wall escapes without rotation and reaches target
+PASS fresh goal after occupied centre inside wall succeeds
+{
+  "passed": true,
+  "checks": [
+    "overlapping corner escapes without rotation and reaches target",
+    "fresh goal after overlapping corner succeeds",
+    "occupied centre inside wall escapes without rotation and reaches target",
+    "fresh goal after occupied centre inside wall succeeds"
+  ]
+}

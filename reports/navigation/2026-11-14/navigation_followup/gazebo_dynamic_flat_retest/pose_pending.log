@@ -1,0 +1,13 @@
+[INFO] [1794621816.352233044] [tf2_echo]: Waiting for transform map ->  base_link: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[INFO] [1794621818.332243813] [tf2_echo]: Waiting for transform map ->  base_link: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+At time 2454.488000000
+- Translation: [6.068, -5.326, -0.132]
+- Rotation: in Quaternion (xyzw) [0.005, -0.012, 0.897, 0.443]
+- Rotation: in RPY (radian) [-0.017, -0.020, 2.224]
+- Rotation: in RPY (degree) [-0.973, -1.123, 127.441]
+- Matrix:
+ -0.608 -0.794 -0.002  6.068
+  0.794 -0.608 -0.026 -5.326
+  0.020 -0.017  1.000 -0.132
+  0.000  0.000  0.000  1.000
+[INFO] [1794621820.181048805] [rclcpp]: signal_handler(SIGINT/SIGTERM)

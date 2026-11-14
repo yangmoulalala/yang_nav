@@ -1,0 +1,107 @@
+[
+  {
+    "file": "docs/navigation.md",
+    "before_sha256": "311051b41dd659224c5dc43e423351b57be92a4f0ad2ef59d9260df07a70b69f",
+    "after_sha256": "483c639f5759ca14a40f62c033a7e6c8ecb77392585e2c51fb17b930a93d659f"
+  },
+  {
+    "file": "src/nav_behaviors/CMakeLists.txt",
+    "before_sha256": "7505751a17a70e095fdbdf9807489d21f53fcd8440d00805303a6990eea63865",
+    "after_sha256": "7ee7b668bc4e9f818eff21b1eee18badf11ad23b7aedcc6824396f21e9a5d52c"
+  },
+  {
+    "file": "src/nav_behaviors/README.md",
+    "before_sha256": "3d8682eaaa9345e8d9770035de69d063154e27c7e78d03aeaded473122e0876b",
+    "after_sha256": "f2b90c41ce335b0dbb23f2272359d51de91041ca70bf5cf377ada5c355d8bf17"
+  },
+  {
+    "file": "src/nav_behaviors/include/nav_behaviors/costmap_collision.hpp",
+    "before_sha256": "22e5371cd0d2b8a532d67abd01d6e15d5cec377dcf31be530f806c6903e9fa95",
+    "after_sha256": "71dcd4af3aeb9d98b61a9e596151128d1ec6c81cb3537d46c14c420ffa897729"
+  },
+  {
+    "file": "src/nav_behaviors/include/nav_behaviors/overlap_escape.hpp",
+    "before_sha256": null,
+    "after_sha256": "9f97c26d4e04c78218b98c9d6c18bfda336e6f3ec4cd877ea5e3dfdf0bdde570"
+  },
+  {
+    "file": "src/nav_behaviors/include/nav_behaviors/zone_path_handoff.hpp",
+    "before_sha256": null,
+    "after_sha256": "1974f6bbf609040585f2fcd5ac2ff7e4d6faecf5526b7153a91fa8d491d808e1"
+  },
+  {
+    "file": "src/nav_behaviors/include/nav_behaviors/zone_tracker.hpp",
+    "before_sha256": "cc5c5424e853915f275dfb4ce095b907c54bda9533c48b2f3142dd164c29af33",
+    "after_sha256": "8d70f8c2eb287eb6b5c969458f3bbf6bb19118999383990c1dbb8cd6b44cc05d"
+  },
+  {
+    "file": "src/nav_behaviors/package.xml",
+    "before_sha256": "e2702fbfbc79427cc5ced172538d98cad6987361a65bd2fd147df47c81a69b71",
+    "after_sha256": "6dc5edca924090d3902f056da683f8fe0f7544cb4c982e4abf1029ee9282ebdd"
+  },
+  {
+    "file": "src/nav_behaviors/plugins.xml",
+    "before_sha256": "a7850501da220f69c2a2bf16cefd732f0d09f1eb1caee48c289c59e79a187923",
+    "after_sha256": "e57e58290408644a497f56fb1f66903e3652361806b257fc02883eb0a1f2b835"
+  },
+  {
+    "file": "src/nav_behaviors/src/start_aware_planner.cpp",
+    "before_sha256": null,
+    "after_sha256": "c7f60248ec1ec5ac75d748287cafd27144458e5f9e48cc2d815a573804d0ee87"
+  },
+  {
+    "file": "src/nav_behaviors/src/zone_aware_controller.cpp",
+    "before_sha256": "262b2c7a15ba1b62b1a4154b59f9f9e27eb24163b910a030a50741ac4171a9a9",
+    "after_sha256": "90191655409c12b754e3f6016a388da23efdb22508b32430532d25f1b81cb2f1"
+  },
+  {
+    "file": "src/nav_behaviors/src/zone_bt_nodes.cpp",
+    "before_sha256": "17b1f249b941814db418efa1b8f34e59bbe461d9846dc32d1f6757e47855783b",
+    "after_sha256": "a4f91850b5c1674cd1f34e6309583081afcd45f84ef6eb1a4abf36082e441c8e"
+  },
+  {
+    "file": "src/nav_behaviors/src/zone_path_shaper.cpp",
+    "before_sha256": "b5bb492c87dbed281fc54711bd1113c39a2f3686237e3617f9c0194025bf84d8",
+    "after_sha256": "3cdf5ab3a3e07a329428cd709a50760cb9b6ec4d1729edfc64b13982c4cbdd00"
+  },
+  {
+    "file": "src/nav_behaviors/src/zone_tracker.cpp",
+    "before_sha256": "b787fd35094ce629e87afd05d66a365a8341f1d08635a5f37a6975b3029680f3",
+    "after_sha256": "5f9ac1f01ca5525f434a0e1f4798dd3f822e7cc8d03eac71d41537894e89914b"
+  },
+  {
+    "file": "src/nav_behaviors/test/test_costmap_collision.cpp",
+    "before_sha256": "c27155a091e1b34e714dfb73abbb0ba90edbde4459a7b38e3ac3c823c974ba51",
+    "after_sha256": "9b28c7cf380cb39d5e22a5a592c4a3b117c92d605a0b295e760d159ad0160366"
+  },
+  {
+    "file": "src/nav_behaviors/test/test_zone_path_handoff.cpp",
+    "before_sha256": null,
+    "after_sha256": "81ac2d2034c4547131d4dc10ebdf7e7a084a360686119b0aa0002fd16a7886e9"
+  },
+  {
+    "file": "src/nav_behaviors/test/test_zone_tracker.cpp",
+    "before_sha256": "622b3f8aea7f7eff1a8b524e57814b642827d5b350d24a3a3a29ace9d374a3f6",
+    "after_sha256": "43ef2a307ba2cac39586ff4fb1f749733a784ddbe4f4f2e05c614b4c7a95b126"
+  },
+  {
+    "file": "src/nav_bringup/behavior_trees/navigate_through_poses.xml",
+    "before_sha256": "c6af6c61a50d1819a701cfd3f07ff8b5f22bedbace46990e324eb01049ed3dfe",
+    "after_sha256": "8bc395f838318db28b15ec825edfcff211a0c5ebc6739544cf9c4bb6a612303f"
+  },
+  {
+    "file": "src/nav_bringup/behavior_trees/navigate_to_pose.xml",
+    "before_sha256": "6f0278ddd96d1e09fab84afb41d14a05825ab0d5f019340ae54cf72f1fe6a621",
+    "after_sha256": "79340b13070e8ca57ac67e3e15fc3cf6ec8dc8f00ab7fe4e889818575910d916"
+  },
+  {
+    "file": "src/nav_bringup/params/sim/nav2.yaml",
+    "before_sha256": "bf0c5d3badb28c19abad297310846f3577987722eafe473c7c38a51bb713751b",
+    "after_sha256": "ab1e074966cf5640599f0d2d7ea940c53f6fe878431729c0f24f88f751a9b133"
+  },
+  {
+    "file": "tools/nav_regress/occupied_start.py",
+    "before_sha256": null,
+    "after_sha256": "f1528a816f6ead204c4d79a9855e73c8d019a9f63aeddb1c19ecd37125ef8a79"
+  }
+]

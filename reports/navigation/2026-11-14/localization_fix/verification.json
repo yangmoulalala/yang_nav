@@ -1,0 +1,470 @@
+{
+  "tests": {
+    "frontend": [
+      {
+        "file": "build/frontend/test_results/frontend/frontend_input_timing_test.gtest.xml",
+        "cases": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "backend": [
+      {
+        "file": "build/backend/test_results/backend/backend_body_extrinsic_test.gtest.xml",
+        "cases": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_body_test.gtest.xml",
+        "cases": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_calibration_launch_test.xunit.xml",
+        "cases": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_calibration_test.gtest.xml",
+        "cases": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_cleanup_test.gtest.xml",
+        "cases": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_descriptor_test.gtest.xml",
+        "cases": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_evaluation_metrics_test.xunit.xml",
+        "cases": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_example_config_test.xunit.xml",
+        "cases": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_fusion_test.gtest.xml",
+        "cases": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_graph_test.gtest.xml",
+        "cases": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_innovation_test.gtest.xml",
+        "cases": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_launch_config_test.xunit.xml",
+        "cases": 16,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_lifecycle_test.gtest.xml",
+        "cases": 25,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_localization_test.gtest.xml",
+        "cases": 26,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_map_service_test.xunit.xml",
+        "cases": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_measurement_test.gtest.xml",
+        "cases": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_relocalization_test.gtest.xml",
+        "cases": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_storage_test.gtest.xml",
+        "cases": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_tools_test.xunit.xml",
+        "cases": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "build/backend/test_results/backend/backend_uwb_factor_test.gtest.xml",
+        "cases": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "test_cases": 181,
+  "test_failures": 0,
+  "runs": {
+    "fixed_route1": {
+      "diagnosis": {
+        "run": "fixed_route1",
+        "first_motion_sim": 39.688,
+        "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+        "states": [
+          {
+            "sim": 0.9440000000000001,
+            "wall": 1794591922.2488668,
+            "state": "status=INITIALIZING",
+            "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+          },
+          {
+            "sim": 2.8920000000000003,
+            "wall": 1794591924.195779,
+            "state": "status=NORMAL",
+            "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+          },
+          {
+            "sim": 28.084000000000003,
+            "wall": 1794591947.7045548,
+            "state": "status=LOST",
+            "text": "status=LOST;pose_trusted=false;tf_frozen=true;tf_published=false;epoch=0;generation=3;pose_revision=80;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=manual coordinated front-end reset"
+          },
+          {
+            "sim": 31.696,
+            "wall": 1794591951.3129861,
+            "state": "status=NORMAL",
+            "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=5;pose_revision=83;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+          },
+          {
+            "sim": 76.28,
+            "wall": 1794591994.2570782,
+            "state": "status=SUSPECT",
+            "text": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=1;generation=6;pose_revision=245;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.102635, support=243/351, ratio=0.692308, sectors=18, min_eig=0.140727, rank=6/6, observable=true, schur_t=6.95536, schur_r=7.10594, weak=000000, converged=false, iterations=30, final_step=0.0215306m/0.15901deg, pred_offset=0.0177655m/0.461937deg"
+          },
+          {
+            "sim": 76.88000000000001,
+            "wall": 1794591994.8577363,
+            "state": "status=NORMAL",
+            "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=7;pose_revision=246;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+          }
+        ],
+        "frontend_epochs_during_motion": [
+          1
+        ],
+        "samples": {
+          "recorder_started": 1,
+          "tf_static": 7,
+          "frontend_session": 2,
+          "truth": 4983,
+          "imu": 23663,
+          "/backend_node/localization_state": 1295,
+          "frontend_prediction": 3699,
+          "frontend_frame": 1113,
+          "tf": 23317,
+          "localization_odom": 22130,
+          "/nav_zone_state": 2,
+          "/cmd_vel_nav": 1,
+          "/cmd_vel": 6110
+        },
+        "frontend": {
+          "frames": 809,
+          "lidar_rejected": 0,
+          "empty_clouds": 0,
+          "matches_min": 818,
+          "matches_median": 1278.0
+        },
+        "lio": {
+          "max_position_error_m": 0.08899153714874117,
+          "time_max_sim": 91.668,
+          "error_xyz_at_max_m": [
+            -0.08775971497472046,
+            0.014538811770292703,
+            -0.0025197348986758517
+          ],
+          "max_yaw_error_deg": 0.22056287762299218,
+          "final_error_m": 0.009769572038628356,
+          "baseline_sim": 38.688,
+          "first_over_0.1m_sim": null,
+          "first_over_0.25m_sim": null,
+          "first_over_0.5m_sim": null,
+          "first_over_1.0m_sim": null,
+          "first_over_2.0m_sim": null
+        },
+        "global": {
+          "max_position_error_m": 0.16237559170488028,
+          "time_max_sim": 62.456,
+          "error_xyz_at_max_m": [
+            -0.12026643011205085,
+            0.10282298379480892,
+            0.0364589162365756
+          ],
+          "max_yaw_error_deg": 0.4709430063478373,
+          "final_error_m": 0.0665669296624259,
+          "baseline_sim": 38.688,
+          "first_over_0.1m_sim": 51.328,
+          "first_over_0.25m_sim": null,
+          "first_over_0.5m_sim": null,
+          "first_over_1.0m_sim": null,
+          "first_over_2.0m_sim": null
+        }
+      },
+      "route_end_sim": 113.328,
+      "route_target_time": 72.91839955372902,
+      "max_driver_path_error_m": 0.6404134834914704,
+      "tunnel3_body_truth_samples": 40,
+      "tunnel3_near_sim_range": [
+        51.108,
+        88.764
+      ],
+      "tunnel3_body_sim_range": [
+        86.676,
+        87.612
+      ],
+      "post_fixture_truth_path_m": 2.020041000243206e-06,
+      "states_during_motion": [
+        {
+          "sim": 76.28,
+          "wall": 1794591994.2570782,
+          "state": "status=SUSPECT",
+          "text": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=1;generation=6;pose_revision=245;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.102635, support=243/351, ratio=0.692308, sectors=18, min_eig=0.140727, rank=6/6, observable=true, schur_t=6.95536, schur_r=7.10594, weak=000000, converged=false, iterations=30, final_step=0.0215306m/0.15901deg, pred_offset=0.0177655m/0.461937deg"
+        },
+        {
+          "sim": 76.88000000000001,
+          "wall": 1794591994.8577363,
+          "state": "status=NORMAL",
+          "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=7;pose_revision=246;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+        }
+      ]
+    },
+    "fixed_route2": {
+      "diagnosis": {
+        "run": "fixed_route2",
+        "first_motion_sim": 41.676,
+        "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+        "states": [
+          {
+            "sim": 0.47200000000000003,
+            "wall": 1794592127.188353,
+            "state": "status=INITIALIZING",
+            "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+          },
+          {
+            "sim": 2.7800000000000002,
+            "wall": 1794592129.4975002,
+            "state": "status=NORMAL",
+            "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+          },
+          {
+            "sim": 29.096,
+            "wall": 1794592154.2647626,
+            "state": "status=LOST",
+            "text": "status=LOST;pose_trusted=false;tf_frozen=true;tf_published=false;epoch=0;generation=3;pose_revision=86;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=manual coordinated front-end reset"
+          },
+          {
+            "sim": 32.592,
+            "wall": 1794592157.7594194,
+            "state": "status=NORMAL",
+            "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=5;pose_revision=89;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+          }
+        ],
+        "frontend_epochs_during_motion": [
+          1
+        ],
+        "samples": {
+          "recorder_started": 1,
+          "tf_static": 7,
+          "frontend_session": 2,
+          "imu": 27387,
+          "truth": 5706,
+          "/backend_node/localization_state": 1506,
+          "frontend_frame": 1293,
+          "frontend_prediction": 4309,
+          "tf": 27132,
+          "localization_odom": 25782,
+          "/nav_zone_state": 12,
+          "/cmd_vel_nav": 56,
+          "/cmd_vel": 6186
+        },
+        "frontend": {
+          "frames": 962,
+          "lidar_rejected": 0,
+          "empty_clouds": 0,
+          "matches_min": 829,
+          "matches_median": 1278.0
+        },
+        "lio": {
+          "max_position_error_m": 0.04823346516599189,
+          "time_max_sim": 92.148,
+          "error_xyz_at_max_m": [
+            -0.036456151602791476,
+            0.031314312925238674,
+            -0.004102435648912439
+          ],
+          "max_yaw_error_deg": 0.19729883613420415,
+          "final_error_m": 0.0127408987204045,
+          "baseline_sim": 40.676,
+          "first_over_0.1m_sim": null,
+          "first_over_0.25m_sim": null,
+          "first_over_0.5m_sim": null,
+          "first_over_1.0m_sim": null,
+          "first_over_2.0m_sim": null
+        },
+        "global": {
+          "max_position_error_m": 0.14513381589872423,
+          "time_max_sim": 94.252,
+          "error_xyz_at_max_m": [
+            -0.005238164944685764,
+            0.14489010580897332,
+            -0.0065759701946980775
+          ],
+          "max_yaw_error_deg": 0.45021156256838735,
+          "final_error_m": 0.09947906466008083,
+          "baseline_sim": 40.676,
+          "first_over_0.1m_sim": 52.476,
+          "first_over_0.25m_sim": null,
+          "first_over_0.5m_sim": null,
+          "first_over_1.0m_sim": null,
+          "first_over_2.0m_sim": null
+        }
+      },
+      "route_end_sim": 113.988,
+      "route_target_time": 72.92598474580143,
+      "max_driver_path_error_m": 0.5426253441218231,
+      "tunnel3_body_truth_samples": 40,
+      "tunnel3_near_sim_range": [
+        51.72,
+        89.4
+      ],
+      "tunnel3_body_sim_range": [
+        87.288,
+        88.224
+      ],
+      "post_fixture_truth_path_m": 1.019839862062073,
+      "states_during_motion": []
+    }
+  },
+  "before_fixed_replay": {
+    "replay_matched_gyro": {
+      "frames": 887,
+      "max_position_error_m": 0.03044519727715224,
+      "max_yaw_error_deg": 0.12733093019094485,
+      "final_error_m": 0.012236848123955375,
+      "rejected": 0
+    },
+    "replay_flash": {
+      "frames": 887,
+      "max_position_error_m": 0.20370947338317852,
+      "max_yaw_error_deg": 1.1836642133928406,
+      "final_error_m": 0.20246567669923382,
+      "rejected": 0
+    },
+    "replay_before": {
+      "frames": 747,
+      "max_position_error_m": 0.2137436356014027,
+      "max_yaw_error_deg": 1.3924137376320427,
+      "final_error_m": 0.19332011717848452,
+      "rejected": 6
+    },
+    "replay_gyro_only": {
+      "frames": 747,
+      "max_position_error_m": 0.03744202261395265,
+      "max_yaw_error_deg": 0.14510199145661018,
+      "final_error_m": 0.009053438924477193,
+      "rejected": 6
+    },
+    "replay_fixed": {
+      "frames": 887,
+      "max_position_error_m": 0.03044519727715224,
+      "max_yaw_error_deg": 0.12733093019094485,
+      "final_error_m": 0.012236848123955375,
+      "rejected": 0
+    },
+    "replay_original": {
+      "frames": 747,
+      "max_position_error_m": 0.2137436356014027,
+      "max_yaw_error_deg": 1.3924137376320427,
+      "final_error_m": 0.19332011717848452,
+      "rejected": 6
+    },
+    "replay_matched_imu": {
+      "frames": 887,
+      "max_position_error_m": 2.836848223474986,
+      "max_yaw_error_deg": 2.391915101395186,
+      "final_error_m": 0.684059309768603,
+      "rejected": 0
+    }
+  },
+  "command_fixture_replay": {
+    "replay_before": {
+      "frames": 738,
+      "max_position_error_m": 0.16107303834181297,
+      "max_yaw_error_deg": 0.4753343424156098,
+      "final_error_m": 0.0036417101252416277,
+      "rejected": 9
+    },
+    "replay_gyro_only": {
+      "frames": 737,
+      "max_position_error_m": 0.29854462271218296,
+      "max_yaw_error_deg": 0.3615353882796132,
+      "final_error_m": 0.002520088073876682,
+      "rejected": 9
+    },
+    "replay_fixed": {
+      "frames": 875,
+      "max_position_error_m": 0.27166704830024246,
+      "max_yaw_error_deg": 0.3140616423245013,
+      "final_error_m": 0.0027622364237987235,
+      "rejected": 0
+    }
+  }
+}

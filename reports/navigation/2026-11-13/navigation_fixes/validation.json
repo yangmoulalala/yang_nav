@@ -1,0 +1,185 @@
+{
+  "timebase": "ROS /clock simulation time; wall clock had backward steps",
+  "zone_start_sim": 54.996,
+  "zone_duration_s": 8.698,
+  "approach": {
+    "samples": 12,
+    "max_abs_error_deg": 15.9,
+    "p95_abs_error_deg": 15.9
+  },
+  "align": {
+    "samples": 70,
+    "max_abs_error_deg": 21.8,
+    "p95_abs_error_deg": 19.52
+  },
+  "traverse": {
+    "samples": 48,
+    "max_abs_error_deg": 1.1,
+    "p95_abs_error_deg": 0.9
+  },
+  "exit": {
+    "samples": 44,
+    "max_abs_error_deg": 4.0,
+    "p95_abs_error_deg": 3.4
+  },
+  "/cmd_vel_nav": {
+    "median_interval_s": 0.05000293254852295,
+    "p90_interval_s": 0.050304102897644046,
+    "effective_hz": 19.99882704938551
+  },
+  "/cmd_vel_smoothed": {
+    "median_interval_s": 0.03302931785583496,
+    "p90_interval_s": 0.03321812152862549,
+    "effective_hz": 30.27613238531779
+  },
+  "/cmd_vel_collision_checked": {
+    "median_interval_s": 0.033008456230163574,
+    "p90_interval_s": 0.033350014686584474,
+    "effective_hz": 30.2952671590314
+  },
+  "/cmd_vel": {
+    "median_interval_s": 0.033336639404296875,
+    "p90_interval_s": 0.03350896835327148,
+    "effective_hz": 29.997024831216386
+  },
+  "/cmd_vel_nav -> /cmd_vel_smoothed": {
+    "lag_s": 0.05,
+    "correlation": 0.9989815570299657
+  },
+  "/cmd_vel_smoothed -> /cmd_vel_collision_checked": {
+    "lag_s": 0.0,
+    "correlation": 0.9999939486463577
+  },
+  "/cmd_vel_collision_checked -> /cmd_vel": {
+    "lag_s": 0.02,
+    "correlation": 0.9989827386273883
+  },
+  "/cmd_vel_nav -> truth": {
+    "lag_s": 0.11,
+    "correlation": 0.9820262887565218
+  },
+  "/cmd_vel -> truth": {
+    "lag_s": 0.04,
+    "correlation": 0.985127761402537
+  },
+  "goals": [
+    [
+      "4",
+      "SUCCEEDED",
+      "0",
+      "8.1"
+    ],
+    [
+      "4",
+      "SUCCEEDED",
+      "0",
+      "15.9"
+    ],
+    [
+      "4",
+      "SUCCEEDED",
+      "0",
+      "12.2"
+    ],
+    [
+      "4",
+      "SUCCEEDED",
+      "0",
+      "1.1"
+    ]
+  ],
+  "unit_tests": [
+    {
+      "file": "test_costmap_collision.gtest.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_path_shaper.gtest.xml",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_recovery_policy.gtest.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_slope.gtest.xml",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_zone_drive.gtest.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_zone_path_handoff.gtest.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_zone_recovery.gtest.xml",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_zone_state.gtest.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "test_zone_tracker.gtest.xml",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "unit_count": 82,
+  "occupied": {
+    "passed": true,
+    "checks": [
+      "overlapping corner escapes without rotation and reaches target",
+      "fresh goal after overlapping corner succeeds",
+      "occupied centre inside wall escapes without rotation and reaches target",
+      "fresh goal after occupied centre inside wall succeeds"
+    ]
+  },
+  "recorded_exit": {
+    "passed": true,
+    "checks": [
+      "recorded goal3 pose escapes without rotation and reaches target",
+      "fresh goal after recorded goal3 pose succeeds",
+      "recorded goal4 pose escapes without rotation and reaches target",
+      "fresh goal after recorded goal4 pose succeeds"
+    ]
+  },
+  "framework2": {
+    "passed": true,
+    "checks": [
+      "all lifecycle nodes activate with production safety gates enabled",
+      "NavigateToPose reaches position and requested heading on flat terrain",
+      "real planner/shaper/controller/BT cross tunnel within 3 cm and 3 degrees",
+      "reverse traversal stops at the exact in-zone goal without handing off to MPPI",
+      "in-zone planning failure after 5 s idle never spins or backs up",
+      "new goal resumes from inside tunnel and exits in reverse",
+      "live obstacle stops crossing, observed free floor clears it, goal resumes",
+      "cancel inside a zone terminates action and sends zero velocity",
+      "fresh goal after cancellation resumes safely from the zone",
+      "new target preempts an active crossing and completes with a fresh shaped path",
+      "observation loss and untrusted localization hold motion, then navigation resumes",
+      "NavigateThroughPoses uses shaped directional terrain and reaches final goal",
+      "an already-reached target succeeds without entering recovery"
+    ],
+    "model": "deterministic omni kinematics; real Nav2 nodes"
+  }
+}

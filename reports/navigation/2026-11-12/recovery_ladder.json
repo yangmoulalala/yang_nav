@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "checks": [
+    "ladder escalates clear -> spin -> back-up and gives up: clear spin backup backup backup",
+    "inside a zone only clears the costmaps: clear clear clear clear clear"
+  ]
+}

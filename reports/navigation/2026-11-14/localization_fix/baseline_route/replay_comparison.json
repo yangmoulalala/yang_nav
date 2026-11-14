@@ -1,0 +1,51 @@
+{
+  "replay_matched_gyro": {
+    "frames": 887,
+    "max_position_error_m": 0.03044519727715224,
+    "max_yaw_error_deg": 0.12733093019094485,
+    "final_error_m": 0.012236848123955375,
+    "rejected": 0
+  },
+  "replay_flash": {
+    "frames": 887,
+    "max_position_error_m": 0.20370947338317852,
+    "max_yaw_error_deg": 1.1836642133928406,
+    "final_error_m": 0.20246567669923382,
+    "rejected": 0
+  },
+  "replay_before": {
+    "frames": 747,
+    "max_position_error_m": 0.2137436356014027,
+    "max_yaw_error_deg": 1.3924137376320427,
+    "final_error_m": 0.19332011717848452,
+    "rejected": 6
+  },
+  "replay_gyro_only": {
+    "frames": 747,
+    "max_position_error_m": 0.03744202261395265,
+    "max_yaw_error_deg": 0.14510199145661018,
+    "final_error_m": 0.009053438924477193,
+    "rejected": 6
+  },
+  "replay_fixed": {
+    "frames": 887,
+    "max_position_error_m": 0.03044519727715224,
+    "max_yaw_error_deg": 0.12733093019094485,
+    "final_error_m": 0.012236848123955375,
+    "rejected": 0
+  },
+  "replay_original": {
+    "frames": 747,
+    "max_position_error_m": 0.2137436356014027,
+    "max_yaw_error_deg": 1.3924137376320427,
+    "final_error_m": 0.19332011717848452,
+    "rejected": 6
+  },
+  "replay_matched_imu": {
+    "frames": 887,
+    "max_position_error_m": 2.836848223474986,
+    "max_yaw_error_deg": 2.391915101395186,
+    "final_error_m": 0.684059309768603,
+    "rejected": 0
+  }
+}

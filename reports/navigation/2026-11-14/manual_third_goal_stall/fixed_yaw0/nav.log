@@ -1,0 +1,654 @@
+[INFO] [launch]: All log files can be found below /home/yang/.ros/log/2026-11-14-14-04-35-190079-AMD-192073
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [map_server-1]: process started with pid [192079]
+[INFO] [map_server-2]: process started with pid [192080]
+[INFO] [costmap_filter_info_server-3]: process started with pid [192081]
+[INFO] [terrain_obstacles.py-4]: process started with pid [192082]
+[INFO] [controller_server-5]: process started with pid [192083]
+[INFO] [smoother_server-6]: process started with pid [192084]
+[INFO] [planner_server-7]: process started with pid [192085]
+[INFO] [behavior_server-8]: process started with pid [192086]
+[INFO] [velocity_smoother-9]: process started with pid [192087]
+[INFO] [collision_monitor-10]: process started with pid [192088]
+[INFO] [bt_navigator-11]: process started with pid [192089]
+[INFO] [lifecycle_manager-12]: process started with pid [192090]
+[INFO] [cmd_gate-13]: process started with pid [192091]
+[velocity_smoother-9] [INFO] [1794636275.290663297] [velocity_smoother]: 
+[velocity_smoother-9] 	velocity_smoother lifecycle node launched. 
+[velocity_smoother-9] 	Waiting on external lifecycle transitions to activate
+[velocity_smoother-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-12] [INFO] [1794636275.305123741] [lifecycle_manager_navigation]: Creating
+[lifecycle_manager-12] [INFO] [1794636275.309346352] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[planner_server-7] [INFO] [1794636275.323579421] [planner_server]: 
+[planner_server-7] 	planner_server lifecycle node launched. 
+[planner_server-7] 	Waiting on external lifecycle transitions to activate
+[planner_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794636275.325563432] [planner_server]: Creating
+[smoother_server-6] [INFO] [1794636275.329088117] [smoother_server]: 
+[smoother_server-6] 	smoother_server lifecycle node launched. 
+[smoother_server-6] 	Waiting on external lifecycle transitions to activate
+[smoother_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[smoother_server-6] [INFO] [1794636275.331014569] [smoother_server]: Creating smoother server
+[behavior_server-8] [INFO] [1794636275.336915758] [behavior_server]: 
+[behavior_server-8] 	behavior_server lifecycle node launched. 
+[behavior_server-8] 	Waiting on external lifecycle transitions to activate
+[behavior_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[costmap_filter_info_server-3] [INFO] [1794636275.336985876] [costmap_filter_info_server]: This is costmap filter info publisher
+[controller_server-5] [INFO] [1794636275.344973140] [controller_server]: 
+[controller_server-5] 	controller_server lifecycle node launched. 
+[controller_server-5] 	Waiting on external lifecycle transitions to activate
+[controller_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794636275.345105721] [global_costmap.global_costmap]: 
+[planner_server-7] 	global_costmap lifecycle node launched. 
+[planner_server-7] 	Waiting on external lifecycle transitions to activate
+[planner_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794636275.345651366] [global_costmap.global_costmap]: Creating Costmap
+[controller_server-5] [INFO] [1794636275.350069154] [controller_server]: Creating controller server
+[bt_navigator-11] [INFO] [1794636275.356561089] [bt_navigator]: 
+[bt_navigator-11] 	bt_navigator lifecycle node launched. 
+[bt_navigator-11] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-11] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-11] [INFO] [1794636275.358269579] [bt_navigator]: Creating
+[collision_monitor-10] [INFO] [1794636275.359649439] [collision_monitor]: 
+[collision_monitor-10] 	collision_monitor lifecycle node launched. 
+[collision_monitor-10] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794636275.363157936] [nav_map_server]: 
+[map_server-1] 	nav_map_server lifecycle node launched. 
+[map_server-1] 	Waiting on external lifecycle transitions to activate
+[map_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794636275.363309086] [nav_map_server]: Creating
+[controller_server-5] [INFO] [1794636275.364022273] [local_costmap.local_costmap]: 
+[controller_server-5] 	local_costmap lifecycle node launched. 
+[controller_server-5] 	Waiting on external lifecycle transitions to activate
+[controller_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-5] [INFO] [1794636275.364616940] [local_costmap.local_costmap]: Creating Costmap
+[map_server-2] [INFO] [1794636275.375859710] [speed_mask_server]: 
+[map_server-2] 	speed_mask_server lifecycle node launched. 
+[map_server-2] 	Waiting on external lifecycle transitions to activate
+[map_server-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-2] [INFO] [1794636275.375992010] [speed_mask_server]: Creating
+[costmap_filter_info_server-3] [INFO] [1794636275.379361518] [speed_filter_info_server]: 
+[costmap_filter_info_server-3] 	speed_filter_info_server lifecycle node launched. 
+[costmap_filter_info_server-3] 	Waiting on external lifecycle transitions to activate
+[costmap_filter_info_server-3] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-12] [INFO] [1794636275.644994398] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-12] [INFO] [1794636275.645059985] [lifecycle_manager_navigation]: [34m[1mConfiguring nav_map_server[0m[0m
+[map_server-1] [INFO] [1794636275.645430739] [nav_map_server]: Configuring
+[map_server-1] [INFO] [1794636275.645500626] [map_io]: Loading yaml file: /home/yang/yang_nav/maps/sim/terrain/nav_map.yaml
+[map_server-1] [INFO] [1794636275.645746570] [map_io]: resolution: 0.05
+[map_server-1] [INFO] [1794636275.645780350] [map_io]: origin[0]: -5
+[map_server-1] [INFO] [1794636275.645786926] [map_io]: origin[1]: -8.15
+[map_server-1] [INFO] [1794636275.645789526] [map_io]: origin[2]: 0
+[map_server-1] [INFO] [1794636275.645792407] [map_io]: free_thresh: 0.001
+[map_server-1] [INFO] [1794636275.645795008] [map_io]: occupied_thresh: 0.99
+[map_server-1] [INFO] [1794636275.645798745] [map_io]: mode: scale
+[map_server-1] [INFO] [1794636275.645801724] [map_io]: negate: 0
+[map_server-1] [INFO] [1794636275.645986806] [map_io]: Loading image_file: /home/yang/yang_nav/maps/sim/terrain/nav_map.pgm
+[map_server-1] [INFO] [1794636275.651844957] [map_io]: Read map /home/yang/yang_nav/maps/sim/terrain/nav_map.pgm: 577 X 338 map @ 0.05 m/cell
+[lifecycle_manager-12] [INFO] [1794636275.661500139] [lifecycle_manager_navigation]: [34m[1mConfiguring speed_mask_server[0m[0m
+[map_server-2] [INFO] [1794636275.661777706] [speed_mask_server]: Configuring
+[map_server-2] [INFO] [1794636275.661826771] [map_io]: Loading yaml file: /home/yang/yang_nav/maps/sim/terrain/speed_mask.yaml
+[map_server-2] [INFO] [1794636275.662006143] [map_io]: resolution: 0.05
+[map_server-2] [INFO] [1794636275.662034310] [map_io]: origin[0]: -5
+[map_server-2] [INFO] [1794636275.662040529] [map_io]: origin[1]: -8.15
+[map_server-2] [INFO] [1794636275.662043064] [map_io]: origin[2]: 0
+[map_server-2] [INFO] [1794636275.662045967] [map_io]: free_thresh: 0.001
+[map_server-2] [INFO] [1794636275.662048459] [map_io]: occupied_thresh: 0.99
+[map_server-2] [INFO] [1794636275.662051980] [map_io]: mode: raw
+[map_server-2] [INFO] [1794636275.662056194] [map_io]: negate: 0
+[map_server-2] [INFO] [1794636275.662180889] [map_io]: Loading image_file: /home/yang/yang_nav/maps/sim/terrain/speed_mask.pgm
+[map_server-2] [INFO] [1794636275.665135925] [map_io]: Read map /home/yang/yang_nav/maps/sim/terrain/speed_mask.pgm: 577 X 338 map @ 0.05 m/cell
+[lifecycle_manager-12] [INFO] [1794636275.674911703] [lifecycle_manager_navigation]: [34m[1mConfiguring speed_filter_info_server[0m[0m
+[costmap_filter_info_server-3] [INFO] [1794636275.675297741] [speed_filter_info_server]: Configuring
+[lifecycle_manager-12] [INFO] [1794636275.682331821] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-5] [INFO] [1794636275.682670734] [controller_server]: Configuring controller interface
+[controller_server-5] [INFO] [1794636275.682696919] [controller_server]: getting progress checker plugins..
+[controller_server-5] [INFO] [1794636275.682955279] [controller_server]: getting goal checker plugins..
+[controller_server-5] [INFO] [1794636275.683454697] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-5] [INFO] [1794636275.683524075] [local_costmap.local_costmap]: Configuring
+[controller_server-5] [INFO] [1794636275.697418470] [local_costmap.local_costmap]: Using plugin "static_layer"
+[controller_server-5] [INFO] [1794636275.701243184] [local_costmap.local_costmap]: Subscribing to the map topic (/nav_map) with transient local durability
+[controller_server-5] [INFO] [1794636275.703517860] [local_costmap.local_costmap]: Initialized plugin "static_layer"
+[controller_server-5] [INFO] [1794636275.703568940] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-5] [INFO] [1794636275.706275742] [local_costmap.local_costmap]: Subscribed to Topics: terrain_hits terrain_rays
+[controller_server-5] [INFO] [1794636275.723610441] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-5] [INFO] [1794636275.723702429] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-5] [INFO] [1794636275.725546253] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-5] [INFO] [1794636275.725585362] [local_costmap.local_costmap]: Using costmap filter "speed_filter"
+[controller_server-5] [INFO] [1794636275.729489204] [local_costmap.local_costmap]: Initialized costmap filter "speed_filter"
+[controller_server-5] [INFO] [1794636275.767170801] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-5] [INFO] [1794636275.768051307] [controller_server]: Controller Server has progress_checker  progress checkers available.
+[controller_server-5] [INFO] [1794636275.768464685] [controller_server]: Created goal checker : goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-5] [INFO] [1794636275.769838488] [controller_server]: Controller Server has goal_checker  goal checkers available.
+[controller_server-5] [INFO] [1794636275.772899053] [controller_server]: Created controller : FollowPath of type nav_behaviors::ZoneAwareController
+[terrain_obstacles.py-4] [INFO] [1794636275.773721225] [terrain_obstacles]: terrain obstacles ready: /home/yang/yang_nav/maps/sim/terrain/terrain.msgpack
+[controller_server-5] [WARN] [1794636275.789450252] [controller_server]: ZoneAwareController: dropping tunnel_6 (2 cells), label fragment
+[controller_server-5] [INFO] [1794636275.789586073] [controller_server]: ZoneAwareController: 6 narrow zones, 20 directional zones from /home/yang/yang_nav/maps/sim/terrain/zones.yaml -> 22 stretches, tunnel 0.60 m/s, ramp 1.40 m/s
+[controller_server-5] [INFO] [1794636275.796995418] [controller_server]: Controller period is equal to model dt. Control sequence shifting is ON
+[controller_server-5] [INFO] [1794636275.799141304] [controller_server]: ConstraintCritic instantiated with 1 power and 4.000000 weight.
+[controller_server-5] [INFO] [1794636275.799187617] [controller_server]: Critic loaded : mppi::critics::ConstraintCritic
+[controller_server-5] [INFO] [1794636275.802335676] [controller_server]: InflationCostCritic instantiated with 1 power and 300.000000 / 0.015000 weights. Critic will collision check based on footprint cost.
+[controller_server-5] [INFO] [1794636275.802383745] [controller_server]: Critic loaded : mppi::critics::CostCritic
+[controller_server-5] [INFO] [1794636275.803698434] [controller_server]: GoalCritic instantiated with 1 power and 8.000000 weight.
+[controller_server-5] [INFO] [1794636275.803735507] [controller_server]: Critic loaded : mppi::critics::GoalCritic
+[controller_server-5] [INFO] [1794636275.805314265] [controller_server]: GoalAngleCritic instantiated with 1 power, 3.000000 weight, 1.500000 angular threshold and symmetric_yaw_tolerance disabled
+[controller_server-5] [INFO] [1794636275.805359311] [controller_server]: Critic loaded : mppi::critics::GoalAngleCritic
+[controller_server-5] [INFO] [1794636275.807762940] [controller_server]: ReferenceTrajectoryCritic instantiated with 1 power and 14.000000 weight
+[controller_server-5] [INFO] [1794636275.807831094] [controller_server]: Critic loaded : mppi::critics::PathAlignCritic
+[controller_server-5] [INFO] [1794636275.809398976] [controller_server]: Critic loaded : mppi::critics::PathFollowCritic
+[controller_server-5] [INFO] [1794636275.811677248] [controller_server]: PathAngleCritic instantiated with 1 power and 2.000000 weight. Mode set to: Consider Feasible Path Orientations
+[controller_server-5] [INFO] [1794636275.811713671] [controller_server]: Critic loaded : mppi::critics::PathAngleCritic
+[controller_server-5] [INFO] [1794636275.812632620] [controller_server]: TwirlingCritic instantiated with 1 power and 10.000000 weight.
+[controller_server-5] [INFO] [1794636275.812666323] [controller_server]: Critic loaded : mppi::critics::TwirlingCritic
+[controller_server-5] [INFO] [1794636275.814738692] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794636275.825615665] [MPPIController]: Configured MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794636275.825649975] [controller_server]: ZoneAwareController: inner controller nav2_mppi_controller::MPPIController
+[controller_server-5] [INFO] [1794636275.830412737] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-12] [INFO] [1794636275.846081647] [lifecycle_manager_navigation]: [34m[1mConfiguring smoother_server[0m[0m
+[smoother_server-6] [INFO] [1794636275.846387957] [smoother_server]: Configuring smoother server
+[smoother_server-6] [INFO] [1794636275.867250592] [smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-6] [INFO] [1794636275.871208002] [smoother_server]: Created smoother : zone_shaper of type nav_behaviors::ZonePathShaper
+[smoother_server-6] [WARN] [1794636275.884653061] [smoother_server]: ZonePathShaper: dropping tunnel_6 (2 cells), label fragment
+[smoother_server-6] [INFO] [1794636275.884739990] [smoother_server]: ZonePathShaper: 6 narrow zones, 20 directional zones from /home/yang/yang_nav/maps/sim/terrain/zones.yaml (0 ambiguous direction), 22 stretches after chaining
+[smoother_server-6] [INFO] [1794636275.884751441] [smoother_server]: Smoother Server has simple_smoother zone_shaper  smoothers available.
+[lifecycle_manager-12] [INFO] [1794636275.902272907] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-7] [INFO] [1794636275.902560615] [planner_server]: Configuring
+[planner_server-7] [INFO] [1794636275.902592195] [global_costmap.global_costmap]: Configuring
+[planner_server-7] [INFO] [1794636275.921517750] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-7] [INFO] [1794636275.925982859] [global_costmap.global_costmap]: Subscribing to the map topic (/nav_map) with transient local durability
+[planner_server-7] [INFO] [1794636275.928638498] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-7] [INFO] [1794636275.928676860] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-7] [INFO] [1794636275.931895842] [global_costmap.global_costmap]: Subscribed to Topics: terrain_hits terrain_rays
+[planner_server-7] [INFO] [1794636275.951895194] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-7] [INFO] [1794636275.951944595] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-7] [INFO] [1794636275.954182004] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-7] [INFO] [1794636276.007557970] [planner_server]: Created global planner plugin GridBased of type nav_behaviors::StartAwarePlanner
+[planner_server-7] [INFO] [1794636276.012175086] [planner_server]: Configuring GridBased of type SmacPlanner2D
+[planner_server-7] [ERROR] [1794636276.016680464] [planner_server]: Inflation layer either not found or inflation is not set sufficiently for optimized non-circular collision checking capabilities. It is HIGHLY recommended to set the inflation radius to be at MINIMUM half of the robot's largest cross-section. See github.com/ros-planning/navigation2/tree/main/nav2_smac_planner#potential-fields for full instructions. This will substantially impact run-time performance.
+[planner_server-7] [INFO] [1794636276.021558724] [planner_server]: Configured plugin GridBased of type SmacPlanner2D with tolerance 0.15, maximum iterations 1000000, max on approach iterations 1000, and not allowing unknown traversal.
+[planner_server-7] [INFO] [1794636276.023542734] [planner_server]: Created global planner plugin StrictGridBased of type nav_behaviors::StartAwarePlanner
+[planner_server-7] [INFO] [1794636276.024886392] [planner_server]: Configuring StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636276.033687855] [planner_server]: Configured plugin StrictGridBased of type SmacPlanner2D with tolerance 0.15, maximum iterations 1000000, max on approach iterations 1000, and not allowing unknown traversal.
+[planner_server-7] [INFO] [1794636276.033734092] [planner_server]: Planner Server has GridBased StrictGridBased  planners available.
+[lifecycle_manager-12] [INFO] [1794636276.059196801] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794636276.059581913] [behavior_server]: Configuring
+[behavior_server-8] [INFO] [1794636276.066445786] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors::Spin
+[behavior_server-8] [INFO] [1794636276.067173522] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors::BackUp
+[behavior_server-8] [INFO] [1794636276.067735938] [behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors::DriveOnHeading
+[behavior_server-8] [INFO] [1794636276.068216830] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors::Wait
+[behavior_server-8] [INFO] [1794636276.076636290] [behavior_server]: Configuring spin
+[behavior_server-8] [INFO] [1794636276.088185368] [behavior_server]: Configuring backup
+[behavior_server-8] [INFO] [1794636276.097485121] [behavior_server]: Configuring drive_on_heading
+[behavior_server-8] [INFO] [1794636276.106615134] [behavior_server]: Configuring wait
+[lifecycle_manager-12] [INFO] [1794636276.116251140] [lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-9] [INFO] [1794636276.116578932] [velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-12] [INFO] [1794636276.125288882] [lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-10] [INFO] [1794636276.125597609] [collision_monitor]: Configuring
+[collision_monitor-10] [INFO] [1794636276.135299006] [collision_monitor]: [terrain]: Creating PointCloud
+[collision_monitor-10] [INFO] [1794636276.140049461] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-10] [INFO] [1794636276.140443154] [collision_monitor]: [FootprintApproach]: Polygon points are not defined. Using dynamic subscription instead.
+[collision_monitor-10] [INFO] [1794636276.143297167] [collision_monitor]: [FootprintApproach]: Making footprint subscriber on /local_costmap/published_footprint topic
+[lifecycle_manager-12] [INFO] [1794636276.158582136] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-11] [INFO] [1794636276.158893759] [bt_navigator]: Configuring
+[bt_navigator-11] [INFO] [1794636276.171471840] [bt_navigator]: Creating navigator id navigate_to_pose of type nav2_bt_navigator::NavigateToPoseNavigator
+[bt_navigator-11] [INFO] [1794636276.284078668] [bt_navigator]: Creating navigator id navigate_through_poses of type nav2_bt_navigator::NavigateThroughPosesNavigator
+[lifecycle_manager-12] [INFO] [1794636276.357922512] [lifecycle_manager_navigation]: [34m[1mActivating nav_map_server[0m[0m
+[map_server-1] [INFO] [1794636276.358152509] [nav_map_server]: Activating
+[map_server-1] [INFO] [1794636276.358750458] [nav_map_server]: Creating bond (nav_map_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794636276.359079388] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 577 X 338 at 0.050000 m/pix
+[controller_server-5] [INFO] [1794636276.359201647] [local_costmap.local_costmap]: StaticLayer: Resizing static layer to 577 X 338 at 0.050000 m/pix
+[lifecycle_manager-12] [INFO] [1794636276.362496738] [lifecycle_manager_navigation]: [34m[1mActivating speed_mask_server[0m[0m
+[map_server-2] [INFO] [1794636276.362719975] [speed_mask_server]: Activating
+[map_server-2] [INFO] [1794636276.363176557] [speed_mask_server]: Creating bond (speed_mask_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636276.367178672] [lifecycle_manager_navigation]: [34m[1mActivating speed_filter_info_server[0m[0m
+[costmap_filter_info_server-3] [INFO] [1794636276.367485561] [speed_filter_info_server]: Activating
+[costmap_filter_info_server-3] [INFO] [1794636276.367591362] [speed_filter_info_server]: Creating bond (speed_filter_info_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636276.372727819] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-5] [INFO] [1794636276.373055280] [controller_server]: Activating
+[controller_server-5] [INFO] [1794636276.373111831] [local_costmap.local_costmap]: Activating
+[controller_server-5] [INFO] [1794636276.373119664] [local_costmap.local_costmap]: Checking transform
+[controller_server-5] [INFO] [1794636276.373246287] [local_costmap.local_costmap]: start
+[controller_server-5] [INFO] [1794636276.376583474] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794636276.388356498] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794636276.388404241] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794636276.388411511] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [INFO] [1794636276.400276833] [local_costmap.local_costmap]: SpeedFilter: Received filter mask from /speed_filter_mask topic.
+[controller_server-5] [WARN] [1794636276.430068505] [controller_server]: Parameter controller_server.verbose not found
+[controller_server-5] [INFO] [1794636276.430746038] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794636276.431248738] [MPPIController]: Activated MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794636276.431800927] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636276.436317528] [lifecycle_manager_navigation]: [34m[1mActivating smoother_server[0m[0m
+[smoother_server-6] [INFO] [1794636276.436548782] [smoother_server]: Activating
+[smoother_server-6] [INFO] [1794636276.436579961] [smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636276.442130781] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-7] [INFO] [1794636276.442389652] [planner_server]: Activating
+[planner_server-7] [INFO] [1794636276.442429043] [global_costmap.global_costmap]: Activating
+[planner_server-7] [INFO] [1794636276.442435836] [global_costmap.global_costmap]: Checking transform
+[planner_server-7] [INFO] [1794636276.442587506] [global_costmap.global_costmap]: start
+[planner_server-7] [INFO] [1794636276.997024842] [planner_server]: Activating plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636276.997083593] [planner_server]: Activating plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636277.000329967] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636277.006093414] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794636277.006373375] [behavior_server]: Activating
+[behavior_server-8] [INFO] [1794636277.006397956] [behavior_server]: Activating spin
+[behavior_server-8] [INFO] [1794636277.006406797] [behavior_server]: Activating backup
+[behavior_server-8] [INFO] [1794636277.006413264] [behavior_server]: Activating drive_on_heading
+[behavior_server-8] [INFO] [1794636277.006419537] [behavior_server]: Activating wait
+[behavior_server-8] [INFO] [1794636277.006430533] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636277.017164431] [lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-9] [INFO] [1794636277.017604091] [velocity_smoother]: Activating
+[velocity_smoother-9] [INFO] [1794636277.017674617] [velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636277.029503751] [lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-10] [INFO] [1794636277.029836516] [collision_monitor]: Activating
+[collision_monitor-10] [INFO] [1794636277.029880316] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636277.055788680] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-11] [INFO] [1794636277.056147062] [bt_navigator]: Activating
+[bt_navigator-11] [INFO] [1794636277.285506901] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794636277.292718360] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[bt_navigator-11] [INFO] [1794636292.564754723] [bt_navigator]: Begin navigating from current location (-0.06, 0.19) to (4.29, -2.21)
+[smoother_server-6] [INFO] [1794636292.586360460] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794636292.606342397] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [WARN] [1794636292.606418967] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded goal_checker . This warning will appear once.
+[controller_server-5] [WARN] [1794636292.606432605] [controller_server]: No progress checker was specified in parameter 'current_progress_checker'. Server will use only plugin loaded progress_checker . This warning will appear once.
+[smoother_server-6] [INFO] [1794636293.635736711] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794636293.656678245] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794636300.906722705] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794636300.907098942] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794636300.935563864] [bt_navigator]: Goal succeeded
+[bt_navigator-11] [INFO] [1794636316.341951479] [bt_navigator]: Begin navigating from current location (4.18, -2.16) to (8.69, -3.53)
+[smoother_server-6] [INFO] [1794636316.363187796] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794636316.364116810] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[smoother_server-6] [INFO] [1794636316.364189005] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +1.78/+1.78/+1.12 m
+[controller_server-5] [INFO] [1794636316.383356260] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794636316.383638616] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 90.4 deg, lateral +0.000 m
+[controller_server-5] [INFO] [1794636317.184051530] [controller_server]: ZoneAwareController: slope_3+tunnel_3 (narrow) window, heading locked at -89.6 deg, lateral -0.004 m
+[smoother_server-6] [INFO] [1794636317.413479964] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794636317.414290566] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[smoother_server-6] [INFO] [1794636317.414347865] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +1.78/+1.78/+1.12 m
+[controller_server-5] [INFO] [1794636317.433751183] [controller_server]: Passing new path to controller.
+[cmd_gate-13] [INFO] [1794636318.934018217] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [WARN] [1794636317.465639510] [controller_server]: ZoneAwareController: slope_3+tunnel_3 gate: lateral +0.036 m, heading -1.79 deg, slowing down
+[cmd_gate-13] [INFO] [1794636320.716006408] [cmd_gate]: mode tunnel -> normal
+[cmd_gate-13] [WARN] [1794636320.762732561] [cmd_gate]: holding: localization not trusted
+[cmd_gate-13] [INFO] [1794636321.162715955] [cmd_gate]: released
+[controller_server-5] [INFO] [1794636321.865648908] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 90.4 deg, lateral -0.030 m
+[cmd_gate-13] [INFO] [1794636325.165845773] [cmd_gate]: mode normal -> ramp
+[controller_server-5] [WARN] [1794636326.265640075] [controller_server]: ZoneAwareController: step_l1_1 gate: lateral -0.046 m, heading -9.89 deg, slowing down
+[controller_server-5] [WARN] [1794636327.516238264] [controller_server]: Zone collision: command braking at (6.796 -4.338 90.3 deg), robot (6.505 -5.118), occupied cells 1
+[smoother_server-6] [INFO] [1794636327.525536175] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794636327.525845755] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn locked, offset in/body/out +1.77/+1.77/+1.12 m
+[collision_monitor-10] [INFO] [1794636327.551339523] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [INFO] [1794636327.565602939] [controller_server]: Passing new path to controller.
+[collision_monitor-10] [INFO] [1794636327.617670710] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [INFO] [1794636328.715799783] [controller_server]: ZoneAwareController: step_l1_1 done, in body max |lateral| 0.105 m, max |heading| 0.47 deg, min speed 1.40 m/s
+[cmd_gate-13] [INFO] [1794636328.716009089] [cmd_gate]: mode ramp -> normal
+[controller_server-5] [INFO] [1794636332.365663908] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794636332.365976024] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794636332.394550613] [bt_navigator]: Goal succeeded
+[bt_navigator-11] [INFO] [1794636344.115702035] [bt_navigator]: Begin navigating from current location (8.62, -3.44) to (12.78, -4.41)
+[smoother_server-6] [INFO] [1794636344.137010003] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794636344.138063299] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794636344.138122147] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.03/+0.03 m
+[controller_server-5] [INFO] [1794636344.157169558] [controller_server]: Received a goal, begin computing control effort.
+[smoother_server-6] [INFO] [1794636345.186860739] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794636345.187744241] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794636345.187789233] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.03/+0.03 m
+[controller_server-5] [INFO] [1794636345.207953490] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794636346.408012717] [controller_server]: ZoneAwareController: slope_1+tunnel_2 (narrow) window, heading locked at 0.0 deg, lateral +0.035 m
+[collision_monitor-10] [INFO] [1794636348.077181381] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[collision_monitor-10] [INFO] [1794636348.110198540] [collision_monitor]: Robot to continue normal operation
+[collision_monitor-10] [INFO] [1794636348.143281037] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [WARN] [1794636348.158331609] [controller_server]: Zone collision: measured braking at (8.016 -5.561 -46.7 deg), robot (7.969 -5.268), occupied cells 1
+[controller_server-5] [WARN] [1794636348.161246745] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[collision_monitor-10] [INFO] [1794636348.176406726] [collision_monitor]: Robot to continue normal operation
+[collision_monitor-10] [INFO] [1794636348.374318931] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[collision_monitor-10] [INFO] [1794636348.407219022] [collision_monitor]: Robot to continue normal operation
+[cmd_gate-13] [INFO] [1794636349.458024563] [cmd_gate]: mode normal -> tunnel
+[collision_monitor-10] [INFO] [1794636347.217446192] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[collision_monitor-10] [INFO] [1794636347.316413118] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [WARN] [1794636347.331186584] [controller_server]: Zone collision: command braking at (8.270 -5.716 7.3 deg), robot (8.121 -5.587), occupied cells 2
+[controller_server-5] [WARN] [1794636347.432562158] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636347.480856940] [controller_server]: ZoneAwareController: slope_1+tunnel_2 gate: lateral -0.036 m, heading -0.22 deg, slowing down
+[controller_server-5] [WARN] [1794636348.182139893] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[collision_monitor-10] [INFO] [1794636348.306324574] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[collision_monitor-10] [INFO] [1794636348.339389530] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [WARN] [1794636348.481046222] [controller_server]: Zone collision: measured braking at (8.716 -5.609 0.0 deg), robot (8.642 -5.624), occupied cells 9
+[controller_server-5] [WARN] [1794636348.481657366] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794636348.631604555] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794636349.281050920] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636349.331165389] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636349.381015474] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636349.431009040] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636349.881006042] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636349.931250253] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636349.981024990] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.031056733] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.081016700] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.131175514] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.181011061] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.231064589] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.281044374] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.330975571] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.381085868] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [ERROR] [1794636350.381223628] [controller_server]: Controller patience exceeded
+[controller_server-5] [INFO] [1794636350.381508357] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794636350.381669171] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[cmd_gate-13] [INFO] [1794636350.381751029] [cmd_gate]: mode tunnel -> normal
+[controller_server-5] [INFO] [1794636350.399756400] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794636350.408426415] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794636350.414477177] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794636350.419735791] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794636350.419792613] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794636350.419803805] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[cmd_gate-13] [INFO] [1794636350.425067314] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794636350.425667105] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794636350.431614591] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[controller_server-5] [WARN] [1794636350.515087952] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.565001416] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.615084190] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.665075553] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.715100418] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.764999699] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.815090972] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.864996290] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.915049005] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636350.965006176] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636351.015068415] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [ERROR] [1794636351.015128084] [controller_server]: Controller patience exceeded
+[controller_server-5] [INFO] [1794636351.015397501] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794636351.015557118] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[cmd_gate-13] [INFO] [1794636351.015634617] [cmd_gate]: mode tunnel -> normal
+[bt_navigator-11] [WARN] [1794636351.029417530] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 1/5 -> clear (in a zone, no motion)
+[controller_server-5] [INFO] [1794636351.029680902] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794636351.037157374] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[planner_server-7] [INFO] [1794636351.043615112] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[behavior_server-8] [INFO] [1794636351.045403256] [behavior_server]: Running wait
+[controller_server-5] [INFO] [1794636351.048747185] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794636351.048799116] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794636351.048807315] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794636351.060252382] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[behavior_server-8] [INFO] [1794636352.045938573] [behavior_server]: wait completed successfully
+[controller_server-5] [INFO] [1794636352.060931405] [controller_server]: Received a goal, begin computing control effort.
+[cmd_gate-13] [INFO] [1794636352.061336724] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794636352.062204383] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [INFO] [1794636353.211711620] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794636353.211762159] [controller_server]: ZoneAwareController: footprint clear, resuming normal path tracking
+[controller_server-5] [WARN] [1794636353.511556290] [controller_server]: Zone collision: measured braking at (9.166 -5.609 0.0 deg), robot (8.969 -5.632), occupied cells 12
+[controller_server-5] [WARN] [1794636353.512580770] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636353.712434954] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636353.962176264] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[smoother_server-6] [INFO] [1794636354.099720366] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794636354.100734062] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn locked, offset in/body/out +0.03/+0.03/+0.03 m
+[controller_server-5] [INFO] [1794636354.161280380] [controller_server]: Passing new path to controller.
+[controller_server-5] [WARN] [1794636355.661560530] [controller_server]: Zone collision: measured braking at (10.214 -5.559 -0.2 deg), robot (10.153 -5.608), occupied cells 27
+[controller_server-5] [WARN] [1794636355.662311918] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636356.112702998] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636356.312407945] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636356.761485797] [controller_server]: Zone collision: measured braking at (10.562 -5.640 -0.3 deg), robot (10.544 -5.628), occupied cells 1
+[controller_server-5] [WARN] [1794636356.761917815] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794636356.812218804] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794636356.861462436] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636356.911571654] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636356.961497808] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.011538284] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.061444298] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.111659368] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.161492469] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.211549116] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.261487860] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.311533115] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.361449684] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [ERROR] [1794636357.361511803] [controller_server]: Controller patience exceeded
+[controller_server-5] [INFO] [1794636357.361700108] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794636357.361861955] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[cmd_gate-13] [INFO] [1794636357.361944741] [cmd_gate]: mode tunnel -> normal
+[controller_server-5] [INFO] [1794636357.379697661] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794636357.388144332] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794636357.394601628] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794636357.399833661] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794636357.399891425] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794636357.399898827] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794636357.411547563] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[cmd_gate-13] [INFO] [1794636357.425079381] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794636357.425806394] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794636357.445100754] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.545108820] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.595150385] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.645092290] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.695258445] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.745136922] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.795262484] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.845078319] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.895163592] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.945128663] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636357.995191314] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636358.045060798] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [ERROR] [1794636358.045140790] [controller_server]: Controller patience exceeded
+[controller_server-5] [INFO] [1794636358.045402375] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794636358.045599465] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[cmd_gate-13] [INFO] [1794636358.045689685] [cmd_gate]: mode tunnel -> normal
+[bt_navigator-11] [WARN] [1794636358.059493988] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 2/5 -> clear (in a zone, no motion)
+[controller_server-5] [INFO] [1794636358.059808291] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794636358.068187806] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[planner_server-7] [INFO] [1794636358.073319168] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[behavior_server-8] [INFO] [1794636358.074070594] [behavior_server]: Running wait
+[controller_server-5] [INFO] [1794636358.079567179] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794636358.079620398] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794636358.079633465] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794636358.091343943] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[behavior_server-8] [INFO] [1794636359.074525507] [behavior_server]: wait completed successfully
+[controller_server-5] [INFO] [1794636359.090728116] [controller_server]: Received a goal, begin computing control effort.
+[cmd_gate-13] [INFO] [1794636359.091031218] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794636359.091758695] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794636359.141249190] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.191566460] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794636359.241308474] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794636359.291365006] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.341234406] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.391453243] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.441244794] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.491379746] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.541271462] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.591573107] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.641307812] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [ERROR] [1794636359.641379737] [controller_server]: Controller patience exceeded
+[controller_server-5] [INFO] [1794636359.641657456] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794636359.641826233] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[cmd_gate-13] [INFO] [1794636359.641925571] [cmd_gate]: mode tunnel -> normal
+[controller_server-5] [INFO] [1794636359.659833420] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794636359.669519555] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794636359.676106627] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794636359.681194121] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794636359.681248256] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794636359.681256089] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[cmd_gate-13] [INFO] [1794636359.686808276] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794636359.687566529] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794636359.692676836] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[controller_server-5] [WARN] [1794636359.726802796] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.776670686] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [WARN] [1794636359.876648908] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [INFO] [1794636361.076651651] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794636361.076703262] [controller_server]: ZoneAwareController: footprint clear, resuming normal path tracking
+[controller_server-5] [WARN] [1794636361.076865842] [controller_server]: Zone collision: command braking at (10.998 -5.640 -0.2 deg), robot (10.688 -5.575), occupied cells 6
+[collision_monitor-10] [INFO] [1794636361.209280873] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [WARN] [1794636361.577726839] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[collision_monitor-10] [INFO] [1794636361.605314894] [collision_monitor]: Robot to continue normal operation
+[collision_monitor-10] [INFO] [1794636361.638297287] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[cmd_gate-13] [INFO] [1794636361.726644742] [cmd_gate]: mode tunnel -> normal
+[controller_server-5] [WARN] [1794636361.930506102] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[collision_monitor-10] [INFO] [1794636361.935458366] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [WARN] [1794636362.129828964] [controller_server]: Zone collision: measured braking at (11.235 -5.632 2.2 deg), robot (11.183 -5.622), occupied cells 3
+[controller_server-5] [WARN] [1794636362.130901738] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794636362.476475825] [controller_server]: ZoneAwareController: slope_1+tunnel_2 done, in body max |lateral| 0.050 m, max |heading| 0.54 deg, min speed 0.53 m/s
+[controller_server-5] [INFO] [1794636364.826611589] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794636364.826876080] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794636364.849310853] [bt_navigator]: Goal succeeded
+[bt_navigator-11] [INFO] [1794636378.865239027] [bt_navigator]: Begin navigating from current location (12.71, -4.52) to (8.69, -3.53)
+[smoother_server-6] [INFO] [1794636378.886949324] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794636378.887613661] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir -1, heading -0.0 deg, lead 2.50 m, turn first half, offset in/body/out +0.03/+0.03/+0.00 m
+[smoother_server-6] [INFO] [1794636378.887673690] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +0.35/+0.35/+0.19 m
+[controller_server-5] [INFO] [1794636378.907153227] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794636378.907434294] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 90.4 deg, lateral +0.000 m
+[controller_server-5] [INFO] [1794636379.807644034] [controller_server]: ZoneAwareController: slope_1+tunnel_2 (narrow) window, heading locked at -0.0 deg, lateral -0.002 m
+[smoother_server-6] [INFO] [1794636379.936632656] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794636379.937207509] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir -1, heading -0.0 deg, lead 2.50 m, turn first half, offset in/body/out +0.03/+0.03/+0.00 m
+[smoother_server-6] [INFO] [1794636379.937260008] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +0.35/+0.35/+0.19 m
+[controller_server-5] [INFO] [1794636379.957787559] [controller_server]: Passing new path to controller.
+[collision_monitor-10] [INFO] [1794636380.343433276] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[collision_monitor-10] [INFO] [1794636380.409420783] [collision_monitor]: Robot to continue normal operation
+[collision_monitor-10] [INFO] [1794636380.871472109] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [WARN] [1794636381.458109395] [controller_server]: Zone collision: command braking at (11.223 -5.641 0.4 deg), robot (11.511 -5.513), occupied cells 6
+[collision_monitor-10] [INFO] [1794636382.158416479] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [WARN] [1794636382.308744778] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[cmd_gate-13] [INFO] [1794636382.458040985] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [WARN] [1794636382.458083154] [controller_server]: Zone collision: measured braking at (11.226 -5.638 0.4 deg), robot (11.260 -5.622), occupied cells 3
+[collision_monitor-10] [INFO] [1794636382.587441758] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[collision_monitor-10] [INFO] [1794636382.653621907] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [WARN] [1794636382.958790196] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794636383.058865171] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794636383.107876943] [controller_server]: Escape stopped: new obstacle contact or growing overlap
+[controller_server-5] [INFO] [1794636384.207876041] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794636384.207927826] [controller_server]: ZoneAwareController: footprint clear, resuming normal path tracking
+[controller_server-5] [WARN] [1794636384.208053983] [controller_server]: Zone collision: command braking at (10.895 -5.641 0.0 deg), robot (11.110 -5.597), occupied cells 6
+[controller_server-5] [WARN] [1794636384.459083502] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636385.457830715] [controller_server]: Zone collision: measured braking at (10.606 -5.561 1.6 deg), robot (10.626 -5.617), occupied cells 16
+[controller_server-5] [WARN] [1794636385.458720630] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636387.758167134] [controller_server]: Zone collision: measured braking at (9.493 -5.744 0.0 deg), robot (9.596 -5.648), occupied cells 29
+[controller_server-5] [WARN] [1794636387.759286981] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[controller_server-5] [WARN] [1794636389.157793035] [controller_server]: Zone collision: measured braking at (8.647 -5.610 0.1 deg), robot (8.832 -5.646), occupied cells 6
+[controller_server-5] [WARN] [1794636389.158836624] [controller_server]: ZoneAwareController: slope_1+tunnel_2 obstacle on the path ahead, stopping
+[cmd_gate-13] [INFO] [1794636390.007823712] [cmd_gate]: mode tunnel -> normal
+[controller_server-5] [INFO] [1794636391.007643351] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 90.4 deg, lateral -0.009 m
+[controller_server-5] [WARN] [1794636391.007722242] [controller_server]: ZoneAwareController: step_l1_1 gate: lateral -0.009 m, heading -59.86 deg, slowing down
+[cmd_gate-13] [INFO] [1794636391.007957244] [cmd_gate]: mode normal -> ramp
+[smoother_server-6] [INFO] [1794636391.086708667] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794636391.087111926] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn locked, offset in/body/out +0.43/+0.43/+0.19 m
+[controller_server-5] [INFO] [1794636391.107610057] [controller_server]: Passing new path to controller.
+[cmd_gate-13] [INFO] [1794636394.007899750] [cmd_gate]: mode ramp -> normal
+[controller_server-5] [INFO] [1794636394.207597896] [controller_server]: ZoneAwareController: step_l1_1 done, in body max |lateral| 0.080 m, max |heading| 0.33 deg, min speed 1.40 m/s
+[controller_server-5] [INFO] [1794636396.957625897] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794636396.957899966] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794636396.986270550] [bt_navigator]: Goal succeeded
+[velocity_smoother-9] [INFO] [1794636397.217649965] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[cmd_gate-13] [INFO] [1794636397.217715471] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[planner_server-7] [INFO] [1794636397.217761215] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[planner_server-7] [INFO] [1794636397.217822240] [planner_server]: Running Nav2 LifecycleNode rcl preshutdown (planner_server)
+[planner_server-7] [INFO] [1794636397.217885303] [planner_server]: Deactivating
+[planner_server-7] [INFO] [1794636397.217915648] [global_costmap.global_costmap]: Deactivating
+[costmap_filter_info_server-3] [INFO] [1794636397.217876853] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[costmap_filter_info_server-3] [INFO] [1794636397.217961539] [speed_filter_info_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_filter_info_server)
+[costmap_filter_info_server-3] [INFO] [1794636397.218023811] [speed_filter_info_server]: Deactivating
+[costmap_filter_info_server-3] [INFO] [1794636397.218061869] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794636397.218322590] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[behavior_server-8] [INFO] [1794636397.218378373] [behavior_server]: Running Nav2 LifecycleNode rcl preshutdown (behavior_server)
+[smoother_server-6] [INFO] [1794636397.218352655] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[smoother_server-6] [INFO] [1794636397.218405988] [smoother_server]: Running Nav2 LifecycleNode rcl preshutdown (smoother_server)
+[lifecycle_manager-12] [INFO] [1794636397.218389033] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[lifecycle_manager-12] [INFO] [1794636397.218468649] [lifecycle_manager_navigation]: Running Nav2 LifecycleManager rcl preshutdown (lifecycle_manager_navigation)
+[behavior_server-8] [INFO] [1794636397.218445595] [behavior_server]: Deactivating
+[behavior_server-8] [INFO] [1794636397.218495516] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794636397.218435563] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[collision_monitor-10] [INFO] [1794636397.218516446] [collision_monitor]: Running Nav2 LifecycleNode rcl preshutdown (collision_monitor)
+[collision_monitor-10] [INFO] [1794636397.218601707] [collision_monitor]: Deactivating
+[smoother_server-6] [INFO] [1794636397.218469852] [smoother_server]: Deactivating
+[smoother_server-6] [INFO] [1794636397.218505235] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[bt_navigator-11] [INFO] [1794636397.218495353] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[bt_navigator-11] [INFO] [1794636397.218556921] [bt_navigator]: Running Nav2 LifecycleNode rcl preshutdown (bt_navigator)
+[bt_navigator-11] [INFO] [1794636397.218604350] [bt_navigator]: Deactivating
+[bt_navigator-11] [INFO] [1794636397.218629571] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794636397.218627838] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[map_server-2] [INFO] [1794636397.218632626] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-2] [INFO] [1794636397.218705157] [speed_mask_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_mask_server)
+[map_server-2] [INFO] [1794636397.218781664] [speed_mask_server]: Deactivating
+[map_server-2] [INFO] [1794636397.218797047] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794636397.220207365] [velocity_smoother]: Running Nav2 LifecycleNode rcl preshutdown (velocity_smoother)
+[controller_server-5] [INFO] [1794636397.220263462] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[controller_server-5] [INFO] [1794636397.220325777] [controller_server]: Running Nav2 LifecycleNode rcl preshutdown (controller_server)
+[controller_server-5] [INFO] [1794636397.220380475] [controller_server]: Deactivating
+[controller_server-5] [INFO] [1794636397.220598859] [MPPIController]: Deactivated MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794636397.220626539] [local_costmap.local_costmap]: Deactivating
+[map_server-1] [INFO] [1794636397.220617402] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-1] [INFO] [1794636397.220702262] [nav_map_server]: Running Nav2 LifecycleNode rcl preshutdown (nav_map_server)
+[map_server-1] [INFO] [1794636397.220828874] [nav_map_server]: Deactivating
+[map_server-1] [INFO] [1794636397.220850054] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794636397.221876270] [velocity_smoother]: Deactivating
+[velocity_smoother-9] [INFO] [1794636397.221911295] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[costmap_filter_info_server-3] [INFO] [1794636397.228648454] [speed_filter_info_server]: Cleaning up
+[costmap_filter_info_server-3] [INFO] [1794636397.228712687] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794636397.228883793] [behavior_server]: Cleaning up
+[smoother_server-6] [INFO] [1794636397.228886875] [smoother_server]: Cleaning up
+[map_server-2] [INFO] [1794636397.229231698] [speed_mask_server]: Cleaning up
+[map_server-2] [INFO] [1794636397.229332905] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794636397.229413289] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[bt_navigator-11] [INFO] [1794636397.229932737] [bt_navigator]: Cleaning up
+[collision_monitor-10] [INFO] [1794636397.230006868] [collision_monitor]: Cleaning up
+[collision_monitor-10] [INFO] [1794636397.230052986] [collision_monitor]: [FootprintApproach]: Destroying Polygon
+[collision_monitor-10] [INFO] [1794636397.230066767] [collision_monitor]: [terrain]: Destroying PointCloud
+[map_server-1] [INFO] [1794636397.231322201] [nav_map_server]: Cleaning up
+[map_server-1] [INFO] [1794636397.231374267] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794636397.232325095] [velocity_smoother]: Cleaning up
+[velocity_smoother-9] [INFO] [1794636397.232368180] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794636397.235689262] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[costmap_filter_info_server-3] [INFO] [1794636397.236409993] [speed_filter_info_server]: Destroying
+[behavior_server-8] [INFO] [1794636397.236413350] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794636397.239749469] [controller_server]: Cleaning up
+[controller_server-5] [INFO] [1794636397.241243963] [MPPIController]: Cleaned up MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794636397.241752796] [local_costmap.local_costmap]: Cleaning up
+[map_server-2] [INFO] [1794636397.244244003] [speed_mask_server]: Destroying
+[velocity_smoother-9] [INFO] [1794636397.245513473] [velocity_smoother]: Destroying
+[map_server-1] [INFO] [1794636397.249211452] [nav_map_server]: Destroying
+[smoother_server-6] [INFO] [1794636397.254860988] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794636397.259887954] [collision_monitor]: Destroying
+[smoother_server-6] [INFO] [1794636397.274613922] [smoother_server]: Destroying
+[lifecycle_manager-12] [INFO] [1794636397.277363997] [lifecycle_manager_navigation]: Destroying lifecycle_manager_navigation
+[behavior_server-8] [INFO] [1794636397.302330958] [behavior_server]: Destroying
+[controller_server-5] [INFO] [1794636397.320239336] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[terrain_obstacles.py-4] Traceback (most recent call last):
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 97, in <module>
+[terrain_obstacles.py-4]     main()
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 87, in main
+[terrain_obstacles.py-4]     rclpy.spin(node)
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+[terrain_obstacles.py-4]     executor.spin_once()
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 926, in spin_once
+[terrain_obstacles.py-4]     self._spin_once_impl(timeout_sec)
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 907, in _spin_once_impl
+[terrain_obstacles.py-4]     handler, entity, node = self.wait_for_ready_callbacks(
+[terrain_obstacles.py-4]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 877, in wait_for_ready_callbacks
+[terrain_obstacles.py-4]     return next(self._cb_iter)
+[terrain_obstacles.py-4]            ^^^^^^^^^^^^^^^^^^^
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 785, in _wait_for_ready_callbacks
+[terrain_obstacles.py-4]     raise ExternalShutdownException()
+[terrain_obstacles.py-4] rclpy.executors.ExternalShutdownException
+[controller_server-5] [INFO] [1794636397.334265624] [local_costmap.local_costmap]: Destroying
+[controller_server-5] [INFO] [1794636397.351907787] [controller_server]: Destroying
+[INFO] [costmap_filter_info_server-3]: process has finished cleanly [pid 192081]
+[INFO] [cmd_gate-13]: process has finished cleanly [pid 192091]
+[bt_navigator-11] [INFO] [1794636397.403557127] [bt_navigator]: Completed Cleaning up
+[bt_navigator-11] [INFO] [1794636397.403632864] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[INFO] [velocity_smoother-9]: process has finished cleanly [pid 192087]
+[INFO] [map_server-2]: process has finished cleanly [pid 192080]
+[INFO] [map_server-1]: process has finished cleanly [pid 192079]
+[INFO] [lifecycle_manager-12]: process has finished cleanly [pid 192090]
+[INFO] [collision_monitor-10]: process has finished cleanly [pid 192088]
+[bt_navigator-11] [INFO] [1794636397.418995575] [bt_navigator]: Destroying
+[INFO] [smoother_server-6]: process has finished cleanly [pid 192084]
+[INFO] [behavior_server-8]: process has finished cleanly [pid 192086]
+[INFO] [controller_server-5]: process has finished cleanly [pid 192083]
+[ERROR] [terrain_obstacles.py-4]: process has died [pid 192082, exit code 1, cmd '/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py --ros-args -r __node:=terrain_obstacles --params-file /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/params/sim/nav2.yaml --params-file /tmp/launch_params_u1ykjhlb'].
+[INFO] [bt_navigator-11]: process has finished cleanly [pid 192089]
+[planner_server-7] [INFO] [1794636397.634577613] [planner_server]: Deactivating plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636397.634641282] [planner_server]: Deactivating plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636397.634656167] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794636397.645459634] [planner_server]: Cleaning up
+[planner_server-7] [INFO] [1794636397.652172119] [global_costmap.global_costmap]: Cleaning up
+[planner_server-7] [INFO] [1794636397.656639937] [planner_server]: Cleaning up plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636397.656771923] [planner_server]: Destroying plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636397.656785292] [planner_server]: Cleaning up plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636397.656875427] [planner_server]: Destroying plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794636397.667912596] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794636397.671857212] [global_costmap.global_costmap]: Destroying
+[planner_server-7] [INFO] [1794636397.680029785] [planner_server]: Destroying
+[INFO] [planner_server-7]: process has finished cleanly [pid 192085]

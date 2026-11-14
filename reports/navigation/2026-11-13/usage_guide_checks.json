@@ -1,0 +1,22 @@
+{
+  "guide": "docs/navigation_usage.md",
+  "script": "tools/start_navigation.sh",
+  "bash_snippets_checked": 15,
+  "local_markdown_links_checked": 27,
+  "wrapper_checks": [
+    "bash -n",
+    "--help",
+    "--dry-run",
+    "outside workspace directory",
+    "ROS_DOMAIN_ID inherited",
+    "custom terrain_dir/use_sim_time forwarded",
+    "--show-args delegates to installed launch without starting nodes"
+  ],
+  "original_staging_preserved": true,
+  "new_runtime_simulation_run": false,
+  "jazzy_message_examples": [
+    "NavigateToPose.Goal",
+    "NavigateThroughPoses.Goal",
+    "CancelGoal.Request"
+  ]
+}

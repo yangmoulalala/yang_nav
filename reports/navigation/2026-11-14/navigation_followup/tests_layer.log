@@ -1,0 +1,547 @@
+Starting >>> nav_behaviors
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+   Site: AMD
+   Build name: (empty)
+ Add coverage exclude regular expressions.
+Create new tag: 20261113-1847 - Experimental
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+Test project /home/yang/yang_nav/build/nav_behaviors
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+      Start  1: test_timed_obstacle_layer
+
+1: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_timed_obstacle_layer.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_timed_obstacle_layer" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml"
+1: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+1: Test timeout computed to be: 60
+1: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+1:  - /home/yang/yang_nav/build/nav_behaviors/test_timed_obstacle_layer --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml
+1: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+1: [==========] Running 5 tests from 1 test suite.
+1: [----------] Global test environment set-up.
+1: [----------] 5 tests from TimedLayerTest
+1: [ RUN      ] TimedLayerTest.OldCloudCannotRefreshItsOwnEvidence
+1: [INFO] [1794595657.328918493] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794595657.329133735] [timed_layer_test]: Subscribed to Topics: 
+1: /home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp:46: Failure
+1: Expected equality of these values:
+1:   cost()
+1:     Which is: '\0'
+1:   254
+1: 
+1: /home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp:47: Failure
+1: Expected equality of these values:
+1:   cost()
+1:     Which is: '\0'
+1:   254
+1: 
+1: [INFO] [1794595657.329306123] [timed_layer_test]: Destroying
+1: [  FAILED  ] TimedLayerTest.OldCloudCannotRefreshItsOwnEvidence (28 ms)
+1: [ RUN      ] TimedLayerTest.NewAcquisitionRefreshesAndStationaryObstacleStays
+1: [INFO] [1794595657.338046791] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794595657.338153970] [timed_layer_test]: Subscribed to Topics: 
+1: /home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp:53: Failure
+1: Expected equality of these values:
+1:   cost()
+1:     Which is: '\0'
+1:   254
+1: 
+1: [INFO] [1794595657.338207601] [timed_layer_test]: Destroying
+1: [  FAILED  ] TimedLayerTest.NewAcquisitionRefreshesAndStationaryObstacleStays (7 ms)
+1: [ RUN      ] TimedLayerTest.ExpiryDoesNotClearAnotherLayer
+1: [INFO] [1794595657.345423361] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794595657.345520494] [timed_layer_test]: Subscribed to Topics: 
+1: [INFO] [1794595657.345643559] [timed_layer_test]: Destroying
+1: [       OK ] TimedLayerTest.ExpiryDoesNotClearAnotherLayer (7 ms)
+1: [ RUN      ] TimedLayerTest.EvidenceExpiresAfterObservationDisappears
+1: [INFO] [1794595657.353787646] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794595657.353879310] [timed_layer_test]: Subscribed to Topics: 
+1: [INFO] [1794595657.353909673] [timed_layer_test]: Destroying
+1: [       OK ] TimedLayerTest.EvidenceExpiresAfterObservationDisappears (8 ms)
+1: [ RUN      ] TimedLayerTest.ResetAndClockRewindDoNotLeaveImmortalMarks
+1: [INFO] [1794595657.361287919] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794595657.361376374] [timed_layer_test]: Subscribed to Topics: 
+1: [WARN] [1794595657.361416968] [tf2_buffer]: Detected jump back in time. Clearing TF buffer.
+1: /home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp:69: Failure
+1: Expected equality of these values:
+1:   cost()
+1:     Which is: '\0'
+1:   254
+1: 
+1: /home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp:70: Failure
+1: Expected equality of these values:
+1:   cost()
+1:     Which is: '\0'
+1:   254
+1: 
+1: [INFO] [1794595657.361480428] [timed_layer_test]: Destroying
+1: [  FAILED  ] TimedLayerTest.ResetAndClockRewindDoNotLeaveImmortalMarks (7 ms)
+1: [----------] 5 tests from TimedLayerTest (59 ms total)
+1: 
+1: [----------] Global test environment tear-down
+1: [==========] 5 tests from 1 test suite ran. (60 ms total)
+1: [  PASSED  ] 2 tests.
+1: [  FAILED  ] 3 tests, listed below:
+1: [  FAILED  ] TimedLayerTest.OldCloudCannotRefreshItsOwnEvidence
+1: [  FAILED  ] TimedLayerTest.NewAcquisitionRefreshesAndStationaryObstacleStays
+1: [  FAILED  ] TimedLayerTest.ResetAndClockRewindDoNotLeaveImmortalMarks
+1: 
+1:  3 FAILED TESTS
+1: -- run_test.py: return code 1
+1: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml'
+1: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml'
+ 1/10 Test  #1: test_timed_obstacle_layer ........***Failed    0.24 sec
+test 2
+      Start  2: test_costmap_collision
+
+2: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_costmap_collision.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_costmap_collision" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml"
+2: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+2: Test timeout computed to be: 60
+2: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+2:  - /home/yang/yang_nav/build/nav_behaviors/test_costmap_collision --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml
+2: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+2: [==========] Running 8 tests from 2 test suites.
+2: [----------] Global test environment set-up.
+2: [----------] 3 tests from CostmapCollision
+2: [ RUN      ] CostmapCollision.ChecksInteriorUnknownAndBounds
+2: [       OK ] CostmapCollision.ChecksInteriorUnknownAndBounds (0 ms)
+2: [ RUN      ] CostmapCollision.ChecksBetweenSparsePosesAndDuringRotation
+2: [       OK ] CostmapCollision.ChecksBetweenSparsePosesAndDuringRotation (0 ms)
+2: [ RUN      ] CostmapCollision.UsesActualHeadingForAsymmetricFootprint
+2: [       OK ] CostmapCollision.UsesActualHeadingForAsymmetricFootprint (0 ms)
+2: [----------] 3 tests from CostmapCollision (0 ms total)
+2: 
+2: [----------] 5 tests from OverlapEscape
+2: [ RUN      ] OverlapEscape.OccupiedCenterFindsFreeExitWithoutClearingTheMap
+2: [       OK ] OverlapEscape.OccupiedCenterFindsFreeExitWithoutClearingTheMap (4 ms)
+2: [ RUN      ] OverlapEscape.RejectsNewContactsRotationUnknownAndGrowingOverlap
+2: [       OK ] OverlapEscape.RejectsNewContactsRotationUnknownAndGrowingOverlap (0 ms)
+2: [ RUN      ] OverlapEscape.LeavingContactCannotReenterAndRollingOriginDoesNotChangeIdentity
+2: [       OK ] OverlapEscape.LeavingContactCannotReenterAndRollingOriginDoesNotChangeIdentity (0 ms)
+2: [ RUN      ] OverlapEscape.EmbeddedStartLeavesOriginalThickObstacle
+2: [       OK ] OverlapEscape.EmbeddedStartLeavesOriginalThickObstacle (347 ms)
+2: [ RUN      ] OverlapEscape.InflationOnlyStartStillFindsACollisionFreePrefix
+2: [       OK ] OverlapEscape.InflationOnlyStartStillFindsACollisionFreePrefix (0 ms)
+2: [----------] 5 tests from OverlapEscape (353 ms total)
+2: 
+2: [----------] Global test environment tear-down
+2: [==========] 8 tests from 2 test suites ran. (353 ms total)
+2: [  PASSED  ] 8 tests.
+2: -- run_test.py: return code 0
+2: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml'
+2: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml'
+ 2/10 Test  #2: test_costmap_collision ...........   Passed    0.41 sec
+test 3
+      Start  3: test_path_shaper
+
+3: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_path_shaper.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_path_shaper" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml"
+3: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+3: Test timeout computed to be: 60
+3: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+3:  - /home/yang/yang_nav/build/nav_behaviors/test_path_shaper --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml
+3: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+3: [==========] Running 18 tests from 1 test suite.
+3: [----------] Global test environment set-up.
+3: [----------] 18 tests from PathShaper
+3: [ RUN      ] PathShaper.GridOffsetSnapsToAxis
+3: [       OK ] PathShaper.GridOffsetSnapsToAxis (0 ms)
+3: [ RUN      ] PathShaper.ReverseDirectionLocksOppositeHeading
+3: [       OK ] PathShaper.ReverseDirectionLocksOppositeHeading (0 ms)
+3: [ RUN      ] PathShaper.DiagonalApproachTurnsWhileDriving
+3: [       OK ] PathShaper.DiagonalApproachTurnsWhileDriving (0 ms)
+3: [ RUN      ] PathShaper.RotatedZoneFromMap
+3: [       OK ] PathShaper.RotatedZoneFromMap (0 ms)
+3: [ RUN      ] PathShaper.TwoTunnelsOnOnePath
+3: [       OK ] PathShaper.TwoTunnelsOnOnePath (0 ms)
+3: [ RUN      ] PathShaper.CollisionKeepsPlannerPath
+3: [       OK ] PathShaper.CollisionKeepsPlannerPath (0 ms)
+3: [ RUN      ] PathShaper.NoCrossingUnchanged
+3: [       OK ] PathShaper.NoCrossingUnchanged (0 ms)
+3: [ RUN      ] PathShaper.GoalInsideTunnelShapesUpToTheGoal
+3: [       OK ] PathShaper.GoalInsideTunnelShapesUpToTheGoal (0 ms)
+3: [ RUN      ] PathShaper.GoalJustInsideNearMouthIsShaped
+3: [       OK ] PathShaper.GoalJustInsideNearMouthIsShaped (0 ms)
+3: [ RUN      ] PathShaper.GoalJustAfterExitIsShaped
+3: [       OK ] PathShaper.GoalJustAfterExitIsShaped (0 ms)
+3: [ RUN      ] PathShaper.OneSidedNarrowingShiftsLaterally
+3: [       OK ] PathShaper.OneSidedNarrowingShiftsLaterally (0 ms)
+3: [ RUN      ] PathShaper.LeadInTurnsFromTheRobotHeading
+3: [       OK ] PathShaper.LeadInTurnsFromTheRobotHeading (0 ms)
+3: [ RUN      ] PathShaper.NearlyAlignedRobotTurnsEarly
+3: [       OK ] PathShaper.NearlyAlignedRobotTurnsEarly (0 ms)
+3: [ RUN      ] PathShaper.ResumeInsideTheBody
+3: [       OK ] PathShaper.ResumeInsideTheBody (0 ms)
+3: [ RUN      ] PathShaper.NarrowApproachTurnsEarly
+3: [       OK ] PathShaper.NarrowApproachTurnsEarly (0 ms)
+3: [ RUN      ] PathShaper.NeverMovesGoalToMakeItFit
+3: [       OK ] PathShaper.NeverMovesGoalToMakeItFit (0 ms)
+3: [ RUN      ] PathShaper.KeepsStartAndGoalInsideBody
+3: [       OK ] PathShaper.KeepsStartAndGoalInsideBody (0 ms)
+3: [ RUN      ] PathShaper.RobotStartCannotBypassCollisionChecks
+3: [       OK ] PathShaper.RobotStartCannotBypassCollisionChecks (2 ms)
+3: [----------] 18 tests from PathShaper (2 ms total)
+3: 
+3: [----------] Global test environment tear-down
+3: [==========] 18 tests from 1 test suite ran. (2 ms total)
+3: [  PASSED  ] 18 tests.
+3: -- run_test.py: return code 0
+3: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml'
+3: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml'
+ 3/10 Test  #3: test_path_shaper .................   Passed    0.04 sec
+test 4
+      Start  4: test_zone_path_handoff
+
+4: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_path_handoff.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_path_handoff" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml"
+4: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+4: Test timeout computed to be: 60
+4: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+4:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_path_handoff --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml
+4: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+4: [==========] Running 1 test from 1 test suite.
+4: [----------] Global test environment set-up.
+4: [----------] 1 test from PathHandoff
+4: [ RUN      ] PathHandoff.NewGoalWaitsForItsOwnSuccessfulPlanAndShape
+4: [       OK ] PathHandoff.NewGoalWaitsForItsOwnSuccessfulPlanAndShape (0 ms)
+4: [----------] 1 test from PathHandoff (0 ms total)
+4: 
+4: [----------] Global test environment tear-down
+4: [==========] 1 test from 1 test suite ran. (0 ms total)
+4: [  PASSED  ] 1 test.
+4: -- run_test.py: return code 0
+4: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml'
+4: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml'
+ 4/10 Test  #4: test_zone_path_handoff ...........   Passed    0.05 sec
+test 5
+      Start  5: test_zone_tracker
+
+5: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_tracker.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_tracker" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml"
+5: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+5: Test timeout computed to be: 60
+5: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+5:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_tracker --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml
+5: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+5: [==========] Running 15 tests from 1 test suite.
+5: [----------] Global test environment set-up.
+5: [----------] 15 tests from ZoneTracker
+5: [ RUN      ] ZoneTracker.PassesWithoutStopping
+5: [       OK ] ZoneTracker.PassesWithoutStopping (0 ms)
+5: [ RUN      ] ZoneTracker.DiagonalApproach
+5: [       OK ] ZoneTracker.DiagonalApproach (0 ms)
+5: [ RUN      ] ZoneTracker.LocksTheCloserHeading
+5: [       OK ] ZoneTracker.LocksTheCloserHeading (0 ms)
+5: [ RUN      ] ZoneTracker.GateHoldsUntilAligned
+5: [       OK ] ZoneTracker.GateHoldsUntilAligned (0 ms)
+5: [ RUN      ] ZoneTracker.NoSpinOnDuplicatePoses
+5: [       OK ] ZoneTracker.NoSpinOnDuplicatePoses (0 ms)
+5: [ RUN      ] ZoneTracker.BacksOffWhenWedgedInTheMouth
+5: [       OK ] ZoneTracker.BacksOffWhenWedgedInTheMouth (0 ms)
+5: [ RUN      ] ZoneTracker.BacksOffWhenDraggedOffHeadingInTheChannel
+5: [       OK ] ZoneTracker.BacksOffWhenDraggedOffHeadingInTheChannel (0 ms)
+5: [ RUN      ] ZoneTracker.NoTunnelOnPath
+5: [       OK ] ZoneTracker.NoTunnelOnPath (0 ms)
+5: [ RUN      ] ZoneTracker.SpeedLimitIncludesLateralCorrectionAndBackoff
+5: [       OK ] ZoneTracker.SpeedLimitIncludesLateralCorrectionAndBackoff (0 ms)
+5: [ RUN      ] ZoneTracker.GoalInsideZoneRetainsOwnershipToTheEnd
+5: [       OK ] ZoneTracker.GoalInsideZoneRetainsOwnershipToTheEnd (0 ms)
+5: [ RUN      ] ZoneTracker.PlanWhollyInsideZoneAndReversePlanAreTracked
+5: [       OK ] ZoneTracker.PlanWhollyInsideZoneAndReversePlanAreTracked (0 ms)
+5: [ RUN      ] ZoneTracker.CollisionSamplesCoverSparsePlanAndPhysicalReverseHeading
+5: [       OK ] ZoneTracker.CollisionSamplesCoverSparsePlanAndPhysicalReverseHeading (0 ms)
+5: [ RUN      ] ZoneTracker.ExitSuffixReplanKeepsControlAndHeadingUntilRearClears
+5: [       OK ] ZoneTracker.ExitSuffixReplanKeepsControlAndHeadingUntilRearClears (0 ms)
+5: [ RUN      ] ZoneTracker.ColdExitSuffixAndReverseSuffixRemainTracked
+5: [       OK ] ZoneTracker.ColdExitSuffixAndReverseSuffixRemainTracked (0 ms)
+5: [ RUN      ] ZoneTracker.SuffixPastExitWindowAndSidewaysPathDoNotLatch
+5: [       OK ] ZoneTracker.SuffixPastExitWindowAndSidewaysPathDoNotLatch (0 ms)
+5: [----------] 15 tests from ZoneTracker (0 ms total)
+5: 
+5: [----------] Global test environment tear-down
+5: [==========] 15 tests from 1 test suite ran. (1 ms total)
+5: [  PASSED  ] 15 tests.
+5: -- run_test.py: return code 0
+5: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml'
+5: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml'
+ 5/10 Test  #5: test_zone_tracker ................   Passed    0.04 sec
+test 6
+      Start  6: test_slope
+
+6: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_slope.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_slope" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml"
+6: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+6: Test timeout computed to be: 60
+6: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+6:  - /home/yang/yang_nav/build/nav_behaviors/test_slope --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml
+6: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+6: [==========] Running 10 tests from 1 test suite.
+6: [----------] Global test environment set-up.
+6: [----------] 10 tests from Slope
+6: [ RUN      ] Slope.UphillIsShaped
+6: [       OK ] Slope.UphillIsShaped (0 ms)
+6: [ RUN      ] Slope.DownhillIsLeftToThePlanner
+6: [       OK ] Slope.DownhillIsLeftToThePlanner (0 ms)
+6: [ RUN      ] Slope.DownhillIsNotTracked
+6: [       OK ] Slope.DownhillIsNotTracked (0 ms)
+6: [ RUN      ] Slope.ChargesUpFasterThanATunnel
+6: [       OK ] Slope.ChargesUpFasterThanATunnel (0 ms)
+6: [ RUN      ] Slope.NoseFirstEvenWhenArrivingBackwards
+6: [       OK ] Slope.NoseFirstEvenWhenArrivingBackwards (0 ms)
+6: [ RUN      ] Slope.WideLateralGate
+6: [       OK ] Slope.WideLateralGate (0 ms)
+6: [ RUN      ] Slope.AmbiguousDirectionIsLeftToThePlanner
+6: [       OK ] Slope.AmbiguousDirectionIsLeftToThePlanner (0 ms)
+6: [ RUN      ] Slope.ChainsWithTheTunnelBehindIt
+6: [       OK ] Slope.ChainsWithTheTunnelBehindIt (0 ms)
+6: [ RUN      ] Slope.ChainIsDrivenWithoutATurnInBetween
+6: [       OK ] Slope.ChainIsDrivenWithoutATurnInBetween (0 ms)
+6: [ RUN      ] Slope.TwoSeparateSlopesAreTwoStretches
+6: [       OK ] Slope.TwoSeparateSlopesAreTwoStretches (0 ms)
+6: [----------] 10 tests from Slope (0 ms total)
+6: 
+6: [----------] Global test environment tear-down
+6: [==========] 10 tests from 1 test suite ran. (0 ms total)
+6: [  PASSED  ] 10 tests.
+6: -- run_test.py: return code 0
+6: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml'
+6: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml'
+ 6/10 Test  #6: test_slope .......................   Passed    0.04 sec
+test 7
+      Start  7: test_zone_state
+
+7: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_state.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_state" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml"
+7: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+7: Test timeout computed to be: 60
+7: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+7:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_state --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml
+7: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+7: [==========] Running 9 tests from 1 test suite.
+7: [----------] Global test environment set-up.
+7: [----------] 9 tests from ZoneState
+7: [ RUN      ] ZoneState.PhasesOnTheApproach
+7: [       OK ] ZoneState.PhasesOnTheApproach (0 ms)
+7: [ RUN      ] ZoneState.ReplanPausedOnlyWhenTrackerOwnsPath
+7: [       OK ] ZoneState.ReplanPausedOnlyWhenTrackerOwnsPath (0 ms)
+7: [ RUN      ] ZoneState.ParsePublishedPhase
+7: [       OK ] ZoneState.ParsePublishedPhase (0 ms)
+7: [ RUN      ] ZoneState.PhaseNamesRoundTrip
+7: [       OK ] ZoneState.PhaseNamesRoundTrip (0 ms)
+7: [ RUN      ] ZoneState.RecoveryBlockedFromAlign
+7: [       OK ] ZoneState.RecoveryBlockedFromAlign (0 ms)
+7: [ RUN      ] ZoneState.PhaseMemoryTracksTheNewestSample
+7: [       OK ] ZoneState.PhaseMemoryTracksTheNewestSample (0 ms)
+7: [ RUN      ] ZoneState.PhaseMemoryIgnoresUnstampedSamples
+7: [       OK ] ZoneState.PhaseMemoryIgnoresUnstampedSamples (0 ms)
+7: [ RUN      ] ZoneState.InvalidAndFutureTimestampsCannotPauseNavigation
+7: [       OK ] ZoneState.InvalidAndFutureTimestampsCannotPauseNavigation (0 ms)
+7: [ RUN      ] ZoneState.BlockedPathReplansWithoutEnablingMotionRecovery
+7: [       OK ] ZoneState.BlockedPathReplansWithoutEnablingMotionRecovery (0 ms)
+7: [----------] 9 tests from ZoneState (0 ms total)
+7: 
+7: [----------] Global test environment tear-down
+7: [==========] 9 tests from 1 test suite ran. (0 ms total)
+7: [  PASSED  ] 9 tests.
+7: -- run_test.py: return code 0
+7: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml'
+7: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml'
+ 7/10 Test  #7: test_zone_state ..................   Passed    0.04 sec
+test 8
+      Start  8: test_recovery_policy
+
+8: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_recovery_policy.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_recovery_policy" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml"
+8: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+8: Test timeout computed to be: 60
+8: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+8:  - /home/yang/yang_nav/build/nav_behaviors/test_recovery_policy --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml
+8: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+8: [==========] Running 8 tests from 1 test suite.
+8: [----------] Global test environment set-up.
+8: [----------] 8 tests from RecoveryPolicy
+8: [ RUN      ] RecoveryPolicy.FirstAttemptOnlyClears
+8: [       OK ] RecoveryPolicy.FirstAttemptOnlyClears (0 ms)
+8: [ RUN      ] RecoveryPolicy.EscalatesSpinThenBackUp
+8: [       OK ] RecoveryPolicy.EscalatesSpinThenBackUp (0 ms)
+8: [ RUN      ] RecoveryPolicy.GivesUpAfterTheRetries
+8: [       OK ] RecoveryPolicy.GivesUpAfterTheRetries (0 ms)
+8: [ RUN      ] RecoveryPolicy.ZeroRetriesFailsImmediately
+8: [       OK ] RecoveryPolicy.ZeroRetriesFailsImmediately (0 ms)
+8: [ RUN      ] RecoveryPolicy.NoMotionInsideAZone
+8: [       OK ] RecoveryPolicy.NoMotionInsideAZone (0 ms)
+8: [ RUN      ] RecoveryPolicy.MotionCanBeDisabledPerAction
+8: [       OK ] RecoveryPolicy.MotionCanBeDisabledPerAction (0 ms)
+8: [ RUN      ] RecoveryPolicy.NegativeRetriesBehaveLikeZero
+8: [       OK ] RecoveryPolicy.NegativeRetriesBehaveLikeZero (0 ms)
+8: [ RUN      ] RecoveryPolicy.NamesCoverEveryAction
+8: [       OK ] RecoveryPolicy.NamesCoverEveryAction (0 ms)
+8: [----------] 8 tests from RecoveryPolicy (0 ms total)
+8: 
+8: [----------] Global test environment tear-down
+8: [==========] 8 tests from 1 test suite ran. (0 ms total)
+8: [  PASSED  ] 8 tests.
+8: -- run_test.py: return code 0
+8: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml'
+8: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml'
+ 8/10 Test  #8: test_recovery_policy .............   Passed    0.04 sec
+test 9
+      Start  9: test_zone_recovery
+
+9: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_recovery.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_recovery" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml"
+9: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+9: Test timeout computed to be: 60
+9: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+9:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_recovery --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml
+9: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+9: [==========] Running 9 tests from 1 test suite.
+9: [----------] Global test environment set-up.
+9: [----------] 9 tests from ZoneRecoveryTest
+9: [ RUN      ] ZoneRecoveryTest.LadderEscalatesClearSpinBackUpThenGivesUp
+9: [WARN] [1794595658.216942569] [zone_recovery_test_1]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794595658.217227123] [zone_recovery_test_1]: ZoneRecovery: attempt 2/4 -> spin
+9: [WARN] [1794595658.217449532] [zone_recovery_test_1]: ZoneRecovery: attempt 3/4 -> backup
+9: [WARN] [1794595658.217640231] [zone_recovery_test_1]: ZoneRecovery: attempt 4/4 -> backup
+9: [WARN] [1794595658.217859381] [zone_recovery_test_1]: ZoneRecovery: navigation failed 4 times, giving up
+9: [       OK ] ZoneRecoveryTest.LadderEscalatesClearSpinBackUpThenGivesUp (15 ms)
+9: [ RUN      ] ZoneRecoveryTest.StopsRecoveringOnceNavigationSucceeds
+9: [WARN] [1794595658.225000618] [zone_recovery_test_2]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794595658.225238553] [zone_recovery_test_2]: ZoneRecovery: attempt 2/4 -> spin
+9: [       OK ] ZoneRecoveryTest.StopsRecoveringOnceNavigationSucceeds (7 ms)
+9: [ RUN      ] ZoneRecoveryTest.FirstSuccessNeedsNoRecovery
+9: [       OK ] ZoneRecoveryTest.FirstSuccessNeedsNoRecovery (6 ms)
+9: [ RUN      ] ZoneRecoveryTest.LadderResetsBetweenGoals
+9: [WARN] [1794595658.238107728] [zone_recovery_test_4]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794595658.238453767] [zone_recovery_test_4]: ZoneRecovery: attempt 1/4 -> clear
+9: [       OK ] ZoneRecoveryTest.LadderResetsBetweenGoals (6 ms)
+9: [ RUN      ] ZoneRecoveryTest.NoMotionInsideAZone
+9: [WARN] [1794595658.358029253] [zone_recovery_test_5]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.358324530] [zone_recovery_test_5]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.358588015] [zone_recovery_test_5]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.358803731] [zone_recovery_test_5]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.359020527] [zone_recovery_test_5]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [WARN] [1794595658.473465990] [zone_recovery_test_5]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.473822219] [zone_recovery_test_5]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.474048648] [zone_recovery_test_5]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.474260107] [zone_recovery_test_5]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.474581850] [zone_recovery_test_5]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [WARN] [1794595658.589433883] [zone_recovery_test_5]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.589542594] [zone_recovery_test_5]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.589759204] [zone_recovery_test_5]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.590015986] [zone_recovery_test_5]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.590228843] [zone_recovery_test_5]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [       OK ] ZoneRecoveryTest.NoMotionInsideAZone (352 ms)
+9: [ RUN      ] ZoneRecoveryTest.MotionAllowedOnTheApproach
+9: [WARN] [1794595658.711072074] [zone_recovery_test_6]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794595658.711357779] [zone_recovery_test_6]: ZoneRecovery: attempt 2/4 -> spin
+9: [WARN] [1794595658.711584743] [zone_recovery_test_6]: ZoneRecovery: attempt 3/4 -> backup
+9: [WARN] [1794595658.711806742] [zone_recovery_test_6]: ZoneRecovery: attempt 4/4 -> backup
+9: [WARN] [1794595658.712015445] [zone_recovery_test_6]: ZoneRecovery: navigation failed 4 times, giving up
+9: [       OK ] ZoneRecoveryTest.MotionAllowedOnTheApproach (121 ms)
+9: [ RUN      ] ZoneRecoveryTest.FailureKeepsNoMotionInterlockAfterPhaseExpires
+9: [WARN] [1794595658.833402838] [zone_recovery_test_7]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.833674447] [zone_recovery_test_7]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.833881946] [zone_recovery_test_7]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.834088121] [zone_recovery_test_7]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.834388735] [zone_recovery_test_7]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [       OK ] ZoneRecoveryTest.FailureKeepsNoMotionInterlockAfterPhaseExpires (122 ms)
+9: [ RUN      ] ZoneRecoveryTest.NewGoalStartsItsOwnRecoveryLadder
+9: [WARN] [1794595658.841745944] [zone_recovery_test_8]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794595658.842030004] [zone_recovery_test_8]: ZoneRecovery: attempt 1/4 -> clear
+9: [       OK ] ZoneRecoveryTest.NewGoalStartsItsOwnRecoveryLadder (7 ms)
+9: [ RUN      ] ZoneRecoveryTest.PhysicalOccupancyAndMissingTransformPreventMotionWithoutPhase
+9: [WARN] [1794595658.849196913] [zone_recovery_test_9]: ZoneRecovery: no robot transform, motion recovery inhibited: "map" passed to lookupTransform argument target_frame does not exist. 
+9: [WARN] [1794595658.849253711] [zone_recovery_test_9]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.849447835] [zone_recovery_test_9]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.849607134] [zone_recovery_test_9]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.849819055] [zone_recovery_test_9]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.850026679] [zone_recovery_test_9]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [WARN] [1794595658.850572765] [zone_recovery_test_9]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.850795400] [zone_recovery_test_9]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.851003312] [zone_recovery_test_9]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.851224056] [zone_recovery_test_9]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794595658.851449086] [zone_recovery_test_9]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [WARN] [1794595658.851947803] [zone_recovery_test_9]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794595658.852229858] [zone_recovery_test_9]: ZoneRecovery: attempt 2/4 -> spin
+9: [WARN] [1794595658.852455207] [zone_recovery_test_9]: ZoneRecovery: attempt 3/4 -> backup
+9: [WARN] [1794595658.852681966] [zone_recovery_test_9]: ZoneRecovery: attempt 4/4 -> backup
+9: [WARN] [1794595658.852893671] [zone_recovery_test_9]: ZoneRecovery: navigation failed 4 times, giving up
+9: [       OK ] ZoneRecoveryTest.PhysicalOccupancyAndMissingTransformPreventMotionWithoutPhase (11 ms)
+9: [----------] 9 tests from ZoneRecoveryTest (650 ms total)
+9: 
+9: [----------] Global test environment tear-down
+9: [==========] 9 tests from 1 test suite ran. (655 ms total)
+9: [  PASSED  ] 9 tests.
+9: -- run_test.py: return code 0
+9: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml'
+9: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml'
+ 9/10 Test  #9: test_zone_recovery ...............   Passed    0.82 sec
+test 10
+      Start 10: test_zone_drive
+
+10: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_drive.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_drive" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml"
+10: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+10: Test timeout computed to be: 60
+10: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+10:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_drive --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml
+10: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+10: [==========] Running 5 tests from 1 test suite.
+10: [----------] Global test environment set-up.
+10: [----------] 5 tests from TunnelDrive
+10: [ RUN      ] TunnelDrive.AllTunnelsBothDirections
+10: [       OK ] TunnelDrive.AllTunnelsBothDirections (26 ms)
+10: [ RUN      ] TunnelDrive.ResumeFromInsideTheBody
+10: [       OK ] TunnelDrive.ResumeFromInsideTheBody (1 ms)
+10: [ RUN      ] TunnelDrive.ReplanKeepsTheLock
+10: [       OK ] TunnelDrive.ReplanKeepsTheLock (1 ms)
+10: [ RUN      ] TunnelDrive.MisalignedEntryIsGatedNotCrashed
+10: [       OK ] TunnelDrive.MisalignedEntryIsGatedNotCrashed (0 ms)
+10: [ RUN      ] TunnelDrive.DiagonalApproachStaysInsideTheOpening
+10: [       OK ] TunnelDrive.DiagonalApproachStaysInsideTheOpening (1 ms)
+10: [----------] 5 tests from TunnelDrive (30 ms total)
+10: 
+10: [----------] Global test environment tear-down
+10: [==========] 5 tests from 1 test suite ran. (30 ms total)
+10: [  PASSED  ] 5 tests.
+10: -- run_test.py: return code 0
+10: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml'
+10: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml'
+10/10 Test #10: test_zone_drive ..................   Passed    0.07 sec
+
+90% tests passed, 1 tests failed out of 10
+
+Label Time Summary:
+gtest    =   1.80 sec*proc (10 tests)
+
+Total Test time (real) =   1.81 sec
+
+The following tests FAILED:
+	  1 - test_timed_obstacle_layer (Failed)
+Errors while running CTest
+Output from these tests are in: /home/yang/yang_nav/build/nav_behaviors/Testing/Temporary/LastTest.log
+Use "--rerun-failed --output-on-failure" to re-run the failed cases verbosely.
+--- stderr: nav_behaviors
+Errors while running CTest
+Output from these tests are in: /home/yang/yang_nav/build/nav_behaviors/Testing/Temporary/LastTest.log
+Use "--rerun-failed --output-on-failure" to re-run the failed cases verbosely.
+---
+Finished <<< nav_behaviors [2.01s]	[ with test failures ]
+
+Summary: 1 package finished [2.16s]
+  1 package had stderr output: nav_behaviors
+  1 package had test failures: nav_behaviors

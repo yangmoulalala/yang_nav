@@ -1,0 +1,1456 @@
+{
+  "session_wall_start_lower_bound": 1794584240,
+  "goal_epoch": 1794584298.8597171,
+  "goal_map_xy": [
+    6.93,
+    -1.53
+  ],
+  "goal_succeeded_epoch": 1794584339.9995985,
+  "truth_samples": 1848,
+  "truth_max_xyz_step_m": 0.3247926415422617,
+  "truth_max_yaw_step_deg": 8.389999999999986,
+  "truth_wall_clock_rollbacks": [],
+  "states": [
+    {
+      "epoch": 1794584246.319745,
+      "time": "23:37:26.319",
+      "state": "NORMAL",
+      "line": 2592,
+      "message": "[backend_node-3] [INFO] [1794584246.319745026] [backend]: localization state -> NORMAL (recovered via Scan Context + scan-to-map, source_frames=5/5, source_span=0.48s, delta_t=0.0272909m, delta_r_deg=0.13492)"
+    },
+    {
+      "epoch": 1794584263.5255969,
+      "time": "23:37:43.525",
+      "state": "NORMAL",
+      "line": 2646,
+      "message": "[backend_node-3] [INFO] [1794584263.525596931] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.48s, delta_t=0.00147161m, delta_r_deg=0.026063)"
+    },
+    {
+      "epoch": 1794584319.536101,
+      "time": "23:38:39.536",
+      "state": "OBS_DEGRADED",
+      "line": 2837,
+      "message": "[backend_node-3] [WARN] [1794584319.536101025] [backend]: localization state -> OBS_DEGRADED (correction conflict 1/7: all available global observations conflicted: prior scan-to-map NIS=32.4797/6, p=1.32016e-05; joint system NIS=32.4797/6, p=1.32016e-05)"
+    },
+    {
+      "epoch": 1794584320.7368524,
+      "time": "23:38:40.736",
+      "state": "SUSPECT",
+      "line": 2841,
+      "message": "[backend_node-3] [WARN] [1794584320.736852417] [backend]: localization state -> SUSPECT (correction conflict 3/7 (severe 2/2): all available global observations conflicted: prior scan-to-map NIS=250.822/6, p=2.73698e-51; joint system NIS=250.822/6, p=2.73698e-51)"
+    },
+    {
+      "epoch": 1794584321.7484858,
+      "time": "23:38:41.748",
+      "state": "NORMAL",
+      "line": 2853,
+      "message": "[backend_node-3] [INFO] [1794584321.748485844] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.48s, delta_t=1.83878m, delta_r_deg=23.6525)"
+    },
+    {
+      "epoch": 1794584322.3379173,
+      "time": "23:38:42.337",
+      "state": "SUSPECT",
+      "line": 2854,
+      "message": "[backend_node-3] [WARN] [1794584322.337917222] [backend]: localization state -> SUSPECT (correction conflict 1/7 (severe 1/2, during recovery probation): all available global observations conflicted: prior scan-to-map physical correction cap: delta_t=0.844669m, delta_r_deg=19.0255, rmse=0.120864, support=347/412, ratio=0.842233, sectors=21, min_eig=0.0414186, rank=6/6, observable=true, schur_t=24.1437, schur_r=2.29384, weak=100000)"
+    },
+    {
+      "epoch": 1794584322.7510278,
+      "time": "23:38:42.751",
+      "state": "NORMAL",
+      "line": 2861,
+      "message": "[backend_node-3] [INFO] [1794584322.751027705] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.411739s, delta_t=0.932623m, delta_r_deg=19.2797)"
+    },
+    {
+      "epoch": 1794584323.937659,
+      "time": "23:38:43.937",
+      "state": "SUSPECT",
+      "line": 2864,
+      "message": "[backend_node-3] [WARN] [1794584323.937659137] [backend]: localization state -> SUSPECT (correction conflict 1/7 (severe 1/2, during recovery probation): all available global observations conflicted: prior scan-to-map NIS=72.1567/6, p=1.47538e-13; joint system NIS=72.1567/6, p=1.47538e-13)"
+    },
+    {
+      "epoch": 1794584324.353842,
+      "time": "23:38:44.353",
+      "state": "NORMAL",
+      "line": 2870,
+      "message": "[backend_node-3] [INFO] [1794584324.353842112] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.459483s, delta_t=0.876802m, delta_r_deg=2.01121)"
+    },
+    {
+      "epoch": 1794584324.9375768,
+      "time": "23:38:44.937",
+      "state": "SUSPECT",
+      "line": 2871,
+      "message": "[backend_node-3] [WARN] [1794584324.937576709] [backend]: localization state -> SUSPECT (correction conflict 1/7 (severe 1/2, during recovery probation): all available global observations conflicted: prior scan-to-map NIS=209.034/6, p=2.26251e-42; joint system NIS=209.034/6, p=2.26251e-42)"
+    },
+    {
+      "epoch": 1794584328.7487602,
+      "time": "23:38:48.748",
+      "state": "NORMAL",
+      "line": 2901,
+      "message": "[backend_node-3] [INFO] [1794584328.748760211] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.48s, delta_t=3.51848m, delta_r_deg=17.9445)"
+    },
+    {
+      "epoch": 1794584330.536288,
+      "time": "23:38:50.536",
+      "state": "OBS_DEGRADED",
+      "line": 2906,
+      "message": "[backend_node-3] [WARN] [1794584330.536287934] [backend]: localization state -> OBS_DEGRADED (correction conflict 1/7: all available global observations conflicted: prior scan-to-map NIS=25.9678/6, p=0.000225734; joint system NIS=25.9678/6, p=0.000225734)"
+    },
+    {
+      "epoch": 1794584331.1382253,
+      "time": "23:38:51.138",
+      "state": "SUSPECT",
+      "line": 2908,
+      "message": "[backend_node-3] [WARN] [1794584331.138225296] [backend]: localization state -> SUSPECT (correction conflict 2/7 (severe 1/2, during recovery probation): all available global observations conflicted: prior scan-to-map NIS=51.6623/6, p=2.18035e-09; joint system NIS=51.6623/6, p=2.18035e-09)"
+    },
+    {
+      "epoch": 1794584331.5558493,
+      "time": "23:38:51.555",
+      "state": "NORMAL",
+      "line": 2914,
+      "message": "[backend_node-3] [INFO] [1794584331.555849332] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=4/5, source_span=0.36s, delta_t=0.121808m, delta_r_deg=1.08857)"
+    },
+    {
+      "epoch": 1794584332.136429,
+      "time": "23:38:52.136",
+      "state": "OBS_DEGRADED",
+      "line": 2915,
+      "message": "[backend_node-3] [WARN] [1794584332.136429120] [backend]: localization state -> OBS_DEGRADED (correction conflict 1/7: all available global observations conflicted: prior scan-to-map NIS=42.6754/6, p=1.35227e-07; joint system NIS=42.6754/6, p=1.35227e-07)"
+    },
+    {
+      "epoch": 1794584332.7371225,
+      "time": "23:38:52.737",
+      "state": "NORMAL",
+      "line": 2917,
+      "message": "[backend_node-3] [WARN] [1794584332.737122506] [backend]: localization state -> NORMAL (system global observation accepted: prior scan-to-map NIS=18.5007/6, p=0.00509551)"
+    },
+    {
+      "epoch": 1794584333.9385107,
+      "time": "23:38:53.938",
+      "state": "SUSPECT",
+      "line": 2922,
+      "message": "[backend_node-3] [WARN] [1794584333.938510731] [backend]: localization state -> SUSPECT (correction conflict 1/7 (severe 1/2, during recovery probation): all available global observations conflicted: prior scan-to-map NIS=79.9321/6, p=3.6902e-15; joint system NIS=79.9321/6, p=3.6902e-15)"
+    },
+    {
+      "epoch": 1794584334.3642936,
+      "time": "23:38:54.364",
+      "state": "NORMAL",
+      "line": 2928,
+      "message": "[backend_node-3] [INFO] [1794584334.364293677] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=4/5, source_span=0.36s, delta_t=0.187835m, delta_r_deg=1.1266)"
+    },
+    {
+      "epoch": 1794584334.9394748,
+      "time": "23:38:54.939",
+      "state": "SUSPECT",
+      "line": 2929,
+      "message": "[backend_node-3] [WARN] [1794584334.939474841] [backend]: localization state -> SUSPECT (correction conflict 1/7 (severe 1/2, during recovery probation): all available global observations conflicted: prior scan-to-map NIS=78.5931/6, p=6.97437e-15; joint system NIS=78.5931/6, p=6.97437e-15)"
+    },
+    {
+      "epoch": 1794584335.3681533,
+      "time": "23:38:55.368",
+      "state": "NORMAL",
+      "line": 2935,
+      "message": "[backend_node-3] [INFO] [1794584335.368153417] [backend]: localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=5/5, source_span=0.464158s, delta_t=0.360462m, delta_r_deg=1.1951)"
+    }
+  ],
+  "recoveries": [
+    {
+      "epoch": 1794584246.319745,
+      "time": "23:37:26.319",
+      "translation_3d_m": 0.0272909,
+      "rotation_3d_deg": 0.13492,
+      "line": 2592
+    },
+    {
+      "epoch": 1794584263.5255969,
+      "time": "23:37:43.525",
+      "translation_3d_m": 0.00147161,
+      "rotation_3d_deg": 0.026063,
+      "line": 2646
+    },
+    {
+      "epoch": 1794584321.7484858,
+      "time": "23:38:41.748",
+      "translation_3d_m": 1.83878,
+      "rotation_3d_deg": 23.6525,
+      "line": 2853,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584321.64,
+        "last_wall_epoch": 1794584321.82,
+        "xyz_displacement_m": 0.001627882059609996,
+        "yaw_delta_deg": 0.020000000000010232,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584322.7510278,
+      "time": "23:38:42.751",
+      "translation_3d_m": 0.932623,
+      "rotation_3d_deg": 19.2797,
+      "line": 2861,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584322.66,
+        "last_wall_epoch": 1794584322.84,
+        "xyz_displacement_m": 0.015852444606432176,
+        "yaw_delta_deg": -1.0,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584324.353842,
+      "time": "23:38:44.353",
+      "translation_3d_m": 0.876802,
+      "rotation_3d_deg": 2.01121,
+      "line": 2870,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584324.28,
+        "last_wall_epoch": 1794584324.46,
+        "xyz_displacement_m": 0.032971957782333645,
+        "yaw_delta_deg": 0.5699999999999932,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584328.7487602,
+      "time": "23:38:48.748",
+      "translation_3d_m": 3.51848,
+      "rotation_3d_deg": 17.9445,
+      "line": 2901,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584328.66,
+        "last_wall_epoch": 1794584328.84,
+        "xyz_displacement_m": 0.0,
+        "yaw_delta_deg": 0.0,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584331.5558493,
+      "time": "23:38:51.555",
+      "translation_3d_m": 0.121808,
+      "rotation_3d_deg": 1.08857,
+      "line": 2914,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584331.48,
+        "last_wall_epoch": 1794584331.66,
+        "xyz_displacement_m": 0.021672563300172885,
+        "yaw_delta_deg": 0.28999999999999204,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584334.3642936,
+      "time": "23:38:54.364",
+      "translation_3d_m": 0.187835,
+      "rotation_3d_deg": 1.1266,
+      "line": 2928,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584334.3,
+        "last_wall_epoch": 1794584334.48,
+        "xyz_displacement_m": 0.016905916124244753,
+        "yaw_delta_deg": 0.28000000000000114,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584335.3681533,
+      "time": "23:38:55.368",
+      "translation_3d_m": 0.360462,
+      "rotation_3d_deg": 1.1951,
+      "line": 2935,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584335.26,
+        "last_wall_epoch": 1794584335.44,
+        "xyz_displacement_m": 0.006459102104782198,
+        "yaw_delta_deg": -0.11000000000001364,
+        "samples": 4
+      }
+    }
+  ],
+  "committed_corrections": [
+    {
+      "epoch": 1794584246.90793,
+      "time": "23:37:26.907",
+      "translation_3d_m": 0.00323621,
+      "rotation_3d_deg": 0.0117971,
+      "line": 2594
+    },
+    {
+      "epoch": 1794584247.5078928,
+      "time": "23:37:27.507",
+      "translation_3d_m": 0.0007022,
+      "rotation_3d_deg": 0.00965311,
+      "line": 2596
+    },
+    {
+      "epoch": 1794584248.1079273,
+      "time": "23:37:28.107",
+      "translation_3d_m": 0.00115757,
+      "rotation_3d_deg": 0.0100428,
+      "line": 2598
+    },
+    {
+      "epoch": 1794584248.7094646,
+      "time": "23:37:28.709",
+      "translation_3d_m": 0.00142961,
+      "rotation_3d_deg": 0.0120074,
+      "line": 2600
+    },
+    {
+      "epoch": 1794584249.3077486,
+      "time": "23:37:29.307",
+      "translation_3d_m": 0.00240387,
+      "rotation_3d_deg": 0.00574878,
+      "line": 2602
+    },
+    {
+      "epoch": 1794584249.9082072,
+      "time": "23:37:29.908",
+      "translation_3d_m": 0.00197957,
+      "rotation_3d_deg": 0.00520437,
+      "line": 2604
+    },
+    {
+      "epoch": 1794584250.508253,
+      "time": "23:37:30.508",
+      "translation_3d_m": 0.00156594,
+      "rotation_3d_deg": 0.00591065,
+      "line": 2606
+    },
+    {
+      "epoch": 1794584251.107893,
+      "time": "23:37:31.107",
+      "translation_3d_m": 0.000896592,
+      "rotation_3d_deg": 0.00627121,
+      "line": 2608
+    },
+    {
+      "epoch": 1794584251.7077293,
+      "time": "23:37:31.707",
+      "translation_3d_m": 0.00179886,
+      "rotation_3d_deg": 0.00418741,
+      "line": 2610
+    },
+    {
+      "epoch": 1794584252.3076909,
+      "time": "23:37:32.307",
+      "translation_3d_m": 0.00164288,
+      "rotation_3d_deg": 0.00493021,
+      "line": 2612
+    },
+    {
+      "epoch": 1794584252.9076364,
+      "time": "23:37:32.907",
+      "translation_3d_m": 0.00134248,
+      "rotation_3d_deg": 0.00496779,
+      "line": 2614
+    },
+    {
+      "epoch": 1794584253.507645,
+      "time": "23:37:33.507",
+      "translation_3d_m": 0.00197578,
+      "rotation_3d_deg": 0.00441674,
+      "line": 2616
+    },
+    {
+      "epoch": 1794584254.1078024,
+      "time": "23:37:34.107",
+      "translation_3d_m": 0.000747962,
+      "rotation_3d_deg": 0.00367169,
+      "line": 2618
+    },
+    {
+      "epoch": 1794584254.7080648,
+      "time": "23:37:34.708",
+      "translation_3d_m": 0.00150594,
+      "rotation_3d_deg": 0.00153109,
+      "line": 2620
+    },
+    {
+      "epoch": 1794584255.309377,
+      "time": "23:37:35.309",
+      "translation_3d_m": 0.00132886,
+      "rotation_3d_deg": 0.00328828,
+      "line": 2622
+    },
+    {
+      "epoch": 1794584255.9080377,
+      "time": "23:37:35.908",
+      "translation_3d_m": 0.000963047,
+      "rotation_3d_deg": 0.00363205,
+      "line": 2624
+    },
+    {
+      "epoch": 1794584256.5078037,
+      "time": "23:37:36.507",
+      "translation_3d_m": 0.0017593,
+      "rotation_3d_deg": 0.0044594,
+      "line": 2626
+    },
+    {
+      "epoch": 1794584257.108039,
+      "time": "23:37:37.108",
+      "translation_3d_m": 0.0031278,
+      "rotation_3d_deg": 0.00316963,
+      "line": 2628
+    },
+    {
+      "epoch": 1794584257.7078373,
+      "time": "23:37:37.707",
+      "translation_3d_m": 0.00193845,
+      "rotation_3d_deg": 0.00167081,
+      "line": 2630
+    },
+    {
+      "epoch": 1794584258.3080363,
+      "time": "23:37:38.308",
+      "translation_3d_m": 0.00129756,
+      "rotation_3d_deg": 0.00342857,
+      "line": 2632
+    },
+    {
+      "epoch": 1794584258.9078457,
+      "time": "23:37:38.907",
+      "translation_3d_m": 0.000447799,
+      "rotation_3d_deg": 0.0048846,
+      "line": 2634
+    },
+    {
+      "epoch": 1794584259.50787,
+      "time": "23:37:39.507",
+      "translation_3d_m": 0.000505536,
+      "rotation_3d_deg": 0.00293427,
+      "line": 2636
+    },
+    {
+      "epoch": 1794584264.1078978,
+      "time": "23:37:44.107",
+      "translation_3d_m": 0.00177326,
+      "rotation_3d_deg": 0.0130564,
+      "line": 2648
+    },
+    {
+      "epoch": 1794584264.7079704,
+      "time": "23:37:44.707",
+      "translation_3d_m": 0.00251515,
+      "rotation_3d_deg": 0.0107736,
+      "line": 2650
+    },
+    {
+      "epoch": 1794584265.3081656,
+      "time": "23:37:45.308",
+      "translation_3d_m": 0.00111369,
+      "rotation_3d_deg": 0.0080764,
+      "line": 2652
+    },
+    {
+      "epoch": 1794584265.9080565,
+      "time": "23:37:45.908",
+      "translation_3d_m": 0.000958303,
+      "rotation_3d_deg": 0.00377701,
+      "line": 2654
+    },
+    {
+      "epoch": 1794584266.507816,
+      "time": "23:37:46.507",
+      "translation_3d_m": 0.00101949,
+      "rotation_3d_deg": 0.00571119,
+      "line": 2656
+    },
+    {
+      "epoch": 1794584267.107894,
+      "time": "23:37:47.107",
+      "translation_3d_m": 0.00101472,
+      "rotation_3d_deg": 0.00601754,
+      "line": 2658
+    },
+    {
+      "epoch": 1794584267.7078965,
+      "time": "23:37:47.707",
+      "translation_3d_m": 0.000733642,
+      "rotation_3d_deg": 0.00656298,
+      "line": 2660
+    },
+    {
+      "epoch": 1794584268.307828,
+      "time": "23:37:48.307",
+      "translation_3d_m": 0.000848141,
+      "rotation_3d_deg": 0.00487474,
+      "line": 2662
+    },
+    {
+      "epoch": 1794584268.9078228,
+      "time": "23:37:48.907",
+      "translation_3d_m": 0.000706824,
+      "rotation_3d_deg": 0.00396295,
+      "line": 2664
+    },
+    {
+      "epoch": 1794584269.508023,
+      "time": "23:37:49.508",
+      "translation_3d_m": 0.00143792,
+      "rotation_3d_deg": 0.00813667,
+      "line": 2666
+    },
+    {
+      "epoch": 1794584270.1078818,
+      "time": "23:37:50.107",
+      "translation_3d_m": 0.00197211,
+      "rotation_3d_deg": 0.00385363,
+      "line": 2668
+    },
+    {
+      "epoch": 1794584270.7077923,
+      "time": "23:37:50.707",
+      "translation_3d_m": 0.000332842,
+      "rotation_3d_deg": 0.00264873,
+      "line": 2670
+    },
+    {
+      "epoch": 1794584271.3078678,
+      "time": "23:37:51.307",
+      "translation_3d_m": 0.000628416,
+      "rotation_3d_deg": 0.00520874,
+      "line": 2672
+    },
+    {
+      "epoch": 1794584271.9080305,
+      "time": "23:37:51.908",
+      "translation_3d_m": 0.00125242,
+      "rotation_3d_deg": 0.00329175,
+      "line": 2674
+    },
+    {
+      "epoch": 1794584272.5079424,
+      "time": "23:37:52.507",
+      "translation_3d_m": 0.000973337,
+      "rotation_3d_deg": 0.00169694,
+      "line": 2676
+    },
+    {
+      "epoch": 1794584273.1078851,
+      "time": "23:37:53.107",
+      "translation_3d_m": 0.000714091,
+      "rotation_3d_deg": 0.00290532,
+      "line": 2678
+    },
+    {
+      "epoch": 1794584273.7093327,
+      "time": "23:37:53.709",
+      "translation_3d_m": 0.00337572,
+      "rotation_3d_deg": 0.012745,
+      "line": 2680
+    },
+    {
+      "epoch": 1794584274.307898,
+      "time": "23:37:54.307",
+      "translation_3d_m": 0.000562705,
+      "rotation_3d_deg": 0.00354494,
+      "line": 2682
+    },
+    {
+      "epoch": 1794584274.9079719,
+      "time": "23:37:54.907",
+      "translation_3d_m": 0.00239099,
+      "rotation_3d_deg": 0.00564767,
+      "line": 2684
+    },
+    {
+      "epoch": 1794584275.5076935,
+      "time": "23:37:55.507",
+      "translation_3d_m": 0.00137877,
+      "rotation_3d_deg": 0.00147639,
+      "line": 2686
+    },
+    {
+      "epoch": 1794584276.1080213,
+      "time": "23:37:56.108",
+      "translation_3d_m": 0.000796581,
+      "rotation_3d_deg": 0.0014532,
+      "line": 2688
+    },
+    {
+      "epoch": 1794584276.7081463,
+      "time": "23:37:56.708",
+      "translation_3d_m": 0.00109167,
+      "rotation_3d_deg": 0.00304909,
+      "line": 2690
+    },
+    {
+      "epoch": 1794584277.3076508,
+      "time": "23:37:57.307",
+      "translation_3d_m": 0.00203278,
+      "rotation_3d_deg": 0.00172363,
+      "line": 2692
+    },
+    {
+      "epoch": 1794584277.9080586,
+      "time": "23:37:57.908",
+      "translation_3d_m": 0.0014165,
+      "rotation_3d_deg": 0.00661903,
+      "line": 2694
+    },
+    {
+      "epoch": 1794584278.507624,
+      "time": "23:37:58.507",
+      "translation_3d_m": 0.000511013,
+      "rotation_3d_deg": 0.00579368,
+      "line": 2696
+    },
+    {
+      "epoch": 1794584279.1077783,
+      "time": "23:37:59.107",
+      "translation_3d_m": 0.00203204,
+      "rotation_3d_deg": 0.00557414,
+      "line": 2698
+    },
+    {
+      "epoch": 1794584279.7076688,
+      "time": "23:37:59.707",
+      "translation_3d_m": 0.0016625,
+      "rotation_3d_deg": 0.00332695,
+      "line": 2700
+    },
+    {
+      "epoch": 1794584280.3077374,
+      "time": "23:38:00.307",
+      "translation_3d_m": 0.00167317,
+      "rotation_3d_deg": 0.0074887,
+      "line": 2702
+    },
+    {
+      "epoch": 1794584280.9078605,
+      "time": "23:38:00.907",
+      "translation_3d_m": 0.000377897,
+      "rotation_3d_deg": 0.00126094,
+      "line": 2704
+    },
+    {
+      "epoch": 1794584281.5079203,
+      "time": "23:38:01.507",
+      "translation_3d_m": 0.0015427,
+      "rotation_3d_deg": 0.00420959,
+      "line": 2706
+    },
+    {
+      "epoch": 1794584282.1077626,
+      "time": "23:38:02.107",
+      "translation_3d_m": 0.000642297,
+      "rotation_3d_deg": 0.00420545,
+      "line": 2708
+    },
+    {
+      "epoch": 1794584282.707638,
+      "time": "23:38:02.707",
+      "translation_3d_m": 0.00127222,
+      "rotation_3d_deg": 0.0013531,
+      "line": 2710
+    },
+    {
+      "epoch": 1794584283.3077025,
+      "time": "23:38:03.307",
+      "translation_3d_m": 0.0012847,
+      "rotation_3d_deg": 0.00362731,
+      "line": 2712
+    },
+    {
+      "epoch": 1794584283.9078498,
+      "time": "23:38:03.907",
+      "translation_3d_m": 0.00117261,
+      "rotation_3d_deg": 0.00227931,
+      "line": 2714
+    },
+    {
+      "epoch": 1794584284.507851,
+      "time": "23:38:04.507",
+      "translation_3d_m": 0.00167127,
+      "rotation_3d_deg": 0.00451935,
+      "line": 2716
+    },
+    {
+      "epoch": 1794584285.1077158,
+      "time": "23:38:05.107",
+      "translation_3d_m": 0.00122703,
+      "rotation_3d_deg": 0.00147039,
+      "line": 2718
+    },
+    {
+      "epoch": 1794584285.7077706,
+      "time": "23:38:05.707",
+      "translation_3d_m": 0.00118388,
+      "rotation_3d_deg": 0.00411469,
+      "line": 2720
+    },
+    {
+      "epoch": 1794584286.3076718,
+      "time": "23:38:06.307",
+      "translation_3d_m": 0.00154246,
+      "rotation_3d_deg": 0.00221247,
+      "line": 2722
+    },
+    {
+      "epoch": 1794584286.9077098,
+      "time": "23:38:06.907",
+      "translation_3d_m": 0.00212723,
+      "rotation_3d_deg": 0.00364564,
+      "line": 2724
+    },
+    {
+      "epoch": 1794584287.507698,
+      "time": "23:38:07.507",
+      "translation_3d_m": 0.000814446,
+      "rotation_3d_deg": 0.00549675,
+      "line": 2726
+    },
+    {
+      "epoch": 1794584288.1076307,
+      "time": "23:38:08.107",
+      "translation_3d_m": 0.00115112,
+      "rotation_3d_deg": 0.00411075,
+      "line": 2728
+    },
+    {
+      "epoch": 1794584288.7077918,
+      "time": "23:38:08.707",
+      "translation_3d_m": 0.00113559,
+      "rotation_3d_deg": 0.00366107,
+      "line": 2730
+    },
+    {
+      "epoch": 1794584289.3078883,
+      "time": "23:38:09.307",
+      "translation_3d_m": 0.0010033,
+      "rotation_3d_deg": 0.00863062,
+      "line": 2732
+    },
+    {
+      "epoch": 1794584289.9077275,
+      "time": "23:38:09.907",
+      "translation_3d_m": 0.000826292,
+      "rotation_3d_deg": 0.00192563,
+      "line": 2734
+    },
+    {
+      "epoch": 1794584290.5077758,
+      "time": "23:38:10.507",
+      "translation_3d_m": 0.00145137,
+      "rotation_3d_deg": 0.00361698,
+      "line": 2736
+    },
+    {
+      "epoch": 1794584291.108022,
+      "time": "23:38:11.108",
+      "translation_3d_m": 0.00024727,
+      "rotation_3d_deg": 0.00210099,
+      "line": 2738
+    },
+    {
+      "epoch": 1794584290.5366914,
+      "time": "23:38:10.536",
+      "translation_3d_m": 0.00031666,
+      "rotation_3d_deg": 0.00213473,
+      "line": 2740
+    },
+    {
+      "epoch": 1794584291.1372297,
+      "time": "23:38:11.137",
+      "translation_3d_m": 0.0011463,
+      "rotation_3d_deg": 0.00526534,
+      "line": 2742
+    },
+    {
+      "epoch": 1794584291.7364213,
+      "time": "23:38:11.736",
+      "translation_3d_m": 0.00245209,
+      "rotation_3d_deg": 0.0142567,
+      "line": 2744
+    },
+    {
+      "epoch": 1794584292.3362622,
+      "time": "23:38:12.336",
+      "translation_3d_m": 0.0011117,
+      "rotation_3d_deg": 0.00125716,
+      "line": 2746
+    },
+    {
+      "epoch": 1794584292.9365177,
+      "time": "23:38:12.936",
+      "translation_3d_m": 0.00157582,
+      "rotation_3d_deg": 0.00498713,
+      "line": 2748
+    },
+    {
+      "epoch": 1794584293.5363183,
+      "time": "23:38:13.536",
+      "translation_3d_m": 0.00101853,
+      "rotation_3d_deg": 0.00333988,
+      "line": 2750
+    },
+    {
+      "epoch": 1794584294.1364388,
+      "time": "23:38:14.136",
+      "translation_3d_m": 0.000275216,
+      "rotation_3d_deg": 0.000704466,
+      "line": 2752
+    },
+    {
+      "epoch": 1794584294.7362287,
+      "time": "23:38:14.736",
+      "translation_3d_m": 0.000544955,
+      "rotation_3d_deg": 0.0045834,
+      "line": 2754
+    },
+    {
+      "epoch": 1794584295.336298,
+      "time": "23:38:15.336",
+      "translation_3d_m": 0.000790356,
+      "rotation_3d_deg": 0.00224617,
+      "line": 2756
+    },
+    {
+      "epoch": 1794584295.936503,
+      "time": "23:38:15.936",
+      "translation_3d_m": 0.000267527,
+      "rotation_3d_deg": 0.00334975,
+      "line": 2758
+    },
+    {
+      "epoch": 1794584296.5362992,
+      "time": "23:38:16.536",
+      "translation_3d_m": 0.00076021,
+      "rotation_3d_deg": 0.00405611,
+      "line": 2760
+    },
+    {
+      "epoch": 1794584297.136209,
+      "time": "23:38:17.136",
+      "translation_3d_m": 0.000946552,
+      "rotation_3d_deg": 0.00830658,
+      "line": 2762
+    },
+    {
+      "epoch": 1794584297.73622,
+      "time": "23:38:17.736",
+      "translation_3d_m": 0.00077671,
+      "rotation_3d_deg": 0.00352699,
+      "line": 2764
+    },
+    {
+      "epoch": 1794584298.3365927,
+      "time": "23:38:18.336",
+      "translation_3d_m": 0.000902422,
+      "rotation_3d_deg": 0.00440257,
+      "line": 2766
+    },
+    {
+      "epoch": 1794584298.936327,
+      "time": "23:38:18.936",
+      "translation_3d_m": 0.000941882,
+      "rotation_3d_deg": 0.0058815,
+      "line": 2768
+    },
+    {
+      "epoch": 1794584299.5366535,
+      "time": "23:38:19.536",
+      "translation_3d_m": 0.00210451,
+      "rotation_3d_deg": 0.0536011,
+      "line": 2770
+    },
+    {
+      "epoch": 1794584300.1366968,
+      "time": "23:38:20.136",
+      "translation_3d_m": 0.00534687,
+      "rotation_3d_deg": 0.0412111,
+      "line": 2772
+    },
+    {
+      "epoch": 1794584300.7383952,
+      "time": "23:38:20.738",
+      "translation_3d_m": 0.0113519,
+      "rotation_3d_deg": 0.0749612,
+      "line": 2774
+    },
+    {
+      "epoch": 1794584301.3374639,
+      "time": "23:38:21.337",
+      "translation_3d_m": 0.0231918,
+      "rotation_3d_deg": 0.0574194,
+      "line": 2776
+    },
+    {
+      "epoch": 1794584301.9375799,
+      "time": "23:38:21.937",
+      "translation_3d_m": 0.0108983,
+      "rotation_3d_deg": 0.0819466,
+      "line": 2778
+    },
+    {
+      "epoch": 1794584302.538617,
+      "time": "23:38:22.538",
+      "translation_3d_m": 0.00867977,
+      "rotation_3d_deg": 0.0435125,
+      "line": 2780
+    },
+    {
+      "epoch": 1794584303.1367388,
+      "time": "23:38:23.136",
+      "translation_3d_m": 0.00737728,
+      "rotation_3d_deg": 0.0662298,
+      "line": 2782
+    },
+    {
+      "epoch": 1794584303.7386792,
+      "time": "23:38:23.738",
+      "translation_3d_m": 0.0179652,
+      "rotation_3d_deg": 0.069231,
+      "line": 2784
+    },
+    {
+      "epoch": 1794584304.3384056,
+      "time": "23:38:24.338",
+      "translation_3d_m": 0.0220909,
+      "rotation_3d_deg": 0.0476456,
+      "line": 2786
+    },
+    {
+      "epoch": 1794584304.9365282,
+      "time": "23:38:24.936",
+      "translation_3d_m": 0.00411273,
+      "rotation_3d_deg": 0.0239258,
+      "line": 2788
+    },
+    {
+      "epoch": 1794584305.5366106,
+      "time": "23:38:25.536",
+      "translation_3d_m": 0.0133991,
+      "rotation_3d_deg": 0.0313311,
+      "line": 2790
+    },
+    {
+      "epoch": 1794584306.1377962,
+      "time": "23:38:26.137",
+      "translation_3d_m": 0.0152179,
+      "rotation_3d_deg": 0.0247058,
+      "line": 2792
+    },
+    {
+      "epoch": 1794584306.736348,
+      "time": "23:38:26.736",
+      "translation_3d_m": 0.0128122,
+      "rotation_3d_deg": 0.0394617,
+      "line": 2794
+    },
+    {
+      "epoch": 1794584307.539149,
+      "time": "23:38:27.539",
+      "translation_3d_m": 0.0352421,
+      "rotation_3d_deg": 0.0621176,
+      "line": 2797
+    },
+    {
+      "epoch": 1794584308.1365287,
+      "time": "23:38:28.136",
+      "translation_3d_m": 0.0142226,
+      "rotation_3d_deg": 0.0472512,
+      "line": 2799
+    },
+    {
+      "epoch": 1794584308.7367613,
+      "time": "23:38:28.736",
+      "translation_3d_m": 0.0228346,
+      "rotation_3d_deg": 0.0296079,
+      "line": 2801
+    },
+    {
+      "epoch": 1794584309.338177,
+      "time": "23:38:29.338",
+      "translation_3d_m": 0.00450642,
+      "rotation_3d_deg": 0.0409954,
+      "line": 2803
+    },
+    {
+      "epoch": 1794584309.936428,
+      "time": "23:38:29.936",
+      "translation_3d_m": 0.0108734,
+      "rotation_3d_deg": 0.030697,
+      "line": 2805
+    },
+    {
+      "epoch": 1794584310.5362914,
+      "time": "23:38:30.536",
+      "translation_3d_m": 0.00357044,
+      "rotation_3d_deg": 0.0166371,
+      "line": 2807
+    },
+    {
+      "epoch": 1794584311.1363335,
+      "time": "23:38:31.136",
+      "translation_3d_m": 0.0199778,
+      "rotation_3d_deg": 0.0401883,
+      "line": 2809
+    },
+    {
+      "epoch": 1794584311.737466,
+      "time": "23:38:31.737",
+      "translation_3d_m": 0.0076394,
+      "rotation_3d_deg": 0.0333058,
+      "line": 2811
+    },
+    {
+      "epoch": 1794584312.3363638,
+      "time": "23:38:32.336",
+      "translation_3d_m": 0.00894907,
+      "rotation_3d_deg": 0.0283481,
+      "line": 2813
+    },
+    {
+      "epoch": 1794584312.9367626,
+      "time": "23:38:32.936",
+      "translation_3d_m": 0.0080394,
+      "rotation_3d_deg": 0.0616115,
+      "line": 2816
+    },
+    {
+      "epoch": 1794584313.538919,
+      "time": "23:38:33.538",
+      "translation_3d_m": 0.0140166,
+      "rotation_3d_deg": 0.0308231,
+      "line": 2818
+    },
+    {
+      "epoch": 1794584314.1365633,
+      "time": "23:38:34.136",
+      "translation_3d_m": 0.0109637,
+      "rotation_3d_deg": 0.037175,
+      "line": 2820
+    },
+    {
+      "epoch": 1794584314.7375877,
+      "time": "23:38:34.737",
+      "translation_3d_m": 0.0200128,
+      "rotation_3d_deg": 0.0190716,
+      "line": 2822
+    },
+    {
+      "epoch": 1794584315.3366528,
+      "time": "23:38:35.336",
+      "translation_3d_m": 0.0140714,
+      "rotation_3d_deg": 0.0263495,
+      "line": 2824
+    },
+    {
+      "epoch": 1794584315.9379947,
+      "time": "23:38:35.937",
+      "translation_3d_m": 0.0218456,
+      "rotation_3d_deg": 0.0546564,
+      "line": 2826
+    },
+    {
+      "epoch": 1794584316.5372064,
+      "time": "23:38:36.537",
+      "translation_3d_m": 0.0214698,
+      "rotation_3d_deg": 0.0805746,
+      "line": 2828
+    },
+    {
+      "epoch": 1794584317.136636,
+      "time": "23:38:37.136",
+      "translation_3d_m": 0.0827043,
+      "rotation_3d_deg": 0.141764,
+      "line": 2830
+    },
+    {
+      "epoch": 1794584317.7389402,
+      "time": "23:38:37.738",
+      "translation_3d_m": 0.0362433,
+      "rotation_3d_deg": 0.0572572,
+      "line": 2832
+    },
+    {
+      "epoch": 1794584318.3364038,
+      "time": "23:38:38.336",
+      "translation_3d_m": 0.0468226,
+      "rotation_3d_deg": 0.161956,
+      "line": 2834
+    },
+    {
+      "epoch": 1794584318.93667,
+      "time": "23:38:38.936",
+      "translation_3d_m": 0.0203895,
+      "rotation_3d_deg": 0.0571706,
+      "line": 2836
+    },
+    {
+      "epoch": 1794584323.3364005,
+      "time": "23:38:43.336",
+      "translation_3d_m": 0.0896623,
+      "rotation_3d_deg": 0.186989,
+      "line": 2863
+    },
+    {
+      "epoch": 1794584329.3363745,
+      "time": "23:38:49.336",
+      "translation_3d_m": 0.0205982,
+      "rotation_3d_deg": 0.0905129,
+      "line": 2903
+    },
+    {
+      "epoch": 1794584329.9366806,
+      "time": "23:38:49.936",
+      "translation_3d_m": 0.0263807,
+      "rotation_3d_deg": 0.0672192,
+      "line": 2905
+    },
+    {
+      "epoch": 1794584332.7371976,
+      "time": "23:38:52.737",
+      "translation_3d_m": 0.0163076,
+      "rotation_3d_deg": 0.393292,
+      "line": 2919
+    },
+    {
+      "epoch": 1794584333.3367844,
+      "time": "23:38:53.336",
+      "translation_3d_m": 0.0216258,
+      "rotation_3d_deg": 0.189046,
+      "line": 2921
+    },
+    {
+      "epoch": 1794584335.9366276,
+      "time": "23:38:55.936",
+      "translation_3d_m": 0.0201295,
+      "rotation_3d_deg": 0.0407014,
+      "line": 2937
+    },
+    {
+      "epoch": 1794584336.536732,
+      "time": "23:38:56.536",
+      "translation_3d_m": 0.00901364,
+      "rotation_3d_deg": 0.0833422,
+      "line": 2939
+    },
+    {
+      "epoch": 1794584337.1380432,
+      "time": "23:38:57.138",
+      "translation_3d_m": 0.0383344,
+      "rotation_3d_deg": 0.060177,
+      "line": 2941
+    },
+    {
+      "epoch": 1794584337.7370236,
+      "time": "23:38:57.737",
+      "translation_3d_m": 0.0342294,
+      "rotation_3d_deg": 0.0855037,
+      "line": 2943
+    },
+    {
+      "epoch": 1794584337.626247,
+      "time": "23:38:57.626",
+      "translation_3d_m": 0.040332,
+      "rotation_3d_deg": 0.0955198,
+      "line": 2945
+    },
+    {
+      "epoch": 1794584338.2259243,
+      "time": "23:38:58.225",
+      "translation_3d_m": 0.0139754,
+      "rotation_3d_deg": 0.0319413,
+      "line": 2947
+    },
+    {
+      "epoch": 1794584338.8277802,
+      "time": "23:38:58.827",
+      "translation_3d_m": 0.0358649,
+      "rotation_3d_deg": 0.0927545,
+      "line": 2949
+    },
+    {
+      "epoch": 1794584339.426123,
+      "time": "23:38:59.426",
+      "translation_3d_m": 0.0399048,
+      "rotation_3d_deg": 0.0458062,
+      "line": 2951
+    },
+    {
+      "epoch": 1794584340.0259907,
+      "time": "23:39:00.025",
+      "translation_3d_m": 0.0145148,
+      "rotation_3d_deg": 0.0393739,
+      "line": 2953
+    },
+    {
+      "epoch": 1794584340.625596,
+      "time": "23:39:00.625",
+      "translation_3d_m": 0.0144121,
+      "rotation_3d_deg": 0.0313187,
+      "line": 2955
+    },
+    {
+      "epoch": 1794584341.22608,
+      "time": "23:39:01.226",
+      "translation_3d_m": 0.0243629,
+      "rotation_3d_deg": 0.0562854,
+      "line": 2957
+    },
+    {
+      "epoch": 1794584341.8256245,
+      "time": "23:39:01.825",
+      "translation_3d_m": 0.00431461,
+      "rotation_3d_deg": 0.044015,
+      "line": 2959
+    },
+    {
+      "epoch": 1794584342.427032,
+      "time": "23:39:02.427",
+      "translation_3d_m": 0.0169102,
+      "rotation_3d_deg": 0.0524222,
+      "line": 2961
+    },
+    {
+      "epoch": 1794584343.0267098,
+      "time": "23:39:03.026",
+      "translation_3d_m": 0.0323221,
+      "rotation_3d_deg": 0.0699055,
+      "line": 2963
+    },
+    {
+      "epoch": 1794584343.6255796,
+      "time": "23:39:03.625",
+      "translation_3d_m": 0.0189637,
+      "rotation_3d_deg": 0.0617672,
+      "line": 2965
+    },
+    {
+      "epoch": 1794584344.2256284,
+      "time": "23:39:04.225",
+      "translation_3d_m": 0.00181962,
+      "rotation_3d_deg": 0.0677972,
+      "line": 2967
+    },
+    {
+      "epoch": 1794584344.825503,
+      "time": "23:39:04.825",
+      "translation_3d_m": 0.0173794,
+      "rotation_3d_deg": 0.0799293,
+      "line": 2969
+    },
+    {
+      "epoch": 1794584345.426716,
+      "time": "23:39:05.426",
+      "translation_3d_m": 0.0181748,
+      "rotation_3d_deg": 0.0833937,
+      "line": 2971
+    },
+    {
+      "epoch": 1794584346.025634,
+      "time": "23:39:06.025",
+      "translation_3d_m": 0.000954227,
+      "rotation_3d_deg": 0.0611364,
+      "line": 2973
+    },
+    {
+      "epoch": 1794584346.6259341,
+      "time": "23:39:06.625",
+      "translation_3d_m": 0.00732193,
+      "rotation_3d_deg": 0.0830325,
+      "line": 2975
+    },
+    {
+      "epoch": 1794584347.2260668,
+      "time": "23:39:07.226",
+      "translation_3d_m": 0.00310064,
+      "rotation_3d_deg": 0.0714103,
+      "line": 2977
+    },
+    {
+      "epoch": 1794584347.826726,
+      "time": "23:39:07.826",
+      "translation_3d_m": 0.00157531,
+      "rotation_3d_deg": 0.0656898,
+      "line": 2979
+    },
+    {
+      "epoch": 1794584348.4256167,
+      "time": "23:39:08.425",
+      "translation_3d_m": 0.00635813,
+      "rotation_3d_deg": 0.0691668,
+      "line": 2981
+    },
+    {
+      "epoch": 1794584349.026754,
+      "time": "23:39:09.026",
+      "translation_3d_m": 0.0102002,
+      "rotation_3d_deg": 0.0746612,
+      "line": 2983
+    },
+    {
+      "epoch": 1794584349.6256332,
+      "time": "23:39:09.625",
+      "translation_3d_m": 0.000742871,
+      "rotation_3d_deg": 0.065415,
+      "line": 2985
+    },
+    {
+      "epoch": 1794584350.2270813,
+      "time": "23:39:10.227",
+      "translation_3d_m": 0.0114988,
+      "rotation_3d_deg": 0.0770097,
+      "line": 2987
+    },
+    {
+      "epoch": 1794584350.826276,
+      "time": "23:39:10.826",
+      "translation_3d_m": 0.00729588,
+      "rotation_3d_deg": 0.0744165,
+      "line": 2989
+    },
+    {
+      "epoch": 1794584351.4269578,
+      "time": "23:39:11.426",
+      "translation_3d_m": 0.00777214,
+      "rotation_3d_deg": 0.0695341,
+      "line": 2991
+    },
+    {
+      "epoch": 1794584352.025667,
+      "time": "23:39:12.025",
+      "translation_3d_m": 0.00149215,
+      "rotation_3d_deg": 0.0480664,
+      "line": 2993
+    },
+    {
+      "epoch": 1794584352.6272929,
+      "time": "23:39:12.627",
+      "translation_3d_m": 0.000593254,
+      "rotation_3d_deg": 0.0640678,
+      "line": 2995
+    }
+  ],
+  "incident_recoveries": [
+    {
+      "epoch": 1794584321.7484858,
+      "time": "23:38:41.748",
+      "translation_3d_m": 1.83878,
+      "rotation_3d_deg": 23.6525,
+      "line": 2853,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584321.64,
+        "last_wall_epoch": 1794584321.82,
+        "xyz_displacement_m": 0.001627882059609996,
+        "yaw_delta_deg": 0.020000000000010232,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584322.7510278,
+      "time": "23:38:42.751",
+      "translation_3d_m": 0.932623,
+      "rotation_3d_deg": 19.2797,
+      "line": 2861,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584322.66,
+        "last_wall_epoch": 1794584322.84,
+        "xyz_displacement_m": 0.015852444606432176,
+        "yaw_delta_deg": -1.0,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584324.353842,
+      "time": "23:38:44.353",
+      "translation_3d_m": 0.876802,
+      "rotation_3d_deg": 2.01121,
+      "line": 2870,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584324.28,
+        "last_wall_epoch": 1794584324.46,
+        "xyz_displacement_m": 0.032971957782333645,
+        "yaw_delta_deg": 0.5699999999999932,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584328.7487602,
+      "time": "23:38:48.748",
+      "translation_3d_m": 3.51848,
+      "rotation_3d_deg": 17.9445,
+      "line": 2901,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584328.66,
+        "last_wall_epoch": 1794584328.84,
+        "xyz_displacement_m": 0.0,
+        "yaw_delta_deg": 0.0,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584331.5558493,
+      "time": "23:38:51.555",
+      "translation_3d_m": 0.121808,
+      "rotation_3d_deg": 1.08857,
+      "line": 2914,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584331.48,
+        "last_wall_epoch": 1794584331.66,
+        "xyz_displacement_m": 0.021672563300172885,
+        "yaw_delta_deg": 0.28999999999999204,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584334.3642936,
+      "time": "23:38:54.364",
+      "translation_3d_m": 0.187835,
+      "rotation_3d_deg": 1.1266,
+      "line": 2928,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584334.3,
+        "last_wall_epoch": 1794584334.48,
+        "xyz_displacement_m": 0.016905916124244753,
+        "yaw_delta_deg": 0.28000000000000114,
+        "samples": 4
+      }
+    },
+    {
+      "epoch": 1794584335.3681533,
+      "time": "23:38:55.368",
+      "translation_3d_m": 0.360462,
+      "rotation_3d_deg": 1.1951,
+      "line": 2935,
+      "truth_bracket": {
+        "first_wall_epoch": 1794584335.26,
+        "last_wall_epoch": 1794584335.44,
+        "xyz_displacement_m": 0.006459102104782198,
+        "yaw_delta_deg": -0.11000000000001364,
+        "samples": 4
+      }
+    }
+  ],
+  "correction_definition": "Norm of 3D sensor pose translation and SO(3) rotation before/after recovery; not horizontal displacement, yaw, or absolute localization error.",
+  "timing_limitation": "Wall timestamps only. loc.log has a backward wall-time step near epoch 1794584337.6. Do not derive speed, latency, or precise simulation durations from these files. Truth logger throttles on wall time and may skip samples across clock changes.",
+  "files": {
+    "loc.log": {
+      "size_bytes": 877633,
+      "sha256": "13f74186c87f01f9128d2460fbd22aeb0923ddd008eb65694be91618794f04f5"
+    },
+    "nav.log": {
+      "size_bytes": 370227,
+      "sha256": "e4f240199c96374da80cb814f6cb539d23c1a4f11cf7b3c27aee5217ab081d04"
+    },
+    "rviz.log": {
+      "size_bytes": 17020,
+      "sha256": "e87963a227ef6f42e4558f7171257f16836bd4ea5fd3287b3d8d666b1237da83"
+    },
+    "sim.log": {
+      "size_bytes": 3058215,
+      "sha256": "79f4bcabe49790ef3e30f89a57c1b41b482cf6a0a7152e7f74b83c937931e0f9"
+    },
+    "tf_probe.log": {
+      "size_bytes": 1740,
+      "sha256": "000906449725b75e14d6d5f4f23292380e8fc7202de8ff0c51c4384b4259b0a4"
+    },
+    "truth.log": {
+      "size_bytes": 606018,
+      "sha256": "960d266fa46bb6cd2ac9327fe2aa6b169ddc994cee6db16a60badfb2703cc040"
+    }
+  }
+}

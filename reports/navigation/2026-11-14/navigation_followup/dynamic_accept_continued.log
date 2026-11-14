@@ -1,0 +1,26 @@
+PASS moving cross traffic is avoided without footprint contact
+PASS path blocker permits safe reroute and continues after it moves away
+PASS occupied goal is approached and remains pending, sensor outage stops it, removal resumes original goal
+PASS persistent occupied goal remains pending and cancellation stops output
+PASS fresh target preempts an occupied pending target
+PASS static wall target remains an error rather than an unsafe approach target
+{
+  "passed": true,
+  "checks": [
+    "moving cross traffic is avoided without footprint contact",
+    "path blocker permits safe reroute and continues after it moves away",
+    "occupied goal is approached and remains pending, sensor outage stops it, removal resumes original goal",
+    "persistent occupied goal remains pending and cancellation stops output",
+    "fresh target preempts an occupied pending target",
+    "static wall target remains an error rather than an unsafe approach target"
+  ],
+  "metrics": {
+    "crossing_min_clearance_m": 0.28427834582134026,
+    "crossing_total_seconds": 8.121153163003328,
+    "fixed_min_clearance_m": 0.4651762744824543,
+    "occupied_min_clearance_m": 0.04800011603191913,
+    "occupied_wait_distance_m": 0.476946653251726,
+    "goal_release_to_success_seconds": 1.2395972510021238
+  },
+  "model": "real Nav2; deterministic final-command omni fixture"
+}

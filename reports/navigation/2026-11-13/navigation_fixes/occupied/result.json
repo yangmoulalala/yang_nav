@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "checks": [
+    "overlapping corner escapes without rotation and reaches target",
+    "fresh goal after overlapping corner succeeds",
+    "occupied centre inside wall escapes without rotation and reaches target",
+    "fresh goal after occupied centre inside wall succeeds"
+  ]
+}

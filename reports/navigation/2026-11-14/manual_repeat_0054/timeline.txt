@@ -1,0 +1,58 @@
+ALL TIMES BELOW ARE MESSAGE SIMULATION SECONDS, except explicitly identified log wall timestamps.
+truth timing {"count": 3658, "source_dt_min": 0.023999999999972488, "source_dt_max": 0.02400000000000091, "source_dt_p50": 0.02400000000000091, "nonpositive_source_dt": 0, "receive_age_p50": 0.0, "receive_age_max": 2.842170943040401e-14, "incident_90_100_max_gap": 0.02400000000000091}
+imu timing {"count": 17557, "source_dt_min": 0.003999999999990678, "source_dt_max": 0.008000000000009777, "source_dt_p50": 0.0040000000000048885, "nonpositive_source_dt": 0, "receive_age_p50": 0.0, "receive_age_max": 2.842170943040401e-14, "incident_90_100_max_gap": 0.008000000000009777}
+raw_tf timing {"count": 17557, "source_dt_min": 0.003999999999990678, "source_dt_max": 0.008000000000009777, "source_dt_p50": 0.0040000000000048885, "nonpositive_source_dt": 0, "receive_age_p50": 0.0, "receive_age_max": 2.842170943040401e-14, "incident_90_100_max_gap": 0.008000000000009777}
+frontend_prediction timing {"count": 2926, "source_dt_min": 0.027999999999991587, "source_dt_max": 0.03200000000001069, "source_dt_p50": 0.031999999999982265, "nonpositive_source_dt": 0, "receive_age_p50": 0.0, "receive_age_max": 2.842170943040401e-14, "incident_90_100_max_gap": 0.03200000000001069}
+frontend_frame timing {"count": 740, "source_dt_min": 0.053812925000002565, "source_dt_max": 0.12000000000000455, "source_dt_p50": 0.12000000000000455, "nonpositive_source_dt": 0, "receive_age_p50": 0.1084116480000148, "receive_age_max": 0.15885856300000967, "incident_90_100_max_gap": 0.12000000000000455}
+Derived prediction-to-base extrinsic {"samples": 2926, "max_translation_change_m": 4.6785488931070135e-15, "max_rotation_change_deg": 2.985144592098753e-14, "baseline_pose": [-0.05576005509598259, -0.17432949817519053, -0.12265450201643609, -0.7933534211927963, 9.947004686637964e-08, -1.2963192486149182e-07, 0.6087613235757172]}
+Posterior converted to base {"max_error_m": 1.6445677504086047, "max_error_time": 115.751665102, "max_yaw_error_deg": 8.585044979711446, "final_error_m": 1.2385166644461496}
+
+TIMELINE: sim | truth x y z | raw error m / yaw deg | posterior error m | global error m / yaw deg | matches/update, nearest frame stamp
+  45.452 |   -9.500   -0.000  0.335 |   0.002 /   0.01 |   0.001 |   0.002 /   0.01 | 1649 / True, 45.400
+  88.764 |   -4.634   -4.825  0.266 |   0.026 /   0.23 |   0.023 |   0.114 /  -0.47 | 1387 / True, 88.747
+  89.180 |   -4.634   -4.825  0.266 |   0.016 /   0.22 |   0.021 |   0.122 /  -0.48 | 1357 / True, 89.227
+  90.000 |   -4.616   -4.782  0.261 |   0.025 /   0.20 |   0.021 |   0.054 /  -0.01 | 1343 / True, 90.060
+  91.400 |   -4.686   -5.069  0.320 |   0.053 /   0.22 |   0.010 |   0.053 /  -0.13 | 0 / False, 91.387
+  92.000 |   -4.688   -5.187  0.348 |   0.021 /   0.13 |   0.015 |   0.053 /  -0.20 | 1428 / True, 91.981
+  93.000 |   -4.700   -5.621  0.396 |   0.012 /   0.26 |   0.012 |   0.075 /   0.05 | 1281 / True, 92.976
+  93.968 |   -4.652   -6.402  0.374 |   0.148 /   0.15 |   0.140 |   0.178 /  -0.11 | 1137 / True, 93.935
+  94.140 |   -4.599   -6.441  0.374 |   0.230 /  -0.01 |   0.135 |   0.251 /  -0.25 | 1341 / True, 94.122
+  95.360 |   -3.865   -6.136  0.381 |   0.256 /  -0.86 |   0.245 |   0.172 /  -1.06 | 1197 / True, 95.367
+  96.000 |   -3.516   -5.804  0.390 |   0.362 /  -0.88 |   0.325 |   0.300 /  -0.97 | 1088 / True, 95.967
+  97.108 |   -2.822   -5.474  0.411 |   0.503 /  -1.02 |   0.560 |   0.364 /  -0.84 | 1109 / True, 97.128
+  97.808 |   -2.397   -5.231  0.440 |   1.006 /  -2.54 |   1.088 |   0.801 /  -2.31 | 1071 / True, 97.848
+  98.164 |   -2.156   -5.141  0.455 |   1.508 /  -4.23 |   1.466 |   1.280 /  -4.00 | 1312 / True, 98.208
+  98.360 |   -2.132   -5.147  0.454 |   1.754 /  -4.47 |   1.517 |   1.523 /  -4.24 | 1028 / True, 98.328
+  98.800 |   -2.126   -5.137  0.456 |   1.440 /  -5.27 |   1.437 |   1.211 /  -5.04 | 1266 / True, 98.808
+  99.364 |   -2.131   -5.122  0.460 |   1.378 /  -5.08 |   1.379 |   1.147 /  -4.85 | 1256 / True, 99.408
+ 105.000 |   -2.131   -5.122  0.460 |   1.369 /  -5.00 |   1.378 |   1.137 /  -4.77 | 1179 / True, 105.048
+ 112.800 |   -2.131   -5.122  0.460 |   1.374 /  -4.96 |   1.379 |   1.142 /  -4.73 | 1174 / True, 112.848
+ 113.372 |   -2.131   -5.122  0.460 |   1.374 /  -5.00 |   1.377 |   1.143 /  -4.77 | 1181 / True, 113.328
+ 114.564 |   -1.596   -4.647  0.520 |   1.003 /  -4.83 |   1.013 |   1.125 /  23.09 | 1509 / True, 114.608
+ 114.980 |   -1.434   -4.512  0.524 |   1.065 /  -3.91 |   1.093 |   1.103 /  24.00 | 1155 / True, 115.032
+ 115.952 |   -1.820   -4.665  0.520 |   1.764 /  -5.62 |   1.594 |   0.651 /  -1.75 | 1113 / True, 115.958
+ 116.764 |   -1.773   -4.202  0.532 |   1.274 /  -8.57 |   1.263 |   0.295 /  -4.71 | 1388 / True, 116.808
+ 117.184 |   -1.669   -4.085  0.535 |   1.157 /  -7.38 |   1.159 |   0.361 /  -1.64 | 1253 / True, 117.156
+ 118.364 |   -1.556   -3.813  0.542 |   1.272 /  -7.00 |   1.274 |   0.073 /   0.49 | 1319 / True, 118.356
+ 130.000 |   -1.556   -3.813  0.542 |   1.242 /  -6.99 |   1.237 |   0.115 /   0.03 | 1336 / True, 129.996
+
+REJECTED FRONTEND FRAMES
+{"stamp": 57.087552888, "begin": 57.030120785, "sequence": 305, "matches": 0, "lidar_updated": false, "cloud_shape": [0, 0]}
+{"stamp": 91.387008625, "begin": 91.301002003, "sequence": 593, "matches": 0, "lidar_updated": false, "cloud_shape": [0, 0]}
+{"stamp": 92.290630381, "begin": 92.204269261, "sequence": 601, "matches": 0, "lidar_updated": false, "cloud_shape": [0, 0]}
+{"stamp": 94.176127057, "begin": 94.122314132, "sequence": 619, "matches": 0, "lidar_updated": false, "cloud_shape": [0, 0]}
+{"stamp": 114.698175053, "begin": 114.607713293, "sequence": 791, "matches": 0, "lidar_updated": false, "cloud_shape": [0, 0]}
+{"stamp": 116.090951658, "begin": 116.016475463, "sequence": 804, "matches": 0, "lidar_updated": false, "cloud_shape": [0, 0]}
+
+IMU NORM / RATE IN INCIDENT 90--100s
+accel norm min/median/max [  1.80559598   9.82512433 105.22781998]
+gyro norm min/median/max [4.31373490e-04 4.29596398e-02 5.55816336e-01]
+
+RAW TRANSFORM / POSTERIOR MATCH COVERAGE
+same stamp posterior-vs-predicted-base translation min/median/max [0.00265415 0.02208996 0.19795219]
+
+RECOVERY LOGS AND GROUND TRUTH MOVEMENT
+loc.log:3718 wall=1794588943.332, receive_sim=89.180, correction=0.100164m/0.804971deg, truth +/-0.1s displacement=0.000076m rotation=0.004294deg
+loc.log:3845 wall=1794588967.526, receive_sim=113.372, correction=1.72946m/31.1816deg, truth +/-0.1s displacement=0.005194m rotation=0.078660deg
+loc.log:3855 wall=1794588969.133, receive_sim=114.980, correction=1.02252m/24.1869deg, truth +/-0.1s displacement=0.022757m rotation=0.405954deg
+loc.log:3866 wall=1794588971.337, receive_sim=117.184, correction=0.247939m/3.76007deg, truth +/-0.1s displacement=0.014502m rotation=0.051207deg

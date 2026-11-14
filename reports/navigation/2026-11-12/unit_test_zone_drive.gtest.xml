@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="5" failures="0" disabled="0" errors="0" time="0.031" timestamp="2026-11-12T21:13:19.907" name="AllTests">
+  <testsuite name="TunnelDrive" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.031" timestamp="2026-11-12T21:13:19.907">
+    <testcase name="AllTunnelsBothDirections" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp" line="189" status="run" result="completed" time="0.027" timestamp="2026-11-12T21:13:19.907" classname="nav_behaviors.TunnelDrive" />
+    <testcase name="ResumeFromInsideTheBody" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp" line="220" status="run" result="completed" time="0.001" timestamp="2026-11-12T21:13:19.934" classname="nav_behaviors.TunnelDrive" />
+    <testcase name="ReplanKeepsTheLock" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp" line="264" status="run" result="completed" time="0.001" timestamp="2026-11-12T21:13:19.936" classname="nav_behaviors.TunnelDrive" />
+    <testcase name="MisalignedEntryIsGatedNotCrashed" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp" line="277" status="run" result="completed" time="0.001" timestamp="2026-11-12T21:13:19.937" classname="nav_behaviors.TunnelDrive" />
+    <testcase name="DiagonalApproachStaysInsideTheOpening" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp" line="293" status="run" result="completed" time="0.001" timestamp="2026-11-12T21:13:19.938" classname="nav_behaviors.TunnelDrive" />
+  </testsuite>
+</testsuites>

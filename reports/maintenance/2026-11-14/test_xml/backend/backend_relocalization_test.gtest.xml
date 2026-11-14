@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="7" failures="0" disabled="0" errors="0" time="0.012" timestamp="2026-11-14T06:10:56.369" name="AllTests">
+  <testsuite name="TrackingReference" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0.001" timestamp="2026-11-14T06:10:56.369">
+    <testcase name="InvalidNewSubmapRetriesThePreviousReferenceWithoutRelaxingGates" file="/home/yang/yang_nav/src/z-localization/backend/test/integration/relocalization_test.cpp" line="13" status="run" result="completed" time="0.001" timestamp="2026-11-14T06:10:56.369" classname="backend.TrackingReference" />
+  </testsuite>
+  <testsuite name="RelocalizationSearch" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.01" timestamp="2026-11-14T06:10:56.371">
+    <testcase name="DescriptorRetrievalProducesVerifiedMapToOdometryTransform" file="/home/yang/yang_nav/src/z-localization/backend/test/integration/relocalization_test.cpp" line="97" status="run" result="completed" time="0.001" timestamp="2026-11-14T06:10:56.371" classname="backend.RelocalizationSearch" />
+    <testcase name="EmptyLocalNeighborhoodRequiresExplicitGlobalFallback" file="/home/yang/yang_nav/src/z-localization/backend/test/integration/relocalization_test.cpp" line="108" status="run" result="completed" time="0.001" timestamp="2026-11-14T06:10:56.372" classname="backend.RelocalizationSearch" />
+    <testcase name="HorizontalPositionPriorIgnoresHeightAndAccountsForLeverArm" file="/home/yang/yang_nav/src/z-localization/backend/test/integration/relocalization_test.cpp" line="118" status="run" result="completed" time="0.003" timestamp="2026-11-14T06:10:56.374" classname="backend.RelocalizationSearch" />
+    <testcase name="DegeneratePlaneCannotEstablishFullPoseAnchor" file="/home/yang/yang_nav/src/z-localization/backend/test/integration/relocalization_test.cpp" line="139" status="run" result="completed" time="0." timestamp="2026-11-14T06:10:56.377" classname="backend.RelocalizationSearch" />
+    <testcase name="ParallelCandidateVerificationAgreesWithSerialResult" file="/home/yang/yang_nav/src/z-localization/backend/test/integration/relocalization_test.cpp" line="163" status="run" result="completed" time="0.003" timestamp="2026-11-14T06:10:56.378" classname="backend.RelocalizationSearch" />
+  </testsuite>
+  <testsuite name="RelocalizationScheduling" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-14T06:10:56.381">
+    <testcase name="YawSchedulesVisitEachDiscreteHeadingOnce" file="/home/yang/yang_nav/src/z-localization/backend/test/integration/relocalization_test.cpp" line="179" status="run" result="completed" time="0." timestamp="2026-11-14T06:10:56.381" classname="backend.RelocalizationScheduling" />
+  </testsuite>
+</testsuites>

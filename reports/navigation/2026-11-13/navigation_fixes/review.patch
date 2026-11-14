@@ -1,0 +1,1196 @@
+--- before/docs/navigation.md
++++ after/docs/navigation.md
+@@ -8,7 +8,7 @@
+ 定位：z-localization → TF / /localization/odometry / localization_state
+ 地形：nav_map + speed_mask + terrain.msgpack + zones.yaml
+ 
+-Smac2D → ZonePathShaper → ZoneAwareController（区域外 MPPI，区域内 ZoneTracker）
++StartAwarePlanner（Smac2D + 占用起点退出段）→ ZonePathShaper → ZoneAwareController（区域外 MPPI，区域内 ZoneTracker）
+                                       ↓
+ behavior_server ───────────────→ cmd_vel_nav
+                                       ↓
+@@ -20,6 +20,8 @@
+ ```
+ 
+ 导航直接使用定位结果，不修改定位数据；`cmd_gate` 按已有可信状态、命令/观测新鲜度和速度上限决定最终输出。
++
++障碍点云已经位于固定 map 坐标系。碰撞监控使用最新 map→base TF（`base_shift_correction=false`），避免每条命令等待估计器尚未发布的“当前时刻”变换；观测过期、变换失败停车和完整车体 approach 检查继续启用。
+ 
+ ## 地形输入
+ 
+@@ -46,11 +48,19 @@
+ 
+ 碰撞检查使用完整 padded convex footprint，包含足迹内部占用格。路径段和制动轨迹采用半栅格步长的运动插值检查，未知和越界视为碰撞。`collision_tolerance` 必须为零，整形核心不存在跳过起点碰撞检查的开关。必须整形的路径失败会返回 Nav2 错误，不能静默把原路径交给区域跟踪器。
+ 
++起点已经与已知障碍重叠或处于起点不可用的膨胀带时，导航先找保持实际朝向的平移退出段，再从空闲端点调用 Smac。退出段最长默认 1.5 m，控制速度默认 0.15 m/s；不清除或修改共享代价图。完全嵌入较厚障碍时允许退出起初接触的同一连通障碍，但车体与障碍的重叠面积不能增加，也不能进入起初未授权的障碍区域。这个例外只覆盖连续的退出前缀；一旦退出，普通完整车体碰撞检查继续生效。未知、越界、没有可退出通路和实时碰撞监控停车仍会阻止运动。
++
++退出段由规划器生成、整形器验证并保留，控制器在实时局部地图上重新检查，先制动已有旋转/侧向惯性，再保持朝向低速退出。控制器为整个退出过程冻结初始障碍范围，更新地图或滚动地图不会把新障碍自动加入豁免。该过程不是旋转/倒车恢复，因此不解除 ZoneRecovery 的洞内保护。
++
++若重规划后路径只剩洞外后缀，跟踪器仍重建 EXIT 窗口，并在车尾离开洞体前保持区域控制和洞体航向。新路径没有洞体采样点不能作为整车已经离洞的依据。
++
+ 车身允许 0/π 翻转时，控制器按实际选定朝向检查足迹；不能假设前后轮廓相同。区域控制器额外检查名义路径前方、当前速度及新命令的制动轨迹，包含侧移、旋转、倒行。
+ 
+ ## 行为树与恢复
+ 
+ 单目标使用 `navigate_to_pose.xml`，多目标使用 `navigate_through_poses.xml`。两者都执行规划、整形、区域路径保持及 `ZoneRecovery`；launch 将真实 zones 路径注入两个树文件。
++
++规划、整形、执行使用不同路径黑板键。`CapturePathGoal` 记录规划对应的目标，`CommitZonePath` 只在整形成功且目标仍一致时提交执行路径；`PathForGoal` 和 `AwaitGoalPath` 阻止新目标沿用旧目标的路径。整形期间旧结果到达也不能标记为新目标的结果。
+ 
+ `ZoneReplanPaused` 只使用最新有效 phase；恢复另由 `ZoneRecovery` 保存近期禁止运动记录，不再提供旧的 `last_phase` 端口。
+ 
+--- before/src/nav_behaviors/CMakeLists.txt
++++ after/src/nav_behaviors/CMakeLists.txt
+@@ -31,6 +31,10 @@
+ set_target_properties(directional_zone_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+ target_link_libraries(directional_zone_core ${YAML_CPP_LIBRARIES})
+ 
++add_library(start_aware_planner SHARED src/start_aware_planner.cpp)
++ament_target_dependencies(start_aware_planner rclcpp rclcpp_lifecycle nav2_core nav2_costmap_2d nav2_util nav_msgs pluginlib)
++target_include_directories(start_aware_planner PRIVATE include)
++
+ add_library(zone_path_shaper SHARED src/zone_path_shaper.cpp)
+ target_link_libraries(zone_path_shaper directional_zone_core ${YAML_CPP_LIBRARIES})
+ ament_target_dependencies(zone_path_shaper rclcpp rclcpp_lifecycle nav2_core nav2_costmap_2d nav2_util nav_msgs
+@@ -56,11 +60,11 @@
+ target_link_libraries(zone_bt_nodes zone_bt_core directional_zone_core)
+ # without this the BT_REGISTER_NODES macro expands to `static` and the library exports no plugin symbol
+ target_compile_definitions(zone_bt_nodes PRIVATE BT_PLUGIN_EXPORT)
+-ament_target_dependencies(zone_bt_nodes rclcpp std_msgs behaviortree_cpp)
++ament_target_dependencies(zone_bt_nodes rclcpp std_msgs nav_msgs behaviortree_cpp)
+ 
+ pluginlib_export_plugin_description_file(nav2_core plugins.xml)
+ 
+-install(TARGETS zone_path_shaper zone_aware_controller zone_bt_nodes
++install(TARGETS start_aware_planner zone_path_shaper zone_aware_controller zone_bt_nodes
+   ARCHIVE DESTINATION lib
+   LIBRARY DESTINATION lib
+   RUNTIME DESTINATION bin)
+@@ -73,6 +77,9 @@
+   ament_target_dependencies(test_costmap_collision nav2_costmap_2d)
+   ament_add_gtest(test_path_shaper test/test_path_shaper.cpp)
+   target_link_libraries(test_path_shaper directional_zone_core)
++  ament_add_gtest(test_zone_path_handoff test/test_zone_path_handoff.cpp)
++  ament_target_dependencies(test_zone_path_handoff nav_msgs behaviortree_cpp)
++  target_include_directories(test_zone_path_handoff PRIVATE include)
+   ament_add_gtest(test_zone_tracker test/test_zone_tracker.cpp)
+   target_link_libraries(test_zone_tracker directional_zone_core)
+   ament_add_gtest(test_slope test/test_slope.cpp)
+--- before/src/nav_behaviors/README.md
++++ after/src/nav_behaviors/README.md
+@@ -19,6 +19,9 @@
+ | --- | --- |
+ | `zones_yaml` | Load the terrain package's zone geometry and traversal policy. |
+ | `path_shaper` | Detect zone crossings, join adjacent zones, shape smooth axis-aligned paths, and reject colliding variants. |
++| `start_aware_planner` | Prepend a fixed-heading escape from an occupied/inflated start, then invoke Smac2D without modifying the map. |
++| `overlap_escape` | Bounded, non-growing footprint overlap with the original obstacle component; unknown/new obstacles remain blocked. |
++| `zone_path_handoff` | Bind a committed shaped path to its goal, preventing raw-path leakage and stale-goal execution. |
+ | `zone_tracker` | Track the shaped path, manage the shared approach/align/traverse/exit phases, and calculate velocity commands. |
+ | `zone_state` | Shared phase definitions, parsing and the stamped phase memory (`PhaseMemory`) used by the BT nodes. |
+ | `recovery_policy` | Pure recovery ladder: clear costmaps -> spin -> back up -> give up, no motion inside a zone. |
+@@ -66,6 +69,23 @@
+ 
+ The controller's `zone.*` parameters provide two tuning profiles (`tunnel_*` and `ramp_*`), shared alignment gains, collision margins, and chaining thresholds. `/nav_zone_state` reports the current phase; `/nav_mode` applies the matching `cmd_gate` speed backstop.
+ 
++## Occupied starts and exit replanning
++
++An occupied start does not immediately abort navigation. The planner finds a translation-only
++escape (default at most 1.5 m), and the controller executes it at at most 0.15 m/s before normal
++tracking resumes. The smoother preserves and validates that prefix. Overlap area with the
++original connected obstacle component may stay constant or shrink; unrelated/new obstacle cells,
++unknown space and map bounds are never exempted. The controller freezes that component for the
++whole episode. The live collision monitor and localization/observation gates remain enabled.
++This handles map overlap, not a guarantee that a physically embedded chassis can move.
++
++A path starting just beyond a zone's far mouth still creates an EXIT crossing. The tracker
++holds the body heading while the complete padded rear clears the zone, including after a cold
++restart or replanning that removed every body sample.
++
++Both BTs capture the planning target, keep raw and shaped paths separate, and commit only a
++successfully shaped path for the same target. A new goal waits for its own committed path.
++
+ ## Tests and build
+ 
+ The smoother and zone controller check the complete padded convex footprint, including occupied
+--- before/src/nav_behaviors/include/nav_behaviors/costmap_collision.hpp
++++ after/src/nav_behaviors/include/nav_behaviors/costmap_collision.hpp
+@@ -16,9 +16,10 @@
+ namespace nav_behaviors
+ {
+ 
+-inline bool footprintFree(
++template<class Visitor>
++inline bool visitFootprintCells(
+   const nav2_costmap_2d::Costmap2D & map,
+-  const std::vector<geometry_msgs::msg::Point> & footprint, const Pose2 & pose)
++  const std::vector<geometry_msgs::msg::Point> & footprint, const Pose2 & pose, Visitor visit)
+ {
+   if (footprint.size() < 3 || !std::isfinite(pose.x) || !std::isfinite(pose.y) ||
+     !std::isfinite(pose.yaw)) {return false;}
+@@ -56,10 +57,19 @@
+         if (hi < center - reach || lo > center + reach) {separated = true; break;}
+       }
+       if (!separated && cx + half >= xmin && cx - half <= xmax &&
+-        cy + half >= ymin && cy - half <= ymax) {return false;}
++        cy + half >= ymin && cy - half <= ymax && !visit(x, y, polygon)) {return false;}
+     }
+   }
+   return true;
++}
++
++inline bool footprintFree(
++  const nav2_costmap_2d::Costmap2D & map,
++  const std::vector<geometry_msgs::msg::Point> & footprint, const Pose2 & pose)
++{
++  return visitFootprintCells(map, footprint, pose, [&](unsigned x, unsigned y, const auto &) {
++      return map.getCost(x, y) < nav2_costmap_2d::LETHAL_OBSTACLE;
++    });
+ }
+ 
+ inline bool footprintMotionFree(
+--- before/src/nav_behaviors/include/nav_behaviors/overlap_escape.hpp
++++ after/src/nav_behaviors/include/nav_behaviors/overlap_escape.hpp
+@@ -0,0 +1,174 @@
++// Escape an already overlapping map footprint without clearing the map or increasing overlap.
++// Callers own the costmap lock. Unknown cells and map bounds never receive an exemption.
++#pragma once
++#include <cstdint>
++#include <utility>
++#include "nav_behaviors/costmap_collision.hpp"
++
++namespace nav_behaviors
++{
++struct ContactState
++{
++  bool valid{false};
++  std::vector<std::pair<int64_t, int64_t>> cells;  // world micrometres: stable across rolling origins
++  double area{0.0};
++};
++
++inline double cellOverlapArea(std::vector<geometry_msgs::msg::Point> poly,
++  double cx, double cy, double half)
++{
++  for (int axis = 0; axis < 2; ++axis) {
++    for (int side : {-1, 1}) {
++      const double edge = (axis == 0 ? cx : cy) + side * half;
++      const auto input = poly;
++      poly.clear();
++      if (input.empty()) {return 0.0;}
++      auto value = [&](const auto & p) {return axis == 0 ? p.x : p.y;};
++      for (size_t i = 0; i < input.size(); ++i) {
++        const auto & a = input[i];
++        const auto & b = input[(i + 1) % input.size()];
++        const bool ai = side * (value(a) - edge) <= 0.0;
++        const bool bi = side * (value(b) - edge) <= 0.0;
++        if (ai) {poly.push_back(a);}
++        if (ai != bi) {
++          const double f = (edge - value(a)) / (value(b) - value(a));
++          geometry_msgs::msg::Point q;
++          q.x = a.x + f * (b.x - a.x); q.y = a.y + f * (b.y - a.y);
++          poly.push_back(q);
++        }
++      }
++    }
++  }
++  double area = 0.0;
++  for (size_t i = 0; i < poly.size(); ++i) {
++    const auto & a = poly[i]; const auto & b = poly[(i + 1) % poly.size()];
++    area += (a.x - cx) * (b.y - cy) - (b.x - cx) * (a.y - cy);
++  }
++  return 0.5 * std::abs(area);
++}
++
++inline ContactState footprintContacts(const nav2_costmap_2d::Costmap2D & map,
++  const std::vector<geometry_msgs::msg::Point> & fp, const Pose2 & pose)
++{
++  ContactState out;
++  out.valid = visitFootprintCells(map, fp, pose, [&](unsigned x, unsigned y, const auto & poly) {
++      const auto cost = map.getCost(x, y);
++      if (cost == nav2_costmap_2d::NO_INFORMATION) {return false;}
++      if (cost < nav2_costmap_2d::LETHAL_OBSTACLE) {return true;}
++      double cx, cy; map.mapToWorld(x, y, cx, cy);
++      out.cells.emplace_back(std::llround(cx * 1e6), std::llround(cy * 1e6));
++      out.area += cellOverlapArea(poly, cx, cy, map.getResolution() * 0.5);
++      return true;
++    });
++  std::sort(out.cells.begin(), out.cells.end());
++  return out;
++}
++
++inline bool contactsDecrease(const ContactState & before, const ContactState & after)
++{
++  return before.valid && after.valid && after.area <= before.area + 1e-8 &&
++    std::all_of(after.cells.begin(), after.cells.end(), [&](const auto & cell) {
++      return std::binary_search(before.cells.begin(), before.cells.end(), cell);
++    });
++}
++
++// A start embedded in a thick map obstacle must be able to leave its connected
++// component, rather than being trapped at the first newly touched cell of the same
++// obstacle. Freeze this bounded set for the episode; unrelated/new obstacles stay lethal.
++inline ContactState escapeAllowance(const nav2_costmap_2d::Costmap2D & map,
++  const ContactState & initial, const Pose2 & start, double max_distance = 1.5)
++{
++  auto allowed = initial;
++  if (!initial.valid) {return allowed;}
++  std::vector<unsigned> pending;
++  std::vector<bool> seen(map.getSizeInCellsX() * map.getSizeInCellsY(), false);
++  for (const auto & key : initial.cells) {
++    unsigned x, y;
++    if (map.worldToMap(key.first * 1e-6, key.second * 1e-6, x, y)) {pending.push_back(map.getIndex(x, y));}
++  }
++  double reach = map.getResolution();
++  for (const auto & key : initial.cells) {
++    reach = std::max(reach, std::hypot(key.first * 1e-6 - start.x, key.second * 1e-6 - start.y));
++  }
++  allowed.cells.clear();
++  for (size_t i = 0; i < pending.size(); ++i) {
++    const unsigned index = pending[i];
++    if (seen[index]) {continue;}
++    seen[index] = true;
++    unsigned x, y; map.indexToCells(index, x, y);
++    if (map.getCost(x, y) != nav2_costmap_2d::LETHAL_OBSTACLE) {continue;}
++    double cx, cy; map.mapToWorld(x, y, cx, cy);
++    if (std::hypot(cx - start.x, cy - start.y) > max_distance + reach + map.getResolution()) {continue;}
++    allowed.cells.emplace_back(std::llround(cx * 1e6), std::llround(cy * 1e6));
++    for (int dx : {-1, 0, 1}) {
++      for (int dy : {-1, 0, 1}) {
++        const int nx = static_cast<int>(x) + dx, ny = static_cast<int>(y) + dy;
++        if (nx >= 0 && ny >= 0 && nx < static_cast<int>(map.getSizeInCellsX()) &&
++          ny < static_cast<int>(map.getSizeInCellsY())) {pending.push_back(map.getIndex(nx, ny));}
++      }
++    }
++  }
++  std::sort(allowed.cells.begin(), allowed.cells.end());
++  return allowed;
++}
++
++// Translation only. Overlap area may not grow, including within the original component.
++inline bool escapeMotionFree(const nav2_costmap_2d::Costmap2D & map,
++  const std::vector<geometry_msgs::msg::Point> & fp, const Pose2 & a, const Pose2 & b,
++  const ContactState * episode = nullptr)
++{
++  if (!std::isfinite(b.yaw) || std::abs(normAngle(b.yaw - a.yaw)) > 1e-3) {return false;}
++  const auto current = footprintContacts(map, fp, a);
++  auto previous = episode ? *episode : escapeAllowance(map, current, a);
++  if (!contactsDecrease(previous, current)) {return false;}
++  previous.area = current.area;
++  const double distance = std::hypot(b.x - a.x, b.y - a.y);
++  if (!std::isfinite(distance)) {return false;}
++  const int count = std::max(1, static_cast<int>(std::ceil(distance / (map.getResolution() * 0.5))));
++  for (int i = 1; i <= count; ++i) {
++    const double f = static_cast<double>(i) / count;
++    auto next = footprintContacts(map, fp, {a.x + f * (b.x - a.x), a.y + f * (b.y - a.y), a.yaw});
++    if (!contactsDecrease(previous, next)) {return false;}
++    previous.area = next.area;
++  }
++  return true;
++}
++
++struct EscapePath {std::vector<Pose2> poses; double score{0.0};};
++inline std::vector<EscapePath> escapePaths(const nav2_costmap_2d::Costmap2D & map,
++  const std::vector<geometry_msgs::msg::Point> & fp, const Pose2 & start, const Pose2 & goal,
++  double max_distance = 1.5)
++{
++  std::vector<EscapePath> out;
++  const auto initial = footprintContacts(map, fp, start);
++  if (!initial.valid) {return out;}
++  const auto allowed = escapeAllowance(map, initial, start, max_distance);
++  const double step = map.getResolution() * 0.5;
++  const double preferred = std::atan2(goal.y - start.y, goal.x - start.x);
++  for (int ray = 0; ray < 64; ++ray) {
++    const double yaw = preferred + ray * (2.0 * kPi / 64.0);
++    EscapePath candidate; candidate.poses.push_back(start);
++    auto previous = allowed;
++    double first_free = -1.0;
++    for (double d = step; d <= max_distance + 1e-9; d += step) {
++      const Pose2 q{start.x + d * std::cos(yaw), start.y + d * std::sin(yaw), start.yaw};
++      auto next = footprintContacts(map, fp, q);
++      if (!contactsDecrease(previous, next)) {break;}
++      previous.area = next.area;
++      candidate.poses.push_back(q);
++      unsigned x, y;
++      const bool free = next.cells.empty() && map.worldToMap(q.x, q.y, x, y) &&
++        map.getCost(x, y) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
++      if (free && first_free < 0.0) {first_free = d;}
++      if (free && d >= first_free + 0.08) {
++        candidate.score = d + 0.25 * (std::hypot(goal.x - q.x, goal.y - q.y) -
++          std::hypot(goal.x - start.x, goal.y - start.y));
++        out.push_back(std::move(candidate));
++        break;
++      }
++    }
++  }
++  std::sort(out.begin(), out.end(), [](const auto & a, const auto & b) {return a.score < b.score;});
++  return out;
++}
++}  // namespace nav_behaviors
+--- before/src/nav_behaviors/include/nav_behaviors/zone_path_handoff.hpp
++++ after/src/nav_behaviors/include/nav_behaviors/zone_path_handoff.hpp
+@@ -0,0 +1,73 @@
++// Bind each executable path to the target that was successfully planned and shaped.
++#pragma once
++#include <iomanip>
++#include <sstream>
++#include "behaviortree_cpp/action_node.h"
++#include "behaviortree_cpp/condition_node.h"
++#include "nav_msgs/msg/path.hpp"
++
++namespace nav_behaviors
++{
++inline std::string targetSignature(const BT::NodeConfiguration & config)
++{
++  geometry_msgs::msg::PoseStamped goal;
++  std::vector<geometry_msgs::msg::PoseStamped> goals;
++  if (config.blackboard->get("goals", goals) && !goals.empty()) {goal = goals.back();}
++  else if (!config.blackboard->get("goal", goal)) {return {};}
++  std::ostringstream stream;
++  const auto & p = goal.pose.position; const auto & q = goal.pose.orientation;
++  stream << std::setprecision(17) << goal.header.frame_id << ' ' << goal.header.stamp.sec << ' '
++    << goal.header.stamp.nanosec << ' ' << p.x << ' ' << p.y << ' ' << p.z << ' '
++    << q.x << ' ' << q.y << ' ' << q.z << ' ' << q.w;
++  return stream.str();
++}
++class CapturePathGoal : public BT::SyncActionNode
++{
++public:
++  using BT::SyncActionNode::SyncActionNode;
++  static BT::PortsList providedPorts() {return {BT::OutputPort<std::string>("signature")};}
++  BT::NodeStatus tick() override {
++    const auto sig = targetSignature(config());
++    if (sig.empty()) {return BT::NodeStatus::FAILURE;}
++    setOutput("signature", sig); return BT::NodeStatus::SUCCESS;
++  }
++};
++class CommitZonePath : public BT::SyncActionNode
++{
++public:
++  using BT::SyncActionNode::SyncActionNode;
++  static BT::PortsList providedPorts() {
++    return {BT::InputPort<nav_msgs::msg::Path>("input_path"), BT::InputPort<std::string>("planned_signature"), BT::OutputPort<nav_msgs::msg::Path>("path"),
++      BT::OutputPort<std::string>("signature")};
++  }
++  BT::NodeStatus tick() override {
++    const auto path = getInput<nav_msgs::msg::Path>("input_path");
++    const auto sig = targetSignature(config());
++    const auto planned = getInput<std::string>("planned_signature");
++    if (!planned || planned.value() != sig || !path || path.value().poses.empty() || sig.empty()) {return BT::NodeStatus::FAILURE;}
++    setOutput("path", path.value()); setOutput("signature", sig);
++    return BT::NodeStatus::SUCCESS;
++  }
++};
++class PathForGoal : public BT::ConditionNode
++{
++public:
++  using BT::ConditionNode::ConditionNode;
++  static BT::PortsList providedPorts() {return {BT::InputPort<std::string>("signature")};}
++  BT::NodeStatus tick() override {
++    const auto sig = getInput<std::string>("signature"); const auto current = targetSignature(config());
++    return sig && !current.empty() && sig.value() == current ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
++  }
++};
++class AwaitGoalPath : public BT::ActionNodeBase
++{
++public:
++  using BT::ActionNodeBase::ActionNodeBase;
++  static BT::PortsList providedPorts() {return {BT::InputPort<std::string>("signature")};}
++  BT::NodeStatus tick() override {
++    const auto sig = getInput<std::string>("signature"); const auto current = targetSignature(config());
++    return sig && !current.empty() && sig.value() == current ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;
++  }
++  void halt() override {resetStatus();}
++};
++}  // namespace nav_behaviors
+--- before/src/nav_behaviors/include/nav_behaviors/zone_tracker.hpp
++++ after/src/nav_behaviors/include/nav_behaviors/zone_tracker.hpp
+@@ -133,6 +133,7 @@
+     double body_yaw{0.0};      // path heading in the body
+     int dir{0};
+     bool locked{false};
++    bool exit_only{false};       // replan begins beyond the far mouth, rear may still be inside
+     bool backing{false};       // wedged before the mouth, backing off (hysteresis)
+     bool have_prev{false};
+     double prev_yaw{0.0}, prev_wz{0.0};
+--- before/src/nav_behaviors/package.xml
++++ after/src/nav_behaviors/package.xml
+@@ -21,6 +21,7 @@
+   <depend>std_msgs</depend>
+   <depend>behaviortree_cpp</depend>
+   <depend>visualization_msgs</depend>
++  <exec_depend>nav2_smac_planner</exec_depend>
+   <exec_depend>nav2_mppi_controller</exec_depend>
+ 
+   <test_depend>ament_cmake_gtest</test_depend>
+--- before/src/nav_behaviors/plugins.xml
++++ after/src/nav_behaviors/plugins.xml
+@@ -1,4 +1,9 @@
+ <class_libraries>
++  <library path="start_aware_planner">
++    <class type="nav_behaviors::StartAwarePlanner" base_class_type="nav2_core::GlobalPlanner">
++      <description>Escapes existing footprint overlap before normal Smac2D planning</description>
++    </class>
++  </library>
+   <library path="zone_path_shaper">
+     <class type="nav_behaviors::ZonePathShaper" base_class_type="nav2_core::Smoother">
+       <description>Shapes crossings of direction-constrained terrain zones onto their annotated axes</description>
+--- before/src/nav_behaviors/src/start_aware_planner.cpp
++++ after/src/nav_behaviors/src/start_aware_planner.cpp
+@@ -0,0 +1,92 @@
++// Add a collision-decreasing escape prefix before planning normally with Smac.
++// The shared costmap is never cleared, masked or modified by this wrapper.
++#include <chrono>
++#include "nav2_core/global_planner.hpp"
++#include "nav2_core/planner_exceptions.hpp"
++#include "nav2_util/node_utils.hpp"
++#include "nav_behaviors/overlap_escape.hpp"
++#include "pluginlib/class_loader.hpp"
++#include "pluginlib/class_list_macros.hpp"
++
++namespace nav_behaviors
++{
++class StartAwarePlanner : public nav2_core::GlobalPlanner
++{
++public:
++  StartAwarePlanner() : loader_("nav2_core", "nav2_core::GlobalPlanner") {}
++  void configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name,
++    std::shared_ptr<tf2_ros::Buffer> tf, std::shared_ptr<nav2_costmap_2d::Costmap2DROS> map) override
++  {
++    auto node = parent.lock(); logger_ = node->get_logger(); map_ = map;
++    nav2_util::declare_parameter_if_not_declared(node, name + ".escape_max_distance", rclcpp::ParameterValue(1.5));
++    node->get_parameter(name + ".escape_max_distance", max_distance_);
++    if (max_distance_ <= 0.0 || max_distance_ > 2.0) {
++      throw std::runtime_error("StartAwarePlanner: escape_max_distance must be in (0,2]");
++    }
++    inner_ = loader_.createSharedInstance("nav2_smac_planner::SmacPlanner2D");
++    inner_->configure(parent, name, tf, map);
++  }
++  void cleanup() override {inner_->cleanup(); inner_.reset(); map_.reset();}
++  void activate() override {inner_->activate();}
++  void deactivate() override {inner_->deactivate();}
++  nav_msgs::msg::Path createPlan(const geometry_msgs::msg::PoseStamped & start,
++    const geometry_msgs::msg::PoseStamped & goal, std::function<bool()> canceled) override
++  {
++    const auto & q = start.pose.orientation;
++    const Pose2 a{start.pose.position.x, start.pose.position.y,
++      std::atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))};
++    const Pose2 b{goal.pose.position.x, goal.pose.position.y, 0.0};
++    std::vector<EscapePath> escapes;
++    {
++      auto * map = map_->getCostmap();
++      std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t> lock(*map->getMutex());
++      unsigned gx, gy;
++      if (!map->worldToMap(b.x, b.y, gx, gy)) {
++        throw nav2_core::GoalOutsideMapBounds("Goal is outside the global map");
++      }
++      const auto fp = map_->getRobotFootprint();
++      unsigned sx, sy;
++      if (footprintFree(*map, fp, a) && map->worldToMap(a.x, a.y, sx, sy) &&
++        map->getCost(sx, sy) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {
++        lock.unlock(); return inner_->createPlan(start, goal, canceled);
++      }
++      escapes = escapePaths(*map, fp, a, b, max_distance_);
++    }
++    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
++    size_t attempts = 0;
++    for (const auto & escape : escapes) {
++      if (attempts++ >= 8 || std::chrono::steady_clock::now() >= deadline) {break;}
++      if (canceled && canceled()) {throw nav2_core::PlannerCancelled("Escape planning canceled");}
++      auto free_start = start;
++      const auto & end = escape.poses.back();
++      free_start.pose.position.x = end.x; free_start.pose.position.y = end.y;
++      try {
++        auto suffix = inner_->createPlan(free_start, goal, canceled);
++        // Smac may replace the start heading with a tangent. Keep the escape's actual heading;
++        // zone_shaper will validate the full swept transition from here to the suffix.
++        if (suffix.poses.empty()) {continue;}
++        suffix.poses.front() = free_start;
++        std::vector<geometry_msgs::msg::PoseStamped> prefix;
++        for (const auto & p : escape.poses) {
++          auto ps = start; ps.pose.position.x = p.x; ps.pose.position.y = p.y;
++          prefix.push_back(ps);
++        }
++        prefix.insert(prefix.end(), suffix.poses.begin() + 1, suffix.poses.end());
++        suffix.poses = std::move(prefix);
++        RCLCPP_INFO(logger_, "StartAwarePlanner: occupied start, %.2f m translation escape before normal plan",
++          std::hypot(end.x - a.x, end.y - a.y));
++        return suffix;
++      } catch (const nav2_core::PlannerCancelled &) {throw;}
++      catch (const nav2_core::PlannerException &) { /* Try another decreasing-contact exit. */ }
++    }
++    throw nav2_core::NoValidPathCouldBeFound("No collision-decreasing escape from occupied start");
++  }
++private:
++  pluginlib::ClassLoader<nav2_core::GlobalPlanner> loader_;
++  nav2_core::GlobalPlanner::Ptr inner_;
++  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> map_;
++  rclcpp::Logger logger_{rclcpp::get_logger("StartAwarePlanner")};
++  double max_distance_{1.5};
++};
++}  // namespace nav_behaviors
++PLUGINLIB_EXPORT_CLASS(nav_behaviors::StartAwarePlanner, nav2_core::GlobalPlanner)
+--- before/src/nav_behaviors/src/zone_aware_controller.cpp
++++ after/src/nav_behaviors/src/zone_aware_controller.cpp
+@@ -34,6 +34,7 @@
+ #include "nav2_util/node_utils.hpp"
+ #include "nav_behaviors/zone_state.hpp"
+ #include "nav_behaviors/costmap_collision.hpp"
++#include "nav_behaviors/overlap_escape.hpp"
+ #include "nav_behaviors/zone_tracker.hpp"
+ #include "nav_behaviors/zones_yaml.hpp"
+ #include "pluginlib/class_list_macros.hpp"
+@@ -81,6 +82,8 @@
+     declare_parameter_if_not_declared(node, p + "align_weight", ParameterValue(1.0));
+     // /nav_zone_state is re-published at this rate so the BT condition never expires mid-zone
+     declare_parameter_if_not_declared(node, p + "phase_heartbeat", ParameterValue(0.5));
++    dbl("escape_speed", escape_speed_);
++    dbl("escape_max_distance", escape_max_distance_);
+     dbl("window_before", tp.window_before);
+     dbl("window_after", tp.window_after);
+     dbl("blend", tp.blend);
+@@ -148,7 +151,8 @@
+     node->get_parameter(p + "trace", trace_);
+     costmap_ros_ = costmap_ros;
+     check_footprint_ = costmap_ros->getRobotFootprint();
+-    if (tol != 0.0 || check_margin_ < 0.0 || block_timeout_ <= 0.0 ||
++    if (escape_speed_ <= 0.0 || escape_speed_ > 0.25 || escape_max_distance_ <= 0.0 || escape_max_distance_ > 2.0 ||
++      tol != 0.0 || check_margin_ < 0.0 || block_timeout_ <= 0.0 ||
+       tp.decel <= 0.0 || tp.ramp_decel <= 0.0 || tp.blend <= 0.0 || tp.max_wz <= 0.0 ||
+       align_weight_ != 1.0 || heartbeat_ <= 0.0 || heartbeat_ >= 1.5) {
+       throw std::runtime_error("ZoneAwareController: invalid safety, blending or heartbeat parameters");
+@@ -219,6 +223,7 @@
+   {
+     inner_->reset();
+     tracker_.resetProgress();
++    escape_target_.reset();
+     blocked_since_.reset();
+     publishPhase(ZonePhase::None, std::string(), true);
+     publishMode(ZoneProfile::NarrowPassage, false, true);
+@@ -244,6 +249,9 @@
+       poses.push_back({ps.pose.position.x, ps.pose.position.y,
+           std::atan2(2.0 * (o.w * o.z + o.x * o.y), 1.0 - 2.0 * (o.y * o.y + o.z * o.z))});
+     }
++    if (plan_goal_ && (std::hypot(poses.back().x - plan_goal_->x, poses.back().y - plan_goal_->y) > 0.01 ||
++      std::abs(normAngle(poses.back().yaw - plan_goal_->yaw)) > 0.01)) {escape_target_.reset();}
++    plan_goal_ = poses.back();
+     tracker_.setPath(poses);
+   }
+ 
+@@ -259,6 +267,10 @@
+     publishPhase(o.phase, o.zone_id);
+     publishMode(o.profile, o.weight > 0.0 && o.zone_mode);
+     publishTracker(robot, o, pose.header.stamp);
++    if (auto escape = escapeCommand(robot, velocity, pose.header)) {
++      capSpeed(escape->twist);
++      return *escape;
++    }
+     if (o.weight <= 0.0) {
+       blocked_since_.reset();
+       auto cmd = inner_->computeVelocityCommands(pose, velocity, goal_checker);
+@@ -322,6 +334,58 @@
+   }
+ 
+ private:
++  std::optional<geometry_msgs::msg::TwistStamped> escapeCommand(
++    const Pose2 & robot, const geometry_msgs::msg::Twist & measured, const std_msgs::msg::Header & header)
++  {
++    auto * map = costmap_ros_->getCostmap();
++    std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t> lock(*map->getMutex());
++    const auto current = footprintContacts(*map, check_footprint_, robot);
++    unsigned center_x, center_y;
++    const bool center_free = map->worldToMap(robot.x, robot.y, center_x, center_y) &&
++      map->getCost(center_x, center_y) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
++    if (current.valid && current.cells.empty() && center_free && !escape_target_) {return std::nullopt;}
++    if (!current.valid) {throw nav2_core::NoValidControl("Escape footprint contains unknown/out-of-map space");}
++    if (!escape_target_) {
++      const auto exits = escapePaths(*map, check_footprint_, robot, plan_goal_.value_or(robot), escape_max_distance_);
++      if (exits.empty()) {throw nav2_core::NoValidControl("No collision-decreasing translation escape");}
++      escape_target_ = exits.front().poses.back();
++      escape_contacts_ = escapeAllowance(*map, current, robot, escape_max_distance_);
++      RCLCPP_INFO(logger_, "ZoneAwareController: occupied footprint, escaping at %.2f m/s without rotation", escape_speed_);
++    }
++    if (!contactsDecrease(escape_contacts_, current)) {
++      throw nav2_core::NoValidControl("Escape stopped: new obstacle contact or growing overlap");
++    }
++    escape_contacts_.area = current.area;
++    const auto target = *escape_target_;
++    const double dx = target.x - robot.x, dy = target.y - robot.y, distance = std::hypot(dx, dy);
++    if (current.cells.empty() && distance < 0.03) {
++      escape_target_.reset();
++      inner_->reset();
++      RCLCPP_INFO(logger_, "ZoneAwareController: footprint clear, resuming normal path tracking");
++      return std::nullopt;
++    }
++    // Recheck the entire remaining escape against the live map on every cycle.
++    // The original component allowance is frozen across cycles and rolling-map shifts.
++    if (std::hypot(target.x - robot.x, target.y - robot.y) > escape_max_distance_ + 0.05 ||
++      !escapeMotionFree(*map, check_footprint_, robot, {target.x, target.y, robot.yaw}, &escape_contacts_)) {
++      throw nav2_core::NoValidControl("Escape corridor changed or became blocked");
++    }
++    geometry_msgs::msg::TwistStamped cmd; cmd.header = header;
++    // First brake old rotational/cross-track momentum instead of applying another
++    // motion while already overlapping. Collision monitor and cmd_gate remain in series.
++    const double cy = std::cos(robot.yaw), sy = std::sin(robot.yaw);
++    const double mx = cy * measured.linear.x - sy * measured.linear.y;
++    const double my = sy * measured.linear.x + cy * measured.linear.y;
++    const double along = (mx * dx + my * dy) / std::max(distance, 1e-6);
++    const double across = std::abs(mx * dy - my * dx) / std::max(distance, 1e-6);
++    if (std::abs(measured.angular.z) > 0.05 || along < -0.02 || across > 0.03 ||
++      std::hypot(mx, my) > escape_speed_ + 0.05) {return cmd;}
++    const double speed = std::min(escape_speed_, 1.5 * distance);
++    cmd.twist.linear.x = speed * (cy * dx + sy * dy) / std::max(distance, 1e-6);
++    cmd.twist.linear.y = speed * (-sy * dx + cy * dy) / std::max(distance, 1e-6);
++    return cmd;
++  }
++
+   void capSpeed(geometry_msgs::msg::Twist & cmd) const
+   {
+     const double speed = std::hypot(cmd.linear.x, cmd.linear.y);
+@@ -577,6 +641,9 @@
+   double speed_limit_reference_{1.5};
+   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
+   std::vector<geometry_msgs::msg::Point> check_footprint_;
++  std::optional<Pose2> plan_goal_, escape_target_;
++  ContactState escape_contacts_;
++  double escape_speed_{0.15}, escape_max_distance_{1.5};
+   double check_margin_{0.3}, block_timeout_{5.0};
+   bool trace_{false};
+   std::optional<rclcpp::Time> blocked_since_;
+--- before/src/nav_behaviors/src/zone_bt_nodes.cpp
++++ after/src/nav_behaviors/src/zone_bt_nodes.cpp
+@@ -7,10 +7,15 @@
+ // BT_RegisterNodesFromPlugin symbol per library, so it may appear only once in libzone_bt_nodes.
+ #include "behaviortree_cpp/bt_factory.h"
+ #include "nav_behaviors/zone_recovery.hpp"
++#include "nav_behaviors/zone_path_handoff.hpp"
+ #include "nav_behaviors/zone_replan_paused.hpp"
+ 
+ BT_REGISTER_NODES(factory)
+ {
+   factory.registerNodeType<nav_behaviors::ZoneReplanPaused>("ZoneReplanPaused");
+   factory.registerNodeType<nav_behaviors::ZoneRecovery>("ZoneRecovery");
++  factory.registerNodeType<nav_behaviors::CapturePathGoal>("CapturePathGoal");
++  factory.registerNodeType<nav_behaviors::CommitZonePath>("CommitZonePath");
++  factory.registerNodeType<nav_behaviors::PathForGoal>("PathForGoal");
++  factory.registerNodeType<nav_behaviors::AwaitGoalPath>("AwaitGoalPath");
+ }
+--- before/src/nav_behaviors/src/zone_path_shaper.cpp
++++ after/src/nav_behaviors/src/zone_path_shaper.cpp
+@@ -27,6 +27,7 @@
+ #include "nav2_util/node_utils.hpp"
+ #include "nav_behaviors/path_shaper.hpp"
+ #include "nav_behaviors/costmap_collision.hpp"
++#include "nav_behaviors/overlap_escape.hpp"
+ #include "nav_behaviors/zones_yaml.hpp"
+ #include "pluginlib/class_list_macros.hpp"
+ #include "rclcpp_lifecycle/lifecycle_node.hpp"
+@@ -86,6 +87,11 @@
+     // Retained for configuration compatibility; nonzero values are rejected below.
+     // Both shaping and tracking must check the complete padded footprint.
+     declare_parameter_if_not_declared(node, p + "collision_tolerance", ParameterValue(0.0));
++    declare_parameter_if_not_declared(node, p + "escape_max_distance", ParameterValue(1.5));
++    node->get_parameter(p + "escape_max_distance", escape_max_distance_);
++    if (escape_max_distance_ <= 0.0 || escape_max_distance_ > 2.0) {
++      throw std::runtime_error("ZonePathShaper: invalid escape_max_distance");
++    }
+     std::string zones_file, fp;
+     int min_cells = 50, slope_min_cells = 50;
+     double padding = 0.0, chain_angle_deg = params_.chain.angle * 180.0 / M_PI;
+@@ -172,11 +178,32 @@
+       }
+     }
+     in.swap(dense);
++    // Preserve a validated translation escape before shaping the collision-free suffix.
++    // The exception is restricted to a non-growing overlap with the original component
++    // in this prefix, never the whole path.
++    std::vector<Pose2> escape_prefix;
++    if (!collision_free(in.front())) {
++      const auto first = in.front();
++      const auto allowed = escapeAllowance(*costmap, footprintContacts(*costmap, footprint_, first), first, escape_max_distance_);
++      size_t free_index = 0;
++      while (free_index < in.size() && !collision_free(in[free_index])) {++free_index;}
++      if (free_index == in.size()) {
++        throw nav2_core::SmoothedPathInCollision("ZonePathShaper: occupied path has no free escape endpoint");
++      }
++      for (size_t i = 1; i <= free_index; ++i) {
++        if (std::hypot(in[i].x - first.x, in[i].y - first.y) > escape_max_distance_ + 1e-6 ||
++          !escapeMotionFree(*costmap, footprint_, in[i - 1], in[i], &allowed)) {
++          throw nav2_core::SmoothedPathInCollision("ZonePathShaper: escape adds contacts or changes heading");
++        }
++      }
++      escape_prefix.assign(in.begin(), in.begin() + free_index);
++      in.erase(in.begin(), in.begin() + free_index);
++    }
+     std::vector<ShapeEvent> events;
+     // robot heading, when the path starts at the robot (ComputePathToPose plans from the robot pose): the
+     // lead-in turns from there instead of from the grid tangent
+-    double robot_yaw = 0.0;
+-    bool have_robot = false;
++    double robot_yaw = in.front().yaw;
++    bool have_robot = !escape_prefix.empty();
+     try {
+       const auto tfm = tf_->lookupTransform(path.header.frame_id, base_frame_, tf2::TimePointZero);
+       const auto & r = tfm.transform.rotation;
+@@ -189,7 +216,7 @@
+       RCLCPP_WARN_THROTTLE(logger_, *clock_, 5000, "ZonePathShaper: no robot pose (%s), lead-in from the "
+         "planner tangent", e.what());
+     }
+-    const auto out = shapePath(in, zones_, params_, collision_free, &events, have_robot ? &robot_yaw : nullptr);
++    auto out = shapePath(in, zones_, params_, collision_free, &events, have_robot ? &robot_yaw : nullptr);
+     if (in.size() == 1 && !collision_free(in.front())) {
+       throw nav2_core::SmoothedPathInCollision("ZonePathShaper: single-pose goal is occupied");
+     }
+@@ -214,6 +241,15 @@
+         }
+       }
+     }
++    if (!escape_prefix.empty()) {
++      // Shaping must preserve the free handoff pose, including heading, so it cannot
++      // rotate the overlapping tail of the escape into a wall.
++      if (out.empty() || std::hypot(out.front().x - in.front().x, out.front().y - in.front().y) > 1e-6 ||
++        std::abs(normAngle(out.front().yaw - in.front().yaw)) > 1e-3) {
++        throw nav2_core::SmoothedPathInCollision("ZonePathShaper: shaping changed the escape handoff");
++      }
++      out.insert(out.begin(), escape_prefix.begin(), escape_prefix.end());
++    }
+     const auto header = path.poses.front().header;
+     path.poses.clear();
+     path.poses.reserve(out.size());
+@@ -255,6 +291,7 @@
+   std::vector<geometry_msgs::msg::Point> footprint_;
+   std::vector<Zone> zones_;
+   ShaperParams params_;
++  double escape_max_distance_{1.5};
+ };
+ 
+ }  // namespace nav_behaviors
+--- before/src/nav_behaviors/src/zone_tracker.cpp
++++ after/src/nav_behaviors/src/zone_tracker.cpp
+@@ -131,6 +131,35 @@
+       crossings_.push_back(c);
+     }
+   }
++  // A replanned suffix can start beyond the far mouth while the rear is still in
++  // the body. Reconstruct the exit window even without a body sample in this path.
++  for (size_t k = 0; k < zones_.size(); ++k) {
++    const auto & z = zones_[k];
++    if (!z.axis_reliable || std::any_of(crossings_.begin(), crossings_.end(),
++      [&](const auto & c) {return c.zone == k;})) {continue;}
++    double u, v; z.toLocal(path_.front().x, path_.front().y, u, v);
++    const int dir = u > 0.0 ? 1 : -1;
++    const double beyond = dir * u - 0.5 * z.depth;
++    const auto kp = kindParams(z, prm_);
++    if (beyond < 0.0 || beyond >= kp.window_after || std::abs(v) >= 0.5 * z.width ||
++      (z.one_way() && dir != z.one_way_dir)) {continue;}
++    size_t j = 1;
++    while (j + 1 < n && s_[j] < 0.1) {++j;}
++    double uj, vj; z.toLocal(path_[j].x, path_[j].y, uj, vj);
++    if (dir * (uj - u) <= 0.5 * std::hypot(path_[j].x - path_[0].x, path_[j].y - path_[0].y) ||
++      s_[j] < 1e-6) {continue;}  // a sideways pass or a new approach from this side is not an exit
++    Crossing c; c.zone = k; c.dir = dir; c.exit_only = true;
++    c.s0 = -dir * u - 0.5 * z.depth;
++    c.s1 = -beyond;
++    c.body_yaw = normAngle(z.yaw + (dir < 0 ? M_PI : 0.0));
++    for (const auto & o : old) {
++      if (o.zone == k && o.dir == dir && o.locked) {
++        c.locked = true; c.flip = o.flip; c.e0 = o.e0; c.entry_s = o.entry_s;
++        c.body_yaw = o.body_yaw;
++      }
++    }
++    crossings_.push_back(c);
++  }
+   std::sort(crossings_.begin(), crossings_.end(), [](const Crossing & a, const Crossing & b) {return a.s0 < b.s0;});
+ }
+ 
+@@ -233,7 +262,21 @@
+   // seen when the window starts decays to zero until align_before before the mouth.  A slope never flips:
+   // it is charged nose first, so a robot arriving the other way round turns 180 deg on the run-up.
+   const double s_al = -kp.align_before;
+-  const double p_yaw = pathYaw(bj, bf);
++  double p_yaw = pathYaw(bj, bf);
++  double exit_blend = 1.0, exit_rate = 0.0;
++  if (c->exit_only) {
++    // Keep the body's heading until the complete padded chassis has cleared it.
++    // Then join the suffix heading continuously over the ordinary blend distance.
++    double u, v; t.toLocal(r.x, r.y, u, v);
++    const double beyond = c->dir * u - 0.5 * t.depth;
++    const double clear = std::max(prm_.front_extent, prm_.rear_extent) + 0.05;
++    const double f = (beyond - clear) / prm_.blend;
++    exit_blend = smooth01(f);
++    if (beyond <= clear) {w = 1.0;}
++    const double delta = normAngle(p_yaw - c->body_yaw);
++    exit_rate = delta * dsmooth01(std::clamp(f, 0.0, 1.0)) / prm_.blend;
++    p_yaw = normAngle(c->body_yaw + exit_blend * delta);
++  }
+   if (!c->locked || s_rel < c->entry_s - 0.2) {   // re-lock when a new approach starts behind the old one
+     c->flip = (t.allow_flip && std::abs(normAngle(p_yaw - r.yaw)) > M_PI / 2) ? M_PI : 0.0;
+     c->e0 = normAngle(r.yaw - (p_yaw + c->flip));
+@@ -251,7 +294,7 @@
+     ++jb;
+   }
+   const double ds_win = s_[jb] - s_[ja];
+-  const double dyaw_path = ds_win > 0.04 ? normAngle(yaw_[jb] - yaw_[ja]) / ds_win : 0.0;
++  const double dyaw_path = (ds_win > 0.04 ? normAngle(yaw_[jb] - yaw_[ja]) / ds_win : 0.0) * exit_blend + exit_rate;
+   double yaw_ref = normAngle(p_yaw + c->flip), dyaw_ds = dyaw_path;
+   if (s_rel < s_al && c->entry_s < s_al) {
+     // the entry error goes over the shortest distance the turn rate allows (at most up to align_before):
+--- before/src/nav_behaviors/test/test_costmap_collision.cpp
++++ after/src/nav_behaviors/test/test_costmap_collision.cpp
+@@ -1,5 +1,6 @@
+ #include <gtest/gtest.h>
+ #include "nav_behaviors/costmap_collision.hpp"
++#include "nav_behaviors/overlap_escape.hpp"
+ 
+ using namespace nav_behaviors;  // NOLINT
+ 
+@@ -52,3 +53,73 @@
+   EXPECT_TRUE(footprintFree(map, footprint(), {0, 0, 0}));
+   EXPECT_FALSE(footprintFree(map, footprint(), {0, 0, 3.14159265359}));
+ }
++
++
++TEST(OverlapEscape, OccupiedCenterFindsFreeExitWithoutClearingTheMap)
++{
++  nav2_costmap_2d::Costmap2D map(160, 160, .025, -2, -2, 0);
++  obstacle(map, 0, 0);
++  const auto paths = escapePaths(map, footprint(), {0, 0, 0}, {1.5, 0, 0});
++  ASSERT_FALSE(paths.empty());
++  EXPECT_FALSE(footprintFree(map, footprint(), {0, 0, 0}));
++  for (const auto & path : paths) {
++    EXPECT_TRUE(footprintFree(map, footprint(), path.poses.back()));
++    EXPECT_TRUE(escapeMotionFree(map, footprint(), path.poses.front(), path.poses.back()));
++    EXPECT_NEAR(path.poses.back().yaw, 0, 1e-12);
++  }
++  unsigned x, y; map.worldToMap(0, 0, x, y);
++  EXPECT_EQ(map.getCost(x, y), 254);
++}
++
++TEST(OverlapEscape, RejectsNewContactsRotationUnknownAndGrowingOverlap)
++{
++  nav2_costmap_2d::Costmap2D map(160, 160, .025, -2, -2, 0);
++  obstacle(map, -.29, 0);  // initial contact at the rear
++  EXPECT_TRUE(escapeMotionFree(map, footprint(), {0, 0, 0}, {.6, 0, 0}));
++  EXPECT_FALSE(escapeMotionFree(map, footprint(), {.0125, 0, 0}, {-.0075, 0, 0}));
++  EXPECT_FALSE(escapeMotionFree(map, footprint(), {0, 0, 0}, {.6, 0, .1}));
++  obstacle(map, .6, 0);  // must not exempt a second obstacle ahead
++  EXPECT_FALSE(escapeMotionFree(map, footprint(), {0, 0, 0}, {.6, 0, 0}));
++  map.resetMap(0, 0, 160, 160); obstacle(map, 0, 0, 255);
++  EXPECT_TRUE(escapePaths(map, footprint(), {0, 0, 0}, {1, 0, 0}).empty());
++  EXPECT_TRUE(escapePaths(map, footprint(), {1.9, 0, 0}, {1, 0, 0}).empty());
++}
++
++TEST(OverlapEscape, LeavingContactCannotReenterAndRollingOriginDoesNotChangeIdentity)
++{
++  nav2_costmap_2d::Costmap2D map(160, 160, .025, -2, -2, 0);
++  obstacle(map, -.29, 0);
++  const auto initial = footprintContacts(map, footprint(), {0, 0, 0});
++  map.updateOrigin(-1.9, -2.0);
++  const auto shifted = footprintContacts(map, footprint(), {0, 0, 0});
++  EXPECT_EQ(initial.cells, shifted.cells);
++  EXPECT_TRUE(contactsDecrease(initial, shifted));
++  const auto free = footprintContacts(map, footprint(), {.6, 0, 0});
++  EXPECT_TRUE(contactsDecrease(initial, free));
++  EXPECT_FALSE(contactsDecrease(free, initial));
++}
++
++
++TEST(OverlapEscape, EmbeddedStartLeavesOriginalThickObstacle)
++{
++  nav2_costmap_2d::Costmap2D map(160, 160, .025, -2, -2, 0);
++  for (double x = -.5; x <= .5; x += .02) {
++    for (double y = -1.; y <= 1.; y += .02) {obstacle(map, x, y);}
++  }
++  const auto paths = escapePaths(map, footprint(), {0, 0, 0}, {1.5, 0, 0});
++  ASSERT_FALSE(paths.empty());
++  EXPECT_GT(paths.front().poses.back().x, .8);
++  EXPECT_TRUE(footprintFree(map, footprint(), paths.front().poses.back()));
++  EXPECT_TRUE(escapeMotionFree(map, footprint(), paths.front().poses.front(), paths.front().poses.back()));
++}
++
++
++TEST(OverlapEscape, InflationOnlyStartStillFindsACollisionFreePrefix)
++{
++  nav2_costmap_2d::Costmap2D map(160, 160, .025, -2, -2, 0);
++  obstacle(map, 0, 0, 253);
++  ASSERT_TRUE(footprintFree(map, footprint(), {0, 0, 0}));
++  const auto exits = escapePaths(map, footprint(), {0, 0, 0}, {1, 0, 0});
++  ASSERT_FALSE(exits.empty());
++  EXPECT_TRUE(footprintMotionFree(map, footprint(), exits.front().poses.front(), exits.front().poses.back()));
++}
+--- before/src/nav_behaviors/test/test_zone_path_handoff.cpp
++++ after/src/nav_behaviors/test/test_zone_path_handoff.cpp
+@@ -0,0 +1,35 @@
++#include <gtest/gtest.h>
++#include "behaviortree_cpp/bt_factory.h"
++#include "nav_behaviors/zone_path_handoff.hpp"
++using namespace nav_behaviors;  // NOLINT
++
++TEST(PathHandoff, NewGoalWaitsForItsOwnSuccessfulPlanAndShape)
++{
++  BT::BehaviorTreeFactory factory;
++  factory.registerNodeType<CapturePathGoal>("CapturePathGoal");
++  factory.registerNodeType<CommitZonePath>("CommitZonePath");
++  factory.registerNodeType<AwaitGoalPath>("AwaitGoalPath");
++  auto bb = BT::Blackboard::create();
++  geometry_msgs::msg::PoseStamped goal; goal.header.frame_id = "map"; goal.pose.orientation.w = 1.;
++  bb->set("goal", goal);
++  auto capture = factory.createTreeFromText(R"(<root BTCPP_format="4"><BehaviorTree ID="Main"><CapturePathGoal signature="{planned}"/></BehaviorTree></root>)", bb);
++  auto commit = factory.createTreeFromText(R"(<root BTCPP_format="4"><BehaviorTree ID="Main"><CommitZonePath input_path="{shaped}" planned_signature="{planned}" path="{path}" signature="{ready}"/></BehaviorTree></root>)", bb);
++  auto await = factory.createTreeFromText(R"(<root BTCPP_format="4"><BehaviorTree ID="Main"><AwaitGoalPath signature="{ready}"/></BehaviorTree></root>)", bb);
++  EXPECT_EQ(await.tickOnce(), BT::NodeStatus::RUNNING);
++  EXPECT_EQ(capture.tickOnce(), BT::NodeStatus::SUCCESS);
++  nav_msgs::msg::Path path; path.poses.push_back(goal); bb->set("shaped", path);
++  EXPECT_EQ(commit.tickOnce(), BT::NodeStatus::SUCCESS);
++  EXPECT_EQ(await.tickOnce(), BT::NodeStatus::SUCCESS);
++  goal.pose.position.x = 2.; bb->set("goal", goal);
++  EXPECT_EQ(await.tickOnce(), BT::NodeStatus::RUNNING);  // rechecks even after SUCCESS
++  // An old smoothing result arriving after preemption must not be bound to the new target.
++  EXPECT_EQ(commit.tickOnce(), BT::NodeStatus::FAILURE);
++  EXPECT_EQ(await.tickOnce(), BT::NodeStatus::RUNNING);
++  EXPECT_EQ(capture.tickOnce(), BT::NodeStatus::SUCCESS);
++  path.poses.back() = goal; bb->set("shaped", path);
++  EXPECT_EQ(commit.tickOnce(), BT::NodeStatus::SUCCESS);
++  EXPECT_EQ(await.tickOnce(), BT::NodeStatus::SUCCESS);
++  // A distinct request for the same coordinates is still a new target.
++  goal.header.stamp.sec = 1; bb->set("goal", goal);
++  EXPECT_EQ(await.tickOnce(), BT::NodeStatus::RUNNING);
++}
+--- before/src/nav_behaviors/test/test_zone_tracker.cpp
++++ after/src/nav_behaviors/test/test_zone_tracker.cpp
+@@ -296,3 +296,42 @@
+   const auto behind = tr.ahead(-0.4);
+   EXPECT_NEAR(behind.back().x, -0.5, 1e-9);
+ }
++
++
++TEST(ZoneTracker, ExitSuffixReplanKeepsControlAndHeadingUntilRearClears)
++{
++  ZoneTracker tr; tr.setZones({zone0()});
++  tr.setPath(polyline({{-2, 0}, {2, 0}}));
++  tr.compute({-.5, 0, 0});
++  const auto before = tr.compute({.4, 0, 0});
++  ASSERT_EQ(before.phase, ZonePhase::Exit);
++  tr.setPath(polyline({{.4, 0}, {1.5, .3}, {2, .8}}));
++  const auto after = tr.compute({.4, 0, 0});
++  EXPECT_EQ(after.phase, ZonePhase::Exit);
++  EXPECT_DOUBLE_EQ(after.weight, 1.0);
++  EXPECT_NEAR(after.yaw_ref, before.yaw_ref, 1e-6);
++  EXPECT_NEAR(after.wz, 0.0, 1e-6);
++  EXPECT_GT(std::hypot(after.vx, after.vy), 0.1);
++}
++
++TEST(ZoneTracker, ColdExitSuffixAndReverseSuffixRemainTracked)
++{
++  for (int dir : {-1, 1}) {
++    ZoneTracker tr; tr.setZones({zone0()});
++    tr.setPath(polyline({{dir * .4, 0}, {dir * 2., 0}}));
++    const auto o = tr.compute({dir * .4, 0, 0});
++    EXPECT_EQ(o.phase, ZonePhase::Exit);
++    EXPECT_DOUBLE_EQ(o.weight, 1.0);
++    EXPECT_NEAR(o.yaw_ref, 0.0, 1e-6);
++    EXPECT_GT(dir * o.vx, 0.1);
++  }
++}
++
++TEST(ZoneTracker, SuffixPastExitWindowAndSidewaysPathDoNotLatch)
++{
++  ZoneTracker tr; tr.setZones({zone0()});
++  tr.setPath(polyline({{1.2, 0}, {2., 0}}));
++  EXPECT_DOUBLE_EQ(tr.compute({1.2, 0, 0}).weight, 0.0);
++  tr.setPath(polyline({{.4, 0}, {.4, 1.5}}));
++  EXPECT_DOUBLE_EQ(tr.compute({.4, 0, 0}).weight, 0.0);
++}
+--- before/src/nav_bringup/behavior_trees/navigate_through_poses.xml
++++ after/src/nav_bringup/behavior_trees/navigate_through_poses.xml
+@@ -17,12 +17,14 @@
+         <RateController hz="1.0">
+           <Fallback name="ReplanUnlessInZone">
+             <ReactiveSequence name="KeepZonePathUnlessGoalChanges">
++              <PathForGoal signature="{path_goal_signature}"/>
+               <Inverter><GlobalUpdatedGoal/></Inverter>
+               <ZoneReplanPaused state_topic="/nav_zone_state" timeout="1.5"/>
+             </ReactiveSequence>
+             <RecoveryNode number_of_retries="1" name="ComputePathThroughPoses">
+               <Fallback>
+                 <ReactiveSequence>
++                  <PathForGoal signature="{path_goal_signature}"/>
+                   <Inverter>
+                     <PathExpiringTimer seconds="10" path="{path}"/>
+                   </Inverter>
+@@ -32,19 +34,24 @@
+                   <IsPathValid path="{path}"/>
+                 </ReactiveSequence>
+                 <Sequence name="PlanAndShape">
++                  <CapturePathGoal signature="{planning_goal_signature}"/>
+                   <RemovePassedGoals input_goals="{goals}" output_goals="{goals}" radius="0.3"/>
+-                  <ComputePathThroughPoses goals="{goals}" path="{path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+-                  <SmoothPath unsmoothed_path="{path}" smoothed_path="{path}" smoother_id="zone_shaper" check_for_collisions="false" error_code_id="{smoother_error_code}"/>
++                  <ComputePathThroughPoses goals="{goals}" path="{raw_path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
++                  <SmoothPath unsmoothed_path="{raw_path}" smoothed_path="{shaped_path}" smoother_id="zone_shaper" check_for_collisions="false" error_code_id="{smoother_error_code}"/>
++                  <CommitZonePath planned_signature="{planning_goal_signature}" input_path="{shaped_path}" path="{path}" signature="{path_goal_signature}"/>
+                 </Sequence>
+               </Fallback>
+               <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+             </RecoveryNode>
+           </Fallback>
+         </RateController>
+-        <RecoveryNode number_of_retries="1" name="FollowPath">
++        <ReactiveSequence name="FollowCommittedGoalPath">
++          <AwaitGoalPath signature="{path_goal_signature}"/>
++          <RecoveryNode number_of_retries="1" name="FollowPath">
+           <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
+           <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+-        </RecoveryNode>
++          </RecoveryNode>
++        </ReactiveSequence>
+       </PipelineSequence>
+ 
+       <!-- recovery ladder, one child per nav_behaviors::RecoveryAction -->
+--- before/src/nav_bringup/behavior_trees/navigate_to_pose.xml
++++ after/src/nav_bringup/behavior_trees/navigate_to_pose.xml
+@@ -17,12 +17,14 @@
+         <RateController hz="1.0">
+           <Fallback name="ReplanUnlessInZone">
+             <ReactiveSequence name="KeepZonePathUnlessGoalChanges">
++              <PathForGoal signature="{path_goal_signature}"/>
+               <Inverter><GlobalUpdatedGoal/></Inverter>
+               <ZoneReplanPaused state_topic="/nav_zone_state" timeout="1.5"/>
+             </ReactiveSequence>
+             <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+               <Fallback>
+                 <ReactiveSequence>
++                  <PathForGoal signature="{path_goal_signature}"/>
+                   <Inverter>
+                     <PathExpiringTimer seconds="10" path="{path}"/>
+                   </Inverter>
+@@ -32,18 +34,23 @@
+                   <IsPathValid path="{path}"/>
+                 </ReactiveSequence>
+                 <Sequence name="PlanAndShape">
+-                  <ComputePathToPose goal="{goal}" path="{path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+-                  <SmoothPath unsmoothed_path="{path}" smoothed_path="{path}" smoother_id="zone_shaper" check_for_collisions="false" error_code_id="{smoother_error_code}"/>
++                  <CapturePathGoal signature="{planning_goal_signature}"/>
++                  <ComputePathToPose goal="{goal}" path="{raw_path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
++                  <SmoothPath unsmoothed_path="{raw_path}" smoothed_path="{shaped_path}" smoother_id="zone_shaper" check_for_collisions="false" error_code_id="{smoother_error_code}"/>
++                  <CommitZonePath planned_signature="{planning_goal_signature}" input_path="{shaped_path}" path="{path}" signature="{path_goal_signature}"/>
+                 </Sequence>
+               </Fallback>
+               <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+             </RecoveryNode>
+           </Fallback>
+         </RateController>
+-        <RecoveryNode number_of_retries="1" name="FollowPath">
++        <ReactiveSequence name="FollowCommittedGoalPath">
++          <AwaitGoalPath signature="{path_goal_signature}"/>
++          <RecoveryNode number_of_retries="1" name="FollowPath">
+           <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
+           <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+-        </RecoveryNode>
++          </RecoveryNode>
++        </ReactiveSequence>
+       </PipelineSequence>
+ 
+       <!-- recovery ladder, one child per nav_behaviors::RecoveryAction -->
+--- before/src/nav_bringup/params/sim/nav2.yaml
++++ after/src/nav_bringup/params/sim/nav2.yaml
+@@ -69,6 +69,8 @@
+         rear_extent: 0.31        # ... behind it (leading edge when the robot passes backwards)
+         check_margin: 0.3        # obstacle check of the path ahead: stopping distance + this, m
+         collision_tolerance: 0.0   # full physical footprint, matching zone_shaper
++        escape_speed: 0.15       # translation only while leaving an already occupied footprint
++        escape_max_distance: 1.5
+         block_timeout: 5.0       # blocked this long -> controller failure, BT recovers / replans
+         trace: false             # per-cycle ZTRACE log inside the window (set true to debug a crossing)
+         gate_dist: 0.3           # entry check zone (robot front) before the mouth
+@@ -315,7 +317,8 @@
+     planner_plugins: [GridBased]
+     GridBased:
+       # omni chassis: 2-D search; cost-aware so grey (slope) cells are avoided when cheap
+-      plugin: nav2_smac_planner::SmacPlanner2D
++      plugin: nav_behaviors::StartAwarePlanner
++      escape_max_distance: 1.5
+       tolerance: 0.15
+       downsample_costmap: false
+       allow_unknown: false
+@@ -418,7 +421,10 @@
+     # the source flap invalid ("timestamps differ") and stop the robot mid-tunnel; the ground truth
+     # cost is one extra frame of latency, ~0.1 m at tunnel speed.
+     source_timeout: 1.0
+-    base_shift_correction: true
++    # /nav/obstacles is already in map. Use latest map->base TF without waiting for
++    # a transform at wall-clock now (the estimator publishes delayed acquisition stamps).
++    # Cloud age/invalid-source stops and the full approach footprint remain enabled.
++    base_shift_correction: false
+     stop_pub_timeout: 1.0
+     polygons: [FootprintApproach]
+     FootprintApproach:
+--- before/tools/nav_regress/occupied_start.py
++++ after/tools/nav_regress/occupied_start.py
+@@ -0,0 +1,69 @@
++#!/usr/bin/env python3
++"""Real Nav2 acceptance for starts already overlapping a static obstacle.
++
++The plant models kinematics and false map overlap, not real penetration/contact physics.
++Production observation/trust gates and collision monitor stay enabled.
++"""
++import argparse
++import json
++import math
++import os
++import signal
++import subprocess
++import time
++import traceback
++from pathlib import Path
++import numpy as np
++import rclpy
++from framework_accept import Plant, fixture
++
++def main():
++    ap = argparse.ArgumentParser(description=__doc__)
++    ap.add_argument('--out', required=True)
++    ap.add_argument('--recorded-exit', action='store_true', help='use the real map and the two recorded exit poses')
++    args = ap.parse_args()
++    os.environ.setdefault('ROS_DOMAIN_ID', '93')
++    out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
++    terrain = Path(__file__).resolve().parents[2]/'maps/sim/terrain' if args.recorded_exit else fixture(out)
++    rclpy.init(); plant = Plant(out); process = None; checks = []
++    try:
++        with (out/'navigation.log').open('w') as log:
++            process = subprocess.Popen(['ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
++                'terrain_dir:='+str(terrain), 'use_sim_time:=false'], stdout=log,
++                stderr=subprocess.STDOUT, start_new_session=True)
++            plant.wait(lambda: 'Managed nodes are active' in (out/'navigation.log').read_text(), 50.)
++            cases = [('recorded goal3 pose', (4.52, -5.24, -math.pi/2)), ('recorded goal4 pose', (4.59, -5.27, -math.pi/2))] if args.recorded_exit else [('overlapping corner', (-.8, 1.1, 0.)), ('occupied centre inside wall', (-.1, 1.1, 0.))]
++            for label, start in cases:
++                plant.pose = np.array(start); plant.run_for(1.2)
++                begin = len(plant.samples)
++                goal = (6.45, -6.13, 0.) if args.recorded_exit else (-2.2, 1.1, 0.)
++                plant.goal(goal, 45.)
++                trace = plant.samples[begin:]
++                escape = [s for s in trace if np.linalg.norm(s['cmd'][:2]) > .01 and (np.linalg.norm(np.array(s['pose'][:2])-start[:2]) < .08 if args.recorded_exit else abs(s['pose'][0]) < .95)]
++                assert escape, 'no escape movement'
++                assert max(abs(s['cmd'][2]) for s in escape) < .01, 'escape rotated while embedded'
++                assert max(np.linalg.norm(s['cmd'][:2]) for s in escape) <= .16, 'escape exceeded speed limit'
++                checks.append(label+' escapes without rotation and reaches target')
++                print('PASS '+checks[-1], flush=True)
++                plant.goal((6.47, -5.88, 0.) if args.recorded_exit else (-2.7, .9, .4))
++                checks.append('fresh goal after '+label+' succeeds')
++                print('PASS '+checks[-1], flush=True)
++            text = (out/'navigation.log').read_text()
++            assert 'occupied start' in text and 'occupied footprint, escaping' in text
++            result, code = dict(passed=True, checks=checks), 0
++    except Exception:
++        result, code = dict(passed=False, checks=checks, error=traceback.format_exc()), 1
++        print(result['error'], flush=True)
++    finally:
++        if process:
++            for sig, delay in [(signal.SIGINT, 8), (signal.SIGTERM, 5), (signal.SIGKILL, 3)]:
++                try:
++                    os.killpg(process.pid, sig); process.wait(timeout=delay); break
++                except ProcessLookupError: break
++                except subprocess.TimeoutExpired: pass
++        plant.trace.close(); plant.destroy_node(); rclpy.shutdown()
++    (out/'result.json').write_text(json.dumps(result, indent=2)+'\n')
++    print(json.dumps(result, indent=2), flush=True)
++    return code
++if __name__ == '__main__':
++    raise SystemExit(main())

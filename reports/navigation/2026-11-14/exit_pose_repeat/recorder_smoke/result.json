@@ -1,0 +1,12 @@
+{
+  "exit_code": 0,
+  "preserved_existing_trace": true,
+  "samples": 502,
+  "kinds": [
+    "frontend_frame",
+    "imu",
+    "recorder_started",
+    "truth"
+  ],
+  "fixture": "Independent ROS and Gazebo transport publishers; no simulation or navigation stack."
+}

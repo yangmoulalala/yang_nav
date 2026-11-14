@@ -1,0 +1,348 @@
+Starting >>> backend
+Starting >>> frontend
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+   Site: AMD
+   Build name: (empty)
+ Add coverage exclude regular expressions.
+Create new tag: 20261113-1736 - Experimental
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+Test project /home/yang/yang_nav/build/backend
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 5
+    Start 5: backend_lifecycle_test
+
+5: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_lifecycle_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_lifecycle_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml"
+5: Working Directory: /home/yang/yang_nav/build/backend/test
+5: Environment variables: 
+5:  PYTHONDONTWRITEBYTECODE=1
+5: Test timeout computed to be: 30
+5: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+5:  - /home/yang/yang_nav/build/backend/test/backend_lifecycle_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml
+5: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+5: [==========] Running 25 tests from 5 test suites.
+5: [----------] Global test environment set-up.
+5: [----------] 6 tests from LocalizationLifecycle
+5: [ RUN      ] LocalizationLifecycle.ConflictRecoveryAndFaultHistoryHaveDistinctLifetimes
+5: [       OK ] LocalizationLifecycle.ConflictRecoveryAndFaultHistoryHaveDistinctLifetimes (0 ms)
+5: [ RUN      ] LocalizationLifecycle.RegularObservationCannotUnfreezeLostState
+5: [       OK ] LocalizationLifecycle.RegularObservationCannotUnfreezeLostState (0 ms)
+5: [ RUN      ] LocalizationLifecycle.SevereConflictsEscalateBeforeRegularThreshold
+5: [       OK ] LocalizationLifecycle.SevereConflictsEscalateBeforeRegularThreshold (0 ms)
+5: [ RUN      ] LocalizationLifecycle.AcceptedObservationResetsSevereCount
+5: [       OK ] LocalizationLifecycle.AcceptedObservationResetsSevereCount (0 ms)
+5: [ RUN      ] LocalizationLifecycle.ProbationEscalatesOnFirstSevereConflict
+5: [       OK ] LocalizationLifecycle.ProbationEscalatesOnFirstSevereConflict (0 ms)
+5: [ RUN      ] LocalizationLifecycle.ProbationExpiresAfterAcceptedObservations
+5: [       OK ] LocalizationLifecycle.ProbationExpiresAfterAcceptedObservations (0 ms)
+5: [----------] 6 tests from LocalizationLifecycle (0 ms total)
+5: 
+5: [----------] 2 tests from ResetCoordinator
+5: [ RUN      ] ResetCoordinator.TimeoutRetriesSameIdentityAndTerminalReplyClosesOnce
+5: [       OK ] ResetCoordinator.TimeoutRetriesSameIdentityAndTerminalReplyClosesOnce (0 ms)
+5: [ RUN      ] ResetCoordinator.MismatchedReplyCannotReleasePendingTransaction
+5: [       OK ] ResetCoordinator.MismatchedReplyCannotReleasePendingTransaction (0 ms)
+5: [----------] 2 tests from ResetCoordinator (0 ms total)
+5: 
+5: [----------] 1 test from FrameHistory
+5: [ RUN      ] FrameHistory.InterpolationAndInvalidationKeepCausalTimeBoundary
+5: [       OK ] FrameHistory.InterpolationAndInvalidationKeepCausalTimeBoundary (0 ms)
+5: [----------] 1 test from FrameHistory (0 ms total)
+5: 
+5: [----------] 1 test from CandidateExecution
+5: [ RUN      ] CandidateExecution.AllWorkCompletesAndLowestInputExceptionWins
+5: [       OK ] CandidateExecution.AllWorkCompletesAndLowestInputExceptionWins (1 ms)
+5: [----------] 1 test from CandidateExecution (1 ms total)
+5: 
+5: [----------] 15 tests from FrontendSession
+5: [ RUN      ] FrontendSession.FrontendAndBackendEpochsRemainSeparateAcrossResetTranslation
+5: [       OK ] FrontendSession.FrontendAndBackendEpochsRemainSeparateAcrossResetTranslation (0 ms)
+5: [ RUN      ] FrontendSession.OnlyLatestRpcAttemptCanConfirmTheBusinessTransaction
+5: [       OK ] FrontendSession.OnlyLatestRpcAttemptCanConfirmTheBusinessTransaction (0 ms)
+5: [ RUN      ] FrontendSession.NewCandidateInvalidatesOldReplyAndRetiredProcessesCannotReturn
+5: [       OK ] FrontendSession.NewCandidateInvalidatesOldReplyAndRetiredProcessesCannotReturn (0 ms)
+5: [ RUN      ] FrontendSession.StaleSourceEpochDiscardsContinuityWithoutRejectingCompletedReset
+5: [       OK ] FrontendSession.StaleSourceEpochDiscardsContinuityWithoutRejectingCompletedReset (0 ms)
+5: [ RUN      ] FrontendSession.ColdAndNoncompletedRepliesDoNotCarryContinuity
+5: [       OK ] FrontendSession.ColdAndNoncompletedRepliesDoNotCarryContinuity (0 ms)
+5: [ RUN      ] FrontendSession.UnsentCancellationAndNonterminalRepliesCannotCommitBoundary
+5: [       OK ] FrontendSession.UnsentCancellationAndNonterminalRepliesCannotCommitBoundary (0 ms)
+5: [ RUN      ] FrontendSession.ReplayedGenerationCannotFinishAnotherTransaction
+5: [       OK ] FrontendSession.ReplayedGenerationCannotFinishAnotherTransaction (0 ms)
+5: [ RUN      ] FrontendSession.DuplicateSequenceAndChangedProcessCannotBeAdmitted
+5: [       OK ] FrontendSession.DuplicateSequenceAndChangedProcessCannotBeAdmitted (0 ms)
+5: [ RUN      ] FrontendSession.InputDiscontinuityIsLatchedUntilCommittedBoundary
+5: [       OK ] FrontendSession.InputDiscontinuityIsLatchedUntilCommittedBoundary (0 ms)
+5: [ RUN      ] FrontendSession.RejectedResetDoesNotClearInputDiscontinuity
+5: [       OK ] FrontendSession.RejectedResetDoesNotClearInputDiscontinuity (0 ms)
+5: [ RUN      ] FrontendSession.ForeignFailureDoesNotReplaceActiveHealth
+5: [       OK ] FrontendSession.ForeignFailureDoesNotReplaceActiveHealth (0 ms)
+5: [ RUN      ] FrontendSession.ProcessingFailureRequiresAnExplicitBoundary
+5: [       OK ] FrontendSession.ProcessingFailureRequiresAnExplicitBoundary (0 ms)
+5: [ RUN      ] FrontendSession.TargetEpochFaultSurvivesReplyAndBoundaryCommitOrdering
+5: [       OK ] FrontendSession.TargetEpochFaultSurvivesReplyAndBoundaryCommitOrdering (0 ms)
+5: [ RUN      ] FrontendSession.ForeignTargetFaultDoesNotContaminateConfirmedHealthyInstance
+5: [       OK ] FrontendSession.ForeignTargetFaultDoesNotContaminateConfirmedHealthyInstance (0 ms)
+5: [ RUN      ] FrontendSession.ReplacementProcessCanRecoverFromProcessingFailure
+5: [       OK ] FrontendSession.ReplacementProcessCanRecoverFromProcessingFailure (0 ms)
+5: [----------] 15 tests from FrontendSession (0 ms total)
+5: 
+5: [----------] Global test environment tear-down
+5: [==========] 25 tests from 5 test suites ran. (1 ms total)
+5: [  PASSED  ] 25 tests.
+5: -- run_test.py: return code 0
+5: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml'
+5: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml'
+1/3 Test #5: backend_lifecycle_test ...........   Passed    0.07 sec
+test 8
+    Start 8: backend_relocalization_test
+
+8: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_relocalization_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_relocalization_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml"
+8: Working Directory: /home/yang/yang_nav/build/backend/test
+8: Environment variables: 
+8:  PYTHONDONTWRITEBYTECODE=1
+8: Test timeout computed to be: 120
+8: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+8:  - /home/yang/yang_nav/build/backend/test/backend_relocalization_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml
+8: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+8: [==========] Running 6 tests from 2 test suites.
+8: [----------] Global test environment set-up.
+8: [----------] 5 tests from RelocalizationSearch
+8: [ RUN      ] RelocalizationSearch.DescriptorRetrievalProducesVerifiedMapToOdometryTransform
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=1, matched via local descriptor yaw seed batch)
+8: [       OK ] RelocalizationSearch.DescriptorRetrievalProducesVerifiedMapToOdometryTransform (1 ms)
+8: [ RUN      ] RelocalizationSearch.EmptyLocalNeighborhoodRequiresExplicitGlobalFallback
+8: [backend] tryRelocalization: no prior KFs within radius 1m of pose prior
+8: [backend] tryRelocalization: no prior KFs within radius 1m of pose prior; falling back to global Scan Context retrieval
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=1, matched via local descriptor yaw seed batch)
+8: [       OK ] RelocalizationSearch.EmptyLocalNeighborhoodRequiresExplicitGlobalFallback (1 ms)
+8: [ RUN      ] RelocalizationSearch.HorizontalPositionPriorIgnoresHeightAndAccountsForLeverArm
+8: [backend] tryRelocalization: matched KF 0 source=antenna hypothesis=antenna_yaw (yaw_seed=5.72958deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+8: [backend] tryRelocalization: antenna position-prior verification failed after 4 alignment attempts (best_residual_score=4.10144e-08, best_quality=residual_ok=true, support_ok=true, observable=false, corr=319/726, corr_ratio=0.439394, sectors=35, rmse=4.10144e-08, min_eig=0, cond=inf)
+8: [       OK ] RelocalizationSearch.HorizontalPositionPriorIgnoresHeightAndAccountsForLeverArm (3 ms)
+8: [ RUN      ] RelocalizationSearch.DegeneratePlaneCannotEstablishFullPoseAnchor
+8: [backend] tryRelocalization: position position-prior verification failed after 4 alignment attempts (best_residual_score=0, best_quality=residual_ok=true, support_ok=true, observable=false, corr=128/165, corr_ratio=0.775758, sectors=33, rmse=0, min_eig=0, cond=inf)
+8: [       OK ] RelocalizationSearch.DegeneratePlaneCannotEstablishFullPoseAnchor (0 ms)
+8: [ RUN      ] RelocalizationSearch.ParallelCandidateVerificationAgreesWithSerialResult
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=2, matched via local descriptor yaw seed batch)
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=2, matched via local descriptor yaw seed batch)
+8: [       OK ] RelocalizationSearch.ParallelCandidateVerificationAgreesWithSerialResult (3 ms)
+8: [----------] 5 tests from RelocalizationSearch (9 ms total)
+8: 
+8: [----------] 1 test from RelocalizationScheduling
+8: [ RUN      ] RelocalizationScheduling.YawSchedulesVisitEachDiscreteHeadingOnce
+8: [       OK ] RelocalizationScheduling.YawSchedulesVisitEachDiscreteHeadingOnce (0 ms)
+8: [----------] 1 test from RelocalizationScheduling (0 ms total)
+8: 
+8: [----------] Global test environment tear-down
+8: [==========] 6 tests from 2 test suites ran. (9 ms total)
+8: [  PASSED  ] 6 tests.
+8: -- run_test.py: return code 0
+8: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml'
+8: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml'
+2/3 Test #8: backend_relocalization_test ......   Passed    0.07 sec
+test 9
+    Start 9: backend_localization_test
+
+9: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_localization_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_localization_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml"
+9: Working Directory: /home/yang/yang_nav/build/backend/test
+9: Environment variables: 
+9:  PYTHONDONTWRITEBYTECODE=1
+9: Test timeout computed to be: 120
+9: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+9:  - /home/yang/yang_nav/build/backend/test/backend_localization_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml
+9: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+9: [==========] Running 25 tests from 2 test suites.
+9: [----------] Global test environment set-up.
+9: [----------] 22 tests from LocalizationFlow
+9: [ RUN      ] LocalizationFlow.WarmBoundaryPreservesMotionBeforeTheFirstNewFrame
+9: [       OK ] LocalizationFlow.WarmBoundaryPreservesMotionBeforeTheFirstNewFrame (0 ms)
+9: [ RUN      ] LocalizationFlow.ConsecutiveWarmBoundariesPreserveDelayedGraphMotionAndUncertainty
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.ConsecutiveWarmBoundariesPreserveDelayedGraphMotionAndUncertainty (1 ms)
+9: [ RUN      ] LocalizationFlow.StaleWarmBoundaryCannotSupplyANewCoordinateTransform
+9: [backend] reset coordinate boundary is inconsistent; stationary reset contract is required
+9: [       OK ] LocalizationFlow.StaleWarmBoundaryCannotSupplyANewCoordinateTransform (0 ms)
+9: [ RUN      ] LocalizationFlow.WarmBoundaryRejectsNoncausalFramesWithoutConsumingTheTransform
+9: [       OK ] LocalizationFlow.WarmBoundaryRejectsNoncausalFramesWithoutConsumingTheTransform (0 ms)
+9: [ RUN      ] LocalizationFlow.WarmBoundaryCannotMakeLostPriorLocalizationTrusted
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [backend] tryRelocalization: uwb position-prior verification failed after 4 alignment attempts (best_residual_score=0, best_quality=residual_ok=true, support_ok=false, observable=false, corr=1/1, corr_ratio=1, sectors=1, rmse=0, min_eig=0, cond=inf)
+9: [backend] localization recovery pending: UWB position prior local recovery failed 1/1 in SUSPECT; escalating to LOST
+9: [       OK ] LocalizationFlow.WarmBoundaryCannotMakeLostPriorLocalizationTrusted (1 ms)
+9: [ RUN      ] LocalizationFlow.InputDiscontinuityFreezesBeforeResetServiceIsAvailable
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.InputDiscontinuityFreezesBeforeResetServiceIsAvailable (0 ms)
+9: [ RUN      ] LocalizationFlow.InputDiscontinuityInvalidatesManualResetRollback
+9: [       OK ] LocalizationFlow.InputDiscontinuityInvalidatesManualResetRollback (0 ms)
+9: [ RUN      ] LocalizationFlow.AutomaticColdResetDoesNotReconnectAnExistingMap
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.AutomaticColdResetDoesNotReconnectAnExistingMap (0 ms)
+9: [ RUN      ] LocalizationFlow.FrontendFailureRequiresAnExplicitCompletedReset
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] front-end reset outcome is indeterminate; advancing the backend epoch to avoid a false odometry edge
+9: [       OK ] LocalizationFlow.FrontendFailureRequiresAnExplicitCompletedReset (0 ms)
+9: [ RUN      ] LocalizationFlow.LostWithoutTrustedPoseCannotPublishGlobalTransforms
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw_sweep (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=4, matched via position-prior full yaw sweep batch)
+9: [backend] localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.LostWithoutTrustedPoseCannotPublishGlobalTransforms (1 ms)
+9: [ RUN      ] LocalizationFlow.InputDiscontinuityRetainsTrustedReferenceNoiseForColdReset
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.InputDiscontinuityRetainsTrustedReferenceNoiseForColdReset (0 ms)
+9: [ RUN      ] LocalizationFlow.ResetRejectedDuringRecoveryStillInvalidatesOldWork
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] discarding stale recovery result: runtime=0, epoch=0, generation=1, reset_transaction=0->1, manual_request=0
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.ResetRejectedDuringRecoveryStillInvalidatesOldWork (1 ms)
+9: [ RUN      ] LocalizationFlow.ResetFailureRetryAndNewEpochPreservePhysicalContinuity
+9: [backend] front-end reset response exceeded timeout; transaction remains pending and will be retried with the same idempotency key
+9: [       OK ] LocalizationFlow.ResetFailureRetryAndNewEpochPreservePhysicalContinuity (0 ms)
+9: [ RUN      ] LocalizationFlow.ColdIdentityResetBeforeFirstFrameCanStartANewMap
+9: [       OK ] LocalizationFlow.ColdIdentityResetBeforeFirstFrameCanStartANewMap (0 ms)
+9: [ RUN      ] LocalizationFlow.IndeterminateResetCannotConfirmStationaryContinuity
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] front-end reset outcome is indeterminate; advancing the backend epoch to avoid a false odometry edge
+9: [       OK ] LocalizationFlow.IndeterminateResetCannotConfirmStationaryContinuity (0 ms)
+9: [ RUN      ] LocalizationFlow.FrontendFaultRevokesAnInFlightStationaryAssumption
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.FrontendFaultRevokesAnInFlightStationaryAssumption (0 ms)
+9: [ RUN      ] LocalizationFlow.PriorRecoveryAndTrackingCommitGeometryOnce
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=2.86479deg, residual_score=9.08819e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.08819e-08, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0.05m, delta_r_deg=0)
+9: [backend] prior scan-to-map factor accepted: runtime=1, reference=0, source_frames=1/1, source_span=0s, rmse=8.91466e-08, support=726/726, ratio=1, sectors=36, min_eig=1, rank=6/6, observable=true, schur_t=1, schur_r=1, weak=000000, iterations=2, coarse=false, NIS=0.0449832/6, p=0.999998, elapsed_ms=0.298, measurement_ms=0.737302
+9: [backend] global correction committed: runtime=1, sources=prior_scan_to_map, joint_NIS=0.044983/6, delta_t=0.0299944m, delta_r_deg=1.19528e-05
+9: [       OK ] LocalizationFlow.PriorRecoveryAndTrackingCommitGeometryOnce (2 ms)
+9: [ RUN      ] LocalizationFlow.RecoveryPropagatesNewerFrameArrivingBeforeCommit
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.RecoveryPropagatesNewerFrameArrivingBeforeCommit (0 ms)
+9: [ RUN      ] LocalizationFlow.LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [backend] tryRelocalization: uwb position-prior verification failed after 4 alignment attempts (best_residual_score=0, best_quality=residual_ok=true, support_ok=false, observable=false, corr=1/1, corr_ratio=1, sectors=1, rmse=0, min_eig=0, cond=inf)
+9: [backend] localization recovery pending: UWB position prior local recovery failed 1/1 in SUSPECT; escalating to LOST
+9: [backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw_sweep (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=4, matched via position-prior full yaw sweep batch)
+9: [backend] localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable (2 ms)
+9: [ RUN      ] LocalizationFlow.ActualLoopRetrievalVerificationAndGraphCommitRespectCooldown
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] loop scan-to-map accepted: latest=2, target=0, source_keyframes=3, factors=1, nis=0/6, p=1, joint_nis=0/6, joint_p=1, delta_t=0m, delta_r_deg=0
+9: [backend] Candidate PCM clique selected: 3 / 3
+9: [backend] loop scan-to-map accepted: latest=4, target=0, source_keyframes=4, factors=1, nis=0/6, p=1, joint_nis=0/6, joint_p=1, delta_t=0m, delta_r_deg=0
+9: [backend] Candidate PCM clique selected: 5 / 5
+9: [backend] loop scan-to-map accepted: latest=6, target=0, source_keyframes=4, factors=1, nis=0/6, p=1, joint_nis=0/6, joint_p=1, delta_t=0m, delta_r_deg=0
+9: [       OK ] LocalizationFlow.ActualLoopRetrievalVerificationAndGraphCommitRespectCooldown (7 ms)
+9: [ RUN      ] LocalizationFlow.InconsistentLoopCannotRewriteOdometryOrDegradeTrackingHealth
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] loop rejected by joint pre-update NIS: latest=2, target=0, individual_NIS=6994.22/6, individual_p=0, joint_NIS=6994.22/6, joint_p=0
+9: [backend] Candidate PCM clique selected: 2 / 2
+9: [backend] loop rejected by joint pre-update NIS: latest=3, target=0, individual_NIS=13394.8/6, individual_p=0, joint_NIS=13394.8/6, joint_p=0
+9: [backend] Candidate PCM clique selected: 2 / 2
+9: [       OK ] LocalizationFlow.InconsistentLoopCannotRewriteOdometryOrDegradeTrackingHealth (5 ms)
+9: [ RUN      ] LocalizationFlow.InGameRecoveryWaitsForUwbAndThenRecoversNearIt
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.InGameRecoveryWaitsForUwbAndThenRecoversNearIt (1 ms)
+9: [----------] 22 tests from LocalizationFlow (28 ms total)
+9: 
+9: [----------] 3 tests from PoseOutput
+9: [ RUN      ] PoseOutput.ReframingPreservesPhysicalProjectionAndRetainedGraphUncertainty
+9: [       OK ] PoseOutput.ReframingPreservesPhysicalProjectionAndRetainedGraphUncertainty (0 ms)
+9: [ RUN      ] PoseOutput.SuspectExtrapolatesWithOdometryWhileLostFreezes
+9: [       OK ] PoseOutput.SuspectExtrapolatesWithOdometryWhileLostFreezes (0 ms)
+9: [ RUN      ] PoseOutput.ParkedCovarianceAnchorSurvivesWarmBoundariesWithoutGraphNodes
+9: [       OK ] PoseOutput.ParkedCovarianceAnchorSurvivesWarmBoundariesWithoutGraphNodes (0 ms)
+9: [----------] 3 tests from PoseOutput (0 ms total)
+9: 
+9: [----------] Global test environment tear-down
+9: [==========] 25 tests from 2 test suites ran. (28 ms total)
+9: [  PASSED  ] 25 tests.
+9: -- run_test.py: return code 0
+9: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml'
+9: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml'
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/frontend/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/frontend/CTestConfiguration.ini
+   Site: AMD
+   Build name: (empty)
+ Add coverage exclude regular expressions.
+Create new tag: 20261113-1736 - Experimental
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/frontend/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/frontend/CTestConfiguration.ini
+Test project /home/yang/yang_nav/build/frontend
+Constructing a list of tests
+3/3 Test #9: backend_localization_test ........   Passed    0.09 sec
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+
+The following tests passed:
+	backend_lifecycle_test
+	backend_relocalization_test
+	backend_localization_test
+
+100% tests passed, 0 tests failed out of 3
+
+test 1
+    Start 1: frontend_input_timing_test
+Label Time Summary:
+integration    =   0.16 sec*proc (2 tests)
+unit           =   0.07 sec*proc (1 test)
+
+Total Test time (real) =   0.24 sec
+
+1: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/frontend/test_results/frontend/frontend_input_timing_test.gtest.xml" "--package-name" "frontend" "--output-file" "/home/yang/yang_nav/build/frontend/ament_cmake_gtest/frontend_input_timing_test.txt" "--command" "/home/yang/yang_nav/build/frontend/frontend_input_timing_test" "--gtest_output=xml:/home/yang/yang_nav/build/frontend/test_results/frontend/frontend_input_timing_test.gtest.xml"
+1: Working Directory: /home/yang/yang_nav/build/frontend
+1: Test timeout computed to be: 60
+Finished <<< backend [0.48s]
+1: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/frontend':
+1:  - /home/yang/yang_nav/build/frontend/frontend_input_timing_test --gtest_output=xml:/home/yang/yang_nav/build/frontend/test_results/frontend/frontend_input_timing_test.gtest.xml
+1: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+1: [==========] Running 3 tests from 1 test suite.
+1: [----------] Global test environment set-up.
+1: [----------] 3 tests from FlashScanTiming
+1: [ RUN      ] FlashScanTiming.UpdatesAtAcquisitionWithoutWaitingForNextScan
+1: [       OK ] FlashScanTiming.UpdatesAtAcquisitionWithoutWaitingForNextScan (0 ms)
+1: [ RUN      ] FlashScanTiming.AdaptiveWindowDoesNotCreateUpdatesInScanGaps
+1: [       OK ] FlashScanTiming.AdaptiveWindowDoesNotCreateUpdatesInScanGaps (0 ms)
+1: [ RUN      ] FlashScanTiming.ContinuousScanRetainsBoundedObservationWindows
+1: [       OK ] FlashScanTiming.ContinuousScanRetainsBoundedObservationWindows (0 ms)
+1: [----------] 3 tests from FlashScanTiming (0 ms total)
+1: 
+1: [----------] Global test environment tear-down
+1: [==========] 3 tests from 1 test suite ran. (0 ms total)
+1: [  PASSED  ] 3 tests.
+1: -- run_test.py: return code 0
+1: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/frontend/test_results/frontend/frontend_input_timing_test.gtest.xml'
+1: -- run_test.py: verify result file '/home/yang/yang_nav/build/frontend/test_results/frontend/frontend_input_timing_test.gtest.xml'
+1/1 Test #1: frontend_input_timing_test .......   Passed    0.04 sec
+
+The following tests passed:
+	frontend_input_timing_test
+
+100% tests passed, 0 tests failed out of 1
+
+Label Time Summary:
+gtest    =   0.04 sec*proc (1 test)
+
+Total Test time (real) =   0.04 sec
+Finished <<< frontend [0.52s]
+
+Summary: 2 packages finished [0.63s]

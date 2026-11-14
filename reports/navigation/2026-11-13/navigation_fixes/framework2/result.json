@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "all lifecycle nodes activate with production safety gates enabled",
+    "NavigateToPose reaches position and requested heading on flat terrain",
+    "real planner/shaper/controller/BT cross tunnel within 3 cm and 3 degrees",
+    "reverse traversal stops at the exact in-zone goal without handing off to MPPI",
+    "in-zone planning failure after 5 s idle never spins or backs up",
+    "new goal resumes from inside tunnel and exits in reverse",
+    "live obstacle stops crossing, observed free floor clears it, goal resumes",
+    "cancel inside a zone terminates action and sends zero velocity",
+    "fresh goal after cancellation resumes safely from the zone",
+    "new target preempts an active crossing and completes with a fresh shaped path",
+    "observation loss and untrusted localization hold motion, then navigation resumes",
+    "NavigateThroughPoses uses shaped directional terrain and reaches final goal",
+    "an already-reached target succeeds without entering recovery"
+  ],
+  "model": "deterministic omni kinematics; real Nav2 nodes"
+}

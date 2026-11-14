@@ -1,0 +1,48 @@
+localization: A message was lost!!!
+zlio resets during startup: 0
+TF map -> base_link ok
+nav2 active
+recording costmap snapshots to /home/yang/yang_nav/reports/navigation/2026-11-13/navigation_fixes/gazebo/costmaps
+recording /plan to /home/yang/yang_nav/reports/navigation/2026-11-13/navigation_fixes/gazebo/plans.jsonl
+=== goal (world) 4.05 -2.10 0   resets so far: 0
+goal map (4.05, -2.10, 0 deg)
+t=  1.0 map (  0.06,   0.04, z -0.15)  world ( -9.36,  -0.19)  dist 4.53
+t=  2.0 map (  0.37,  -0.39, z -0.16)  world ( -9.05,  -0.62)  dist 4.06
+t=  3.0 map (  0.88,  -0.81, z -0.17)  world ( -8.55,  -1.04)  dist 3.43
+t=  4.0 map (  1.40,  -1.21, z -0.17)  world ( -8.03,  -1.45)  dist 2.80
+t=  5.0 map (  2.03,  -1.13, z -0.17)  world ( -7.40,  -1.38)  dist 2.24
+t=  6.0 map (  2.61,  -1.46, z -0.19)  world ( -6.82,  -1.70)  dist 1.58
+t=  7.0 map (  3.36,  -1.78, z -0.20)  world ( -6.07,  -2.03)  dist 0.76
+t=  8.0 map (  3.95,  -2.05, z -0.20)  world ( -5.49,  -2.31)  dist 0.11
+result status 4 (SUCCEEDED) error_code 0, 8.1 s
+truth: 1794582971.28 -5.3738 -2.3193 0.2807 0.15
+=== goal (world) 6.16 -6.41 0   resets so far: 0
+goal map (6.16, -6.41, 0 deg)
+t=  2.0 map (  4.45,  -2.73, z -0.20)  world ( -4.99,  -2.99)  dist 4.06
+t=  3.0 map (  4.77,  -3.42, z -0.23)  world ( -4.68,  -3.68)  dist 3.30
+t=  4.0 map (  4.86,  -3.96, z -0.23)  world ( -4.59,  -4.23)  dist 2.77
+t=  5.0 map (  4.79,  -4.10, z -0.24)  world ( -4.66,  -4.36)  dist 2.69
+t=  6.0 map (  4.78,  -4.49, z -0.22)  world ( -4.67,  -4.75)  dist 2.37
+t=  7.0 map (  4.82,  -4.84, z -0.14)  world ( -4.64,  -5.10)  dist 2.07
+t=  8.0 map (  4.72,  -5.27, z -0.09)  world ( -4.73,  -5.53)  dist 1.84
+t=  9.0 map (  4.79,  -5.82, z -0.06)  world ( -4.68,  -6.08)  dist 1.50
+t= 10.0 map (  4.90,  -6.08, z -0.10)  world ( -4.56,  -6.34)  dist 1.30
+t= 11.0 map (  5.63,  -6.56, z -0.12)  world ( -3.84,  -6.83)  dist 0.55
+t= 12.0 map (  6.09,  -6.60, z -0.12)  world ( -3.38,  -6.87)  dist 0.20
+t= 13.0 map (  6.02,  -6.36, z -0.12)  world ( -3.45,  -6.63)  dist 0.15
+t= 14.0 map (  6.17,  -6.34, z -0.12)  world ( -3.29,  -6.61)  dist 0.07
+t= 15.0 map (  6.14,  -6.27, z -0.11)  world ( -3.32,  -6.55)  dist 0.14
+result status 4 (SUCCEEDED) error_code 0, 15.9 s
+truth: 1794582995.64 -3.2853 -6.7804 0.3645 9.71
+=== goal (world) 6.45 -6.13 0   resets so far: 0
+goal map (6.45, -6.13, 0 deg)
+t= 10.0 map (  6.18,  -6.47, z -0.13)  world ( -3.29,  -6.74)  dist 0.43
+t= 11.0 map (  6.25,  -6.25, z -0.12)  world ( -3.22,  -6.53)  dist 0.24
+t= 12.0 map (  6.42,  -6.32, z -0.13)  world ( -3.05,  -6.60)  dist 0.19
+result status 4 (SUCCEEDED) error_code 0, 12.2 s
+truth: 1794583022.46 -3.0162 -6.6318 0.3689 -0.28
+=== goal (world) 6.47 -5.88 0   resets so far: 1
+goal map (6.47, -5.88, 0 deg)
+t=  1.0 map (  6.43,  -6.05, z -0.12)  world ( -3.03,  -6.33)  dist 0.18
+result status 4 (SUCCEEDED) error_code 0, 1.1 s
+truth: 1794583039.68 -3.0014 -6.3442 0.3760 0.01

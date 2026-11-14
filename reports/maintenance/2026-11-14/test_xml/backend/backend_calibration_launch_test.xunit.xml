@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="backend.test_calibration_launch" tests="2" failures="0" errors="0" time="0.377"><testsuite name="backend.test_calibration_launch.launch_tests" tests="2" failures="0" errors="0" skipped="0" time="0.377"><testcase classname="backend.TestCalibrationParameters" name="test_parameter_values_and_types" time="0.376" /><testcase classname="backend.TestCalibrationExit" name="test_clean_exit" time="0.0" /></testsuite></testsuites>

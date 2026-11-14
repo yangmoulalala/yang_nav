@@ -1,0 +1,380 @@
+[
+  {
+    "line": 968,
+    "stamp": 1794580413.5775027,
+    "local_time": "22:33:33.577",
+    "text": "Begin navigating from current location (-0.06, 0.19) to (4.05, -2.10)"
+  },
+  {
+    "line": 978,
+    "stamp": 1794580426.0482948,
+    "local_time": "22:33:46.048",
+    "text": "Goal succeeded"
+  },
+  {
+    "line": 979,
+    "stamp": 1794580428.0831199,
+    "local_time": "22:33:48.083",
+    "text": "Begin navigating from current location (4.01, -1.99) to (6.16, -6.41)"
+  },
+  {
+    "line": 983,
+    "stamp": 1794580430.2248688,
+    "local_time": "22:33:50.224",
+    "text": "ZoneAwareController: slope_3+tunnel_3 (narrow) window, heading locked at -89.6 deg, lateral -0.006 m"
+  },
+  {
+    "line": 989,
+    "stamp": 1794580434.394424,
+    "local_time": "22:33:54.394",
+    "text": "holding: obstacle observation stale"
+  },
+  {
+    "line": 991,
+    "stamp": 1794580434.5277374,
+    "local_time": "22:33:54.527",
+    "text": "released"
+  },
+  {
+    "line": 999,
+    "stamp": 1794580443.7748337,
+    "local_time": "22:34:03.774",
+    "text": "Failed to make progress"
+  },
+  {
+    "line": 1030,
+    "stamp": 1794580452.8611166,
+    "local_time": "22:34:12.861",
+    "text": "holding: localization not trusted"
+  },
+  {
+    "line": 1044,
+    "stamp": 1794580461.5596292,
+    "local_time": "22:34:21.559",
+    "text": "ZoneAwareController: slope_3+tunnel_3 done, in body max |lateral| 0.066 m, max |heading| 3.27 deg, min speed 0.53 m/s"
+  },
+  {
+    "line": 1057,
+    "stamp": 1794580462.6593418,
+    "local_time": "22:34:22.659",
+    "text": "Failed to make progress"
+  },
+  {
+    "line": 1060,
+    "stamp": 1794580462.6610758,
+    "local_time": "22:34:22.661",
+    "text": "released"
+  },
+  {
+    "line": 1061,
+    "stamp": 1794580462.673744,
+    "local_time": "22:34:22.673",
+    "text": "ZoneRecovery: attempt 1/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1128,
+    "stamp": 1794580464.2112954,
+    "local_time": "22:34:24.211",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1193,
+    "stamp": 1794580464.741943,
+    "local_time": "22:34:24.741",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1196,
+    "stamp": 1794580464.7535884,
+    "local_time": "22:34:24.753",
+    "text": "ZoneRecovery: attempt 2/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1262,
+    "stamp": 1794580466.2908995,
+    "local_time": "22:34:26.290",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1327,
+    "stamp": 1794580466.8220005,
+    "local_time": "22:34:26.822",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1330,
+    "stamp": 1794580466.8336236,
+    "local_time": "22:34:26.833",
+    "text": "ZoneRecovery: attempt 3/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1396,
+    "stamp": 1794580467.589354,
+    "local_time": "22:34:27.589",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1461,
+    "stamp": 1794580468.1216948,
+    "local_time": "22:34:28.121",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1464,
+    "stamp": 1794580468.1418414,
+    "local_time": "22:34:28.141",
+    "text": "ZoneRecovery: attempt 4/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1530,
+    "stamp": 1794580469.6791587,
+    "local_time": "22:34:29.679",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1595,
+    "stamp": 1794580470.2104354,
+    "local_time": "22:34:30.210",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1598,
+    "stamp": 1794580470.2218196,
+    "local_time": "22:34:30.221",
+    "text": "ZoneRecovery: attempt 5/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1664,
+    "stamp": 1794580471.7599723,
+    "local_time": "22:34:31.759",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1724,
+    "stamp": 1794580472.262799,
+    "local_time": "22:34:32.262",
+    "text": "GridBased plugin failed to plan from (5.08, -5.06) to (6.16, -6.41): \"Start occupied\""
+  },
+  {
+    "line": 1732,
+    "stamp": 1794580472.2907484,
+    "local_time": "22:34:32.290",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1736,
+    "stamp": 1794580472.3229496,
+    "local_time": "22:34:32.322",
+    "text": "ZoneRecovery: navigation failed 5 times (in a zone), giving up"
+  },
+  {
+    "line": 1738,
+    "stamp": 1794580472.3233066,
+    "local_time": "22:34:32.323",
+    "text": "Goal failed"
+  },
+  {
+    "line": 1741,
+    "stamp": 1794580480.5681436,
+    "local_time": "22:34:40.568",
+    "text": "Begin navigating from current location (4.52, -5.24) to (6.45, -6.13)"
+  },
+  {
+    "line": 1742,
+    "stamp": 1794580480.569096,
+    "local_time": "22:34:40.569",
+    "text": "GridBased plugin failed to plan from (4.52, -5.24) to (6.45, -6.13): \"Start occupied\""
+  },
+  {
+    "line": 1745,
+    "stamp": 1794580480.6401584,
+    "local_time": "22:34:40.640",
+    "text": "GridBased plugin failed to plan from (4.52, -5.24) to (6.45, -6.13): \"Start occupied\""
+  },
+  {
+    "line": 1747,
+    "stamp": 1794580480.658747,
+    "local_time": "22:34:40.658",
+    "text": "ZoneRecovery: attempt 1/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1757,
+    "stamp": 1794580481.6899326,
+    "local_time": "22:34:41.689",
+    "text": "GridBased plugin failed to plan from (4.54, -5.20) to (6.45, -6.13): \"Start occupied\""
+  },
+  {
+    "line": 1760,
+    "stamp": 1794580482.14018,
+    "local_time": "22:34:42.140",
+    "text": "GridBased plugin failed to plan from (4.59, -5.23) to (6.45, -6.13): \"Start occupied\""
+  },
+  {
+    "line": 1762,
+    "stamp": 1794580482.1587768,
+    "local_time": "22:34:42.158",
+    "text": "ZoneRecovery: attempt 2/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1772,
+    "stamp": 1794580483.1898668,
+    "local_time": "22:34:43.189",
+    "text": "GridBased plugin failed to plan from (4.59, -5.24) to (6.45, -6.13): \"Start occupied\""
+  },
+  {
+    "line": 1833,
+    "stamp": 1794580484.1862292,
+    "local_time": "22:34:44.186",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1901,
+    "stamp": 1794580484.7196972,
+    "local_time": "22:34:44.719",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 1904,
+    "stamp": 1794580484.74883,
+    "local_time": "22:34:44.748",
+    "text": "ZoneRecovery: attempt 3/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 1914,
+    "stamp": 1794580485.7089818,
+    "local_time": "22:34:45.708",
+    "text": "Begin navigating from current location (4.59, -5.27) to (6.47, -5.88)"
+  },
+  {
+    "line": 1975,
+    "stamp": 1794580486.2704504,
+    "local_time": "22:34:46.270",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2043,
+    "stamp": 1794580486.80941,
+    "local_time": "22:34:46.809",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2046,
+    "stamp": 1794580486.8309333,
+    "local_time": "22:34:46.830",
+    "text": "ZoneRecovery: attempt 1/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 2113,
+    "stamp": 1794580488.3890972,
+    "local_time": "22:34:48.389",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2180,
+    "stamp": 1794580488.9204845,
+    "local_time": "22:34:48.920",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2239,
+    "stamp": 1794580489.4287906,
+    "local_time": "22:34:49.428",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2242,
+    "stamp": 1794580489.4408302,
+    "local_time": "22:34:49.440",
+    "text": "ZoneRecovery: attempt 2/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 2309,
+    "stamp": 1794580491.0080686,
+    "local_time": "22:34:51.008",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2376,
+    "stamp": 1794580491.5395525,
+    "local_time": "22:34:51.539",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2435,
+    "stamp": 1794580492.0479145,
+    "local_time": "22:34:52.047",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2438,
+    "stamp": 1794580492.0608916,
+    "local_time": "22:34:52.060",
+    "text": "ZoneRecovery: attempt 3/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 2505,
+    "stamp": 1794580493.62806,
+    "local_time": "22:34:53.628",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2572,
+    "stamp": 1794580494.1594064,
+    "local_time": "22:34:54.159",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2631,
+    "stamp": 1794580494.6677778,
+    "local_time": "22:34:54.667",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2634,
+    "stamp": 1794580494.6809175,
+    "local_time": "22:34:54.680",
+    "text": "ZoneRecovery: attempt 4/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 2701,
+    "stamp": 1794580496.2483692,
+    "local_time": "22:34:56.248",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2769,
+    "stamp": 1794580496.7801895,
+    "local_time": "22:34:56.780",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2772,
+    "stamp": 1794580496.811284,
+    "local_time": "22:34:56.811",
+    "text": "ZoneRecovery: attempt 5/5 -> clear (in a zone, no motion)"
+  },
+  {
+    "line": 2839,
+    "stamp": 1794580498.3790963,
+    "local_time": "22:34:58.379",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2907,
+    "stamp": 1794580498.9122462,
+    "local_time": "22:34:58.912",
+    "text": "Controller patience exceeded"
+  },
+  {
+    "line": 2910,
+    "stamp": 1794580498.9411156,
+    "local_time": "22:34:58.941",
+    "text": "ZoneRecovery: navigation failed 5 times (in a zone), giving up"
+  },
+  {
+    "line": 2912,
+    "stamp": 1794580498.9512033,
+    "local_time": "22:34:58.951",
+    "text": "Goal failed"
+  }
+]

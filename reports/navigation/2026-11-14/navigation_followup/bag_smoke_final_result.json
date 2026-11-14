@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "counts": {
+    "/rosout": 16,
+    "/livox/imu": 260,
+    "/tf_static": 1,
+    "/robot_description": 1,
+    "/livox/lidar": 86
+  },
+  "latched_tf_from_before_recording": true,
+  "raw_sensor_headers_preserved": true,
+  "format": "rosbag2 mcap",
+  "recorder_exit_code": 0
+}

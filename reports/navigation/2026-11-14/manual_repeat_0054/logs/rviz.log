@@ -1,0 +1,268 @@
+[INFO] [1794579765.772913537] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794579765.772996030] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794579765.820322202] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794579767.068239322] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[ERROR] [1794579767.096747185] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+[INFO] [1794579767.132363409] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[ERROR] [1794579770.010402005] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579770.273521733] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579770.563260178] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579770.881799343] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579771.182585873] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579771.459180167] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579771.738759562] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579771.977817463] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579772.235589863] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579772.503258654] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579772.747178797] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579772.997049212] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579773.248142548] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579773.507267539] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579773.783225188] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579774.014022553] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579774.266161329] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794579774.782511124] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794579775.048988484] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794579775.281831443] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794579775.625157909] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794579775.872207499] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794579776.137466773] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794579776.398748433] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794579777.973893190] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794579779.321228573] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794579779.598382478] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794579779.874392282] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[INFO] [1794579811.950681492] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[ERROR] [1794579842.829447967] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794579843.142712664] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794579843.449925340] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794579843.736964937] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[INFO] [1794579862.482069211] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794579862.482157719] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794579862.526940585] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794579863.252321422] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[ERROR] [1794579863.280191571] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+[INFO] [1794579863.414988147] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[ERROR] [1794579864.070525792] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579864.608949276] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579864.903420601] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579865.225641829] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794579865.523117970] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579866.286480742] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579866.596053560] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579869.979804843] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794579870.285604600] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579870.563148896] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579870.834534119] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579871.254704267] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794579871.523405758] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579871.799298781] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579873.110863701] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579873.657874661] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794579949.957421255] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794579950.252374134] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794579951.564873729] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794579951.939014193] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794580074.488052966] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580074.953283318] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580075.236680075] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580075.585685800] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580075.866480172] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580076.145146108] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580079.418384794] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580079.699482102] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580079.930591335] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794580080.204237281] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794580080.470478192] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794580080.912677428] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+Start navigation
+[INFO] [1794580080.974937693] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+[INFO] [1794580388.364333489] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794580388.364441485] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794580388.409652472] [rviz2]: Stereo is NOT SUPPORTED
+[ERROR] [1794580389.427373902] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794580389.714168587] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794580389.986094237] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794580390.321208362] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794580390.578068592] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794580390.840989263] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794580394.303849792] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794580394.636752524] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794580395.001510453] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794580395.371342516] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794580395.692548588] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794580396.040944161] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794580396.346118185] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794580396.644933922] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794580396.992715573] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794580397.334740730] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794580397.680586753] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794580398.012261830] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794580398.343874567] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794580398.636062450] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794580398.922324850] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580402.400657422] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580402.732690137] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580403.033275994] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794580403.302636427] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580403.568859415] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580403.853822852] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580404.137959718] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794580404.435500974] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794580404.692128343] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794580404.953031849] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794580405.422331010] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[INFO] [1794580405.484329452] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[INFO] [1794580405.493758668] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[ERROR] [1794580405.501152509] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+Start navigation
+[INFO] [1794580413.576415302] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+Start navigation
+[INFO] [1794580428.082538468] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+Start navigation
+[INFO] [1794580480.567607803] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+Start navigation
+[INFO] [1794580485.703843210] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+[INFO] [1794584265.310862396] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794584265.311361974] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794584265.365597880] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794584266.248024299] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[ERROR] [1794584266.286326301] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+[INFO] [1794584266.378965180] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[ERROR] [1794584267.292982178] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794584267.593556609] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794584267.992500884] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794584268.252353687] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794584268.561945189] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794584268.891494247] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794584269.535015582] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794584269.868635849] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794584270.195651149] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794584270.520884254] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794584273.849487326] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794584277.228680713] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794584280.569072315] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794584280.851678990] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794584281.163026515] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794584281.452074846] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794584281.749294503] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794584281.995437436] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794584282.261638382] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794584282.544797824] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794584282.830971019] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794584283.115272730] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794584283.424448877] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794584283.734130265] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794584284.015887398] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794584284.330887166] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794584284.609702596] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794584284.883702913] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794584285.178042923] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794584288.439041803] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794584288.711015530] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794584289.014990899] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+Start navigation
+[INFO] [1794584298.858891739] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+[INFO] [1794584352.961908541] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1794587164.621654752] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794587164.621839241] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794587164.685956369] [rviz2]: Stereo is NOT SUPPORTED
+[ERROR] [1794587165.317417809] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794587165.687734066] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794587169.064196173] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794587169.390957128] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794587169.697303162] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794587170.003671481] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794587170.322645325] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794587170.626312340] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794587170.913495072] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794587171.195563320] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794587171.526610417] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794587171.857123352] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794587172.200987119] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794587172.508913030] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794587176.012030309] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794587176.316923915] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794587176.660431565] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794587176.989267522] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794587177.308988402] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794587177.603942356] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794587178.161245386] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794587178.460026521] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794587178.740536594] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794587182.083825426] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794587182.429509476] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794587185.788563593] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794587186.111480512] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794587186.441341490] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794587186.807292207] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794587187.103187912] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794587187.549234121] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794587187.824520068] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[INFO] [1794587187.960887624] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[INFO] [1794587187.970659047] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[ERROR] [1794587187.976328266] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+Start navigation
+[INFO] [1794587201.802374029] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+[INFO] [1794587253.228806579] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1794588876.340825928] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794588876.341444615] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794588876.406457923] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794588877.036948362] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[ERROR] [1794588877.065076652] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+[INFO] [1794588877.260021019] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[ERROR] [1794588878.353439350] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794588878.655407041] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794588878.989355750] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794588879.262605522] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794588882.787800123] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794588883.138636698] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794588883.437817934] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794588883.719049373] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794588884.014364811] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794588884.325068823] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794588884.642785396] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794588884.932541064] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794588885.234251891] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794588885.523976240] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794588885.856452694] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794588886.207546138] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794588886.507521231] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794588886.784201796] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794588887.100441677] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794588887.365630257] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794588887.694336606] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794588887.992854859] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794588888.316360937] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794588891.710467458] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794588892.036120658] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794588895.447671293] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794588895.743868518] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794588896.045414165] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794588896.403855909] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794588899.791929225] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794588900.160169399] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794588900.471752817] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+Start navigation
+[INFO] [1794588900.506705495] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+Start navigation
+[INFO] [1794588971.676957819] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+[INFO] [1794588985.321644561] [rclcpp]: signal_handler(SIGINT/SIGTERM)

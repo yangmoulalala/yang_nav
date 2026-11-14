@@ -1,0 +1,28 @@
+Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+Note: Google Test filter = LocalizationFlow.UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from LocalizationFlow
+[ RUN      ] LocalizationFlow.UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading
+[backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+[backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=63.0254deg, residual_score=9.15258e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.15258e-08, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+[backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=5.81364e-08m, delta_r_deg=1.70755e-06)
+[backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw_sweep (yaw_seed=0deg, residual_score=8.43552e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=371/726, corr_ratio=0.511019, sectors=33, rmse=8.43552e-08, min_eig=0.614025, cond=1.6286}, tried_verifications=1, matched via position-prior full yaw sweep batch)
+[backend] recovery candidate rejected: inconsistent with UWB (offset=1.06733m > 0.6m, via UWB + scan-to-map)
+/home/yang/yang_nav/src/z-localization/backend/test/integration/localization_test.cpp:33: Failure
+Expected equality of these values:
+  controller->status()
+    Which is: 4-byte object <03-00 00-00>
+  LocalizationStatus::Normal
+    Which is: 4-byte object <01-00 00-00>
+
+[  FAILED  ] LocalizationFlow.UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading (3 ms)
+[----------] 1 test from LocalizationFlow (3 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (3 ms total)
+[  PASSED  ] 0 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] LocalizationFlow.UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading
+
+ 1 FAILED TEST

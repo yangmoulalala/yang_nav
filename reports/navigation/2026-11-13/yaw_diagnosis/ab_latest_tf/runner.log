@@ -1,0 +1,55 @@
+localization: data: status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;generation=2;pose_revision=15;stamp_ns=7220000000;esti...
+zlio resets during startup: 0
+TF map -> base_link ok
+nav2 active
+=== goal (world) 1.87 -1.70 0   resets so far: 0
+goal map (1.87, -1.70, 0 deg)
+t=  3.0 map ( -0.06,   0.19, z -0.15)  world ( -9.48,  -0.03)  dist 2.70
+t=  4.0 map (  0.17,  -0.16, z -0.15)  world ( -9.24,  -0.38)  dist 2.30
+t=  5.0 map (  0.63,  -0.62, z -0.17)  world ( -8.79,  -0.85)  dist 1.64
+t=  6.0 map (  1.15,  -1.07, z -0.17)  world ( -8.27,  -1.30)  dist 0.96
+t=  7.0 map (  1.65,  -1.55, z -0.19)  world ( -7.78,  -1.79)  dist 0.27
+result status 4 (SUCCEEDED) error_code 0, 7.3 s
+truth: 1794578563.27 -7.5676 -1.9021 0.2936 -0.05
+=== goal (world) 7.69 -3.24 0   resets so far: 1
+goal map (7.69, -3.24, 0 deg)
+t=  1.0 map (  2.09,  -1.76, z -0.19)  world ( -7.34,  -2.00)  dist 5.79
+t=  2.0 map (  2.58,  -2.17, z -0.21)  world ( -6.85,  -2.42)  dist 5.22
+t=  3.0 map (  2.88,  -2.17, z -0.21)  world ( -6.55,  -2.42)  dist 4.93
+t=  4.0 map (  3.26,  -1.67, z -0.20)  world ( -6.17,  -1.92)  dist 4.70
+t=  5.0 map (  3.54,  -1.64, z -0.21)  world ( -5.89,  -1.90)  dist 4.44
+t=  6.0 map (  3.80,  -2.28, z -0.21)  world ( -5.63,  -2.53)  dist 4.01
+t=  7.0 map (  4.51,  -3.13, z -0.23)  world ( -4.93,  -3.39)  dist 3.18
+t=  8.0 map (  4.74,  -3.70, z -0.23)  world ( -4.70,  -3.97)  dist 2.98
+t=  9.0 map (  4.80,  -3.96, z -0.24)  world ( -4.65,  -4.22)  dist 2.98
+t= 10.0 map (  4.74,  -4.40, z -0.23)  world ( -4.71,  -4.66)  dist 3.17
+t= 11.0 map (  4.73,  -4.42, z -0.21)  world ( -4.72,  -4.68)  dist 3.18
+t= 12.0 map (  4.73,  -4.43, z -0.21)  world ( -4.72,  -4.70)  dist 3.19
+t= 13.0 map (  4.73,  -4.44, z -0.22)  world ( -4.72,  -4.70)  dist 3.19
+t= 14.0 map (  4.74,  -4.44, z -0.21)  world ( -4.72,  -4.71)  dist 3.19
+t= 15.0 map (  4.73,  -4.45, z -0.21)  world ( -4.73,  -4.71)  dist 3.20
+t= 16.0 map (  4.74,  -4.45, z -0.21)  world ( -4.71,  -4.71)  dist 3.19
+t= 17.0 map (  4.74,  -4.45, z -0.21)  world ( -4.71,  -4.71)  dist 3.19
+t= 18.0 map (  4.73,  -4.45, z -0.21)  world ( -4.72,  -4.71)  dist 3.20
+t= 19.0 map (  4.74,  -4.44, z -0.21)  world ( -4.71,  -4.71)  dist 3.18
+t= 20.0 map (  4.73,  -4.45, z -0.21)  world ( -4.72,  -4.71)  dist 3.19
+t= 21.0 map (  4.77,  -4.59, z -0.16)  world ( -4.68,  -4.86)  dist 3.22
+t= 22.0 map (  4.69,  -4.84, z -0.12)  world ( -4.76,  -5.11)  dist 3.40
+t= 23.0 map (  4.71,  -5.00, z -0.09)  world ( -4.75,  -5.26)  dist 3.46
+t= 24.0 map (  4.78,  -5.23, z -0.03)  world ( -4.68,  -5.49)  dist 3.52
+t= 25.0 map (  4.70,  -5.37, z -0.07)  world ( -4.76,  -5.64)  dist 3.67
+t= 26.0 map (  4.77,  -5.50, z -0.09)  world ( -4.69,  -5.77)  dist 3.69
+t= 27.0 map (  4.81,  -5.72, z -0.12)  world ( -4.65,  -5.98)  dist 3.80
+t= 28.0 map (  5.17,  -6.11, z -0.12)  world ( -4.29,  -6.38)  dist 3.82
+t= 29.0 map (  5.75,  -5.58, z -0.10)  world ( -3.72,  -5.85)  dist 3.04
+t= 30.0 map (  6.27,  -5.36, z -0.10)  world ( -3.18,  -5.63)  dist 2.55
+t= 31.0 map (  6.49,  -5.47, z -0.11)  world ( -2.96,  -5.75)  dist 2.53
+t= 32.0 map (  6.48,  -5.33, z -0.09)  world ( -2.98,  -5.60)  dist 2.41
+t= 33.0 map (  7.06,  -5.39, z -0.10)  world ( -2.40,  -5.67)  dist 2.24
+t= 34.0 map (  7.78,  -5.09, z -0.09)  world ( -1.68,  -5.38)  dist 1.86
+t= 35.0 map (  8.33,  -5.27, z -0.11)  world ( -1.13,  -5.56)  dist 2.13
+t= 36.0 map (  8.35,  -5.28, z -0.11)  world ( -1.11,  -5.57)  dist 2.15
+t= 37.0 map (  8.36,  -5.27, z -0.11)  world ( -1.10,  -5.56)  dist 2.14
+timeout, cancelling
+truth: 1794578612.51 -1.0872 -5.6384 0.3987 60.87
+holding 3 s for inspection

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="9" failures="0" disabled="0" errors="0" time="0." timestamp="2026-11-12T21:13:18.661" name="AllTests">
+  <testsuite name="Decide" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-12T21:13:18.661">
+    <testcase name="RequiresFreshProcessedObstacleObservation" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="8" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.Decide" />
+    <testcase name="PassWhenFreshAndTrusted" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="61" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.Decide" />
+    <testcase name="IdleOnStaleOrMissingInput" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="69" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.Decide" />
+    <testcase name="HoldWhenUntrustedOrStale" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="80" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.Decide" />
+    <testcase name="TrustNotRequired" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="95" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.Decide" />
+  </testsuite>
+  <testsuite name="Limit" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-12T21:13:18.661">
+    <testcase name="RejectsNonFiniteCommands" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="26" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.Limit" />
+    <testcase name="KeepsDirection" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="106" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.Limit" />
+  </testsuite>
+  <testsuite name="ParseTrusted" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-12T21:13:18.661">
+    <testcase name="Variants" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="33" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.ParseTrusted" />
+  </testsuite>
+  <testsuite name="ParseMode" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-12T21:13:18.661">
+    <testcase name="Known" file="/home/yang/yang_nav/src/nav_safety/test/test_gate_logic.cpp" line="43" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.661" classname="nav_safety.ParseMode" />
+  </testsuite>
+</testsuites>

@@ -1,0 +1,42 @@
+[INFO] [1794636498.176882053] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794636498.176997575] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794636498.217494235] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794636498.812511955] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[ERROR] [1794636498.820451823] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+[INFO] [1794636498.838109724] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[ERROR] [1794636498.957832082] [rviz2]: Could not load resource [meshes/base_link.stl]: Unable to open file "meshes/base_link.stl".
+[ERROR] [1794636498.963525375] [rviz2]: Could not load resource [meshes/base_link.stl]: Unable to open file "meshes/base_link.stl".
+[ERROR] [1794636498.968693378] [rviz2]: Could not load resource [meshes/base_link.stl]: Unable to open file "meshes/base_link.stl".
+[ERROR] [1794636498.973614302] [rviz2]: Could not load resource [meshes/base_link.stl]: Unable to open file "meshes/base_link.stl".
+[ERROR] [1794636498.978819609] [rviz2]: Could not load resource [meshes/l2_link.stl]: Unable to open file "meshes/l2_link.stl".
+[ERROR] [1794636498.984305359] [rviz2]: Could not load resource [meshes/l2_link.stl]: Unable to open file "meshes/l2_link.stl".
+[ERROR] [1794636498.989873454] [rviz2]: Could not load resource [meshes/l2_link.stl]: Unable to open file "meshes/l2_link.stl".
+[ERROR] [1794636498.995163146] [rviz2]: Could not load resource [meshes/l2_link.stl]: Unable to open file "meshes/l2_link.stl".
+[ERROR] [1794636499.000719329] [rviz2]: Could not load resource [meshes/mid360_link.stl]: Unable to open file "meshes/mid360_link.stl".
+[ERROR] [1794636499.006123100] [rviz2]: Could not load resource [meshes/mid360_link.stl]: Unable to open file "meshes/mid360_link.stl".
+[ERROR] [1794636499.011374719] [rviz2]: Could not load resource [meshes/mid360_link.stl]: Unable to open file "meshes/mid360_link.stl".
+[ERROR] [1794636499.017131147] [rviz2]: Could not load resource [meshes/mid360_link.stl]: Unable to open file "meshes/mid360_link.stl".
+[ERROR] [1794636499.023121068] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: Unable to open file "meshes/wheel_front_left.stl".
+[ERROR] [1794636499.029021491] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: Unable to open file "meshes/wheel_front_left.stl".
+[ERROR] [1794636499.034609663] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: Unable to open file "meshes/wheel_front_left.stl".
+[ERROR] [1794636499.040384277] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: Unable to open file "meshes/wheel_front_left.stl".
+[ERROR] [1794636499.045716978] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: Unable to open file "meshes/wheel_front_right.stl".
+[ERROR] [1794636499.051148942] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: Unable to open file "meshes/wheel_front_right.stl".
+[ERROR] [1794636499.057218047] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: Unable to open file "meshes/wheel_front_right.stl".
+[ERROR] [1794636499.063087181] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: Unable to open file "meshes/wheel_front_right.stl".
+[ERROR] [1794636499.068688850] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: Unable to open file "meshes/wheel_rear_left.stl".
+[ERROR] [1794636499.074293477] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: Unable to open file "meshes/wheel_rear_left.stl".
+[ERROR] [1794636499.079720460] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: Unable to open file "meshes/wheel_rear_left.stl".
+[ERROR] [1794636499.084205656] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: Unable to open file "meshes/wheel_rear_left.stl".
+[ERROR] [1794636499.089314980] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: Unable to open file "meshes/wheel_rear_right.stl".
+[ERROR] [1794636499.094478966] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: Unable to open file "meshes/wheel_rear_right.stl".
+[ERROR] [1794636499.100064059] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: Unable to open file "meshes/wheel_rear_right.stl".
+[ERROR] [1794636499.105475317] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: Unable to open file "meshes/wheel_rear_right.stl".
+[ERROR] [1794636499.110892315] [rviz2]: Could not load resource [meshes/yaw_link.stl]: Unable to open file "meshes/yaw_link.stl".
+[ERROR] [1794636499.116456927] [rviz2]: Could not load resource [meshes/yaw_link.stl]: Unable to open file "meshes/yaw_link.stl".
+[ERROR] [1794636499.121719624] [rviz2]: Could not load resource [meshes/yaw_link.stl]: Unable to open file "meshes/yaw_link.stl".
+[ERROR] [1794636499.127416703] [rviz2]: Could not load resource [meshes/yaw_link.stl]: Unable to open file "meshes/yaw_link.stl".
+[INFO] [1794636636.373626875] [rclcpp]: signal_handler(SIGINT/SIGTERM)

@@ -1,0 +1,342 @@
+{
+  "manual_incident": "Two recoveries during latest goal: 1.19752m/1.34399deg and .959883m/3.58724deg; second recovery adjacent truth stationary.",
+  "independent_reproduction_of_metre_jump": false,
+  "runs": {
+    "reproduction_route": {
+      "run": "reproduction_route",
+      "first_motion_sim": 58.364000000000004,
+      "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+      "states": [
+        {
+          "sim": 0.41600000000000004,
+          "wall": 1794587908.816049,
+          "state": "status=INITIALIZING",
+          "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+        },
+        {
+          "sim": 3.088,
+          "wall": 1794587911.4863667,
+          "state": "status=NORMAL",
+          "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+        }
+      ],
+      "frontend_epochs_during_motion": [
+        0
+      ],
+      "samples": {
+        "recorder_started": 1,
+        "tf_static": 7,
+        "truth": 4591,
+        "/backend_node/localization_state": 1079,
+        "frontend_prediction": 3587,
+        "tf": 22413,
+        "frontend_frame": 911,
+        "localization_odom": 21394,
+        "/nav_zone_state": 2,
+        "/cmd_vel_nav": 1,
+        "/cmd_vel": 3824
+      },
+      "frontend": {
+        "frames": 453,
+        "lidar_rejected": 7,
+        "empty_clouds": 7,
+        "matches_min": 0,
+        "matches_median": 1374.0
+      },
+      "lio": {
+        "max_position_error_m": 0.14903821605029233,
+        "time_max_sim": 86.556,
+        "error_xyz_at_max_m": [
+          -0.14544121599600857,
+          0.03043448099859347,
+          -0.011531907882143588
+        ],
+        "max_yaw_error_deg": 0.6626850416413137,
+        "final_error_m": 0.04736748666673355,
+        "baseline_sim": 57.368,
+        "first_over_0.1m_sim": 68.088,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      },
+      "global": {
+        "max_position_error_m": 0.23767136404312314,
+        "time_max_sim": 78.752,
+        "error_xyz_at_max_m": [
+          0.016268005978894884,
+          0.23697183881972972,
+          0.008208341731765628
+        ],
+        "max_yaw_error_deg": 0.8503751504225575,
+        "final_error_m": 0.06017145006569662,
+        "baseline_sim": 57.368,
+        "first_over_0.1m_sim": 67.708,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      }
+    },
+    "reproduction_cold_reset": {
+      "run": "reproduction_cold_reset",
+      "first_motion_sim": 77.46000000000001,
+      "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+      "states": [
+        {
+          "sim": 0.48000000000000004,
+          "wall": 1794588170.3743973,
+          "state": "status=INITIALIZING",
+          "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+        },
+        {
+          "sim": 3.148,
+          "wall": 1794588173.0442073,
+          "state": "status=NORMAL",
+          "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+        },
+        {
+          "sim": 28.404000000000003,
+          "wall": 1794588197.2461894,
+          "state": "status=LOST",
+          "text": "status=LOST;pose_trusted=false;tf_frozen=true;tf_published=false;epoch=0;generation=3;pose_revision=74;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=manual coordinated front-end reset"
+        },
+        {
+          "sim": 31.352,
+          "wall": 1794588200.1944356,
+          "state": "status=NORMAL",
+          "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=5;pose_revision=77;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+        }
+      ],
+      "frontend_epochs_during_motion": [
+        1
+      ],
+      "samples": {
+        "recorder_started": 1,
+        "tf_static": 7,
+        "truth": 6031,
+        "/backend_node/localization_state": 1362,
+        "frontend_prediction": 4548,
+        "tf": 28417,
+        "frontend_frame": 1143,
+        "localization_odom": 27132,
+        "/nav_zone_state": 126,
+        "/cmd_vel_nav": 1161,
+        "/cmd_vel": 714
+      },
+      "frontend": {
+        "frames": 570,
+        "lidar_rejected": 5,
+        "empty_clouds": 5,
+        "matches_min": 0,
+        "matches_median": 1355.0
+      },
+      "lio": {
+        "max_position_error_m": 0.09460661469687247,
+        "time_max_sim": 88.16,
+        "error_xyz_at_max_m": [
+          0.009193603605933909,
+          0.09379687331893116,
+          0.008248378794152522
+        ],
+        "max_yaw_error_deg": 0.6322049122845794,
+        "final_error_m": 0.022274577816891176,
+        "baseline_sim": 76.468,
+        "first_over_0.1m_sim": null,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      },
+      "global": {
+        "max_position_error_m": 0.18437417808603998,
+        "time_max_sim": 105.656,
+        "error_xyz_at_max_m": [
+          0.07718514185064951,
+          0.16734019877667894,
+          0.005792175392672599
+        ],
+        "max_yaw_error_deg": 0.6772285705027743,
+        "final_error_m": 0.08843110430107157,
+        "baseline_sim": 76.468,
+        "first_over_0.1m_sim": 86.816,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      }
+    },
+    "reproduction_2": {
+      "run": "reproduction_2",
+      "first_motion_sim": 68.12,
+      "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+      "states": [
+        {
+          "sim": 0.332,
+          "wall": 1794587654.7222714,
+          "state": "status=INITIALIZING",
+          "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+        },
+        {
+          "sim": 3.048,
+          "wall": 1794587657.4381642,
+          "state": "status=NORMAL",
+          "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+        }
+      ],
+      "frontend_epochs_during_motion": [
+        0
+      ],
+      "samples": {
+        "recorder_started": 1,
+        "tf_static": 7,
+        "truth": 6135,
+        "/backend_node/localization_state": 1443,
+        "frontend_prediction": 4784,
+        "tf": 29982,
+        "frontend_frame": 1210,
+        "localization_odom": 28668,
+        "/nav_zone_state": 148,
+        "/cmd_vel_nav": 1341,
+        "/cmd_vel": 659
+      },
+      "frontend": {
+        "frames": 670,
+        "lidar_rejected": 4,
+        "empty_clouds": 4,
+        "matches_min": 0,
+        "matches_median": 1342.0
+      },
+      "lio": {
+        "max_position_error_m": 0.12316727230131085,
+        "time_max_sim": 69.76,
+        "error_xyz_at_max_m": [
+          -0.043124534845537354,
+          -0.11531451584289687,
+          -0.0036074778474131097
+        ],
+        "max_yaw_error_deg": 0.7043686273097833,
+        "final_error_m": 0.013268457542395827,
+        "baseline_sim": 67.12,
+        "first_over_0.1m_sim": 69.688,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      },
+      "global": {
+        "max_position_error_m": 0.15881088887439831,
+        "time_max_sim": 78.46,
+        "error_xyz_at_max_m": [
+          0.010166696169726208,
+          0.15809296455909738,
+          0.011142318923139022
+        ],
+        "max_yaw_error_deg": 0.77461471647175,
+        "final_error_m": 0.08646999291013542,
+        "baseline_sim": 67.12,
+        "first_over_0.1m_sim": 69.648,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      }
+    },
+    "reproduction_1": {
+      "run": "reproduction_1",
+      "first_motion_sim": 29.252000000000002,
+      "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+      "states": [
+        {
+          "sim": 0.392,
+          "wall": 1794587479.4703007,
+          "state": "status=INITIALIZING",
+          "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+        },
+        {
+          "sim": 3.104,
+          "wall": 1794587482.1830423,
+          "state": "status=NORMAL",
+          "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+        }
+      ],
+      "frontend_epochs_during_motion": [
+        0
+      ],
+      "samples": {
+        "recorder_started": 1,
+        "tf_static": 7,
+        "truth": 5764,
+        "/backend_node/localization_state": 1356,
+        "frontend_prediction": 4529,
+        "tf": 28300,
+        "frontend_frame": 1134,
+        "localization_odom": 27048,
+        "/nav_zone_state": 210,
+        "/cmd_vel_nav": 1919,
+        "/cmd_vel": 572
+      },
+      "frontend": {
+        "frames": 918,
+        "lidar_rejected": 0,
+        "empty_clouds": 0,
+        "matches_min": 1161,
+        "matches_median": 1357.0
+      },
+      "lio": {
+        "max_position_error_m": 0.06693787721534404,
+        "time_max_sim": 32.36,
+        "error_xyz_at_max_m": [
+          -0.00627513152222825,
+          0.06662429741859177,
+          0.0015827583372824416
+        ],
+        "max_yaw_error_deg": 0.33317914219265615,
+        "final_error_m": 0.01195305961865449,
+        "baseline_sim": 28.256,
+        "first_over_0.1m_sim": null,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      },
+      "global": {
+        "max_position_error_m": 0.1222831752116989,
+        "time_max_sim": 49.892,
+        "error_xyz_at_max_m": [
+          -0.11904227419677493,
+          0.00112960202774115,
+          0.02794344096874668
+        ],
+        "max_yaw_error_deg": 0.6165237948800828,
+        "final_error_m": 0.10060124062563695,
+        "baseline_sim": 28.256,
+        "first_over_0.1m_sim": 39.172,
+        "first_over_0.25m_sim": null,
+        "first_over_0.5m_sim": null,
+        "first_over_1.0m_sim": null,
+        "first_over_2.0m_sim": null
+      }
+    }
+  },
+  "recorder_smoke": {
+    "exit_code": 0,
+    "preserved_existing_trace": true,
+    "samples": 502,
+    "kinds": [
+      "frontend_frame",
+      "imu",
+      "recorder_started",
+      "truth"
+    ],
+    "fixture": "Independent ROS and Gazebo transport publishers; no simulation or navigation stack."
+  },
+  "manual_log_sha256": {
+    "nav.log": "7a33e45fda1e377acf000da58dba098254cecd4bcd29393252b6f657a7d4346d",
+    "sim.log": "7c516827d7eaf54a865231e65c68410eb556c1fe656fccefe1bfb211b08e45c2",
+    "rviz.log": "f4f4f987da8a26cda2476cad94860f6c91561072eb3f02aacb4854940f49c399",
+    "tf_probe.log": "852dde59e3bf0b6a55d817522c29cde03e8bd90904f255e300d6d40c4433e2f8",
+    "loc.log": "77f9eb60590da0063923325e9ab666c243523122bfb0418e09170268ffdfaf27",
+    "truth.log": "362a12d37c7fa522ab4be52020cd9157d72924ec89143fa2515c42de1830b9f6"
+  }
+}

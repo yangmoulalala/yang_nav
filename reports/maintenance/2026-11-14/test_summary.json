@@ -1,0 +1,30 @@
+{
+  "backend": {
+    "ctest_targets": 19,
+    "xml_testcases": 161,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "frontend": {
+    "ctest_targets": 1,
+    "xml_testcases": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "nav_safety": {
+    "ctest_targets": 1,
+    "xml_testcases": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "nav_terrain": {
+    "ctest_targets": 3,
+    "xml_testcases": 29,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

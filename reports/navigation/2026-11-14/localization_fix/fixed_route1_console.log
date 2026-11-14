@@ -1,0 +1,6 @@
+localization: data: status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;generation=2;pose_revision=14;stamp_ns=6700000000;esti...
+zlio resets during startup: 0
+TF map -> base_link ok
+nav2 active
+rviz started
+{"replay_completed": true, "reference_time": 72.93039955372902, "reference_duration": 72.928, "simulation_duration": 74.376, "driver_uses_ground_truth_only_as_test_fixture": true}

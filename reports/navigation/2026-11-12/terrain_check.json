@@ -1,0 +1,19 @@
+{
+  "directory": "/home/yang/yang_nav/maps/sim/terrain",
+  "errors": [
+    "missing clearance for tunnel-labelled terrain; verify ceiling source data and regenerate the export"
+  ],
+  "warnings": [],
+  "size": [
+    577,
+    338
+  ],
+  "resolution": 0.05,
+  "traversable_cells": 134796,
+  "tunnel_cells": 674,
+  "missing_traversable_ground_cells": 0,
+  "source_project": "/home/yang/yang_nav/maps/sim/sim.surf.npz",
+  "elevation_matches_source_project": true,
+  "source_finite_tunnel_clearance_cells": 202,
+  "passed": false
+}

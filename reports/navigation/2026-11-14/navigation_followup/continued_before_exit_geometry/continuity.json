@@ -1,0 +1,27 @@
+{
+  "sessions": [
+    {
+      "sim": 0.0,
+      "instance_id": 3494446256076626073,
+      "epoch": 0,
+      "reset_required": false,
+      "failed": false
+    }
+  ],
+  "state_transitions": [
+    {
+      "sim": 0.5800000000000001,
+      "state": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+    },
+    {
+      "sim": 2.8960000000000004,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+    }
+  ],
+  "paired_tf_messages": 49108,
+  "edge_jumps_over_30cm": [],
+  "max_latest_received_composition_step_m": 0.07159463180544709,
+  "latest_received_composition_jumps_over_30cm": [],
+  "costmap_snapshots": 394,
+  "costmap_origin_jumps": []
+}

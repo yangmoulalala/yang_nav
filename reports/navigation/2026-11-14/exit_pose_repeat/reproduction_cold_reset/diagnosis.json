@@ -1,0 +1,88 @@
+{
+  "run": "reproduction_cold_reset",
+  "first_motion_sim": 77.46000000000001,
+  "alignment": "Separate fixed full-SE3 initial alignment at first_motion-1s; no fit to moving samples; interpolation by message simulation stamps",
+  "states": [
+    {
+      "sim": 0.48000000000000004,
+      "wall": 1794588170.3743973,
+      "state": "status=INITIALIZING",
+      "text": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+    },
+    {
+      "sim": 3.148,
+      "wall": 1794588173.0442073,
+      "state": "status=NORMAL",
+      "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+    },
+    {
+      "sim": 28.404000000000003,
+      "wall": 1794588197.2461894,
+      "state": "status=LOST",
+      "text": "status=LOST;pose_trusted=false;tf_frozen=true;tf_published=false;epoch=0;generation=3;pose_revision=74;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=manual coordinated front-end reset"
+    },
+    {
+      "sim": 31.352,
+      "wall": 1794588200.1944356,
+      "state": "status=NORMAL",
+      "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=5;pose_revision=77;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    }
+  ],
+  "frontend_epochs_during_motion": [
+    1
+  ],
+  "samples": {
+    "recorder_started": 1,
+    "tf_static": 7,
+    "truth": 6031,
+    "/backend_node/localization_state": 1362,
+    "frontend_prediction": 4548,
+    "tf": 28417,
+    "frontend_frame": 1143,
+    "localization_odom": 27132,
+    "/nav_zone_state": 126,
+    "/cmd_vel_nav": 1161,
+    "/cmd_vel": 714
+  },
+  "frontend": {
+    "frames": 570,
+    "lidar_rejected": 5,
+    "empty_clouds": 5,
+    "matches_min": 0,
+    "matches_median": 1355.0
+  },
+  "lio": {
+    "max_position_error_m": 0.09460661469687247,
+    "time_max_sim": 88.16,
+    "error_xyz_at_max_m": [
+      0.009193603605933909,
+      0.09379687331893116,
+      0.008248378794152522
+    ],
+    "max_yaw_error_deg": 0.6322049122845794,
+    "final_error_m": 0.022274577816891176,
+    "baseline_sim": 76.468,
+    "first_over_0.1m_sim": null,
+    "first_over_0.25m_sim": null,
+    "first_over_0.5m_sim": null,
+    "first_over_1.0m_sim": null,
+    "first_over_2.0m_sim": null
+  },
+  "global": {
+    "max_position_error_m": 0.18437417808603998,
+    "time_max_sim": 105.656,
+    "error_xyz_at_max_m": [
+      0.07718514185064951,
+      0.16734019877667894,
+      0.005792175392672599
+    ],
+    "max_yaw_error_deg": 0.6772285705027743,
+    "final_error_m": 0.08843110430107157,
+    "baseline_sim": 76.468,
+    "first_over_0.1m_sim": 86.816,
+    "first_over_0.25m_sim": null,
+    "first_over_0.5m_sim": null,
+    "first_over_1.0m_sim": null,
+    "first_over_2.0m_sim": null
+  }
+}

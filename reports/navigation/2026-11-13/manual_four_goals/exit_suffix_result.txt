@@ -1,0 +1,3 @@
+full crossing path: phase=exit weight=1 crossings=1
+replan suffix path: phase=none weight=0 crossings=0
+rear coordinate=0.09 far mouth=0.175 (rear still inside body)

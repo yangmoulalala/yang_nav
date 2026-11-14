@@ -1,0 +1,51 @@
+{
+  "test_cases": 181,
+  "test_failures": 0,
+  "runs": {
+    "fixed_route1": {
+      "route_end_sim": 113.328,
+      "route_target_time": 72.91839955372902,
+      "max_driver_path_error_m": 0.6404134834914704,
+      "tunnel3_body_truth_samples": 40,
+      "tunnel3_near_sim_range": [
+        51.108,
+        88.764
+      ],
+      "tunnel3_body_sim_range": [
+        86.676,
+        87.612
+      ],
+      "post_fixture_truth_path_m": 2.020041000243206e-06,
+      "states_during_motion": [
+        {
+          "sim": 76.28,
+          "wall": 1794591994.2570782,
+          "state": "status=SUSPECT",
+          "text": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=1;generation=6;pose_revision=245;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.102635, support=243/351, ratio=0.692308, sectors=18, min_eig=0.140727, rank=6/6, observable=true, schur_t=6.95536, schur_r=7.10594, weak=000000, converged=false, iterations=30, final_step=0.0215306m/0.15901deg, pred_offset=0.0177655m/0.461937deg"
+        },
+        {
+          "sim": 76.88000000000001,
+          "wall": 1794591994.8577363,
+          "state": "status=NORMAL",
+          "text": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=1;generation=7;pose_revision=246;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+        }
+      ]
+    },
+    "fixed_route2": {
+      "route_end_sim": 113.988,
+      "route_target_time": 72.92598474580143,
+      "max_driver_path_error_m": 0.5426253441218231,
+      "tunnel3_body_truth_samples": 40,
+      "tunnel3_near_sim_range": [
+        51.72,
+        89.4
+      ],
+      "tunnel3_body_sim_range": [
+        87.288,
+        88.224
+      ],
+      "post_fixture_truth_path_m": 1.019839862062073,
+      "states_during_motion": []
+    }
+  }
+}

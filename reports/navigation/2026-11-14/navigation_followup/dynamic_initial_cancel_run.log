@@ -1,0 +1,21 @@
+PASS moving cross traffic is avoided without footprint contact
+PASS path blocker permits safe reroute and continues after it moves away
+PASS occupied goal is approached and remains pending, sensor outage stops it, removal resumes original goal
+FAIL cancel left a nonzero output command
+{
+  "passed": false,
+  "checks": [
+    "moving cross traffic is avoided without footprint contact",
+    "path blocker permits safe reroute and continues after it moves away",
+    "occupied goal is approached and remains pending, sensor outage stops it, removal resumes original goal"
+  ],
+  "metrics": {
+    "crossing_min_clearance_m": 0.0215008398172324,
+    "crossing_total_seconds": 9.170747604002827,
+    "fixed_min_clearance_m": 0.46316378646767314,
+    "occupied_min_clearance_m": 0.4742742930405222,
+    "occupied_wait_distance_m": 0.9909831085934686,
+    "goal_release_to_success_seconds": 2.885760763001599
+  },
+  "error": "cancel left a nonzero output command"
+}

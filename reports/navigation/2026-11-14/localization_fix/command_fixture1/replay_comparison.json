@@ -1,0 +1,23 @@
+{
+  "replay_before": {
+    "frames": 738,
+    "max_position_error_m": 0.16107303834181297,
+    "max_yaw_error_deg": 0.4753343424156098,
+    "final_error_m": 0.0036417101252416277,
+    "rejected": 9
+  },
+  "replay_gyro_only": {
+    "frames": 737,
+    "max_position_error_m": 0.29854462271218296,
+    "max_yaw_error_deg": 0.3615353882796132,
+    "final_error_m": 0.002520088073876682,
+    "rejected": 9
+  },
+  "replay_fixed": {
+    "frames": 875,
+    "max_position_error_m": 0.27166704830024246,
+    "max_yaw_error_deg": 0.3140616423245013,
+    "final_error_m": 0.0027622364237987235,
+    "rejected": 0
+  }
+}

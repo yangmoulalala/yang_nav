@@ -1,0 +1,50 @@
+[
+  {
+    "goal": "goal map (8.66, -3.61, 0 deg)",
+    "result": "result status 4 (SUCCEEDED) error_code 0, 37.4 s",
+    "stationary_intervals_at_least_2s": [
+      {
+        "seconds": 9.0,
+        "at": [
+          8.26,
+          -5.28
+        ]
+      }
+    ],
+    "sampled_distance_m": 14.74676823902863
+  },
+  {
+    "goal": "goal map (12.78, -3.86, 0 deg)",
+    "result": "result status 6 (FAILED) error_code 105, 136.5 s",
+    "stationary_intervals_at_least_2s": [
+      {
+        "seconds": 15.0,
+        "at": [
+          10.63,
+          -5.67
+        ]
+      },
+      {
+        "seconds": 2.0,
+        "at": [
+          10.65,
+          -5.62
+        ]
+      },
+      {
+        "seconds": 104.1,
+        "at": [
+          10.92,
+          -5.6
+        ]
+      }
+    ],
+    "sampled_distance_m": 5.401666929546401
+  },
+  {
+    "goal": "goal map (8.31, -3.65, 0 deg)",
+    "result": "result status 4 (SUCCEEDED) error_code 0, 19.1 s",
+    "stationary_intervals_at_least_2s": [],
+    "sampled_distance_m": 5.6587918042467225
+  }
+]

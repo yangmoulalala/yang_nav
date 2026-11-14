@@ -1,0 +1,19 @@
+PASS all lifecycle nodes activate with production safety gates enabled
+PASS NavigateToPose reaches position and requested heading on flat terrain
+PASS real planner/shaper/controller/BT cross tunnel within 3 cm and 3 degrees
+PASS reverse traversal stops at the exact in-zone goal without handing off to MPPI
+PASS in-zone planning failure after 5 s idle never spins or backs up
+PASS new goal resumes from inside tunnel and exits in reverse
+FAIL live obstacle failed to stop the crossing; pose=[-1.60919056  1.44292545  0.96037363], phase=align
+{
+  "passed": false,
+  "checks": [
+    "all lifecycle nodes activate with production safety gates enabled",
+    "NavigateToPose reaches position and requested heading on flat terrain",
+    "real planner/shaper/controller/BT cross tunnel within 3 cm and 3 degrees",
+    "reverse traversal stops at the exact in-zone goal without handing off to MPPI",
+    "in-zone planning failure after 5 s idle never spins or backs up",
+    "new goal resumes from inside tunnel and exits in reverse"
+  ],
+  "error": "live obstacle failed to stop the crossing; pose=[-1.60919056  1.44292545  0.96037363], phase=align"
+}

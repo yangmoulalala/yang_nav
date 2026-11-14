@@ -1,0 +1,138 @@
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[lifecycle_manager-12] [INFO] [1794488963.025431943] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[bt_navigator-11] [INFO] [1794488963.025444363] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[bt_navigator-11] [INFO] [1794488963.025480964] [bt_navigator]: Running Nav2 LifecycleNode rcl preshutdown (bt_navigator)
+[bt_navigator-11] [INFO] [1794488963.025513355] [bt_navigator]: Deactivating
+[bt_navigator-11] [INFO] [1794488963.025525865] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794488963.025475055] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[collision_monitor-10] [INFO] [1794488963.025562656] [collision_monitor]: Running Nav2 LifecycleNode rcl preshutdown (collision_monitor)
+[lifecycle_manager-12] [INFO] [1794488963.025498174] [lifecycle_manager_navigation]: Running Nav2 LifecycleManager rcl preshutdown (lifecycle_manager_navigation)
+[velocity_smoother-9] [INFO] [1794488963.025527045] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[velocity_smoother-9] [INFO] [1794488963.025581476] [velocity_smoother]: Running Nav2 LifecycleNode rcl preshutdown (velocity_smoother)
+[velocity_smoother-9] [INFO] [1794488963.025637358] [velocity_smoother]: Deactivating
+[smoother_server-6] [INFO] [1794488963.025544802] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[smoother_server-6] [INFO] [1794488963.025628484] [smoother_server]: Running Nav2 LifecycleNode rcl preshutdown (smoother_server)
+[smoother_server-6] [INFO] [1794488963.025687285] [smoother_server]: Deactivating
+[smoother_server-6] [INFO] [1794488963.025708976] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794488963.025548910] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[behavior_server-8] [INFO] [1794488963.025628481] [behavior_server]: Running Nav2 LifecycleNode rcl preshutdown (behavior_server)
+[behavior_server-8] [INFO] [1794488963.025727064] [behavior_server]: Deactivating
+[behavior_server-8] [INFO] [1794488963.025803655] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794488963.025569287] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[planner_server-7] [INFO] [1794488963.025640159] [planner_server]: Running Nav2 LifecycleNode rcl preshutdown (planner_server)
+[planner_server-7] [INFO] [1794488963.025740851] [planner_server]: Deactivating
+[planner_server-7] [INFO] [1794488963.025779872] [global_costmap.global_costmap]: Deactivating
+[controller_server-5] [INFO] [1794488963.025593936] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[controller_server-5] [INFO] [1794488963.025629787] [controller_server]: Running Nav2 LifecycleNode rcl preshutdown (controller_server)
+[controller_server-5] [INFO] [1794488963.025661448] [controller_server]: Deactivating
+[controller_server-5] [INFO] [1794488963.025806911] [MPPIController]: Deactivated MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794488963.025828922] [local_costmap.local_costmap]: Deactivating
+[collision_monitor-10] [INFO] [1794488963.025646368] [collision_monitor]: Deactivating
+[collision_monitor-10] [INFO] [1794488963.025672539] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794488963.025653938] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[map_server-2] [INFO] [1794488963.025604747] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-2] [INFO] [1794488963.025679469] [speed_mask_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_mask_server)
+[map_server-2] [INFO] [1794488963.025746610] [speed_mask_server]: Deactivating
+[map_server-2] [INFO] [1794488963.025764971] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[costmap_filter_info_server-3] [INFO] [1794488963.025613827] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[costmap_filter_info_server-3] [INFO] [1794488963.025688279] [speed_filter_info_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_filter_info_server)
+[costmap_filter_info_server-3] [INFO] [1794488963.025755450] [speed_filter_info_server]: Deactivating
+[costmap_filter_info_server-3] [INFO] [1794488963.025780691] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[map_server-1] [INFO] [1794488963.025622276] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-1] [INFO] [1794488963.025683828] [nav_map_server]: Running Nav2 LifecycleNode rcl preshutdown (nav_map_server)
+[map_server-1] [INFO] [1794488963.025754589] [nav_map_server]: Deactivating
+[map_server-1] [INFO] [1794488963.025774880] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[INFO] [cmd_gate-13]: sending signal 'SIGINT' to process[cmd_gate-13]
+[INFO] [lifecycle_manager-12]: sending signal 'SIGINT' to process[lifecycle_manager-12]
+[INFO] [bt_navigator-11]: sending signal 'SIGINT' to process[bt_navigator-11]
+[INFO] [collision_monitor-10]: sending signal 'SIGINT' to process[collision_monitor-10]
+[INFO] [velocity_smoother-9]: sending signal 'SIGINT' to process[velocity_smoother-9]
+[INFO] [behavior_server-8]: sending signal 'SIGINT' to process[behavior_server-8]
+[INFO] [planner_server-7]: sending signal 'SIGINT' to process[planner_server-7]
+[INFO] [smoother_server-6]: sending signal 'SIGINT' to process[smoother_server-6]
+[INFO] [controller_server-5]: sending signal 'SIGINT' to process[controller_server-5]
+[INFO] [terrain_obstacles.py-4]: sending signal 'SIGINT' to process[terrain_obstacles.py-4]
+[INFO] [costmap_filter_info_server-3]: sending signal 'SIGINT' to process[costmap_filter_info_server-3]
+[INFO] [map_server-2]: sending signal 'SIGINT' to process[map_server-2]
+[INFO] [map_server-1]: sending signal 'SIGINT' to process[map_server-1]
+[cmd_gate-13] [INFO] [1794488963.029571589] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[terrain_obstacles.py-4] Traceback (most recent call last):
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 98, in <module>
+[terrain_obstacles.py-4]     main()
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 92, in main
+[terrain_obstacles.py-4]     node.destroy_node()
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1962, in destroy_node
+[terrain_obstacles.py-4]     self.destroy_service(self._services[0])
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1886, in destroy_service
+[terrain_obstacles.py-4]     service.destroy()
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/service.py", line 123, in destroy
+[terrain_obstacles.py-4]     self.__service.destroy_when_not_in_use()
+[terrain_obstacles.py-4] KeyboardInterrupt
+[bt_navigator-11] [INFO] [1794488963.035672739] [bt_navigator]: Cleaning up
+[velocity_smoother-9] [INFO] [1794488963.035807827] [velocity_smoother]: Cleaning up
+[velocity_smoother-9] [INFO] [1794488963.035833928] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[smoother_server-6] [INFO] [1794488963.035867893] [smoother_server]: Cleaning up
+[map_server-1] [INFO] [1794488963.035915820] [nav_map_server]: Cleaning up
+[map_server-1] [INFO] [1794488963.035941990] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[map_server-2] [INFO] [1794488963.035917125] [speed_mask_server]: Cleaning up
+[map_server-2] [INFO] [1794488963.035943015] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[costmap_filter_info_server-3] [INFO] [1794488963.035939255] [speed_filter_info_server]: Cleaning up
+[costmap_filter_info_server-3] [INFO] [1794488963.035970855] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794488963.035993596] [behavior_server]: Cleaning up
+[velocity_smoother-9] [INFO] [1794488963.036841764] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[costmap_filter_info_server-3] [INFO] [1794488963.036946952] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-2] [INFO] [1794488963.037423157] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[collision_monitor-10] [INFO] [1794488963.037528219] [collision_monitor]: Cleaning up
+[behavior_server-8] [INFO] [1794488963.037569676] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[map_server-1] [INFO] [1794488963.037741480] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[costmap_filter_info_server-3] [INFO] [1794488963.038805443] [speed_filter_info_server]: Destroying
+[behavior_server-8] [INFO] [1794488963.039014138] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[collision_monitor-10] [INFO] [1794488963.039190086] [collision_monitor]: [FootprintApproach]: Destroying Polygon
+[velocity_smoother-9] [INFO] [1794488963.040929760] [velocity_smoother]: Destroying
+[collision_monitor-10] [INFO] [1794488963.042356136] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[map_server-1] [INFO] [1794488963.042357806] [nav_map_server]: Destroying
+[collision_monitor-10] [INFO] [1794488963.043373418] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-2] [INFO] [1794488963.043919546] [speed_mask_server]: Destroying
+[smoother_server-6] [INFO] [1794488963.044262747] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[smoother_server-6] [INFO] [1794488963.045706454] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[collision_monitor-10] [ERROR] [1794488963.049251336] [getTransform]: Failed to get "base_link"->"base_link" frame transform: Lookup would require extrapolation into the future.  Requested time 1794488963.018630 but the latest data is at time 1794488963.018159, when looking up transform from frame [map] to frame [base_link]
+[collision_monitor-10] [INFO] [1794488963.049289987] [collision_monitor]: [terrain]: Destroying PointCloud
+[smoother_server-6] [INFO] [1794488963.051017901] [smoother_server]: Destroying
+[lifecycle_manager-12] [INFO] [1794488963.054289603] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[lifecycle_manager-12] [INFO] [1794488963.054394375] [lifecycle_manager_navigation]: Destroying lifecycle_manager_navigation
+[controller_server-5] [INFO] [1794488963.057109225] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794488963.067346561] [controller_server]: Cleaning up
+[controller_server-5] [INFO] [1794488963.068071044] [MPPIController]: Cleaned up MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794488963.068243438] [local_costmap.local_costmap]: Cleaning up
+[behavior_server-8] [INFO] [1794488963.069510982] [behavior_server]: Destroying
+[controller_server-5] [INFO] [1794488963.089694616] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794488963.091323992] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[ERROR] [terrain_obstacles.py-4]: process has died [pid 21086, exit code -2, cmd '/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py --ros-args -r __node:=terrain_obstacles --params-file /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/params/sim/nav2.yaml --params-file /tmp/launch_params_8iivyuge'].
+[controller_server-5] [INFO] [1794488963.096278870] [local_costmap.local_costmap]: Destroying
+[controller_server-5] [INFO] [1794488963.103752385] [controller_server]: Destroying
+[bt_navigator-11] [INFO] [1794488963.115679647] [bt_navigator]: Completed Cleaning up
+[bt_navigator-11] [INFO] [1794488963.115753349] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[bt_navigator-11] [INFO] [1794488963.116141127] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[bt_navigator-11] [INFO] [1794488963.124287727] [bt_navigator]: Destroying
+[INFO] [cmd_gate-13]: process has finished cleanly [pid 21102]
+[INFO] [costmap_filter_info_server-3]: process has finished cleanly [pid 21085]
+[INFO] [velocity_smoother-9]: process has finished cleanly [pid 21097]
+[INFO] [map_server-1]: process has finished cleanly [pid 21083]
+[INFO] [map_server-2]: process has finished cleanly [pid 21084]
+[INFO] [lifecycle_manager-12]: process has finished cleanly [pid 21100]
+[INFO] [smoother_server-6]: process has finished cleanly [pid 21094]
+[INFO] [behavior_server-8]: process has finished cleanly [pid 21096]
+[INFO] [controller_server-5]: process has finished cleanly [pid 21093]
+[planner_server-7] [INFO] [1794488963.221005932] [planner_server]: Deactivating plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794488963.221067394] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794488963.231235777] [planner_server]: Cleaning up
+[planner_server-7] [INFO] [1794488963.235542442] [global_costmap.global_costmap]: Cleaning up
+[planner_server-7] [INFO] [1794488963.237969905] [planner_server]: Cleaning up plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794488963.238222050] [planner_server]: Destroying plugin GridBased of type SmacPlanner2D
+[INFO] [bt_navigator-11]: process has finished cleanly [pid 21099]
+[planner_server-7] [INFO] [1794488963.244570150] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794488963.245814963] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[planner_server-7] [INFO] [1794488963.247319901] [global_costmap.global_costmap]: Destroying
+[planner_server-7] [INFO] [1794488963.251826845] [planner_server]: Destroying
+[INFO] [planner_server-7]: process has finished cleanly [pid 21095]
+[ERROR] [collision_monitor-10]: process has died [pid 21098, exit code -11, cmd '/opt/ros/jazzy/lib/nav2_collision_monitor/collision_monitor --ros-args -r __node:=collision_monitor --params-file /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/params/sim/nav2.yaml --params-file /tmp/launch_params_odr2oo68'].

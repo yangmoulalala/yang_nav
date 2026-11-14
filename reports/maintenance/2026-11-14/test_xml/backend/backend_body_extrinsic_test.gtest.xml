@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="4" failures="0" disabled="0" errors="0" time="0." timestamp="2026-11-14T06:10:56.245" name="AllTests">
+  <testsuite name="BodyExtrinsicResolver" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-14T06:10:56.245">
+    <testcase name="InitializesFromLatestTransform" file="/home/yang/yang_nav/src/z-localization/backend/test/unit/body_extrinsic_test.cpp" line="46" status="run" result="completed" time="0." timestamp="2026-11-14T06:10:56.245" classname="backend.BodyExtrinsicResolver" />
+    <testcase name="ExactTimeInterpolatesTurretYaw" file="/home/yang/yang_nav/src/z-localization/backend/test/unit/body_extrinsic_test.cpp" line="59" status="run" result="completed" time="0." timestamp="2026-11-14T06:10:56.245" classname="backend.BodyExtrinsicResolver" />
+    <testcase name="LatestWithinToleranceElseKeepsLastGood" file="/home/yang/yang_nav/src/z-localization/backend/test/unit/body_extrinsic_test.cpp" line="78" status="run" result="completed" time="0." timestamp="2026-11-14T06:10:56.245" classname="backend.BodyExtrinsicResolver" />
+    <testcase name="StaticChainIsAlwaysValid" file="/home/yang/yang_nav/src/z-localization/backend/test/unit/body_extrinsic_test.cpp" line="101" status="run" result="completed" time="0." timestamp="2026-11-14T06:10:56.245" classname="backend.BodyExtrinsicResolver" />
+  </testsuite>
+</testsuites>

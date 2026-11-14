@@ -1,0 +1,13 @@
+PASS recorded goal3 pose escapes without rotation and reaches target
+PASS fresh goal after recorded goal3 pose succeeds
+PASS recorded goal4 pose escapes without rotation and reaches target
+PASS fresh goal after recorded goal4 pose succeeds
+{
+  "passed": true,
+  "checks": [
+    "recorded goal3 pose escapes without rotation and reaches target",
+    "fresh goal after recorded goal3 pose succeeds",
+    "recorded goal4 pose escapes without rotation and reaches target",
+    "fresh goal after recorded goal4 pose succeeds"
+  ]
+}

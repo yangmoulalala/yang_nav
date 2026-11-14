@@ -1,0 +1,888 @@
+[INFO] [launch]: All log files can be found below /home/yang/.ros/log/2026-11-13-23-15-47-447104-AMD-1599578
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [map_server-1]: process started with pid [1599584]
+[INFO] [map_server-2]: process started with pid [1599585]
+[INFO] [costmap_filter_info_server-3]: process started with pid [1599586]
+[INFO] [terrain_obstacles.py-4]: process started with pid [1599587]
+[INFO] [controller_server-5]: process started with pid [1599588]
+[INFO] [smoother_server-6]: process started with pid [1599589]
+[INFO] [planner_server-7]: process started with pid [1599590]
+[INFO] [behavior_server-8]: process started with pid [1599591]
+[INFO] [velocity_smoother-9]: process started with pid [1599592]
+[INFO] [collision_monitor-10]: process started with pid [1599593]
+[INFO] [bt_navigator-11]: process started with pid [1599594]
+[INFO] [lifecycle_manager-12]: process started with pid [1599595]
+[INFO] [cmd_gate-13]: process started with pid [1599596]
+[velocity_smoother-9] [INFO] [1794582947.564209708] [velocity_smoother]: 
+[velocity_smoother-9] 	velocity_smoother lifecycle node launched. 
+[velocity_smoother-9] 	Waiting on external lifecycle transitions to activate
+[velocity_smoother-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794582947.577059043] [planner_server]: 
+[planner_server-7] 	planner_server lifecycle node launched. 
+[planner_server-7] 	Waiting on external lifecycle transitions to activate
+[planner_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[costmap_filter_info_server-3] [INFO] [1794582947.585959762] [costmap_filter_info_server]: This is costmap filter info publisher
+[smoother_server-6] [INFO] [1794582947.586289516] [smoother_server]: 
+[smoother_server-6] 	smoother_server lifecycle node launched. 
+[smoother_server-6] 	Waiting on external lifecycle transitions to activate
+[smoother_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794582947.589078944] [planner_server]: Creating
+[smoother_server-6] [INFO] [1794582947.589078865] [smoother_server]: Creating smoother server
+[behavior_server-8] [INFO] [1794582947.591855583] [behavior_server]: 
+[behavior_server-8] 	behavior_server lifecycle node launched. 
+[behavior_server-8] 	Waiting on external lifecycle transitions to activate
+[behavior_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-11] [INFO] [1794582947.601442721] [bt_navigator]: 
+[bt_navigator-11] 	bt_navigator lifecycle node launched. 
+[bt_navigator-11] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-11] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-5] [INFO] [1794582947.602461210] [controller_server]: 
+[controller_server-5] 	controller_server lifecycle node launched. 
+[controller_server-5] 	Waiting on external lifecycle transitions to activate
+[controller_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-11] [INFO] [1794582947.603605271] [bt_navigator]: Creating
+[planner_server-7] [INFO] [1794582947.603749423] [global_costmap.global_costmap]: 
+[planner_server-7] 	global_costmap lifecycle node launched. 
+[planner_server-7] 	Waiting on external lifecycle transitions to activate
+[planner_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794582947.605569094] [global_costmap.global_costmap]: Creating Costmap
+[lifecycle_manager-12] [INFO] [1794582947.607108934] [lifecycle_manager_navigation]: Creating
+[controller_server-5] [INFO] [1794582947.607326628] [controller_server]: Creating controller server
+[lifecycle_manager-12] [INFO] [1794582947.610596999] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[collision_monitor-10] [INFO] [1794582947.615587399] [collision_monitor]: 
+[collision_monitor-10] 	collision_monitor lifecycle node launched. 
+[collision_monitor-10] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[costmap_filter_info_server-3] [INFO] [1794582947.623180654] [speed_filter_info_server]: 
+[costmap_filter_info_server-3] 	speed_filter_info_server lifecycle node launched. 
+[costmap_filter_info_server-3] 	Waiting on external lifecycle transitions to activate
+[costmap_filter_info_server-3] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-5] [INFO] [1794582947.626124725] [local_costmap.local_costmap]: 
+[controller_server-5] 	local_costmap lifecycle node launched. 
+[controller_server-5] 	Waiting on external lifecycle transitions to activate
+[controller_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-5] [INFO] [1794582947.626620003] [local_costmap.local_costmap]: Creating Costmap
+[map_server-2] [INFO] [1794582947.631534086] [speed_mask_server]: 
+[map_server-2] 	speed_mask_server lifecycle node launched. 
+[map_server-2] 	Waiting on external lifecycle transitions to activate
+[map_server-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-2] [INFO] [1794582947.631670131] [speed_mask_server]: Creating
+[map_server-1] [INFO] [1794582947.634245640] [nav_map_server]: 
+[map_server-1] 	nav_map_server lifecycle node launched. 
+[map_server-1] 	Waiting on external lifecycle transitions to activate
+[map_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794582947.634383965] [nav_map_server]: Creating
+[lifecycle_manager-12] [INFO] [1794582947.904270415] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-12] [INFO] [1794582947.904343896] [lifecycle_manager_navigation]: [34m[1mConfiguring nav_map_server[0m[0m
+[map_server-1] [INFO] [1794582947.904720520] [nav_map_server]: Configuring
+[map_server-1] [INFO] [1794582947.904786571] [map_io]: Loading yaml file: /home/yang/yang_nav/maps/sim/terrain/nav_map.yaml
+[map_server-1] [INFO] [1794582947.905263096] [map_io]: resolution: 0.05
+[map_server-1] [INFO] [1794582947.905308107] [map_io]: origin[0]: -5
+[map_server-1] [INFO] [1794582947.905315556] [map_io]: origin[1]: -8.15
+[map_server-1] [INFO] [1794582947.905318911] [map_io]: origin[2]: 0
+[map_server-1] [INFO] [1794582947.905322570] [map_io]: free_thresh: 0.001
+[map_server-1] [INFO] [1794582947.905325539] [map_io]: occupied_thresh: 0.99
+[map_server-1] [INFO] [1794582947.905329857] [map_io]: mode: scale
+[map_server-1] [INFO] [1794582947.905333952] [map_io]: negate: 0
+[map_server-1] [INFO] [1794582947.906653157] [map_io]: Loading image_file: /home/yang/yang_nav/maps/sim/terrain/nav_map.pgm
+[map_server-1] [INFO] [1794582947.913182202] [map_io]: Read map /home/yang/yang_nav/maps/sim/terrain/nav_map.pgm: 577 X 338 map @ 0.05 m/cell
+[lifecycle_manager-12] [INFO] [1794582947.923238875] [lifecycle_manager_navigation]: [34m[1mConfiguring speed_mask_server[0m[0m
+[map_server-2] [INFO] [1794582947.923513246] [speed_mask_server]: Configuring
+[map_server-2] [INFO] [1794582947.923564885] [map_io]: Loading yaml file: /home/yang/yang_nav/maps/sim/terrain/speed_mask.yaml
+[map_server-2] [INFO] [1794582947.924019963] [map_io]: resolution: 0.05
+[map_server-2] [INFO] [1794582947.924061872] [map_io]: origin[0]: -5
+[map_server-2] [INFO] [1794582947.924068470] [map_io]: origin[1]: -8.15
+[map_server-2] [INFO] [1794582947.924070964] [map_io]: origin[2]: 0
+[map_server-2] [INFO] [1794582947.924073933] [map_io]: free_thresh: 0.001
+[map_server-2] [INFO] [1794582947.924076396] [map_io]: occupied_thresh: 0.99
+[map_server-2] [INFO] [1794582947.924080055] [map_io]: mode: raw
+[map_server-2] [INFO] [1794582947.924083369] [map_io]: negate: 0
+[map_server-2] [INFO] [1794582947.924228414] [map_io]: Loading image_file: /home/yang/yang_nav/maps/sim/terrain/speed_mask.pgm
+[map_server-2] [INFO] [1794582947.927295532] [map_io]: Read map /home/yang/yang_nav/maps/sim/terrain/speed_mask.pgm: 577 X 338 map @ 0.05 m/cell
+[lifecycle_manager-12] [INFO] [1794582947.935654078] [lifecycle_manager_navigation]: [34m[1mConfiguring speed_filter_info_server[0m[0m
+[costmap_filter_info_server-3] [INFO] [1794582947.936019849] [speed_filter_info_server]: Configuring
+[lifecycle_manager-12] [INFO] [1794582947.942732300] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-5] [INFO] [1794582947.942990059] [controller_server]: Configuring controller interface
+[controller_server-5] [INFO] [1794582947.943010076] [controller_server]: getting progress checker plugins..
+[controller_server-5] [INFO] [1794582947.943415648] [controller_server]: getting goal checker plugins..
+[controller_server-5] [INFO] [1794582947.944130931] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-5] [INFO] [1794582947.944191074] [local_costmap.local_costmap]: Configuring
+[controller_server-5] [INFO] [1794582947.962738253] [local_costmap.local_costmap]: Using plugin "static_layer"
+[controller_server-5] [INFO] [1794582947.968103024] [local_costmap.local_costmap]: Subscribing to the map topic (/nav_map) with transient local durability
+[controller_server-5] [INFO] [1794582947.970657903] [local_costmap.local_costmap]: Initialized plugin "static_layer"
+[controller_server-5] [INFO] [1794582947.970698140] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-5] [INFO] [1794582947.972851137] [local_costmap.local_costmap]: Subscribed to Topics: terrain_hits terrain_rays
+[controller_server-5] [INFO] [1794582947.994419638] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-5] [INFO] [1794582947.994468216] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-5] [INFO] [1794582947.996784543] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-5] [INFO] [1794582947.996836405] [local_costmap.local_costmap]: Using costmap filter "speed_filter"
+[controller_server-5] [INFO] [1794582948.002155171] [local_costmap.local_costmap]: Initialized costmap filter "speed_filter"
+[controller_server-5] [INFO] [1794582948.052566601] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-5] [INFO] [1794582948.053524035] [controller_server]: Controller Server has progress_checker  progress checkers available.
+[controller_server-5] [INFO] [1794582948.054623610] [controller_server]: Created goal checker : goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-5] [INFO] [1794582948.056269035] [controller_server]: Controller Server has goal_checker  goal checkers available.
+[controller_server-5] [INFO] [1794582948.059583418] [controller_server]: Created controller : FollowPath of type nav_behaviors::ZoneAwareController
+[controller_server-5] [WARN] [1794582948.081966011] [controller_server]: ZoneAwareController: dropping tunnel_6 (2 cells), label fragment
+[controller_server-5] [INFO] [1794582948.082117806] [controller_server]: ZoneAwareController: 6 narrow zones, 20 directional zones from /home/yang/yang_nav/maps/sim/terrain/zones.yaml -> 22 stretches, tunnel 0.60 m/s, ramp 1.40 m/s
+[controller_server-5] [INFO] [1794582948.093185090] [controller_server]: Controller period is equal to model dt. Control sequence shifting is ON
+[controller_server-5] [INFO] [1794582948.097953498] [controller_server]: ConstraintCritic instantiated with 1 power and 4.000000 weight.
+[controller_server-5] [INFO] [1794582948.098004589] [controller_server]: Critic loaded : mppi::critics::ConstraintCritic
+[controller_server-5] [INFO] [1794582948.101781088] [controller_server]: InflationCostCritic instantiated with 1 power and 300.000000 / 0.015000 weights. Critic will collision check based on footprint cost.
+[controller_server-5] [INFO] [1794582948.101837379] [controller_server]: Critic loaded : mppi::critics::CostCritic
+[controller_server-5] [INFO] [1794582948.103302984] [controller_server]: GoalCritic instantiated with 1 power and 8.000000 weight.
+[controller_server-5] [INFO] [1794582948.103339268] [controller_server]: Critic loaded : mppi::critics::GoalCritic
+[controller_server-5] [INFO] [1794582948.105306952] [controller_server]: GoalAngleCritic instantiated with 1 power, 3.000000 weight, 1.500000 angular threshold and symmetric_yaw_tolerance disabled
+[controller_server-5] [INFO] [1794582948.105352804] [controller_server]: Critic loaded : mppi::critics::GoalAngleCritic
+[controller_server-5] [INFO] [1794582948.109771846] [controller_server]: ReferenceTrajectoryCritic instantiated with 1 power and 14.000000 weight
+[controller_server-5] [INFO] [1794582948.109888513] [controller_server]: Critic loaded : mppi::critics::PathAlignCritic
+[controller_server-5] [INFO] [1794582948.111809129] [controller_server]: Critic loaded : mppi::critics::PathFollowCritic
+[controller_server-5] [INFO] [1794582948.114644369] [controller_server]: PathAngleCritic instantiated with 1 power and 2.000000 weight. Mode set to: Consider Feasible Path Orientations
+[controller_server-5] [INFO] [1794582948.114684373] [controller_server]: Critic loaded : mppi::critics::PathAngleCritic
+[controller_server-5] [INFO] [1794582948.115972317] [controller_server]: TwirlingCritic instantiated with 1 power and 10.000000 weight.
+[controller_server-5] [INFO] [1794582948.116010973] [controller_server]: Critic loaded : mppi::critics::TwirlingCritic
+[controller_server-5] [INFO] [1794582948.118186896] [controller_server]: Optimizer reset
+[terrain_obstacles.py-4] [INFO] [1794582948.118305782] [terrain_obstacles]: terrain obstacles ready: /home/yang/yang_nav/maps/sim/terrain/terrain.msgpack
+[controller_server-5] [INFO] [1794582948.127109912] [MPPIController]: Configured MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794582948.127146936] [controller_server]: ZoneAwareController: inner controller nav2_mppi_controller::MPPIController
+[controller_server-5] [INFO] [1794582948.133286262] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-12] [INFO] [1794582948.152017304] [lifecycle_manager_navigation]: [34m[1mConfiguring smoother_server[0m[0m
+[smoother_server-6] [INFO] [1794582948.152487552] [smoother_server]: Configuring smoother server
+[smoother_server-6] [INFO] [1794582948.172490637] [smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-6] [INFO] [1794582948.175962406] [smoother_server]: Created smoother : zone_shaper of type nav_behaviors::ZonePathShaper
+[smoother_server-6] [WARN] [1794582948.186786377] [smoother_server]: ZonePathShaper: dropping tunnel_6 (2 cells), label fragment
+[smoother_server-6] [INFO] [1794582948.186868979] [smoother_server]: ZonePathShaper: 6 narrow zones, 20 directional zones from /home/yang/yang_nav/maps/sim/terrain/zones.yaml (0 ambiguous direction), 22 stretches after chaining
+[smoother_server-6] [INFO] [1794582948.186880837] [smoother_server]: Smoother Server has simple_smoother zone_shaper  smoothers available.
+[lifecycle_manager-12] [INFO] [1794582948.199020260] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-7] [INFO] [1794582948.199292238] [planner_server]: Configuring
+[planner_server-7] [INFO] [1794582948.199319614] [global_costmap.global_costmap]: Configuring
+[planner_server-7] [INFO] [1794582948.212898553] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-7] [INFO] [1794582948.216667866] [global_costmap.global_costmap]: Subscribing to the map topic (/nav_map) with transient local durability
+[planner_server-7] [INFO] [1794582948.218881147] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-7] [INFO] [1794582948.218915161] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-7] [INFO] [1794582948.220668181] [global_costmap.global_costmap]: Subscribed to Topics: terrain_hits terrain_rays
+[planner_server-7] [INFO] [1794582948.234006327] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-7] [INFO] [1794582948.234049260] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-7] [INFO] [1794582948.235620505] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-7] [INFO] [1794582948.277461253] [planner_server]: Created global planner plugin GridBased of type nav_behaviors::StartAwarePlanner
+[planner_server-7] [INFO] [1794582948.289017525] [planner_server]: Configuring GridBased of type SmacPlanner2D
+[planner_server-7] [ERROR] [1794582948.292059533] [planner_server]: Inflation layer either not found or inflation is not set sufficiently for optimized non-circular collision checking capabilities. It is HIGHLY recommended to set the inflation radius to be at MINIMUM half of the robot's largest cross-section. See github.com/ros-planning/navigation2/tree/main/nav2_smac_planner#potential-fields for full instructions. This will substantially impact run-time performance.
+[planner_server-7] [INFO] [1794582948.295762055] [planner_server]: Configured plugin GridBased of type SmacPlanner2D with tolerance 0.15, maximum iterations 1000000, max on approach iterations 1000, and not allowing unknown traversal.
+[planner_server-7] [INFO] [1794582948.295812903] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-12] [INFO] [1794582948.317433237] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794582948.317714733] [behavior_server]: Configuring
+[behavior_server-8] [INFO] [1794582948.325373176] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors::Spin
+[behavior_server-8] [INFO] [1794582948.327456474] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors::BackUp
+[behavior_server-8] [INFO] [1794582948.328854952] [behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors::DriveOnHeading
+[behavior_server-8] [INFO] [1794582948.330608124] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors::Wait
+[behavior_server-8] [INFO] [1794582948.340919127] [behavior_server]: Configuring spin
+[behavior_server-8] [INFO] [1794582948.354308937] [behavior_server]: Configuring backup
+[behavior_server-8] [INFO] [1794582948.364160970] [behavior_server]: Configuring drive_on_heading
+[behavior_server-8] [INFO] [1794582948.373443382] [behavior_server]: Configuring wait
+[lifecycle_manager-12] [INFO] [1794582948.383513636] [lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-9] [INFO] [1794582948.390522605] [velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-12] [INFO] [1794582948.399143248] [lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-10] [INFO] [1794582948.399426305] [collision_monitor]: Configuring
+[collision_monitor-10] [INFO] [1794582948.408155069] [collision_monitor]: [terrain]: Creating PointCloud
+[collision_monitor-10] [INFO] [1794582948.412198226] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-10] [INFO] [1794582948.412574983] [collision_monitor]: [FootprintApproach]: Polygon points are not defined. Using dynamic subscription instead.
+[collision_monitor-10] [INFO] [1794582948.415161656] [collision_monitor]: [FootprintApproach]: Making footprint subscriber on /local_costmap/published_footprint topic
+[lifecycle_manager-12] [INFO] [1794582948.429075190] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-11] [INFO] [1794582948.429416555] [bt_navigator]: Configuring
+[bt_navigator-11] [INFO] [1794582948.437067002] [bt_navigator]: Creating navigator id navigate_to_pose of type nav2_bt_navigator::NavigateToPoseNavigator
+[bt_navigator-11] [INFO] [1794582948.523240213] [bt_navigator]: Creating navigator id navigate_through_poses of type nav2_bt_navigator::NavigateThroughPosesNavigator
+[lifecycle_manager-12] [INFO] [1794582948.569856516] [lifecycle_manager_navigation]: [34m[1mActivating nav_map_server[0m[0m
+[map_server-1] [INFO] [1794582948.570106912] [nav_map_server]: Activating
+[map_server-1] [INFO] [1794582948.570649299] [nav_map_server]: Creating bond (nav_map_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794582948.571178820] [local_costmap.local_costmap]: StaticLayer: Resizing static layer to 577 X 338 at 0.050000 m/pix
+[planner_server-7] [INFO] [1794582948.571268166] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 577 X 338 at 0.050000 m/pix
+[lifecycle_manager-12] [INFO] [1794582948.574642559] [lifecycle_manager_navigation]: [34m[1mActivating speed_mask_server[0m[0m
+[map_server-2] [INFO] [1794582948.574881923] [speed_mask_server]: Activating
+[map_server-2] [INFO] [1794582948.575335485] [speed_mask_server]: Creating bond (speed_mask_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582948.579263465] [lifecycle_manager_navigation]: [34m[1mActivating speed_filter_info_server[0m[0m
+[costmap_filter_info_server-3] [INFO] [1794582948.579519248] [speed_filter_info_server]: Activating
+[costmap_filter_info_server-3] [INFO] [1794582948.579626012] [speed_filter_info_server]: Creating bond (speed_filter_info_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582948.583187046] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-5] [INFO] [1794582948.583413275] [controller_server]: Activating
+[controller_server-5] [INFO] [1794582948.583442697] [local_costmap.local_costmap]: Activating
+[controller_server-5] [INFO] [1794582948.583448312] [local_costmap.local_costmap]: Checking transform
+[controller_server-5] [INFO] [1794582948.583479052] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[controller_server-5] [INFO] [1794582949.083632400] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[controller_server-5] [INFO] [1794582949.583591284] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[controller_server-5] [INFO] [1794582950.083643220] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[controller_server-5] [INFO] [1794582950.583811478] [local_costmap.local_costmap]: start
+[controller_server-5] [INFO] [1794582950.588662686] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794582950.600287512] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794582950.600335948] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794582950.600344026] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [INFO] [1794582950.612358329] [local_costmap.local_costmap]: SpeedFilter: Received filter mask from /speed_filter_mask topic.
+[controller_server-5] [WARN] [1794582950.643229849] [controller_server]: Parameter controller_server.verbose not found
+[controller_server-5] [INFO] [1794582950.643818696] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582950.644346154] [MPPIController]: Activated MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794582950.644627021] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582950.650220311] [lifecycle_manager_navigation]: [34m[1mActivating smoother_server[0m[0m
+[smoother_server-6] [INFO] [1794582950.650448698] [smoother_server]: Activating
+[smoother_server-6] [INFO] [1794582950.650478647] [smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582950.655889675] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-7] [INFO] [1794582950.656107268] [planner_server]: Activating
+[planner_server-7] [INFO] [1794582950.656137907] [global_costmap.global_costmap]: Activating
+[planner_server-7] [INFO] [1794582950.656144181] [global_costmap.global_costmap]: Checking transform
+[planner_server-7] [INFO] [1794582950.656273669] [global_costmap.global_costmap]: start
+[planner_server-7] [INFO] [1794582951.210702215] [planner_server]: Activating plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794582951.213730186] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582951.218992448] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794582951.219236160] [behavior_server]: Activating
+[behavior_server-8] [INFO] [1794582951.219256248] [behavior_server]: Activating spin
+[behavior_server-8] [INFO] [1794582951.219264477] [behavior_server]: Activating backup
+[behavior_server-8] [INFO] [1794582951.219270802] [behavior_server]: Activating drive_on_heading
+[behavior_server-8] [INFO] [1794582951.219276062] [behavior_server]: Activating wait
+[behavior_server-8] [INFO] [1794582951.219284606] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582951.224605587] [lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-9] [INFO] [1794582951.224929595] [velocity_smoother]: Activating
+[velocity_smoother-9] [INFO] [1794582951.224997237] [velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582951.230472724] [lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-10] [INFO] [1794582951.230697726] [collision_monitor]: Activating
+[collision_monitor-10] [INFO] [1794582951.230748129] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582951.236280424] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-11] [INFO] [1794582951.236493010] [bt_navigator]: Activating
+[bt_navigator-11] [INFO] [1794582951.436338170] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794582951.442163769] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[bt_navigator-11] [INFO] [1794582963.037716758] [bt_navigator]: Begin navigating from current location (-0.06, 0.19) to (4.05, -2.10)
+[smoother_server-6] [INFO] [1794582963.059114834] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794582963.079228585] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [WARN] [1794582963.079315751] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded goal_checker . This warning will appear once.
+[controller_server-5] [WARN] [1794582963.079328265] [controller_server]: No progress checker was specified in parameter 'current_progress_checker'. Server will use only plugin loaded progress_checker . This warning will appear once.
+[smoother_server-6] [INFO] [1794582964.109002578] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794582964.129587259] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794582971.079669285] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794582971.080020124] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794582971.108360926] [bt_navigator]: Goal succeeded
+[bt_navigator-11] [INFO] [1794582980.532039674] [bt_navigator]: Begin navigating from current location (4.07, -2.09) to (6.16, -6.41)
+[smoother_server-6] [INFO] [1794582980.553730753] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794582980.554245450] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[controller_server-5] [INFO] [1794582980.573689676] [controller_server]: Received a goal, begin computing control effort.
+[smoother_server-6] [INFO] [1794582981.602958126] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794582981.603269319] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[controller_server-5] [INFO] [1794582981.624323541] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794582981.049873078] [controller_server]: ZoneAwareController: slope_3+tunnel_3 (narrow) window, heading locked at 90.4 deg, lateral +0.005 m
+[controller_server-5] [INFO] [1794582981.050933285] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.966 w 0.02 pose (4.313 -2.516 -0.0) ref -0.0 e_lat +0.005 e_yaw -0.0 trk (+0.52 -0.86 +0.62) out (+0.33 -0.59 -0.02)
+[controller_server-5] [INFO] [1794582981.100804411] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.966 w 0.02 pose (4.313 -2.516 -0.0) ref -0.0 e_lat +0.005 e_yaw -0.0 trk (+0.52 -0.86 +0.62) out (+0.33 -0.60 -0.01)
+[controller_server-5] [INFO] [1794582981.150892671] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.861 w 0.28 pose (4.367 -2.606 -0.2) ref 5.5 e_lat +0.004 e_yaw -5.8 trk (+0.48 -0.81 +1.00) out (+0.35 -0.65 +0.25)
+[controller_server-5] [INFO] [1794582981.200875949] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.861 w 0.28 pose (4.367 -2.606 -0.2) ref 5.5 e_lat +0.004 e_yaw -5.8 trk (+0.48 -0.81 +1.00) out (+0.36 -0.67 +0.27)
+[controller_server-5] [INFO] [1794582981.250840152] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.789 w 0.54 pose (4.404 -2.667 -0.4) ref 10.7 e_lat +0.005 e_yaw -11.1 trk (+0.39 -0.70 +1.00) out (+0.36 -0.66 +0.56)
+[controller_server-5] [INFO] [1794582981.300889569] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.789 w 0.54 pose (4.404 -2.667 -0.4) ref 10.7 e_lat +0.005 e_yaw -11.1 trk (+0.39 -0.70 +1.00) out (+0.35 -0.66 +0.59)
+[controller_server-5] [INFO] [1794582981.350833499] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.789 w 0.54 pose (4.404 -2.667 -0.4) ref 10.7 e_lat +0.005 e_yaw -11.1 trk (+0.39 -0.70 +1.00) out (+0.35 -0.66 +0.64)
+[controller_server-5] [INFO] [1794582981.400970187] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.789 w 0.54 pose (4.404 -2.667 -0.4) ref 10.7 e_lat +0.005 e_yaw -11.1 trk (+0.39 -0.70 +1.00) out (+0.36 -0.65 +0.68)
+[controller_server-5] [INFO] [1794582981.450842648] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.714 w 0.80 pose (4.446 -2.730 0.6) ref 16.5 e_lat +0.011 e_yaw -15.9 trk (+0.31 -0.64 +1.00) out (+0.31 -0.63 +0.87)
+[controller_server-5] [INFO] [1794582981.500964685] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.714 w 0.80 pose (4.446 -2.730 0.6) ref 16.5 e_lat +0.011 e_yaw -15.9 trk (+0.31 -0.64 +1.00) out (+0.30 -0.63 +0.89)
+[controller_server-5] [INFO] [1794582981.551073139] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.714 w 0.80 pose (4.446 -2.730 0.6) ref 16.5 e_lat +0.011 e_yaw -15.9 trk (+0.31 -0.64 +1.00) out (+0.30 -0.63 +0.90)
+[controller_server-5] [INFO] [1794582981.601019926] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.714 w 0.80 pose (4.446 -2.730 0.6) ref 16.5 e_lat +0.011 e_yaw -15.9 trk (+0.31 -0.64 +1.00) out (+0.30 -0.63 +0.91)
+[controller_server-5] [INFO] [1794582981.650070333] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.569 w 1.00 pose (4.525 -2.852 7.5) ref 26.8 e_lat +0.022 e_yaw -19.3 trk (+0.14 -0.61 +1.00) out (+0.14 -0.61 +1.00)
+[controller_server-5] [INFO] [1794582981.700005224] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.569 w 1.00 pose (4.525 -2.852 7.5) ref 26.8 e_lat +0.022 e_yaw -19.3 trk (+0.14 -0.61 +1.00) out (+0.14 -0.61 +1.00)
+[controller_server-5] [INFO] [1794582981.749987370] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.495 w 1.00 pose (4.572 -2.913 13.4) ref 32.5 e_lat +0.037 e_yaw -19.1 trk (+0.02 -0.60 +1.00) out (+0.02 -0.60 +1.00)
+[controller_server-5] [INFO] [1794582981.800083003] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.495 w 1.00 pose (4.572 -2.913 13.4) ref 32.5 e_lat +0.037 e_yaw -19.1 trk (+0.02 -0.60 +1.00) out (+0.02 -0.60 +1.00)
+[controller_server-5] [INFO] [1794582981.849987790] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.382 w 1.00 pose (4.624 -3.014 19.7) ref 41.5 e_lat +0.041 e_yaw -21.8 trk (-0.08 -0.58 +1.00) out (-0.08 -0.58 +1.00)
+[controller_server-5] [INFO] [1794582981.900040734] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.382 w 1.00 pose (4.624 -3.014 19.7) ref 41.5 e_lat +0.041 e_yaw -21.8 trk (-0.08 -0.58 +1.00) out (-0.08 -0.58 +1.00)
+[controller_server-5] [INFO] [1794582981.949980997] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.321 w 1.00 pose (4.664 -3.064 26.7) ref 46.4 e_lat +0.058 e_yaw -19.7 trk (-0.21 -0.56 +1.00) out (-0.21 -0.56 +1.00)
+[controller_server-5] [INFO] [1794582982.000033074] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.321 w 1.00 pose (4.664 -3.064 26.7) ref 46.4 e_lat +0.058 e_yaw -19.7 trk (-0.21 -0.56 +1.00) out (-0.21 -0.56 +1.00)
+[controller_server-5] [INFO] [1794582982.050003997] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.255 w 1.00 pose (4.715 -3.116 33.4) ref 51.7 e_lat +0.085 e_yaw -18.3 trk (-0.37 -0.51 +1.00) out (-0.37 -0.51 +1.00)
+[controller_server-5] [INFO] [1794582982.100036558] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.255 w 1.00 pose (4.715 -3.116 33.4) ref 51.7 e_lat +0.085 e_yaw -18.3 trk (-0.37 -0.51 +1.00) out (-0.37 -0.51 +1.00)
+[controller_server-5] [INFO] [1794582982.150079260] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.255 w 1.00 pose (4.715 -3.116 33.4) ref 51.7 e_lat +0.085 e_yaw -18.3 trk (-0.37 -0.51 +1.00) out (-0.37 -0.51 +1.00)
+[controller_server-5] [INFO] [1794582982.199982227] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.255 w 1.00 pose (4.715 -3.116 33.4) ref 51.7 e_lat +0.085 e_yaw -18.3 trk (-0.37 -0.51 +1.00) out (-0.37 -0.51 +1.00)
+[controller_server-5] [INFO] [1794582982.249959746] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.191 w 1.00 pose (4.753 -3.173 40.3) ref 56.8 e_lat +0.101 e_yaw -16.5 trk (-0.48 -0.45 +1.00) out (-0.48 -0.45 +1.00)
+[controller_server-5] [INFO] [1794582982.299966176] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.191 w 1.00 pose (4.753 -3.173 40.3) ref 56.8 e_lat +0.101 e_yaw -16.5 trk (-0.48 -0.45 +1.00) out (-0.48 -0.45 +1.00)
+[controller_server-5] [INFO] [1794582982.349999699] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.122 w 1.00 pose (4.787 -3.238 47.2) ref 62.1 e_lat +0.110 e_yaw -15.0 trk (-0.55 -0.39 +1.00) out (-0.55 -0.39 +1.00)
+[controller_server-5] [INFO] [1794582982.400023917] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.122 w 1.00 pose (4.787 -3.238 47.2) ref 62.1 e_lat +0.110 e_yaw -15.0 trk (-0.55 -0.39 +1.00) out (-0.55 -0.39 +1.00)
+[controller_server-5] [INFO] [1794582982.449967392] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.040 w 1.00 pose (4.782 -3.329 54.0) ref 68.2 e_lat +0.078 e_yaw -14.1 trk (-0.58 -0.38 +1.00) out (-0.58 -0.38 +1.00)
+[controller_server-5] [INFO] [1794582982.500035678] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.040 w 1.00 pose (4.782 -3.329 54.0) ref 68.2 e_lat +0.078 e_yaw -14.1 trk (-0.58 -0.38 +1.00) out (-0.58 -0.38 +1.00)
+[controller_server-5] [INFO] [1794582982.549995389] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.961 w 1.00 pose (4.766 -3.417 60.9) ref 73.5 e_lat +0.039 e_yaw -12.6 trk (-0.59 -0.40 +1.00) out (-0.59 -0.40 +1.00)
+[controller_server-5] [INFO] [1794582982.600026063] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.961 w 1.00 pose (4.766 -3.417 60.9) ref 73.5 e_lat +0.039 e_yaw -12.6 trk (-0.59 -0.40 +1.00) out (-0.59 -0.40 +1.00)
+[controller_server-5] [INFO] [1794582982.650074803] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.873 w 1.00 pose (4.789 -3.503 67.7) ref 78.8 e_lat +0.041 e_yaw -11.1 trk (-0.64 -0.30 +1.00) out (-0.64 -0.30 +1.00)
+[controller_server-5] [INFO] [1794582982.700041701] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.873 w 1.00 pose (4.789 -3.503 67.7) ref 78.8 e_lat +0.041 e_yaw -11.1 trk (-0.64 -0.30 +1.00) out (-0.64 -0.30 +1.00)
+[controller_server-5] [INFO] [1794582982.750024119] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.873 w 1.00 pose (4.789 -3.503 67.7) ref 78.8 e_lat +0.041 e_yaw -11.1 trk (-0.64 -0.30 +1.00) out (-0.64 -0.30 +1.00)
+[controller_server-5] [INFO] [1794582982.799986980] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.873 w 1.00 pose (4.789 -3.503 67.7) ref 78.8 e_lat +0.041 e_yaw -11.1 trk (-0.64 -0.30 +1.00) out (-0.64 -0.30 +1.00)
+[controller_server-5] [INFO] [1794582982.849976868] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.793 w 1.00 pose (4.812 -3.582 74.6) ref 82.9 e_lat +0.048 e_yaw -8.3 trk (-0.60 -0.13 +0.91) out (-0.60 -0.13 +0.91)
+[controller_server-5] [INFO] [1794582982.900021957] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.793 w 1.00 pose (4.812 -3.582 74.6) ref 82.9 e_lat +0.048 e_yaw -8.3 trk (-0.60 -0.13 +0.91) out (-0.60 -0.13 +0.91)
+[controller_server-5] [INFO] [1794582982.950013654] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.709 w 1.00 pose (4.837 -3.666 81.5) ref 86.4 e_lat +0.060 e_yaw -4.9 trk (-0.63 +0.01 +0.63) out (-0.63 +0.01 +0.63)
+[cmd_gate-13] [INFO] [1794582982.950162237] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794582983.000092473] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.709 w 1.00 pose (4.837 -3.666 81.5) ref 86.4 e_lat +0.060 e_yaw -4.9 trk (-0.63 +0.01 +0.63) out (-0.63 +0.01 +0.63)
+[controller_server-5] [INFO] [1794582983.049949526] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.622 w 1.00 pose (4.866 -3.754 88.3) ref 88.9 e_lat +0.080 e_yaw -0.7 trk (-0.62 +0.17 +0.24) out (-0.62 +0.17 +0.24)
+[controller_server-5] [INFO] [1794582983.100013668] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.622 w 1.00 pose (4.866 -3.754 88.3) ref 88.9 e_lat +0.080 e_yaw -0.7 trk (-0.62 +0.17 +0.24) out (-0.62 +0.17 +0.24)
+[controller_server-5] [INFO] [1794582983.150027881] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.627 w 1.00 pose (4.892 -3.746 96.8) ref 88.8 e_lat +0.106 e_yaw +8.0 trk (-0.59 +0.32 -0.17) out (-0.59 +0.32 -0.17)
+[controller_server-5] [INFO] [1794582983.199963800] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.627 w 1.00 pose (4.892 -3.746 96.8) ref 88.8 e_lat +0.106 e_yaw +8.0 trk (-0.59 +0.32 -0.17) out (-0.59 +0.32 -0.17)
+[controller_server-5] [WARN] [1794582983.249855911] [controller_server]: ZoneAwareController: slope_3+tunnel_3 gate: lateral +0.104 m, heading +11.85 deg, slowing down
+[controller_server-5] [INFO] [1794582983.250026626] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.561 w 1.00 pose (4.894 -3.816 101.8) ref 89.9 e_lat +0.104 e_yaw +11.8 trk (-0.44 +0.37 -0.52) out (-0.44 +0.37 -0.52) GATED
+[controller_server-5] [INFO] [1794582983.300046854] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.561 w 1.00 pose (4.894 -3.816 101.8) ref 89.9 e_lat +0.104 e_yaw +11.8 trk (-0.44 +0.37 -0.52) out (-0.44 +0.37 -0.52) GATED
+[controller_server-5] [INFO] [1794582983.349955352] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.529 w 1.00 pose (4.893 -3.850 102.7) ref 90.2 e_lat +0.101 e_yaw +12.5 trk (-0.36 +0.37 -0.59) out (-0.36 +0.37 -0.59) GATED
+[controller_server-5] [INFO] [1794582983.400020624] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.529 w 1.00 pose (4.893 -3.850 102.7) ref 90.2 e_lat +0.101 e_yaw +12.5 trk (-0.36 +0.37 -0.59) out (-0.36 +0.37 -0.59) GATED
+[controller_server-5] [INFO] [1794582983.450049530] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.468 w 1.00 pose (4.881 -3.913 102.8) ref 90.4 e_lat +0.088 e_yaw +12.4 trk (-0.22 +0.32 -0.64) out (-0.22 +0.32 -0.64) GATED
+[controller_server-5] [INFO] [1794582983.500028148] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.468 w 1.00 pose (4.881 -3.913 102.8) ref 90.4 e_lat +0.088 e_yaw +12.4 trk (-0.22 +0.32 -0.64) out (-0.22 +0.32 -0.64) GATED
+[controller_server-5] [INFO] [1794582983.549994080] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.420 w 1.00 pose (4.862 -3.962 101.3) ref 90.4 e_lat +0.069 e_yaw +10.9 trk (-0.14 +0.24 -0.57) out (-0.14 +0.24 -0.57) GATED
+[controller_server-5] [INFO] [1794582983.599995668] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.420 w 1.00 pose (4.862 -3.962 101.3) ref 90.4 e_lat +0.069 e_yaw +10.9 trk (-0.14 +0.24 -0.57) out (-0.14 +0.24 -0.57) GATED
+[controller_server-5] [INFO] [1794582983.650019556] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.420 w 1.00 pose (4.862 -3.962 101.3) ref 90.4 e_lat +0.069 e_yaw +10.9 trk (-0.14 +0.24 -0.57) out (-0.14 +0.24 -0.57) GATED
+[controller_server-5] [INFO] [1794582983.700009917] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.420 w 1.00 pose (4.862 -3.962 101.3) ref 90.4 e_lat +0.069 e_yaw +10.9 trk (-0.14 +0.24 -0.57) out (-0.14 +0.24 -0.57) GATED
+[controller_server-5] [INFO] [1794582983.750042364] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.318 w 1.00 pose (4.802 -4.064 94.6) ref 90.4 e_lat +0.008 e_yaw +4.2 trk (+0.00 +0.02 -0.22) out (+0.00 +0.02 -0.22) GATED
+[controller_server-5] [INFO] [1794582983.800018778] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.318 w 1.00 pose (4.802 -4.064 94.6) ref 90.4 e_lat +0.008 e_yaw +4.2 trk (+0.00 +0.02 -0.22) out (+0.00 +0.02 -0.22) GATED
+[controller_server-5] [INFO] [1794582983.850128401] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.287 w 1.00 pose (4.774 -4.095 90.6) ref 90.4 e_lat -0.020 e_yaw +0.2 trk (-0.60 -0.06 -0.01) out (-0.60 -0.06 -0.01)
+[controller_server-5] [INFO] [1794582983.899981548] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.287 w 1.00 pose (4.774 -4.095 90.6) ref 90.4 e_lat -0.020 e_yaw +0.2 trk (-0.60 -0.06 -0.01) out (-0.60 -0.06 -0.01)
+[controller_server-5] [WARN] [1794582983.900127063] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794582983.949999689] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.287 w 1.00 pose (4.747 -4.095 86.8) ref 90.4 e_lat -0.047 e_yaw -3.6 trk (-0.59 -0.18 +0.19) out (-0.59 -0.18 +0.19)
+[controller_server-5] [INFO] [1794582984.000034137] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.287 w 1.00 pose (4.747 -4.095 86.8) ref 90.4 e_lat -0.047 e_yaw -3.6 trk (-0.59 -0.18 +0.19) out (-0.59 -0.18 +0.19)
+[controller_server-5] [INFO] [1794582984.049978178] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.331 w 1.00 pose (4.750 -4.052 85.5) ref 90.4 e_lat -0.043 e_yaw -4.9 trk (+0.01 -0.13 +0.26) out (+0.01 -0.13 +0.26) GATED
+[controller_server-5] [INFO] [1794582984.099975088] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.331 w 1.00 pose (4.750 -4.052 85.5) ref 90.4 e_lat -0.043 e_yaw -4.9 trk (+0.01 -0.13 +0.26) out (+0.01 -0.13 +0.26) GATED
+[controller_server-5] [INFO] [1794582984.149999964] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.339 w 1.00 pose (4.755 -4.044 85.5) ref 90.4 e_lat -0.038 e_yaw -4.9 trk (+0.01 -0.11 +0.26) out (+0.01 -0.11 +0.26) GATED
+[controller_server-5] [INFO] [1794582984.200026669] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.339 w 1.00 pose (4.755 -4.044 85.5) ref 90.4 e_lat -0.038 e_yaw -4.9 trk (+0.01 -0.11 +0.26) out (+0.01 -0.11 +0.26) GATED
+[controller_server-5] [INFO] [1794582984.249977456] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.273 w 1.00 pose (4.736 -4.110 86.7) ref 90.4 e_lat -0.058 e_yaw -3.7 trk (-0.59 -0.21 +0.19) out (-0.59 -0.21 +0.19)
+[controller_server-5] [INFO] [1794582984.299953453] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.273 w 1.00 pose (4.736 -4.110 86.7) ref 90.4 e_lat -0.058 e_yaw -3.7 trk (-0.59 -0.21 +0.19) out (-0.59 -0.21 +0.19)
+[controller_server-5] [INFO] [1794582984.349995057] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.262 w 1.00 pose (4.753 -4.120 88.2) ref 90.4 e_lat -0.041 e_yaw -2.2 trk (-0.59 -0.15 +0.11) out (-0.59 -0.15 +0.11)
+[controller_server-5] [INFO] [1794582984.400040137] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.262 w 1.00 pose (4.753 -4.120 88.2) ref 90.4 e_lat -0.041 e_yaw -2.2 trk (-0.59 -0.15 +0.11) out (-0.59 -0.15 +0.11)
+[controller_server-5] [INFO] [1794582984.449983612] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.262 w 1.00 pose (4.753 -4.120 88.2) ref 90.4 e_lat -0.041 e_yaw -2.2 trk (-0.59 -0.15 +0.11) out (-0.59 -0.15 +0.11)
+[controller_server-5] [INFO] [1794582984.500020348] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.262 w 1.00 pose (4.753 -4.120 88.2) ref 90.4 e_lat -0.041 e_yaw -2.2 trk (-0.59 -0.15 +0.11) out (-0.59 -0.15 +0.11)
+[controller_server-5] [INFO] [1794582984.549981524] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.285 w 1.00 pose (4.793 -4.097 89.7) ref 90.4 e_lat -0.001 e_yaw -0.7 trk (-0.60 -0.01 +0.03) out (-0.60 -0.01 +0.03)
+[controller_server-5] [INFO] [1794582984.600079094] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.285 w 1.00 pose (4.793 -4.097 89.7) ref 90.4 e_lat -0.001 e_yaw -0.7 trk (-0.60 -0.01 +0.03) out (-0.60 -0.01 +0.03)
+[controller_server-5] [INFO] [1794582984.650224198] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.242 w 1.00 pose (4.822 -4.140 90.2) ref 90.4 e_lat +0.027 e_yaw -0.2 trk (-0.60 +0.08 +0.01) out (-0.60 +0.08 +0.01)
+[controller_server-5] [INFO] [1794582984.700043707] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.242 w 1.00 pose (4.822 -4.140 90.2) ref 90.4 e_lat +0.027 e_yaw -0.2 trk (-0.60 +0.08 +0.01) out (-0.60 +0.08 +0.01)
+[controller_server-5] [INFO] [1794582984.750060646] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.253 w 1.00 pose (4.839 -4.129 89.8) ref 90.4 e_lat +0.045 e_yaw -0.6 trk (-0.60 +0.13 +0.03) out (-0.60 +0.13 +0.03)
+[controller_server-5] [INFO] [1794582984.800024759] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.253 w 1.00 pose (4.839 -4.129 89.8) ref 90.4 e_lat +0.045 e_yaw -0.6 trk (-0.60 +0.13 +0.03) out (-0.60 +0.13 +0.03)
+[controller_server-5] [WARN] [1794582984.800123850] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[collision_monitor-10] [INFO] [1794582984.819008831] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [INFO] [1794582984.849987628] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.158 w 1.00 pose (4.804 -4.225 90.1) ref 90.4 e_lat +0.010 e_yaw -0.3 trk (-0.60 +0.03 +0.02) out (-0.60 +0.03 +0.02)
+[controller_server-5] [INFO] [1794582984.900048922] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.158 w 1.00 pose (4.804 -4.225 90.1) ref 90.4 e_lat +0.010 e_yaw -0.3 trk (-0.60 +0.03 +0.02) out (-0.60 +0.03 +0.02)
+[collision_monitor-10] [INFO] [1794582984.917860459] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [INFO] [1794582984.949975278] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.041 w 1.00 pose (4.787 -4.342 90.4) ref 90.4 e_lat -0.009 e_yaw -0.0 trk (-0.60 -0.03 +0.00) out (-0.60 -0.03 +0.00)
+[controller_server-5] [INFO] [1794582985.000028291] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.041 w 1.00 pose (4.787 -4.342 90.4) ref 90.4 e_lat -0.009 e_yaw -0.0 trk (-0.60 -0.03 +0.00) out (-0.60 -0.03 +0.00)
+[controller_server-5] [INFO] [1794582985.049962844] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.041 w 1.00 pose (4.787 -4.342 90.4) ref 90.4 e_lat -0.009 e_yaw -0.0 trk (-0.60 -0.03 +0.00) out (-0.60 -0.03 +0.00)
+[controller_server-5] [INFO] [1794582985.099983976] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.041 w 1.00 pose (4.787 -4.342 90.4) ref 90.4 e_lat -0.009 e_yaw -0.0 trk (-0.60 -0.03 +0.00) out (-0.60 -0.03 +0.00)
+[controller_server-5] [INFO] [1794582985.150050718] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.005 w 1.00 pose (4.785 -4.387 90.4) ref 90.4 e_lat -0.011 e_yaw +0.0 trk (-0.60 -0.03 -0.00) out (-0.60 -0.03 -0.00)
+[controller_server-5] [INFO] [1794582985.200011125] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.005 w 1.00 pose (4.785 -4.387 90.4) ref 90.4 e_lat -0.011 e_yaw +0.0 trk (-0.60 -0.03 -0.00) out (-0.60 -0.03 -0.00)
+[collision_monitor-10] [INFO] [1794582985.247919866] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [INFO] [1794582985.249980614] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.035 w 1.00 pose (4.785 -4.417 90.4) ref 90.4 e_lat -0.011 e_yaw +0.0 trk (-0.60 -0.03 -0.00) out (-0.60 -0.03 -0.00)
+[controller_server-5] [INFO] [1794582985.299980786] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.035 w 1.00 pose (4.785 -4.417 90.4) ref 90.4 e_lat -0.011 e_yaw +0.0 trk (-0.60 -0.03 -0.00) out (-0.60 -0.03 -0.00)
+[controller_server-5] [WARN] [1794582985.300078522] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[collision_monitor-10] [INFO] [1794582985.346840476] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [INFO] [1794582985.350103682] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.039 w 1.00 pose (4.793 -4.421 90.5) ref 90.4 e_lat -0.003 e_yaw +0.1 trk (-0.60 -0.01 -0.00) out (-0.60 -0.01 -0.00)
+[controller_server-5] [INFO] [1794582985.400041277] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.039 w 1.00 pose (4.793 -4.421 90.5) ref 90.4 e_lat -0.003 e_yaw +0.1 trk (-0.60 -0.01 -0.00) out (-0.60 -0.01 -0.00)
+[controller_server-5] [INFO] [1794582985.450003018] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.075 w 1.00 pose (4.782 -4.457 90.6) ref 90.4 e_lat -0.015 e_yaw +0.2 trk (-0.60 -0.04 -0.01) out (-0.60 -0.04 -0.01)
+[controller_server-5] [INFO] [1794582985.499997721] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.075 w 1.00 pose (4.782 -4.457 90.6) ref 90.4 e_lat -0.015 e_yaw +0.2 trk (-0.60 -0.04 -0.01) out (-0.60 -0.04 -0.01)
+[controller_server-5] [INFO] [1794582985.549996502] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.103 w 1.00 pose (4.778 -4.486 90.6) ref 90.4 e_lat -0.018 e_yaw +0.2 trk (-0.60 -0.05 -0.01) out (-0.60 -0.05 -0.01)
+[controller_server-5] [INFO] [1794582985.600049259] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.103 w 1.00 pose (4.778 -4.486 90.6) ref 90.4 e_lat -0.018 e_yaw +0.2 trk (-0.60 -0.05 -0.01) out (-0.60 -0.05 -0.01)
+[controller_server-5] [INFO] [1794582985.650096344] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.144 w 1.00 pose (4.779 -4.526 90.5) ref 90.4 e_lat -0.018 e_yaw +0.1 trk (-0.60 -0.05 -0.00) out (-0.60 -0.05 -0.00)
+[controller_server-5] [INFO] [1794582985.700004640] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.144 w 1.00 pose (4.779 -4.526 90.5) ref 90.4 e_lat -0.018 e_yaw +0.1 trk (-0.60 -0.05 -0.00) out (-0.60 -0.05 -0.00)
+[controller_server-5] [INFO] [1794582985.749999404] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.144 w 1.00 pose (4.779 -4.526 90.5) ref 90.4 e_lat -0.018 e_yaw +0.1 trk (-0.60 -0.05 -0.00) out (-0.60 -0.05 -0.00)
+[controller_server-5] [INFO] [1794582985.800031820] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.144 w 1.00 pose (4.779 -4.526 90.5) ref 90.4 e_lat -0.018 e_yaw +0.1 trk (-0.60 -0.05 -0.00) out (-0.60 -0.05 -0.00)
+[controller_server-5] [INFO] [1794582985.850017893] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.149 w 1.00 pose (4.792 -4.531 90.6) ref 90.4 e_lat -0.005 e_yaw +0.2 trk (-0.60 -0.01 -0.01) out (-0.60 -0.01 -0.01)
+[controller_server-5] [INFO] [1794582985.900037039] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.149 w 1.00 pose (4.792 -4.531 90.6) ref 90.4 e_lat -0.005 e_yaw +0.2 trk (-0.60 -0.01 -0.01) out (-0.60 -0.01 -0.01)
+[controller_server-5] [INFO] [1794582985.950032939] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.161 w 1.00 pose (4.801 -4.543 90.6) ref 90.4 e_lat +0.004 e_yaw +0.2 trk (-0.60 +0.01 -0.01) out (-0.60 +0.01 -0.01)
+[controller_server-5] [INFO] [1794582986.000078043] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.161 w 1.00 pose (4.801 -4.543 90.6) ref 90.4 e_lat +0.004 e_yaw +0.2 trk (-0.60 +0.01 -0.01) out (-0.60 +0.01 -0.01)
+[controller_server-5] [INFO] [1794582986.050017367] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.192 w 1.00 pose (4.794 -4.574 90.6) ref 90.4 e_lat -0.003 e_yaw +0.2 trk (-0.60 -0.01 -0.01) out (-0.60 -0.01 -0.01)
+[controller_server-5] [INFO] [1794582986.100039607] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.192 w 1.00 pose (4.794 -4.574 90.6) ref 90.4 e_lat -0.003 e_yaw +0.2 trk (-0.60 -0.01 -0.01) out (-0.60 -0.01 -0.01)
+[controller_server-5] [INFO] [1794582986.150035839] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.243 w 1.00 pose (4.798 -4.625 90.7) ref 90.4 e_lat +0.001 e_yaw +0.3 trk (-0.60 +0.01 -0.02) out (-0.60 +0.01 -0.02)
+[controller_server-5] [INFO] [1794582986.199978790] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.243 w 1.00 pose (4.798 -4.625 90.7) ref 90.4 e_lat +0.001 e_yaw +0.3 trk (-0.60 +0.01 -0.02) out (-0.60 +0.01 -0.02)
+[controller_server-5] [INFO] [1794582986.249984093] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.280 w 1.00 pose (4.798 -4.662 90.7) ref 90.4 e_lat +0.001 e_yaw +0.3 trk (-0.60 +0.00 -0.01) out (-0.60 +0.00 -0.01)
+[controller_server-5] [INFO] [1794582986.299971992] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.280 w 1.00 pose (4.798 -4.662 90.7) ref 90.4 e_lat +0.001 e_yaw +0.3 trk (-0.60 +0.00 -0.01) out (-0.60 +0.00 -0.01)
+[controller_server-5] [INFO] [1794582986.349995655] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.340 w 1.00 pose (4.795 -4.722 90.3) ref 90.4 e_lat -0.003 e_yaw -0.1 trk (-0.60 -0.01 +0.01) out (-0.60 -0.01 +0.01)
+[controller_server-5] [INFO] [1794582986.400088237] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.340 w 1.00 pose (4.795 -4.722 90.3) ref 90.4 e_lat -0.003 e_yaw -0.1 trk (-0.60 -0.01 +0.01) out (-0.60 -0.01 +0.01)
+[controller_server-5] [INFO] [1794582986.449994758] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.402 w 1.00 pose (4.793 -4.785 89.3) ref 90.4 e_lat -0.006 e_yaw -1.1 trk (-0.60 -0.03 +0.06) out (-0.60 -0.03 +0.06)
+[controller_server-5] [INFO] [1794582986.500030734] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.402 w 1.00 pose (4.793 -4.785 89.3) ref 90.4 e_lat -0.006 e_yaw -1.1 trk (-0.60 -0.03 +0.06) out (-0.60 -0.03 +0.06)
+[controller_server-5] [WARN] [1794582986.500448811] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794582986.549994395] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.455 w 1.00 pose (4.816 -4.837 89.5) ref 90.4 e_lat +0.017 e_yaw -0.9 trk (-0.52 +0.04 +0.05) out (-0.52 +0.04 +0.05)
+[controller_server-5] [INFO] [1794582986.599960086] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.455 w 1.00 pose (4.816 -4.837 89.5) ref 90.4 e_lat +0.017 e_yaw -0.9 trk (-0.52 +0.04 +0.05) out (-0.52 +0.04 +0.05)
+[controller_server-5] [INFO] [1794582986.650104513] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.455 w 1.00 pose (4.816 -4.837 89.5) ref 90.4 e_lat +0.017 e_yaw -0.9 trk (-0.52 +0.04 +0.05) out (-0.52 +0.04 +0.05)
+[controller_server-5] [INFO] [1794582986.700058383] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.455 w 1.00 pose (4.816 -4.837 89.5) ref 90.4 e_lat +0.017 e_yaw -0.9 trk (-0.52 +0.04 +0.05) out (-0.52 +0.04 +0.05)
+[controller_server-5] [WARN] [1794582986.700210344] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794582986.750056078] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.509 w 1.00 pose (4.822 -4.891 89.7) ref 90.4 e_lat +0.022 e_yaw -0.7 trk (-0.52 +0.06 +0.04) out (-0.52 +0.06 +0.04)
+[controller_server-5] [INFO] [1794582986.800014386] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.509 w 1.00 pose (4.822 -4.891 89.7) ref 90.4 e_lat +0.022 e_yaw -0.7 trk (-0.52 +0.06 +0.04) out (-0.52 +0.06 +0.04)
+[controller_server-5] [INFO] [1794582986.850005867] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.546 w 1.00 pose (4.837 -4.928 89.9) ref 90.4 e_lat +0.037 e_yaw -0.5 trk (-0.51 +0.10 +0.03) out (-0.51 +0.10 +0.03)
+[controller_server-5] [INFO] [1794582986.899997398] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.546 w 1.00 pose (4.837 -4.928 89.9) ref 90.4 e_lat +0.037 e_yaw -0.5 trk (-0.51 +0.10 +0.03) out (-0.51 +0.10 +0.03)
+[controller_server-5] [INFO] [1794582986.949955383] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.545 w 1.00 pose (4.852 -4.927 90.0) ref 90.4 e_lat +0.052 e_yaw -0.4 trk (-0.50 +0.15 +0.02) out (-0.50 +0.15 +0.02)
+[controller_server-5] [INFO] [1794582986.999980205] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.545 w 1.00 pose (4.852 -4.927 90.0) ref 90.4 e_lat +0.052 e_yaw -0.4 trk (-0.50 +0.15 +0.02) out (-0.50 +0.15 +0.02)
+[controller_server-5] [INFO] [1794582987.049973067] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.542 w 1.00 pose (4.851 -4.924 90.1) ref 90.4 e_lat +0.052 e_yaw -0.3 trk (-0.50 +0.15 +0.02) out (-0.50 +0.15 +0.02)
+[controller_server-5] [INFO] [1794582987.100038520] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.542 w 1.00 pose (4.851 -4.924 90.1) ref 90.4 e_lat +0.052 e_yaw -0.3 trk (-0.50 +0.15 +0.02) out (-0.50 +0.15 +0.02)
+[controller_server-5] [INFO] [1794582987.150112894] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.573 w 1.00 pose (4.834 -4.955 90.2) ref 90.4 e_lat +0.034 e_yaw -0.2 trk (-0.52 +0.10 +0.01) out (-0.52 +0.10 +0.01)
+[controller_server-5] [INFO] [1794582987.200033744] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.573 w 1.00 pose (4.834 -4.955 90.2) ref 90.4 e_lat +0.034 e_yaw -0.2 trk (-0.52 +0.10 +0.01) out (-0.52 +0.10 +0.01)
+[controller_server-5] [INFO] [1794582987.250062862] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.643 w 1.00 pose (4.808 -5.025 90.3) ref 90.4 e_lat +0.008 e_yaw -0.1 trk (-0.52 +0.02 +0.01) out (-0.52 +0.02 +0.01)
+[controller_server-5] [INFO] [1794582987.300026075] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.643 w 1.00 pose (4.808 -5.025 90.3) ref 90.4 e_lat +0.008 e_yaw -0.1 trk (-0.52 +0.02 +0.01) out (-0.52 +0.02 +0.01)
+[controller_server-5] [INFO] [1794582987.350011415] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.720 w 1.00 pose (4.789 -5.102 90.3) ref 90.4 e_lat -0.012 e_yaw -0.1 trk (-0.52 -0.04 +0.00) out (-0.52 -0.04 +0.00)
+[controller_server-5] [INFO] [1794582987.400030576] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.720 w 1.00 pose (4.789 -5.102 90.3) ref 90.4 e_lat -0.012 e_yaw -0.1 trk (-0.52 -0.04 +0.00) out (-0.52 -0.04 +0.00)
+[controller_server-5] [INFO] [1794582987.449971053] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.770 w 1.00 pose (4.773 -5.152 90.2) ref 90.4 e_lat -0.028 e_yaw -0.2 trk (-0.60 -0.09 +0.01) out (-0.60 -0.09 +0.01)
+[controller_server-5] [INFO] [1794582987.500021767] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.770 w 1.00 pose (4.773 -5.152 90.2) ref 90.4 e_lat -0.028 e_yaw -0.2 trk (-0.60 -0.09 +0.01) out (-0.60 -0.09 +0.01)
+[controller_server-5] [INFO] [1794582987.550126280] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.836 w 1.00 pose (4.735 -5.218 89.9) ref 90.4 e_lat -0.067 e_yaw -0.5 trk (-0.60 -0.21 +0.03) out (-0.60 -0.21 +0.03)
+[controller_server-5] [INFO] [1794582987.599999956] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.836 w 1.00 pose (4.735 -5.218 89.9) ref 90.4 e_lat -0.067 e_yaw -0.5 trk (-0.60 -0.21 +0.03) out (-0.60 -0.21 +0.03)
+[controller_server-5] [WARN] [1794582987.600066310] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794582987.649985331] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.883 w 1.00 pose (4.724 -5.265 89.8) ref 90.4 e_lat -0.078 e_yaw -0.6 trk (-0.63 -0.24 +0.03) out (-0.63 -0.24 +0.03)
+[controller_server-5] [INFO] [1794582987.700033170] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.883 w 1.00 pose (4.724 -5.265 89.8) ref 90.4 e_lat -0.078 e_yaw -0.6 trk (-0.63 -0.24 +0.03) out (-0.63 -0.24 +0.03)
+[controller_server-5] [WARN] [1794582987.700098878] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794582987.749973238] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.946 w 1.00 pose (4.736 -5.329 90.0) ref 90.4 e_lat -0.067 e_yaw -0.4 trk (-0.76 -0.21 +0.02) out (-0.76 -0.21 +0.02)
+[controller_server-5] [INFO] [1794582987.800028446] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.946 w 1.00 pose (4.736 -5.329 90.0) ref 90.4 e_lat -0.067 e_yaw -0.4 trk (-0.76 -0.21 +0.02) out (-0.76 -0.21 +0.02)
+[controller_server-5] [WARN] [1794582987.800094390] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794582987.849968483] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.948 w 1.00 pose (4.799 -5.331 89.4) ref 90.4 e_lat -0.004 e_yaw -1.0 trk (-0.77 -0.02 +0.05) out (-0.77 -0.02 +0.05)
+[controller_server-5] [INFO] [1794582987.899978865] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.948 w 1.00 pose (4.799 -5.331 89.4) ref 90.4 e_lat -0.004 e_yaw -1.0 trk (-0.77 -0.02 +0.05) out (-0.77 -0.02 +0.05)
+[controller_server-5] [INFO] [1794582987.950026040] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.960 w 1.00 pose (4.808 -5.342 88.3) ref 90.4 e_lat +0.005 e_yaw -2.1 trk (-0.79 -0.01 +0.11) out (-0.79 -0.01 +0.11)
+[controller_server-5] [INFO] [1794582987.999968610] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.960 w 1.00 pose (4.808 -5.342 88.3) ref 90.4 e_lat +0.005 e_yaw -2.1 trk (-0.79 -0.01 +0.11) out (-0.79 -0.01 +0.11)
+[controller_server-5] [INFO] [1794582988.050048950] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.987 w 1.00 pose (4.817 -5.370 88.4) ref 90.4 e_lat +0.015 e_yaw -2.0 trk (-0.84 +0.01 +0.10) out (-0.84 +0.01 +0.10)
+[controller_server-5] [INFO] [1794582988.100043078] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.987 w 1.00 pose (4.817 -5.370 88.4) ref 90.4 e_lat +0.015 e_yaw -2.0 trk (-0.84 +0.01 +0.10) out (-0.84 +0.01 +0.10)
+[controller_server-5] [INFO] [1794582988.149982396] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.061 w 1.00 pose (4.812 -5.444 88.5) ref 90.4 e_lat +0.009 e_yaw -1.9 trk (-0.97 -0.00 +0.10) out (-0.97 -0.00 +0.10)
+[controller_server-5] [INFO] [1794582988.200038240] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.061 w 1.00 pose (4.812 -5.444 88.5) ref 90.4 e_lat +0.009 e_yaw -1.9 trk (-0.97 -0.00 +0.10) out (-0.97 -0.00 +0.10)
+[controller_server-5] [INFO] [1794582988.250055541] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.177 w 1.00 pose (4.821 -5.559 89.3) ref 90.4 e_lat +0.017 e_yaw -1.1 trk (-1.00 +0.03 +0.06) out (-1.00 +0.03 +0.06)
+[controller_server-5] [INFO] [1794582988.300080054] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.177 w 1.00 pose (4.821 -5.559 89.3) ref 90.4 e_lat +0.017 e_yaw -1.1 trk (-1.00 +0.03 +0.06) out (-1.00 +0.03 +0.06)
+[controller_server-5] [INFO] [1794582988.350072433] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.265 w 1.00 pose (4.800 -5.647 90.1) ref 90.4 e_lat -0.005 e_yaw -0.3 trk (-1.00 -0.02 +0.02) out (-1.00 -0.02 +0.02)
+[cmd_gate-13] [INFO] [1794582988.350103675] [cmd_gate]: mode tunnel -> normal
+[cmd_gate-13] [WARN] [1794582988.399105275] [cmd_gate]: holding: localization not trusted
+[controller_server-5] [INFO] [1794582988.400027088] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.265 w 1.00 pose (4.800 -5.647 90.1) ref 90.4 e_lat -0.005 e_yaw -0.3 trk (-1.00 -0.02 +0.02) out (-1.00 -0.02 +0.02)
+[controller_server-5] [INFO] [1794582988.451744310] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.371 w 0.84 pose (4.782 -5.763 90.6) ref 90.4 e_lat -0.037 e_yaw +0.2 trk (-0.93 -0.38 -0.01) out (-0.79 -0.39 -0.01)
+[controller_server-5] [INFO] [1794582988.501348377] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.371 w 0.84 pose (4.782 -5.763 90.6) ref 90.4 e_lat -0.037 e_yaw +0.2 trk (-0.93 -0.38 -0.01) out (-0.81 -0.36 -0.02)
+[controller_server-5] [INFO] [1794582988.551224517] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.409 w 0.72 pose (4.777 -5.808 89.4) ref 90.4 e_lat -0.057 e_yaw -1.0 trk (-0.87 -0.52 +0.05) out (-0.65 -0.43 -0.01)
+[controller_server-5] [INFO] [1794582988.601136503] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.409 w 0.72 pose (4.777 -5.808 89.4) ref 90.4 e_lat -0.057 e_yaw -1.0 trk (-0.87 -0.52 +0.05) out (-0.63 -0.42 -0.00)
+[controller_server-5] [INFO] [1794582988.651003791] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.418 w 0.69 pose (4.786 -5.816 88.6) ref 90.4 e_lat -0.050 e_yaw -1.8 trk (-0.87 -0.51 +0.09) out (-0.60 -0.41 +0.04)
+[controller_server-5] [INFO] [1794582988.701102223] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.418 w 0.69 pose (4.786 -5.816 88.6) ref 90.4 e_lat -0.050 e_yaw -1.8 trk (-0.87 -0.51 +0.09) out (-0.59 -0.40 +0.05)
+[controller_server-5] [INFO] [1794582988.751011812] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.369 w 0.85 pose (4.808 -5.752 88.7) ref 90.4 e_lat -0.009 e_yaw -1.7 trk (-0.96 -0.27 +0.09) out (-0.82 -0.25 +0.07)
+[controller_server-5] [INFO] [1794582988.801106488] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.369 w 0.85 pose (4.808 -5.752 88.7) ref 90.4 e_lat -0.009 e_yaw -1.7 trk (-0.96 -0.27 +0.09) out (-0.82 -0.25 +0.07)
+[controller_server-5] [INFO] [1794582988.850975470] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.342 w 0.92 pose (4.824 -5.722 88.8) ref 90.4 e_lat +0.013 e_yaw -1.6 trk (-0.99 -0.14 +0.08) out (-0.91 -0.13 +0.07)
+[controller_server-5] [INFO] [1794582988.901133679] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.342 w 0.92 pose (4.824 -5.722 88.8) ref 90.4 e_lat +0.013 e_yaw -1.6 trk (-0.99 -0.14 +0.08) out (-0.91 -0.13 +0.07)
+[controller_server-5] [INFO] [1794582988.951051103] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.338 w 0.92 pose (4.804 -5.721 88.8) ref 90.4 e_lat -0.007 e_yaw -1.6 trk (-0.98 -0.20 +0.08) out (-0.91 -0.19 +0.08)
+[cmd_gate-13] [INFO] [1794582988.999120737] [cmd_gate]: released
+[controller_server-5] [INFO] [1794582989.001153019] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.338 w 0.92 pose (4.804 -5.721 88.8) ref 90.4 e_lat -0.007 e_yaw -1.6 trk (-0.98 -0.20 +0.08) out (-0.91 -0.19 +0.08)
+[controller_server-5] [INFO] [1794582989.051040431] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.338 w 0.92 pose (4.804 -5.721 88.8) ref 90.4 e_lat -0.007 e_yaw -1.6 trk (-0.98 -0.20 +0.08) out (-0.92 -0.19 +0.06)
+[controller_server-5] [INFO] [1794582989.101148756] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.338 w 0.92 pose (4.804 -5.721 88.8) ref 90.4 e_lat -0.007 e_yaw -1.6 trk (-0.98 -0.20 +0.08) out (-0.93 -0.19 +0.08)
+[cmd_gate-13] [INFO] [1794582989.150016559] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794582989.150058429] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.183 w 1.00 pose (4.762 -5.566 88.3) ref 90.4 e_lat -0.042 e_yaw -2.1 trk (-0.99 -0.16 +0.11) out (-0.99 -0.16 +0.11)
+[controller_server-5] [INFO] [1794582989.200000959] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.183 w 1.00 pose (4.762 -5.566 88.3) ref 90.4 e_lat -0.042 e_yaw -2.1 trk (-0.99 -0.16 +0.11) out (-0.99 -0.16 +0.11)
+[controller_server-5] [INFO] [1794582989.249983060] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.201 w 1.00 pose (4.749 -5.584 86.4) ref 90.4 e_lat -0.055 e_yaw -4.0 trk (-0.99 -0.23 +0.21) out (-0.99 -0.23 +0.21)
+[controller_server-5] [INFO] [1794582989.300041008] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.201 w 1.00 pose (4.749 -5.584 86.4) ref 90.4 e_lat -0.055 e_yaw -4.0 trk (-0.99 -0.23 +0.21) out (-0.99 -0.23 +0.21)
+[controller_server-5] [INFO] [1794582989.350024684] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.266 w 1.00 pose (4.737 -5.649 87.0) ref 90.4 e_lat -0.068 e_yaw -3.4 trk (-0.99 -0.26 +0.18) out (-0.99 -0.26 +0.18)
+[cmd_gate-13] [INFO] [1794582989.350074686] [cmd_gate]: mode tunnel -> normal
+[controller_server-5] [INFO] [1794582989.399988595] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.266 w 1.00 pose (4.737 -5.649 87.0) ref 90.4 e_lat -0.068 e_yaw -3.4 trk (-0.99 -0.26 +0.18) out (-0.99 -0.26 +0.18)
+[controller_server-5] [INFO] [1794582989.449971682] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.232 w 1.00 pose (4.691 -5.615 87.4) ref 90.4 e_lat -0.113 e_yaw -3.0 trk (-0.98 -0.35 +0.16) out (-0.98 -0.35 +0.16)
+[controller_server-5] [INFO] [1794582989.500017481] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.232 w 1.00 pose (4.691 -5.615 87.4) ref 90.4 e_lat -0.113 e_yaw -3.0 trk (-0.98 -0.35 +0.16) out (-0.98 -0.35 +0.16)
+[controller_server-5] [INFO] [1794582989.551062772] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.369 w 0.85 pose (4.692 -5.783 88.2) ref 90.4 e_lat -0.129 e_yaw -2.2 trk (-0.89 -0.54 +0.11) out (-0.82 -0.48 +0.11)
+[controller_server-5] [INFO] [1794582989.601142114] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.369 w 0.85 pose (4.692 -5.783 88.2) ref 90.4 e_lat -0.129 e_yaw -2.2 trk (-0.89 -0.54 +0.11) out (-0.84 -0.50 +0.12)
+[controller_server-5] [INFO] [1794582989.651252489] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.655 w 0.00 pose (4.904 -6.078 89.7) ref 90.4 e_lat -0.125 e_yaw -0.7 trk (-0.36 -0.98 +0.04) out (-0.71 -0.42 +0.16)
+[controller_server-5] [INFO] [1794582989.701143327] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.655 w 0.00 pose (4.904 -6.078 89.7) ref 90.4 e_lat -0.125 e_yaw -0.7 trk (-0.36 -0.98 +0.04) out (-0.75 -0.54 +0.17)
+[controller_server-5] [INFO] [1794582989.749940360] [controller_server]: ZoneAwareController: slope_3+tunnel_3 done, in body max |lateral| 0.052 m, max |heading| 1.08 deg, min speed 0.53 m/s
+[controller_server-5] [INFO] [1794582990.851237070] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.852844218] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.854805441] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.856263501] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794582990.856358250] [controller_server]: Optimizer fail to compute path
+[controller_server-5] [INFO] [1794582990.901817503] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.903270428] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.904691552] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.906327481] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794582990.906389074] [controller_server]: Optimizer fail to compute path
+[controller_server-5] [INFO] [1794582990.951434754] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.952865349] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.954835001] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582990.956247638] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794582990.956299893] [controller_server]: Optimizer fail to compute path
+[controller_server-5] [INFO] [1794582991.153147878] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [INFO] [1794582991.250078457] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794582991.250132220] [controller_server]: ZoneAwareController: footprint clear, resuming normal path tracking
+[smoother_server-6] [INFO] [1794582992.738579040] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794582992.749876033] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794582995.449876774] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794582995.450191781] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794582995.478008331] [bt_navigator]: Goal succeeded
+[bt_navigator-11] [INFO] [1794583010.055060976] [bt_navigator]: Begin navigating from current location (6.15, -6.48) to (6.45, -6.13)
+[smoother_server-6] [INFO] [1794583010.066141187] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794583010.076028686] [controller_server]: Received a goal, begin computing control effort.
+[cmd_gate-13] [WARN] [1794583010.865747656] [cmd_gate]: holding: localization not trusted
+[smoother_server-6] [INFO] [1794583011.096008468] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794583011.126248040] [controller_server]: Passing new path to controller.
+[collision_monitor-10] [WARN] [1794583011.449789009] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.028796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.449907348] [collision_monitor]: Robot to stop due to invalid source. Either due to data not published yet, or to lack of new data received within the sensor timeout, or if impossible to transform data to base frame
+[collision_monitor-10] [WARN] [1794583011.482839644] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.060796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.515884279] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.092796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.548905332] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.124796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.581767137] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.160796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.614832802] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.192796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.647853202] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.224796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.680985150] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.256796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.713817790] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.292796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.746843897] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.324796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.779818375] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.356796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.812905999] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.388796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.845802908] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.424796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.878785995] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.456796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.911874960] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.488796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.945102904] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.520796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583011.977770752] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.556796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.010819291] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.588796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.044018665] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.620796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.077244132] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.652796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.109799918] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.688796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.142804457] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.720796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.175841763] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.752796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.208949594] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.784796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.241782115] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.820796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.274822420] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.852796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.307846225] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.884796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.341067091] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.916796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.373833656] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.952796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.406808524] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 1.984796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.439907793] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.016796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.473055732] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.048796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.505771943] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.084796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.538780909] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.116796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.571869905] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.148796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.604891809] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.180796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.637815883] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.216796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.670793895] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.248796 seconds. Ignoring the source.
+[cmd_gate-13] [INFO] [1794583012.699166918] [cmd_gate]: released
+[collision_monitor-10] [WARN] [1794583012.703870809] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.280796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.736908684] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.312796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.769790722] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.348796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.802821664] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.380796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.835805244] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.412796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.868969020] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.444796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.901853507] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.480796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.934790874] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.512796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583012.967877651] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.544796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.000976020] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.576796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.033810741] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.612796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.066802807] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.644796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.099850971] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.676796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.132987076] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.708796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.165833039] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.744796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.198915727] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.776796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.231912714] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.808796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.264856700] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.840796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.297806513] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.876796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.330806808] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.908796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.363777413] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.940796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.396947651] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 2.972796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.429808844] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.008796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.462865057] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.040796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.495887399] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.072796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.528821946] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.104796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.561769692] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.140796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.594822085] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.172796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.627872205] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.204796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.661141314] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.236796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.693904413] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.272796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.726825680] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.304796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.759868589] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.336796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.793027511] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.368796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.825899208] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.404796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.858822115] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.436796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.891871516] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.468796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.924957256] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.500796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.957783705] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.536796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583013.990793328] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.568796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.023840583] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.600796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.056881012] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.632796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.089751703] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.668796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.122824641] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.700796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.155767550] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.732796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.188891173] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.764796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.221795067] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.800796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.254823727] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.832796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.287860350] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.864796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.320965973] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.896796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.353808576] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.932796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.386837380] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.964796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.419936505] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 3.996796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.452979539] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.028796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.485772558] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.064796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.519000490] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.096796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.551864242] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.128796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.585030705] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.160796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.617818335] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.196796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.650821538] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.228796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.683857092] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.260796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.716899457] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.292796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.749800778] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.328796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.782875874] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.360796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.815844188] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.392796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.848914754] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.424796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.881822157] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.460796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.914832191] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.492796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.947835918] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.524796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583014.980972907] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.556796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.013822476] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.592796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.046785160] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.624796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.079777565] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.656796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.113008662] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.688796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.145865777] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.724796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.178862821] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.756796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.211903342] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.788796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.244811485] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.820796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.277740360] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.856796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.310814090] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.888796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.343860096] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.920796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.377034941] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.952796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.409806875] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 4.988796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.442827204] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.020796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.475832897] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.052796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.508909406] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.084796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.541794449] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.120796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.574799902] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.152796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.607857168] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.184796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.641051666] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.216796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.673868181] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.252796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.706850211] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.284796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.739890264] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.316796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.772899229] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.348796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.805776589] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.384796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.838776529] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.416796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.871924171] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.448796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.904898115] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.480796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.937878012] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.516796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583015.970834322] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.548796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.003877740] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.580796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.036902834] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.612796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.069788987] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.648796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.102883921] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.680796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.135830041] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.712796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.169203670] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.744796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.201787109] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.780796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.234837563] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.812796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.267811316] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.844796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.301168031] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.876796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.333769093] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.912796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.366809557] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.944796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.399879194] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 5.976796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.433066358] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.008796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.465764175] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.044796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.498816884] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.076796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.531945305] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.108796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.564945946] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.140796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.597805031] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.176796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.630802562] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.208796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.663831041] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.240796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.696907613] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.272796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.729781537] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.308796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.762802668] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.340796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.795868804] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.372796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.828797935] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.404796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.861753666] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.440796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.894782196] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.472796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.927794939] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.504796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.961016980] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.536796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583016.993894353] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.572796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.026801809] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.604796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.059822001] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.636796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.092839395] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.668796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.125878009] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.704796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.158781999] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.736796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.191983274] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.768796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.224955424] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.800796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.257754502] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.836796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.290780606] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.868796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.323812335] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.900796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.356854578] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.932796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.389856318] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 6.968796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.422830456] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.000796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.455856311] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.032796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.488929840] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.064796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.521784512] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.100796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.554770023] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.132796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.587991478] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.164796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.620849779] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.196796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.653916288] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.232796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.686921493] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.264796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.719949666] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.296796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.753025805] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.328796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.785762923] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.364796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.818810500] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.396796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.851828940] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.428796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.884970341] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.460796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.917803458] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.496796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.950804552] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.528796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583017.983788188] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.560796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.016873576] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.592796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.049800536] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.628796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.082801947] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.660796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.115878926] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.692796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.148856437] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.724796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.181767295] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.760796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.214808360] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.792796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.247803635] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.824796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.280830854] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.856796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.313770692] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.892796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.346768708] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.924796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.379788514] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.956796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.413044661] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 7.988796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.445813775] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.024796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.478792682] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.056796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.511808217] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.088796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.544910369] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.120796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.577790684] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.156796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.610828743] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.188796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.643823518] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.220796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.676834361] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.252796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.709811081] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.288796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.742788724] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.320796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.775779239] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.352796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.808929690] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.384796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.841764132] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.420796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.874769863] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.452796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.907870222] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.484796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.940947701] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.516796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583018.973808855] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.552796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.006820976] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.584796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.039887612] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.616796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.073163010] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.648796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.105790147] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.684796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.138774741] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.716796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.171875253] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.748796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.204852590] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.780796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.237757048] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.816796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.270793645] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.848796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.303800511] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.880796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.336837663] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.912796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.369784549] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.948796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.402892235] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 8.980796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.435857955] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.012796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.468960582] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.044796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.501754849] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.080796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.534783475] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.112796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.567893823] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.144796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.600892918] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.176796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.633906262] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.212796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.666812829] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.244796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.699799686] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.276796 seconds. Ignoring the source.
+[collision_monitor-10] [WARN] [1794583019.732841434] [collision_monitor]: [terrain]: Latest source and current collision monitor node timestamps differ on 9.308796 seconds. Ignoring the source.
+[collision_monitor-10] [INFO] [1794583019.765788202] [collision_monitor]: Robot to continue normal operation
+[cmd_gate-13] [WARN] [1794583019.798983139] [cmd_gate]: holding: localization not trusted
+[controller_server-5] [ERROR] [1794583020.126304942] [controller_server]: Failed to make progress
+[controller_server-5] [INFO] [1794583020.126548111] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794583020.126730070] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-5] [INFO] [1794583020.146440654] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794583020.154601435] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794583020.162403192] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794583020.167310562] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794583020.167392675] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794583020.167405394] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794583020.179667414] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[cmd_gate-13] [INFO] [1794583020.599100121] [cmd_gate]: released
+[smoother_server-6] [INFO] [1794583022.226141236] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794583022.262604291] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794583022.262831133] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794583022.262988592] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794583022.295575401] [bt_navigator]: Goal succeeded
+[bt_navigator-11] [INFO] [1794583038.386345227] [bt_navigator]: Begin navigating from current location (6.42, -6.25) to (6.47, -5.88)
+[smoother_server-6] [INFO] [1794583038.397606142] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794583038.409306426] [controller_server]: Received a goal, begin computing control effort.
+[smoother_server-6] [INFO] [1794583039.427447357] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794583039.459597893] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794583039.459969051] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794583039.460290610] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794583039.496982429] [bt_navigator]: Goal succeeded
+[map_server-1] [INFO] [1794583039.724603392] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-1] [INFO] [1794583039.724697494] [nav_map_server]: Running Nav2 LifecycleNode rcl preshutdown (nav_map_server)
+[map_server-1] [INFO] [1794583039.724804735] [nav_map_server]: Deactivating
+[map_server-1] [INFO] [1794583039.724833822] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794583039.724624170] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[behavior_server-8] [INFO] [1794583039.724724969] [behavior_server]: Running Nav2 LifecycleNode rcl preshutdown (behavior_server)
+[behavior_server-8] [INFO] [1794583039.724851174] [behavior_server]: Deactivating
+[behavior_server-8] [INFO] [1794583039.724927954] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[smoother_server-6] [INFO] [1794583039.724854328] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[smoother_server-6] [INFO] [1794583039.724923272] [smoother_server]: Running Nav2 LifecycleNode rcl preshutdown (smoother_server)
+[smoother_server-6] [INFO] [1794583039.725067025] [smoother_server]: Deactivating
+[smoother_server-6] [INFO] [1794583039.725106933] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794583039.725225199] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[collision_monitor-10] [INFO] [1794583039.725334973] [collision_monitor]: Running Nav2 LifecycleNode rcl preshutdown (collision_monitor)
+[collision_monitor-10] [INFO] [1794583039.725417957] [collision_monitor]: Deactivating
+[collision_monitor-10] [INFO] [1794583039.725450039] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[planner_server-7] [INFO] [1794583039.725540767] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[planner_server-7] [INFO] [1794583039.725589701] [planner_server]: Running Nav2 LifecycleNode rcl preshutdown (planner_server)
+[costmap_filter_info_server-3] [INFO] [1794583039.725583054] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[costmap_filter_info_server-3] [INFO] [1794583039.725673454] [speed_filter_info_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_filter_info_server)
+[map_server-2] [INFO] [1794583039.725729501] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-2] [INFO] [1794583039.725801788] [speed_mask_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_mask_server)
+[cmd_gate-13] [INFO] [1794583039.725784366] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[planner_server-7] [INFO] [1794583039.725813388] [planner_server]: Deactivating
+[planner_server-7] [INFO] [1794583039.725861757] [global_costmap.global_costmap]: Deactivating
+[map_server-2] [INFO] [1794583039.725874137] [speed_mask_server]: Deactivating
+[map_server-2] [INFO] [1794583039.725892239] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794583039.725921382] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[controller_server-5] [INFO] [1794583039.725953393] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[controller_server-5] [INFO] [1794583039.726004767] [controller_server]: Running Nav2 LifecycleNode rcl preshutdown (controller_server)
+[velocity_smoother-9] [INFO] [1794583039.726047197] [velocity_smoother]: Running Nav2 LifecycleNode rcl preshutdown (velocity_smoother)
+[controller_server-5] [INFO] [1794583039.726071618] [controller_server]: Deactivating
+[costmap_filter_info_server-3] [INFO] [1794583039.726184433] [speed_filter_info_server]: Deactivating
+[costmap_filter_info_server-3] [INFO] [1794583039.726223623] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794583039.726215146] [velocity_smoother]: Deactivating
+[controller_server-5] [INFO] [1794583039.726283679] [MPPIController]: Deactivated MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794583039.726313833] [local_costmap.local_costmap]: Deactivating
+[velocity_smoother-9] [INFO] [1794583039.726468375] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794583039.726750278] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[lifecycle_manager-12] [INFO] [1794583039.726893498] [lifecycle_manager_navigation]: Running Nav2 LifecycleManager rcl preshutdown (lifecycle_manager_navigation)
+[bt_navigator-11] [INFO] [1794583039.727589266] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[bt_navigator-11] [INFO] [1794583039.727647614] [bt_navigator]: Running Nav2 LifecycleNode rcl preshutdown (bt_navigator)
+[bt_navigator-11] [INFO] [1794583039.727724814] [bt_navigator]: Deactivating
+[bt_navigator-11] [INFO] [1794583039.727786691] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[map_server-1] [INFO] [1794583039.735077416] [nav_map_server]: Cleaning up
+[map_server-1] [INFO] [1794583039.735160339] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794583039.735201256] [behavior_server]: Cleaning up
+[smoother_server-6] [INFO] [1794583039.735296958] [smoother_server]: Cleaning up
+[collision_monitor-10] [INFO] [1794583039.735699424] [collision_monitor]: Cleaning up
+[collision_monitor-10] [INFO] [1794583039.735742009] [collision_monitor]: [FootprintApproach]: Destroying Polygon
+[collision_monitor-10] [INFO] [1794583039.735751999] [collision_monitor]: [terrain]: Destroying PointCloud
+[map_server-2] [INFO] [1794583039.736425033] [speed_mask_server]: Cleaning up
+[map_server-2] [INFO] [1794583039.736545843] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794583039.737100303] [velocity_smoother]: Cleaning up
+[velocity_smoother-9] [INFO] [1794583039.737133677] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[costmap_filter_info_server-3] [INFO] [1794583039.737222918] [speed_filter_info_server]: Cleaning up
+[costmap_filter_info_server-3] [INFO] [1794583039.737253738] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[bt_navigator-11] [INFO] [1794583039.738717246] [bt_navigator]: Cleaning up
+[controller_server-5] [INFO] [1794583039.738733247] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794583039.741665157] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794583039.743881865] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794583039.745683342] [velocity_smoother]: Destroying
+[costmap_filter_info_server-3] [INFO] [1794583039.745867107] [speed_filter_info_server]: Destroying
+[map_server-1] [INFO] [1794583039.746278587] [nav_map_server]: Destroying
+[controller_server-5] [INFO] [1794583039.749111118] [controller_server]: Cleaning up
+[map_server-2] [INFO] [1794583039.750008429] [speed_mask_server]: Destroying
+[smoother_server-6] [INFO] [1794583039.752571047] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794583039.752654370] [MPPIController]: Cleaned up MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794583039.752902944] [local_costmap.local_costmap]: Cleaning up
+[smoother_server-6] [INFO] [1794583039.762817237] [smoother_server]: Destroying
+[collision_monitor-10] [INFO] [1794583039.769273960] [collision_monitor]: Destroying
+[lifecycle_manager-12] [INFO] [1794583039.777951865] [lifecycle_manager_navigation]: Destroying lifecycle_manager_navigation
+[behavior_server-8] [INFO] [1794583039.801018894] [behavior_server]: Destroying
+[controller_server-5] [INFO] [1794583039.815853764] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[terrain_obstacles.py-4] Traceback (most recent call last):
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 97, in <module>
+[terrain_obstacles.py-4]     main()
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 87, in main
+[terrain_obstacles.py-4]     rclpy.spin(node)
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+[terrain_obstacles.py-4]     executor.spin_once()
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 926, in spin_once
+[terrain_obstacles.py-4]     self._spin_once_impl(timeout_sec)
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 907, in _spin_once_impl
+[terrain_obstacles.py-4]     handler, entity, node = self.wait_for_ready_callbacks(
+[terrain_obstacles.py-4]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 877, in wait_for_ready_callbacks
+[terrain_obstacles.py-4]     return next(self._cb_iter)
+[terrain_obstacles.py-4]            ^^^^^^^^^^^^^^^^^^^
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 785, in _wait_for_ready_callbacks
+[terrain_obstacles.py-4]     raise ExternalShutdownException()
+[terrain_obstacles.py-4] rclpy.executors.ExternalShutdownException
+[controller_server-5] [INFO] [1794583039.826831720] [local_costmap.local_costmap]: Destroying
+[controller_server-5] [INFO] [1794583039.840001046] [controller_server]: Destroying
+[bt_navigator-11] [INFO] [1794583039.872554346] [bt_navigator]: Completed Cleaning up
+[bt_navigator-11] [INFO] [1794583039.872631475] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[INFO] [cmd_gate-13]: process has finished cleanly [pid 1599596]
+[bt_navigator-11] [INFO] [1794583039.883484075] [bt_navigator]: Destroying
+[INFO] [velocity_smoother-9]: process has finished cleanly [pid 1599592]
+[INFO] [costmap_filter_info_server-3]: process has finished cleanly [pid 1599586]
+[INFO] [map_server-1]: process has finished cleanly [pid 1599584]
+[INFO] [map_server-2]: process has finished cleanly [pid 1599585]
+[INFO] [smoother_server-6]: process has finished cleanly [pid 1599589]
+[INFO] [collision_monitor-10]: process has finished cleanly [pid 1599593]
+[INFO] [lifecycle_manager-12]: process has finished cleanly [pid 1599595]
+[INFO] [behavior_server-8]: process has finished cleanly [pid 1599591]
+[INFO] [controller_server-5]: process has finished cleanly [pid 1599588]
+[planner_server-7] [INFO] [1794583039.973737716] [planner_server]: Deactivating plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794583039.973807203] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794583039.984139341] [planner_server]: Cleaning up
+[planner_server-7] [INFO] [1794583039.990685930] [global_costmap.global_costmap]: Cleaning up
+[ERROR] [terrain_obstacles.py-4]: process has died [pid 1599587, exit code 1, cmd '/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py --ros-args -r __node:=terrain_obstacles --params-file /home/yang/yang_nav/reports/navigation/2026-11-13/navigation_fixes/scripts/trace_nav2.yaml --params-file /tmp/launch_params_ynix82le'].
+[planner_server-7] [INFO] [1794583039.996747432] [planner_server]: Cleaning up plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794583039.996893360] [planner_server]: Destroying plugin GridBased of type SmacPlanner2D
+[INFO] [bt_navigator-11]: process has finished cleanly [pid 1599594]
+[planner_server-7] [INFO] [1794583040.006292731] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794583040.009670000] [global_costmap.global_costmap]: Destroying
+[planner_server-7] [INFO] [1794583040.017661716] [planner_server]: Destroying
+[INFO] [planner_server-7]: process has finished cleanly [pid 1599590]

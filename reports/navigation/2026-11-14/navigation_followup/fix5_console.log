@@ -1,0 +1,30 @@
+localization: data: status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=true;epoch=0;generation=2;pose_revision=12;stamp_ns=5900000000;esti...
+zlio resets during startup: 0
+TF map -> base_link ok
+nav2 active
+=== goal (world) 8.66 -3.61 0   resets so far: 0
+goal map (18.10, -3.24, 0 deg)
+t=  1.0 map ( -0.06,   0.19, z -0.15)  world ( -9.48,  -0.03)  dist 18.48
+t=  2.0 map ( -0.04,   0.20, z -0.14)  world ( -9.46,  -0.02)  dist 18.47
+t=  3.0 map ( -0.06,   0.19, z -0.15)  world ( -9.48,  -0.03)  dist 18.49
+t=  4.0 map ( -0.07,   0.18, z -0.14)  world ( -9.48,  -0.05)  dist 18.49
+t=  5.0 map ( -0.02,   0.03, z -0.14)  world ( -9.43,  -0.20)  dist 18.41
+t=  6.0 map (  0.00,  -0.06, z -0.14)  world ( -9.41,  -0.28)  dist 18.38
+t=  7.0 map (  0.05,  -0.21, z -0.14)  world ( -9.36,  -0.44)  dist 18.30
+t=  8.0 map (  0.07,  -0.28, z -0.15)  world ( -9.35,  -0.51)  dist 18.27
+t=  9.0 map (  0.12,  -0.42, z -0.15)  world ( -9.30,  -0.65)  dist 18.20
+result status 6 (FAILED) error_code 503, 9.7 s
+truth: 1794600641.68 -9.2866 -0.6466 0.3255 108.57
+=== goal (world) 12.78 -3.86 0   resets so far: 1
+goal map (22.22, -3.45, 0 deg)
+t=  1.0 map (  0.17,  -0.46, z -0.15)  world ( -9.25,  -0.69)  dist 22.25
+t=  2.0 map (  0.17,  -0.46, z -0.15)  world ( -9.25,  -0.69)  dist 22.25
+t=  3.0 map (  0.16,  -0.46, z -0.15)  world ( -9.26,  -0.69)  dist 22.26
+t=  4.0 map (  0.19,  -0.47, z -0.16)  world ( -9.23,  -0.69)  dist 22.24
+t=  5.0 map (  0.32,  -0.38, z -0.16)  world ( -9.10,  -0.60)  dist 22.12
+t=  6.0 map (  0.38,  -0.34, z -0.16)  world ( -9.04,  -0.57)  dist 22.07
+t=  7.0 map (  0.44,  -0.29, z -0.16)  world ( -8.97,  -0.52)  dist 22.01
+t=  8.0 map (  0.44,  -0.30, z -0.16)  world ( -8.98,  -0.53)  dist 22.02
+result status 6 (FAILED) error_code 208, 8.3 s
+truth: 1794600668.85 -9.0289 -0.4752 0.3288 -145.71
+ABORT: 2 consecutive failures, robot likely stuck

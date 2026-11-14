@@ -1,0 +1,6 @@
+Starting >>> nav_behaviors
+Finished <<< nav_behaviors [9.28s]
+Starting >>> nav_bringup
+Finished <<< nav_bringup [0.64s]
+
+Summary: 2 packages finished [10.1s]

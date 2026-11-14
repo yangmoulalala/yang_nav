@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-11-13T22:20:23.118054+00:00",
+  "cad_executable_ast_unchanged": true,
+  "cpp_exactly_one_comment_change": true,
+  "bridge_mapping_count": 6,
+  "bridge_values_unchanged": true,
+  "four_backend_config_values_unchanged": true,
+  "git_index_unchanged": true,
+  "git_diff_check_passed": true,
+  "removed_obsolete_xml_testcases": 18,
+  "cpp_without_cmake_mentions": []
+}

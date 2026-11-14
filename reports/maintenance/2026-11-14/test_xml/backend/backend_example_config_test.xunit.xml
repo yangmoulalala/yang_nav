@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="backend.test_example_config" tests="2" failures="0" errors="0" time="0.388"><testsuite name="backend.test_example_config.launch_tests" tests="2" failures="0" errors="0" skipped="0" time="0.388"><testcase classname="backend.TestExampleConfig" name="test_node_starts_with_example_yaml" time="0.388" /><testcase classname="backend.TestExampleExit" name="test_clean_exit" time="0.0" /></testsuite></testsuites>

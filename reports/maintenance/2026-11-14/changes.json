@@ -1,0 +1,58 @@
+{
+  "modified": [
+    "src/z-localization/README.md",
+    "docs/frontend_guide.md",
+    "docs/topics_and_usage.md",
+    "docs/backend_guide.md",
+    "src/z-localization/lidar_fusion/README.md",
+    "src/z-localization/frontend/README.md",
+    "src/z-localization/backend/README.md",
+    "src/z-localization/backend/docs/parameters.md",
+    "src/z-localization/bringup/config/sim/backend.yaml",
+    "src/z-localization/bringup/config/sim/backend_single.yaml",
+    "src/z-localization/bringup/config/real/backend.yaml",
+    "src/z-localization/bringup/config/real/backend_single.yaml",
+    "src/z-localization/backend/apps/publisher_state.cpp",
+    "docs/zlocalization_flow.html",
+    "docs/zlocalization_flow_detail.html",
+    "src/sentry_gazebo/config/bridge.yaml",
+    "src/z-localization/frontend/docs/parameters.md",
+    "docs/README.md",
+    "tools/cad_map/cad_to_cloud.py",
+    "tools/sim_tests/README.md",
+    "docs/localization_issues.md"
+  ],
+  "removed": [
+    "NUL/post-checkout",
+    "NUL/post-commit",
+    "NUL/post-merge",
+    "NUL/pre-push",
+    "build/backend/test_results/backend/backend_uwb_factor_test.gtest.xml"
+  ],
+  "backup": "/home/yang/yang_nav/backup/project-cleanup-2026-11-14.tar.gz",
+  "original_sha256": {
+    "src/z-localization/README.md": "29e3ee7286bad9f39d1b066a065186184740ce096a9b32401f5580bf888547c9",
+    "docs/frontend_guide.md": "65acf28206877f3ecdf7a63ea24cd9376ddb33b985887ba30214fee65a607203",
+    "docs/topics_and_usage.md": "c1a1cd96f3cd4dee9bbf175b75246270f47fde72ade557848062a506722caff8",
+    "docs/backend_guide.md": "c4dd34c47cf3cef988627d8b4ff01c5dab1928f56a3559cecd17df3816835190",
+    "src/z-localization/lidar_fusion/README.md": "e2124170b6d33b6cb49342160ac056ac34adcd26fcafa3d7f9b82c6b1ff7d52d",
+    "src/z-localization/frontend/README.md": "0981dd892b6c6a4b924b9af599695453cfa53fa9149481f5af77045012c903ae",
+    "src/z-localization/backend/README.md": "7eb46f5557a5b0f21e4c7224c1ba3017bd83341008ecf9aaff2bdd4bf7e1aa56",
+    "src/z-localization/backend/docs/parameters.md": "7eedc480a86944f095dc4ba4b75a3a0885162070eea10ce94bbb090e13a4c63b",
+    "src/z-localization/bringup/config/sim/backend.yaml": "dc65733aee53d724bf76bd4ee68414d2b62a84ffcae9c37fac1ccca2110caef4",
+    "src/z-localization/bringup/config/sim/backend_single.yaml": "82439a8e9242c0b67aa4b2a84a6e81e9154542fbecf7766a631d386b3eedc5d5",
+    "src/z-localization/bringup/config/real/backend.yaml": "2d8245d728f47e57f85659f032f6f41662e4bf788b2a217f50ca7cfeb4ffac4a",
+    "src/z-localization/bringup/config/real/backend_single.yaml": "20d50a557a706d395ab2bc3597931e6e094fbfe892fba78b61e6d96b2ceb94ab",
+    "src/z-localization/backend/apps/publisher_state.cpp": "235cdd5cd3cdef7cda13efae622da4933c25ab8245a304305219adb3c75345bf",
+    "docs/zlocalization_flow.html": "27a742b07b371da1e8e993080fb3bfa05d9a25a2724ce7419f07c2400a26d979",
+    "docs/zlocalization_flow_detail.html": "63989fb1a1754c8875ad3eb0521c0ec2ff5c1195e954bdbdeedbe180e5f710c3",
+    "src/sentry_gazebo/config/bridge.yaml": "22cac4ae5aae041fd8f3573db45ca5b1f475a12ee8e30f15ea96cb1c85a7e172",
+    "src/z-localization/frontend/docs/parameters.md": "161c411dbc0fcf1307cbbc034481991d676f777e28edc3a26a92abd3acf0429a"
+  },
+  "created": [
+    "README.md",
+    "tools/README.md",
+    "tools/cad_map/README.md",
+    "reports/README.md"
+  ]
+}

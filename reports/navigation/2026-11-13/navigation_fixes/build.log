@@ -1,0 +1,100 @@
+Starting >>> nav_behaviors
+-- Found ament_cmake: 2.5.6 (/opt/ros/jazzy/share/ament_cmake/cmake)
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 28.1.22 (/opt/ros/jazzy/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 4.6.9 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+-- Found rosidl_generator_cpp: 4.6.9 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 7.3.4 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+-- Found rmw_fastrtps_cpp: 8.4.4 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+-- Using RMW implementation 'rmw_fastrtps_cpp' as default
+-- Found rclcpp_lifecycle: 28.1.22 (/opt/ros/jazzy/share/rclcpp_lifecycle/cmake)
+-- Found nav2_core: 1.3.13 (/opt/ros/jazzy/share/nav2_core/cmake)
+-- Found eigen3_cmake_module: 0.3.1 (/opt/ros/jazzy/share/eigen3_cmake_module/cmake)
+-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+-- Found ament_cmake_gtest: 2.5.6 (/opt/ros/jazzy/share/ament_cmake_gtest/cmake)
+-- Found gtest sources under '/opt/ros/jazzy/src/gtest_vendor': C++ tests using 'Google Test' will be built
+-- Configuring done (1.7s)
+-- Generating done (0.2s)
+-- Build files have been written to: /home/yang/yang_nav/build/nav_behaviors
+[  5%] Built target gtest
+[ 10%] Built target gtest_main
+[ 25%] Built target directional_zone_core
+[ 27%] Building CXX object CMakeFiles/test_zone_path_handoff.dir/test/test_zone_path_handoff.cpp.o
+[ 32%] Built target test_path_shaper
+[ 37%] Built target test_zone_state
+[ 47%] Built target test_zone_tracker
+[ 47%] Built target test_slope
+[ 52%] Built target test_zone_drive
+[ 57%] Built target test_recovery_policy
+[ 70%] Built target zone_bt_core
+[ 67%] Building CXX object CMakeFiles/test_costmap_collision.dir/test/test_costmap_collision.cpp.o
+[ 72%] Building CXX object CMakeFiles/zone_path_shaper.dir/src/zone_path_shaper.cpp.o
+[ 75%] Building CXX object CMakeFiles/start_aware_planner.dir/src/start_aware_planner.cpp.o
+[ 77%] Building CXX object CMakeFiles/zone_aware_controller.dir/src/zone_aware_controller.cpp.o
+[ 85%] Built target test_zone_recovery
+[ 85%] Building CXX object CMakeFiles/zone_bt_nodes.dir/src/zone_bt_nodes.cpp.o
+[ 87%] Linking CXX executable test_zone_path_handoff
+[ 87%] Built target test_zone_path_handoff
+[ 90%] Linking CXX executable test_costmap_collision
+[ 90%] Built target test_costmap_collision
+[ 92%] Linking CXX shared library libzone_path_shaper.so
+[ 95%] Linking CXX shared library libzone_bt_nodes.so
+[ 95%] Built target zone_path_shaper
+[ 95%] Built target zone_bt_nodes
+[ 97%] Linking CXX shared library libstart_aware_planner.so
+[ 97%] Built target start_aware_planner
+[100%] Linking CXX shared library libzone_aware_controller.so
+[100%] Built target zone_aware_controller
+-- Install configuration: "Release"
+-- Execute custom install script
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors//plugins.xml
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/lib/libstart_aware_planner.so
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/lib/libzone_path_shaper.so
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/lib/libzone_aware_controller.so
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/lib/libzone_bt_nodes.so
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/plugins.xml
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/ament_index/resource_index/package_run_dependencies/nav_behaviors
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/ament_index/resource_index/parent_prefix_path/nav_behaviors
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/environment/ament_prefix_path.sh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/environment/ament_prefix_path.dsv
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/environment/path.sh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/environment/path.dsv
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/local_setup.bash
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/local_setup.sh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/local_setup.zsh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/local_setup.dsv
+-- Symlinking: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/package.dsv
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/ament_index/resource_index/packages/nav_behaviors
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/ament_index/resource_index/nav2_core__pluginlib__plugin/nav_behaviors
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/cmake/nav_behaviorsConfig.cmake
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/cmake/nav_behaviorsConfig-version.cmake
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_behaviors/share/nav_behaviors/package.xml
+Finished <<< nav_behaviors [12.0s]
+Starting >>> nav_bringup
+-- Install configuration: ""
+-- Execute custom install script
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/launch/navigation.launch.py
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/params/sim/nav2.yaml
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/behavior_trees/navigate_through_poses.xml
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/behavior_trees/navigate_to_pose.xml
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/rviz/navigation.rviz
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/ament_index/resource_index/package_run_dependencies/nav_bringup
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/ament_index/resource_index/parent_prefix_path/nav_bringup
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/environment/ament_prefix_path.sh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/environment/ament_prefix_path.dsv
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/environment/path.sh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/environment/path.dsv
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/local_setup.bash
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/local_setup.sh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/local_setup.zsh
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/local_setup.dsv
+-- Symlinking: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/package.dsv
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/ament_index/resource_index/packages/nav_bringup
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/cmake/nav_bringupConfig.cmake
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/cmake/nav_bringupConfig-version.cmake
+-- Up-to-date symlink: /home/yang/yang_nav/install/nav_bringup/share/nav_bringup/package.xml
+Finished <<< nav_bringup [0.61s]
+
+Summary: 2 packages finished [12.8s]

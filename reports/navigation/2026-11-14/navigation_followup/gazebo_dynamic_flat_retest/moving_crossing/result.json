@@ -1,0 +1,164 @@
+{
+  "return_code": 0,
+  "elapsed_s": 16.00008273124695,
+  "goal_map": [
+    5.8,
+    -5.99
+  ],
+  "obstacle_start_map": [
+    6.4,
+    -5.99
+  ],
+  "obstacle_crossing_end_map": [
+    6.4,
+    -6.74
+  ],
+  "set_pose_commands": [
+    {
+      "wall": 1794622427.9187949,
+      "map": [
+        6.4,
+        -5.99
+      ],
+      "world": [
+        -3.063881288434705,
+        -6.267056834579138,
+        0.413
+      ],
+      "rc": 0,
+      "reply": "data: true"
+    },
+    {
+      "wall": 1794622437.4033504,
+      "map": [
+        6.4,
+        -6.14
+      ],
+      "world": [
+        -3.0650991327539234,
+        -6.417051890681711,
+        0.413
+      ],
+      "rc": 0,
+      "reply": "data: true"
+    },
+    {
+      "wall": 1794622437.9649715,
+      "map": [
+        6.4,
+        -6.29
+      ],
+      "world": [
+        -3.066316977073143,
+        -6.567046946784285,
+        0.413
+      ],
+      "rc": 0,
+      "reply": "data: true"
+    },
+    {
+      "wall": 1794622438.5227659,
+      "map": [
+        6.4,
+        -6.44
+      ],
+      "world": [
+        -3.0675348213923623,
+        -6.717042002886859,
+        0.413
+      ],
+      "rc": 0,
+      "reply": "data: true"
+    },
+    {
+      "wall": 1794622439.0803661,
+      "map": [
+        6.4,
+        -6.59
+      ],
+      "world": [
+        -3.068752665711582,
+        -6.867037058989432,
+        0.413
+      ],
+      "rc": 0,
+      "reply": "data: true"
+    },
+    {
+      "wall": 1794622439.6426265,
+      "map": [
+        6.4,
+        -6.74
+      ],
+      "world": [
+        -3.0699705100308003,
+        -7.017032115092006,
+        0.413
+      ],
+      "rc": 0,
+      "reply": "data: true"
+    }
+  ],
+  "status_before_move": "status_list:\n- goal_info:\n    goal_id:\n      uuid:\n      - 16\n      - 30\n      - 105\n      - 157\n      - 11\n      - 56\n      - 64\n      - 95\n      - 169\n      - 205\n      - 210\n      - 204\n      - 113\n      - 72\n      - 41\n      - 18\n    stamp:\n      sec: 2435\n      nanosec: 672000000\n  status: 4\n- goal_info:\n    goal_id:\n      uuid:\n      - 247\n      - 75\n      - 52\n      - 173\n      - 184\n      - 50\n      - 70\n      - 209\n      - 145\n      - 196\n      - 245\n      - 193\n      - 252\n      - 73\n      - 106\n      - 218\n    stamp:\n      sec: 3034\n      nanosec: 716000000\n  status: 2\n---\n",
+  "status_after_crossing": "status_list:\n- goal_info:\n    goal_id:\n      uuid:\n      - 16\n      - 30\n      - 105\n      - 157\n      - 11\n      - 56\n      - 64\n      - 95\n      - 169\n      - 205\n      - 210\n      - 204\n      - 113\n      - 72\n      - 41\n      - 18\n    stamp:\n      sec: 2435\n      nanosec: 672000000\n  status: 4\n- goal_info:\n    goal_id:\n      uuid:\n      - 247\n      - 75\n      - 52\n      - 173\n      - 184\n      - 50\n      - 70\n      - 209\n      - 145\n      - 196\n      - 245\n      - 193\n      - 252\n      - 73\n      - 106\n      - 218\n    stamp:\n      sec: 3034\n      nanosec: 716000000\n  status: 2\n---\n",
+  "restore_pose": {
+    "world_m": [
+      -3.43,
+      1.48,
+      0.413
+    ],
+    "service_reply": "data: true",
+    "observed_after_restore_world_m": [
+      -3.42333,
+      1.46385,
+      0.41635
+    ]
+  },
+  "intermediate_staging_move": {
+    "wall": 1794622443.895399,
+    "map": [
+      -3.0,
+      1.0
+    ],
+    "world": [
+      -12.406819925587023,
+      0.7990310238051854,
+      0.413
+    ],
+    "rc": 0,
+    "reply": "data: true"
+  },
+  "passed": true,
+  "action_status": "SUCCEEDED",
+  "action_status_code": 4,
+  "error_code": 0,
+  "action_elapsed_seconds": 12.0,
+  "status_at_snapshots": [
+    "EXECUTING (2)",
+    "EXECUTING (2)"
+  ],
+  "cloud_message_count": 96,
+  "cloud_point_count_min_max": [
+    19,
+    84
+  ],
+  "plan_message_count": 9,
+  "obstacle_map_center_observed_start": [
+    6.3,
+    -5.88
+  ],
+  "obstacle_map_center_observed_end": [
+    6.5,
+    -6.75
+  ],
+  "minimum_robot_obstacle_center_distance_m": 0.603,
+  "nearest_obstacle_surface_return_distance_to_center_m": 0.159,
+  "minimum_padded_footprint_clearance_m": null,
+  "final_localization_map_pose": [
+    5.792556,
+    -6.179996
+  ],
+  "final_goal_position_error_m": 0.19,
+  "localization_state": "NORMAL; pose_trusted=true; tf_frozen=false",
+  "cleanup_note": "Entity restored after the recorded move sequence to its original world staging point."
+}

@@ -1,0 +1,52 @@
+[INFO] [1794488644.308066749] [smoother_server]: 
+	smoother_server lifecycle node launched. 
+	Waiting on external lifecycle transitions to activate
+	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1794488644.319984828] [smoother_server]: Creating smoother server
+[INFO] [1794488644.484420668] [smoother_server]: Configuring smoother server
+[INFO] [1794488644.493937263] [smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[INFO] [1794488644.495538499] [smoother_server]: Created smoother : zone_shaper of type nav_behaviors::ZonePathShaper
+[WARN] [1794488644.499394398] [smoother_server]: ZonePathShaper: dropping tunnel_6 (2 cells), label fragment
+[INFO] [1794488644.499443461] [smoother_server]: ZonePathShaper: 6 narrow zones, 20 directional zones from /home/yang/yang_nav/maps/sim/terrain/zones.yaml (0 ambiguous direction), 22 stretches after chaining
+[INFO] [1794488644.499450677] [smoother_server]: Smoother Server has simple_smoother zone_shaper  smoothers available.
+[INFO] [1794488645.062588420] [smoother_server]: Activating
+[INFO] [1794488645.062629511] [smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[INFO] [1794488647.670014460] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.670347043] [smoother_server]: ZonePathShaper: tunnel_1 (narrow) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.675865377] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.676030336] [smoother_server]: ZonePathShaper: tunnel_1 (narrow) shaped, dir -1, heading 180.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.684121771] [smoother_server]: Received a path to smooth.
+[WARN] [1794488647.687090878] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 planner path kept (footprint collision at exit margin (10.575, -5.650, 0.0 deg), axis u +0.930 v +0.000; no offset / turn variant fits, last tried at exit margin (10.575, -5.680, 0.0 deg), axis u +0.930 v -0.030)
+[ERROR] [1794488647.687157986] [smoother_server]: ZonePathShaper: slope_1+tunnel_2: footprint collision at exit margin (10.575, -5.650, 0.0 deg), axis u +0.930 v +0.000; no offset / turn variant fits, last tried at exit margin (10.575, -5.680, 0.0 deg), axis u +0.930 v -0.030
+[WARN] [1794488647.687213184] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[INFO] [1794488647.691381936] [smoother_server]: Received a path to smooth.
+[WARN] [1794488647.691810911] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 planner path kept (footprint collision at entry margin (11.050, -5.650, 180.0 deg), axis u -1.405 v +0.000; no offset / turn variant fits, last tried at entry margin (11.050, -5.710, 180.0 deg), axis u -1.405 v -0.060)
+[ERROR] [1794488647.691832712] [smoother_server]: ZonePathShaper: slope_1+tunnel_2: footprint collision at entry margin (11.050, -5.650, 180.0 deg), axis u -1.405 v +0.000; no offset / turn variant fits, last tried at entry margin (11.050, -5.710, 180.0 deg), axis u -1.405 v -0.060
+[WARN] [1794488647.691840489] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[INFO] [1794488647.699008377] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.699157036] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.704128888] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.704285652] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.712087922] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.712241868] [smoother_server]: ZonePathShaper: slope_17+tunnel_4 (narrow chain) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.717235674] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.717416954] [smoother_server]: ZonePathShaper: slope_17+tunnel_4 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.726173223] [smoother_server]: Received a path to smooth.
+[WARN] [1794488647.726599114] [smoother_server]: ZonePathShaper: slope_19+tunnel_5 planner path kept (footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060)
+[ERROR] [1794488647.726630806] [smoother_server]: ZonePathShaper: slope_19+tunnel_5: footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060
+[WARN] [1794488647.726650566] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[INFO] [1794488647.732106828] [smoother_server]: Received a path to smooth.
+[WARN] [1794488647.735189474] [smoother_server]: ZonePathShaper: slope_19+tunnel_5 planner path kept (footprint collision at exit margin (8.175, 6.250, 180.0 deg), axis u +0.975 v +0.000; no offset / turn variant fits, last tried at exit margin (7.925, 6.198, 180.0 deg), axis u +1.225 v -0.052)
+[ERROR] [1794488647.735230974] [smoother_server]: ZonePathShaper: slope_19+tunnel_5: footprint collision at exit margin (8.175, 6.250, 180.0 deg), axis u +0.975 v +0.000; no offset / turn variant fits, last tried at exit margin (7.925, 6.198, 180.0 deg), axis u +1.225 v -0.052
+[WARN] [1794488647.735239976] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[INFO] [1794488647.742392952] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.742587868] [smoother_server]: ZonePathShaper: tunnel_7 (narrow) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.748038196] [smoother_server]: Received a path to smooth.
+[INFO] [1794488647.748186437] [smoother_server]: ZonePathShaper: tunnel_7 (narrow) shaped, dir -1, heading 180.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[INFO] [1794488647.893813960] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1794488647.893928427] [smoother_server]: Running Nav2 LifecycleNode rcl preshutdown (smoother_server)
+[INFO] [1794488647.894012938] [smoother_server]: Deactivating
+[INFO] [1794488647.894125599] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[INFO] [1794488647.904704035] [smoother_server]: Cleaning up
+[INFO] [1794488647.907881745] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[INFO] [1794488647.909978359] [smoother_server]: Destroying

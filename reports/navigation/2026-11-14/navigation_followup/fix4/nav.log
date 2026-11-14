@@ -1,0 +1,1102 @@
+[INFO] [launch]: All log files can be found below /home/yang/.ros/log/2026-11-14-03-11-46-933906-AMD-4124171
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [map_server-1]: process started with pid [4124177]
+[INFO] [map_server-2]: process started with pid [4124178]
+[INFO] [costmap_filter_info_server-3]: process started with pid [4124179]
+[INFO] [terrain_obstacles.py-4]: process started with pid [4124180]
+[INFO] [controller_server-5]: process started with pid [4124181]
+[INFO] [smoother_server-6]: process started with pid [4124182]
+[INFO] [planner_server-7]: process started with pid [4124183]
+[INFO] [behavior_server-8]: process started with pid [4124184]
+[INFO] [velocity_smoother-9]: process started with pid [4124185]
+[INFO] [collision_monitor-10]: process started with pid [4124186]
+[INFO] [bt_navigator-11]: process started with pid [4124187]
+[INFO] [lifecycle_manager-12]: process started with pid [4124188]
+[INFO] [cmd_gate-13]: process started with pid [4124189]
+[velocity_smoother-9] [INFO] [1794597107.034979235] [velocity_smoother]: 
+[velocity_smoother-9] 	velocity_smoother lifecycle node launched. 
+[velocity_smoother-9] 	Waiting on external lifecycle transitions to activate
+[velocity_smoother-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[smoother_server-6] [INFO] [1794597107.053670197] [smoother_server]: 
+[smoother_server-6] 	smoother_server lifecycle node launched. 
+[smoother_server-6] 	Waiting on external lifecycle transitions to activate
+[smoother_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[smoother_server-6] [INFO] [1794597107.055434199] [smoother_server]: Creating smoother server
+[behavior_server-8] [INFO] [1794597107.058206230] [behavior_server]: 
+[behavior_server-8] 	behavior_server lifecycle node launched. 
+[behavior_server-8] 	Waiting on external lifecycle transitions to activate
+[behavior_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-5] [INFO] [1794597107.063600986] [controller_server]: 
+[controller_server-5] 	controller_server lifecycle node launched. 
+[controller_server-5] 	Waiting on external lifecycle transitions to activate
+[controller_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-12] [INFO] [1794597107.065669812] [lifecycle_manager_navigation]: Creating
+[controller_server-5] [INFO] [1794597107.068262389] [controller_server]: Creating controller server
+[lifecycle_manager-12] [INFO] [1794597107.069369379] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[costmap_filter_info_server-3] [INFO] [1794597107.075834216] [costmap_filter_info_server]: This is costmap filter info publisher
+[controller_server-5] [INFO] [1794597107.078625728] [local_costmap.local_costmap]: 
+[controller_server-5] 	local_costmap lifecycle node launched. 
+[controller_server-5] 	Waiting on external lifecycle transitions to activate
+[controller_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-5] [INFO] [1794597107.079197069] [local_costmap.local_costmap]: Creating Costmap
+[bt_navigator-11] [INFO] [1794597107.087678575] [bt_navigator]: 
+[bt_navigator-11] 	bt_navigator lifecycle node launched. 
+[bt_navigator-11] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-11] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794597107.088895235] [planner_server]: 
+[planner_server-7] 	planner_server lifecycle node launched. 
+[planner_server-7] 	Waiting on external lifecycle transitions to activate
+[planner_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-11] [INFO] [1794597107.089634890] [bt_navigator]: Creating
+[planner_server-7] [INFO] [1794597107.091113604] [planner_server]: Creating
+[map_server-1] [INFO] [1794597107.093588522] [nav_map_server]: 
+[map_server-1] 	nav_map_server lifecycle node launched. 
+[map_server-1] 	Waiting on external lifecycle transitions to activate
+[map_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794597107.093711451] [nav_map_server]: Creating
+[collision_monitor-10] [INFO] [1794597107.099377994] [collision_monitor]: 
+[collision_monitor-10] 	collision_monitor lifecycle node launched. 
+[collision_monitor-10] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794597107.104594337] [global_costmap.global_costmap]: 
+[planner_server-7] 	global_costmap lifecycle node launched. 
+[planner_server-7] 	Waiting on external lifecycle transitions to activate
+[planner_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-7] [INFO] [1794597107.105148908] [global_costmap.global_costmap]: Creating Costmap
+[map_server-2] [INFO] [1794597107.109540296] [speed_mask_server]: 
+[map_server-2] 	speed_mask_server lifecycle node launched. 
+[map_server-2] 	Waiting on external lifecycle transitions to activate
+[map_server-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-2] [INFO] [1794597107.109656215] [speed_mask_server]: Creating
+[costmap_filter_info_server-3] [INFO] [1794597107.127723514] [speed_filter_info_server]: 
+[costmap_filter_info_server-3] 	speed_filter_info_server lifecycle node launched. 
+[costmap_filter_info_server-3] 	Waiting on external lifecycle transitions to activate
+[costmap_filter_info_server-3] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-12] [INFO] [1794597107.368821534] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-12] [INFO] [1794597107.368883404] [lifecycle_manager_navigation]: [34m[1mConfiguring nav_map_server[0m[0m
+[map_server-1] [INFO] [1794597107.369264052] [nav_map_server]: Configuring
+[map_server-1] [INFO] [1794597107.369322792] [map_io]: Loading yaml file: /home/yang/yang_nav/maps/sim/terrain/nav_map.yaml
+[map_server-1] [INFO] [1794597107.369507342] [map_io]: resolution: 0.05
+[map_server-1] [INFO] [1794597107.369512943] [map_io]: origin[0]: -5
+[map_server-1] [INFO] [1794597107.369516453] [map_io]: origin[1]: -8.15
+[map_server-1] [INFO] [1794597107.369518674] [map_io]: origin[2]: 0
+[map_server-1] [INFO] [1794597107.369521241] [map_io]: free_thresh: 0.001
+[map_server-1] [INFO] [1794597107.369523581] [map_io]: occupied_thresh: 0.99
+[map_server-1] [INFO] [1794597107.369526907] [map_io]: mode: scale
+[map_server-1] [INFO] [1794597107.369530179] [map_io]: negate: 0
+[map_server-1] [INFO] [1794597107.369664775] [map_io]: Loading image_file: /home/yang/yang_nav/maps/sim/terrain/nav_map.pgm
+[map_server-1] [INFO] [1794597107.375198715] [map_io]: Read map /home/yang/yang_nav/maps/sim/terrain/nav_map.pgm: 577 X 338 map @ 0.05 m/cell
+[lifecycle_manager-12] [INFO] [1794597107.383868639] [lifecycle_manager_navigation]: [34m[1mConfiguring speed_mask_server[0m[0m
+[map_server-2] [INFO] [1794597107.384147321] [speed_mask_server]: Configuring
+[map_server-2] [INFO] [1794597107.384195888] [map_io]: Loading yaml file: /home/yang/yang_nav/maps/sim/terrain/speed_mask.yaml
+[map_server-2] [INFO] [1794597107.384364545] [map_io]: resolution: 0.05
+[map_server-2] [INFO] [1794597107.384369344] [map_io]: origin[0]: -5
+[map_server-2] [INFO] [1794597107.384372692] [map_io]: origin[1]: -8.15
+[map_server-2] [INFO] [1794597107.384374891] [map_io]: origin[2]: 0
+[map_server-2] [INFO] [1794597107.384377437] [map_io]: free_thresh: 0.001
+[map_server-2] [INFO] [1794597107.384379734] [map_io]: occupied_thresh: 0.99
+[map_server-2] [INFO] [1794597107.384382713] [map_io]: mode: raw
+[map_server-2] [INFO] [1794597107.384386656] [map_io]: negate: 0
+[map_server-2] [INFO] [1794597107.384542530] [map_io]: Loading image_file: /home/yang/yang_nav/maps/sim/terrain/speed_mask.pgm
+[map_server-2] [INFO] [1794597107.387726072] [map_io]: Read map /home/yang/yang_nav/maps/sim/terrain/speed_mask.pgm: 577 X 338 map @ 0.05 m/cell
+[lifecycle_manager-12] [INFO] [1794597107.396871699] [lifecycle_manager_navigation]: [34m[1mConfiguring speed_filter_info_server[0m[0m
+[costmap_filter_info_server-3] [INFO] [1794597107.397275747] [speed_filter_info_server]: Configuring
+[lifecycle_manager-12] [INFO] [1794597107.404911666] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-5] [INFO] [1794597107.405358469] [controller_server]: Configuring controller interface
+[controller_server-5] [INFO] [1794597107.405418075] [controller_server]: getting progress checker plugins..
+[controller_server-5] [INFO] [1794597107.405799926] [controller_server]: getting goal checker plugins..
+[controller_server-5] [INFO] [1794597107.406419054] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-5] [INFO] [1794597107.406474370] [local_costmap.local_costmap]: Configuring
+[controller_server-5] [INFO] [1794597107.419283812] [local_costmap.local_costmap]: Using plugin "static_layer"
+[controller_server-5] [INFO] [1794597107.423392607] [local_costmap.local_costmap]: Subscribing to the map topic (/nav_map) with transient local durability
+[controller_server-5] [INFO] [1794597107.425355899] [local_costmap.local_costmap]: Initialized plugin "static_layer"
+[controller_server-5] [INFO] [1794597107.425395279] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-5] [INFO] [1794597107.427685171] [local_costmap.local_costmap]: Subscribed to Topics: terrain_hits terrain_rays
+[controller_server-5] [INFO] [1794597107.442612225] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-5] [INFO] [1794597107.442662168] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-5] [INFO] [1794597107.444361798] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-5] [INFO] [1794597107.444413420] [local_costmap.local_costmap]: Using costmap filter "speed_filter"
+[controller_server-5] [INFO] [1794597107.449769819] [local_costmap.local_costmap]: Initialized costmap filter "speed_filter"
+[controller_server-5] [INFO] [1794597107.484105177] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-5] [INFO] [1794597107.484800823] [controller_server]: Controller Server has progress_checker  progress checkers available.
+[controller_server-5] [INFO] [1794597107.485177506] [controller_server]: Created goal checker : goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-5] [INFO] [1794597107.486569555] [controller_server]: Controller Server has goal_checker  goal checkers available.
+[controller_server-5] [INFO] [1794597107.489572621] [controller_server]: Created controller : FollowPath of type nav_behaviors::ZoneAwareController
+[terrain_obstacles.py-4] [INFO] [1794597107.490390361] [terrain_obstacles]: terrain obstacles ready: /home/yang/yang_nav/maps/sim/terrain/terrain.msgpack
+[controller_server-5] [WARN] [1794597107.506144595] [controller_server]: ZoneAwareController: dropping tunnel_6 (2 cells), label fragment
+[controller_server-5] [INFO] [1794597107.506262508] [controller_server]: ZoneAwareController: 6 narrow zones, 20 directional zones from /home/yang/yang_nav/maps/sim/terrain/zones.yaml -> 22 stretches, tunnel 0.60 m/s, ramp 1.40 m/s
+[controller_server-5] [INFO] [1794597107.513812543] [controller_server]: Controller period is equal to model dt. Control sequence shifting is ON
+[controller_server-5] [INFO] [1794597107.515931438] [controller_server]: ConstraintCritic instantiated with 1 power and 4.000000 weight.
+[controller_server-5] [INFO] [1794597107.515983645] [controller_server]: Critic loaded : mppi::critics::ConstraintCritic
+[controller_server-5] [INFO] [1794597107.519136182] [controller_server]: InflationCostCritic instantiated with 1 power and 300.000000 / 0.015000 weights. Critic will collision check based on footprint cost.
+[controller_server-5] [INFO] [1794597107.519177144] [controller_server]: Critic loaded : mppi::critics::CostCritic
+[controller_server-5] [INFO] [1794597107.520391771] [controller_server]: GoalCritic instantiated with 1 power and 8.000000 weight.
+[controller_server-5] [INFO] [1794597107.520422820] [controller_server]: Critic loaded : mppi::critics::GoalCritic
+[controller_server-5] [INFO] [1794597107.522001662] [controller_server]: GoalAngleCritic instantiated with 1 power, 3.000000 weight, 1.500000 angular threshold and symmetric_yaw_tolerance disabled
+[controller_server-5] [INFO] [1794597107.522045072] [controller_server]: Critic loaded : mppi::critics::GoalAngleCritic
+[controller_server-5] [INFO] [1794597107.524532308] [controller_server]: ReferenceTrajectoryCritic instantiated with 1 power and 14.000000 weight
+[controller_server-5] [INFO] [1794597107.524591828] [controller_server]: Critic loaded : mppi::critics::PathAlignCritic
+[controller_server-5] [INFO] [1794597107.526213050] [controller_server]: Critic loaded : mppi::critics::PathFollowCritic
+[controller_server-5] [INFO] [1794597107.528765565] [controller_server]: PathAngleCritic instantiated with 1 power and 2.000000 weight. Mode set to: Consider Feasible Path Orientations
+[controller_server-5] [INFO] [1794597107.528819982] [controller_server]: Critic loaded : mppi::critics::PathAngleCritic
+[controller_server-5] [INFO] [1794597107.530068772] [controller_server]: TwirlingCritic instantiated with 1 power and 10.000000 weight.
+[controller_server-5] [INFO] [1794597107.530116104] [controller_server]: Critic loaded : mppi::critics::TwirlingCritic
+[controller_server-5] [INFO] [1794597107.532485731] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794597107.539684737] [MPPIController]: Configured MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794597107.539717487] [controller_server]: ZoneAwareController: inner controller nav2_mppi_controller::MPPIController
+[controller_server-5] [INFO] [1794597107.544513434] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-12] [INFO] [1794597107.560107970] [lifecycle_manager_navigation]: [34m[1mConfiguring smoother_server[0m[0m
+[smoother_server-6] [INFO] [1794597107.560382872] [smoother_server]: Configuring smoother server
+[smoother_server-6] [INFO] [1794597107.578964202] [smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-6] [INFO] [1794597107.582289480] [smoother_server]: Created smoother : zone_shaper of type nav_behaviors::ZonePathShaper
+[smoother_server-6] [WARN] [1794597107.593926362] [smoother_server]: ZonePathShaper: dropping tunnel_6 (2 cells), label fragment
+[smoother_server-6] [INFO] [1794597107.594011243] [smoother_server]: ZonePathShaper: 6 narrow zones, 20 directional zones from /home/yang/yang_nav/maps/sim/terrain/zones.yaml (0 ambiguous direction), 22 stretches after chaining
+[smoother_server-6] [INFO] [1794597107.594022066] [smoother_server]: Smoother Server has simple_smoother zone_shaper  smoothers available.
+[lifecycle_manager-12] [INFO] [1794597107.606885968] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-7] [INFO] [1794597107.607186367] [planner_server]: Configuring
+[planner_server-7] [INFO] [1794597107.607221478] [global_costmap.global_costmap]: Configuring
+[planner_server-7] [INFO] [1794597107.624979251] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-7] [INFO] [1794597107.629873324] [global_costmap.global_costmap]: Subscribing to the map topic (/nav_map) with transient local durability
+[planner_server-7] [INFO] [1794597107.632437218] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-7] [INFO] [1794597107.632482210] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-7] [INFO] [1794597107.635190223] [global_costmap.global_costmap]: Subscribed to Topics: terrain_hits terrain_rays
+[planner_server-7] [INFO] [1794597107.658848459] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-7] [INFO] [1794597107.658903136] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-7] [INFO] [1794597107.660944472] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-7] [INFO] [1794597107.704236822] [planner_server]: Created global planner plugin GridBased of type nav_behaviors::StartAwarePlanner
+[planner_server-7] [INFO] [1794597107.708967669] [planner_server]: Configuring GridBased of type SmacPlanner2D
+[planner_server-7] [ERROR] [1794597107.712943286] [planner_server]: Inflation layer either not found or inflation is not set sufficiently for optimized non-circular collision checking capabilities. It is HIGHLY recommended to set the inflation radius to be at MINIMUM half of the robot's largest cross-section. See github.com/ros-planning/navigation2/tree/main/nav2_smac_planner#potential-fields for full instructions. This will substantially impact run-time performance.
+[planner_server-7] [INFO] [1794597107.717664351] [planner_server]: Configured plugin GridBased of type SmacPlanner2D with tolerance 0.15, maximum iterations 1000000, max on approach iterations 1000, and not allowing unknown traversal.
+[planner_server-7] [INFO] [1794597107.719636419] [planner_server]: Created global planner plugin StrictGridBased of type nav_behaviors::StartAwarePlanner
+[planner_server-7] [INFO] [1794597107.720528813] [planner_server]: Configuring StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597107.728309659] [planner_server]: Configured plugin StrictGridBased of type SmacPlanner2D with tolerance 0.15, maximum iterations 1000000, max on approach iterations 1000, and not allowing unknown traversal.
+[planner_server-7] [INFO] [1794597107.728359948] [planner_server]: Planner Server has GridBased StrictGridBased  planners available.
+[lifecycle_manager-12] [INFO] [1794597107.750578162] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794597107.750866931] [behavior_server]: Configuring
+[behavior_server-8] [INFO] [1794597107.757841432] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors::Spin
+[behavior_server-8] [INFO] [1794597107.758509397] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors::BackUp
+[behavior_server-8] [INFO] [1794597107.758985045] [behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors::DriveOnHeading
+[behavior_server-8] [INFO] [1794597107.759440890] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors::Wait
+[behavior_server-8] [INFO] [1794597107.769085618] [behavior_server]: Configuring spin
+[behavior_server-8] [INFO] [1794597107.783161283] [behavior_server]: Configuring backup
+[behavior_server-8] [INFO] [1794597107.793012840] [behavior_server]: Configuring drive_on_heading
+[behavior_server-8] [INFO] [1794597107.802845487] [behavior_server]: Configuring wait
+[lifecycle_manager-12] [INFO] [1794597107.813700531] [lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-9] [INFO] [1794597107.814014373] [velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-12] [INFO] [1794597107.823978590] [lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-10] [INFO] [1794597107.824313813] [collision_monitor]: Configuring
+[collision_monitor-10] [INFO] [1794597107.835695591] [collision_monitor]: [terrain]: Creating PointCloud
+[collision_monitor-10] [INFO] [1794597107.841244097] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-10] [INFO] [1794597107.841731423] [collision_monitor]: [FootprintApproach]: Polygon points are not defined. Using dynamic subscription instead.
+[collision_monitor-10] [INFO] [1794597107.845085822] [collision_monitor]: [FootprintApproach]: Making footprint subscriber on /local_costmap/published_footprint topic
+[lifecycle_manager-12] [INFO] [1794597107.860796213] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-11] [INFO] [1794597107.861154695] [bt_navigator]: Configuring
+[bt_navigator-11] [INFO] [1794597107.872789302] [bt_navigator]: Creating navigator id navigate_to_pose of type nav2_bt_navigator::NavigateToPoseNavigator
+[bt_navigator-11] [INFO] [1794597107.980165030] [bt_navigator]: Creating navigator id navigate_through_poses of type nav2_bt_navigator::NavigateThroughPosesNavigator
+[lifecycle_manager-12] [INFO] [1794597108.044118269] [lifecycle_manager_navigation]: [34m[1mActivating nav_map_server[0m[0m
+[map_server-1] [INFO] [1794597108.044379076] [nav_map_server]: Activating
+[map_server-1] [INFO] [1794597108.044958250] [nav_map_server]: Creating bond (nav_map_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794597108.045555238] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 577 X 338 at 0.050000 m/pix
+[lifecycle_manager-12] [INFO] [1794597108.049321541] [lifecycle_manager_navigation]: [34m[1mActivating speed_mask_server[0m[0m
+[map_server-2] [INFO] [1794597108.049641391] [speed_mask_server]: Activating
+[map_server-2] [INFO] [1794597108.050160254] [speed_mask_server]: Creating bond (speed_mask_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597108.054416499] [lifecycle_manager_navigation]: [34m[1mActivating speed_filter_info_server[0m[0m
+[costmap_filter_info_server-3] [INFO] [1794597108.054674186] [speed_filter_info_server]: Activating
+[costmap_filter_info_server-3] [INFO] [1794597108.054749328] [speed_filter_info_server]: Creating bond (speed_filter_info_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597108.060468083] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-5] [INFO] [1794597108.063002099] [local_costmap.local_costmap]: StaticLayer: Resizing static layer to 577 X 338 at 0.050000 m/pix
+[controller_server-5] [INFO] [1794597108.063400817] [controller_server]: Activating
+[controller_server-5] [INFO] [1794597108.063460661] [local_costmap.local_costmap]: Activating
+[controller_server-5] [INFO] [1794597108.063472004] [local_costmap.local_costmap]: Checking transform
+[controller_server-5] [INFO] [1794597108.063507300] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597108.563799837] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597109.063770377] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597109.563816720] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597110.063761746] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597110.563777775] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597111.063760828] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597111.563781709] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597112.063608629] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597112.563771258] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597113.063784331] [local_costmap.local_costmap]: Timed out waiting for transform from base_link to map to become available, tf error: Could not find a connection between 'map' and 'base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-5] [INFO] [1794597113.563870768] [local_costmap.local_costmap]: start
+[controller_server-5] [INFO] [1794597113.568805784] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794597113.580231841] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794597113.580275208] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794597113.580282510] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [INFO] [1794597113.593648003] [local_costmap.local_costmap]: SpeedFilter: Received filter mask from /speed_filter_mask topic.
+[controller_server-5] [WARN] [1794597113.623534982] [controller_server]: Parameter controller_server.verbose not found
+[controller_server-5] [INFO] [1794597113.624163015] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794597113.624695149] [MPPIController]: Activated MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794597113.625086533] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597113.631287907] [lifecycle_manager_navigation]: [34m[1mActivating smoother_server[0m[0m
+[smoother_server-6] [INFO] [1794597113.631527187] [smoother_server]: Activating
+[smoother_server-6] [INFO] [1794597113.631576079] [smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597113.637420898] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-7] [INFO] [1794597113.637658338] [planner_server]: Activating
+[planner_server-7] [INFO] [1794597113.637691803] [global_costmap.global_costmap]: Activating
+[planner_server-7] [INFO] [1794597113.637698487] [global_costmap.global_costmap]: Checking transform
+[planner_server-7] [INFO] [1794597113.637810181] [global_costmap.global_costmap]: start
+[planner_server-7] [INFO] [1794597114.192191495] [planner_server]: Activating plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597114.192240676] [planner_server]: Activating plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597114.195295432] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597114.200440313] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794597114.200671348] [behavior_server]: Activating
+[behavior_server-8] [INFO] [1794597114.200691299] [behavior_server]: Activating spin
+[behavior_server-8] [INFO] [1794597114.200698129] [behavior_server]: Activating backup
+[behavior_server-8] [INFO] [1794597114.200703969] [behavior_server]: Activating drive_on_heading
+[behavior_server-8] [INFO] [1794597114.200709119] [behavior_server]: Activating wait
+[behavior_server-8] [INFO] [1794597114.200717409] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597114.205765420] [lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-9] [INFO] [1794597114.205998955] [velocity_smoother]: Activating
+[velocity_smoother-9] [INFO] [1794597114.206039536] [velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597114.211290510] [lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-10] [INFO] [1794597114.211509385] [collision_monitor]: Activating
+[collision_monitor-10] [INFO] [1794597114.211539185] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597114.216844751] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-11] [INFO] [1794597114.217132067] [bt_navigator]: Activating
+[bt_navigator-11] [INFO] [1794597114.417188298] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597114.423530206] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[bt_navigator-11] [INFO] [1794597125.813560189] [bt_navigator]: Begin navigating from current location (-0.06, 0.19) to (8.66, -3.61)
+[smoother_server-6] [INFO] [1794597125.844917681] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794597125.845578753] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[smoother_server-6] [WARN] [1794597125.845626208] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[controller_server-5] [INFO] [1794597125.865344366] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [WARN] [1794597125.865426545] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded goal_checker . This warning will appear once.
+[controller_server-5] [WARN] [1794597125.865439897] [controller_server]: No progress checker was specified in parameter 'current_progress_checker'. Server will use only plugin loaded progress_checker . This warning will appear once.
+[smoother_server-6] [INFO] [1794597126.904748370] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794597126.905261269] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[smoother_server-6] [WARN] [1794597126.905303671] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[controller_server-5] [INFO] [1794597126.965851041] [controller_server]: Passing new path to controller.
+[smoother_server-6] [INFO] [1794597129.974787215] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597129.985613248] [smoother_server]: ZonePathShaper: slope_5 planner path kept (path ends (or the next zone starts) within axis_margin of the mouth)
+[smoother_server-6] [ERROR] [1794597129.985726510] [smoother_server]: ZonePathShaper: slope_5: path ends (or the next zone starts) within axis_margin of the mouth
+[smoother_server-6] [WARN] [1794597129.985746989] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[planner_server-7] [INFO] [1794597130.004553505] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[smoother_server-6] [INFO] [1794597131.044684180] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597131.054268767] [smoother_server]: ZonePathShaper: slope_6 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [WARN] [1794597131.054315253] [smoother_server]: ZonePathShaper: slope_19+tunnel_5 planner path kept (footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060)
+[smoother_server-6] [ERROR] [1794597131.054336116] [smoother_server]: ZonePathShaper: slope_19+tunnel_5: footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060
+[smoother_server-6] [WARN] [1794597131.054349564] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[planner_server-7] [INFO] [1794597131.074190329] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[smoother_server-6] [INFO] [1794597132.104439950] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597132.112486295] [smoother_server]: ZonePathShaper: slope_19+tunnel_5 planner path kept (footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060)
+[smoother_server-6] [ERROR] [1794597132.112547126] [smoother_server]: ZonePathShaper: slope_19+tunnel_5: footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060
+[smoother_server-6] [WARN] [1794597132.112562041] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[planner_server-7] [INFO] [1794597132.124204300] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[controller_server-5] [INFO] [1794597133.565821673] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 41.1 deg, lateral +0.002 m
+[controller_server-5] [INFO] [1794597133.566614799] [controller_server]: ZTRACE step_l1_1 ph approach s -5.927 w 0.09 pose (3.346 -2.499 2.5) ref 2.5 e_lat +0.002 e_yaw -0.0 trk (+1.17 -0.77 -0.44) out (+0.66 -0.44 -0.03)
+[controller_server-5] [INFO] [1794597133.616509697] [controller_server]: ZTRACE step_l1_1 ph approach s -5.927 w 0.09 pose (3.346 -2.499 2.5) ref 2.5 e_lat +0.002 e_yaw -0.0 trk (+1.17 -0.77 -0.44) out (+0.67 -0.44 -0.04)
+[controller_server-5] [INFO] [1794597133.666632456] [controller_server]: ZTRACE step_l1_1 ph approach s -5.859 w 0.29 pose (3.410 -2.525 2.5) ref 1.0 e_lat +0.012 e_yaw +1.5 trk (+1.16 -0.79 -0.65) out (+0.78 -0.52 -0.20)
+[controller_server-5] [INFO] [1794597133.716568187] [controller_server]: ZTRACE step_l1_1 ph approach s -5.859 w 0.29 pose (3.410 -2.525 2.5) ref 1.0 e_lat +0.012 e_yaw +1.5 trk (+1.16 -0.79 -0.65) out (+0.80 -0.52 -0.23)
+[controller_server-5] [INFO] [1794597133.766595858] [controller_server]: ZTRACE step_l1_1 ph approach s -5.778 w 0.58 pose (3.480 -2.566 2.3) ref -1.1 e_lat +0.011 e_yaw +3.4 trk (+1.17 -0.77 -0.90) out (+0.97 -0.63 -0.56)
+[controller_server-5] [INFO] [1794597133.816620544] [controller_server]: ZTRACE step_l1_1 ph approach s -5.778 w 0.58 pose (3.480 -2.566 2.3) ref -1.1 e_lat +0.011 e_yaw +3.4 trk (+1.17 -0.77 -0.90) out (+0.98 -0.64 -0.58)
+[controller_server-5] [INFO] [1794597133.866711013] [controller_server]: ZTRACE step_l1_1 ph approach s -5.689 w 0.87 pose (3.555 -2.614 1.1) ref -4.0 e_lat +0.007 e_yaw +5.1 trk (+1.20 -0.73 -1.00) out (+1.15 -0.70 -0.91)
+[controller_server-5] [INFO] [1794597133.916540460] [controller_server]: ZTRACE step_l1_1 ph approach s -5.689 w 0.87 pose (3.555 -2.614 1.1) ref -4.0 e_lat +0.007 e_yaw +5.1 trk (+1.20 -0.73 -1.00) out (+1.15 -0.70 -0.92)
+[controller_server-5] [INFO] [1794597133.965897927] [controller_server]: ZTRACE step_l1_1 ph align s -5.583 w 1.00 pose (3.645 -2.668 -1.8) ref -8.1 e_lat +0.004 e_yaw +6.3 trk (+0.61 -0.33 -0.84) out (+0.61 -0.33 -0.84)
+[controller_server-5] [INFO] [1794597134.015833782] [controller_server]: ZTRACE step_l1_1 ph align s -5.583 w 1.00 pose (3.645 -2.668 -1.8) ref -8.1 e_lat +0.004 e_yaw +6.3 trk (+0.61 -0.33 -0.84) out (+0.61 -0.33 -0.84)
+[controller_server-5] [INFO] [1794597134.065983968] [controller_server]: ZTRACE step_l1_1 ph align s -5.454 w 1.00 pose (3.754 -2.740 -6.5) ref -13.9 e_lat -0.006 e_yaw +7.4 trk (+0.65 -0.25 -0.97) out (+0.65 -0.25 -0.97)
+[controller_server-5] [INFO] [1794597134.115830836] [controller_server]: ZTRACE step_l1_1 ph align s -5.454 w 1.00 pose (3.754 -2.740 -6.5) ref -13.9 e_lat -0.006 e_yaw +7.4 trk (+0.65 -0.25 -0.97) out (+0.65 -0.25 -0.97)
+[smoother_server-6] [INFO] [1794597134.164456599] [smoother_server]: Received a path to smooth.
+[controller_server-5] [INFO] [1794597134.165854688] [controller_server]: ZTRACE step_l1_1 ph align s -5.333 w 1.00 pose (3.849 -2.816 -11.4) ref -20.0 e_lat -0.026 e_yaw +8.7 trk (+0.68 -0.15 -1.00) out (+0.68 -0.15 -1.00)
+[smoother_server-6] [WARN] [1794597134.172744908] [smoother_server]: ZonePathShaper: slope_19+tunnel_5 planner path kept (footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060)
+[smoother_server-6] [ERROR] [1794597134.172807646] [smoother_server]: ZonePathShaper: slope_19+tunnel_5: footprint collision at entry margin (7.750, 6.250, 0.0 deg), axis u -1.400 v +0.000; no offset / turn variant fits, last tried at entry margin (7.775, 6.190, 0.0 deg), axis u -1.375 v -0.060
+[smoother_server-6] [WARN] [1794597134.172828391] [smoother_server]: [smooth_path] [ActionServer] Aborting handle.
+[planner_server-7] [INFO] [1794597134.174560039] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[controller_server-5] [INFO] [1794597134.215823145] [controller_server]: ZTRACE step_l1_1 ph align s -5.333 w 1.00 pose (3.849 -2.816 -11.4) ref -20.0 e_lat -0.026 e_yaw +8.7 trk (+0.68 -0.15 -1.00) out (+0.68 -0.15 -1.00)
+[controller_server-5] [INFO] [1794597134.265824603] [controller_server]: ZoneAwareController: slope_3+tunnel_3 (narrow) window, heading locked at -89.6 deg, lateral -0.009 m
+[controller_server-5] [INFO] [1794597134.266733067] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.945 w 0.05 pose (3.909 -2.832 -16.9) ref -16.9 e_lat -0.009 e_yaw +0.0 trk (+0.98 -0.20 -0.42) out (+0.82 -0.29 -0.55)
+[controller_server-5] [INFO] [1794597134.316661768] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.945 w 0.05 pose (3.909 -2.832 -16.9) ref -16.9 e_lat -0.009 e_yaw +0.0 trk (+0.98 -0.20 -0.42) out (+0.80 -0.21 -0.54)
+[controller_server-5] [INFO] [1794597134.366691368] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.877 w 0.23 pose (3.969 -2.864 -22.6) ref -19.0 e_lat -0.006 e_yaw -3.6 trk (+0.99 -0.12 -0.48) out (+0.83 -0.13 -0.43)
+[controller_server-5] [INFO] [1794597134.416687390] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.877 w 0.23 pose (3.969 -2.864 -22.6) ref -19.0 e_lat -0.006 e_yaw -3.6 trk (+0.99 -0.12 -0.48) out (+0.83 -0.11 -0.36)
+[controller_server-5] [INFO] [1794597134.466585244] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.797 w 0.51 pose (4.031 -2.915 -26.7) ref -22.7 e_lat -0.018 e_yaw -4.0 trk (+1.00 -0.03 -0.71) out (+0.90 -0.05 -0.48)
+[controller_server-5] [INFO] [1794597134.516669744] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.797 w 0.51 pose (4.031 -2.915 -26.7) ref -22.7 e_lat -0.018 e_yaw -4.0 trk (+1.00 -0.03 -0.71) out (+0.91 -0.04 -0.47)
+[controller_server-5] [INFO] [1794597134.566729110] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.713 w 0.81 pose (4.097 -2.966 -29.1) ref -27.7 e_lat -0.026 e_yaw -1.4 trk (+1.00 +0.01 -1.00) out (+0.97 +0.01 -0.85)
+[controller_server-5] [INFO] [1794597134.616654648] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.713 w 0.81 pose (4.097 -2.966 -29.1) ref -27.7 e_lat -0.026 e_yaw -1.4 trk (+1.00 +0.01 -1.00) out (+0.97 +0.01 -0.86)
+[controller_server-5] [INFO] [1794597134.666859362] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.621 w 0.99 pose (4.171 -3.020 -31.7) ref -34.1 e_lat -0.031 e_yaw +2.4 trk (+1.00 +0.06 -1.00) out (+1.00 +0.05 -1.00)
+[controller_server-5] [INFO] [1794597134.716689776] [controller_server]: ZTRACE slope_3+tunnel_3 ph approach s -1.621 w 0.99 pose (4.171 -3.020 -31.7) ref -34.1 e_lat -0.031 e_yaw +2.4 trk (+1.00 +0.06 -1.00) out (+1.00 +0.06 -1.00)
+[controller_server-5] [INFO] [1794597134.765820047] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.523 w 1.00 pose (4.253 -3.073 -35.3) ref -41.9 e_lat -0.027 e_yaw +6.6 trk (+0.70 +0.08 -1.00) out (+0.70 +0.08 -1.00)
+[controller_server-5] [INFO] [1794597134.815823710] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.523 w 1.00 pose (4.253 -3.073 -35.3) ref -41.9 e_lat -0.027 e_yaw +6.6 trk (+0.70 +0.08 -1.00) out (+0.70 +0.08 -1.00)
+[controller_server-5] [INFO] [1794597134.865804882] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.427 w 1.00 pose (4.336 -3.121 -40.7) ref -50.0 e_lat -0.015 e_yaw +9.2 trk (+0.70 +0.08 -1.00) out (+0.70 +0.08 -1.00)
+[controller_server-5] [INFO] [1794597134.915826865] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.427 w 1.00 pose (4.336 -3.121 -40.7) ref -50.0 e_lat -0.015 e_yaw +9.2 trk (+0.70 +0.08 -1.00) out (+0.70 +0.08 -1.00)
+[controller_server-5] [INFO] [1794597134.965927857] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.338 w 1.00 pose (4.409 -3.170 -46.5) ref -57.5 e_lat -0.007 e_yaw +11.0 trk (+0.69 +0.09 -1.00) out (+0.69 +0.09 -1.00)
+[controller_server-5] [INFO] [1794597135.015831385] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.338 w 1.00 pose (4.409 -3.170 -46.5) ref -57.5 e_lat -0.007 e_yaw +11.0 trk (+0.69 +0.09 -1.00) out (+0.69 +0.09 -1.00)
+[controller_server-5] [INFO] [1794597135.065933559] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.269 w 1.00 pose (4.462 -3.215 -52.1) ref -63.3 e_lat -0.005 e_yaw +11.1 trk (+0.69 +0.13 -1.00) out (+0.69 +0.13 -1.00)
+[controller_server-5] [INFO] [1794597135.115991824] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.269 w 1.00 pose (4.462 -3.215 -52.1) ref -63.3 e_lat -0.005 e_yaw +11.1 trk (+0.69 +0.13 -1.00) out (+0.69 +0.13 -1.00)
+[controller_server-5] [INFO] [1794597135.165910713] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.201 w 1.00 pose (4.509 -3.263 -57.9) ref -68.6 e_lat -0.007 e_yaw +10.8 trk (+0.68 +0.17 -1.00) out (+0.68 +0.17 -1.00)
+[controller_server-5] [INFO] [1794597135.216605547] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.201 w 1.00 pose (4.509 -3.263 -57.9) ref -68.6 e_lat -0.007 e_yaw +10.8 trk (+0.68 +0.17 -1.00) out (+0.68 +0.17 -1.00)
+[controller_server-5] [INFO] [1794597135.265881920] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.131 w 1.00 pose (4.556 -3.315 -63.6) ref -73.8 e_lat -0.007 e_yaw +10.2 trk (+0.67 +0.20 -1.00) out (+0.67 +0.20 -1.00)
+[controller_server-5] [INFO] [1794597135.315956423] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.131 w 1.00 pose (4.556 -3.315 -63.6) ref -73.8 e_lat -0.007 e_yaw +10.2 trk (+0.67 +0.20 -1.00) out (+0.67 +0.20 -1.00)
+[controller_server-5] [INFO] [1794597135.365936642] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.063 w 1.00 pose (4.594 -3.371 -69.3) ref -78.2 e_lat -0.013 e_yaw +8.9 trk (+0.66 +0.24 -1.00) out (+0.66 +0.24 -1.00)
+[controller_server-5] [INFO] [1794597135.415859980] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -1.063 w 1.00 pose (4.594 -3.371 -69.3) ref -78.2 e_lat -0.013 e_yaw +8.9 trk (+0.66 +0.24 -1.00) out (+0.66 +0.24 -1.00)
+[controller_server-5] [INFO] [1794597135.465998464] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.997 w 1.00 pose (4.632 -3.424 -75.1) ref -82.0 e_lat -0.014 e_yaw +6.9 trk (+0.64 +0.28 -0.98) out (+0.64 +0.28 -0.98)
+[controller_server-5] [INFO] [1794597135.516036040] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.997 w 1.00 pose (4.632 -3.424 -75.1) ref -82.0 e_lat -0.014 e_yaw +6.9 trk (+0.64 +0.28 -0.98) out (+0.64 +0.28 -0.98)
+[controller_server-5] [INFO] [1794597135.566103196] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.919 w 1.00 pose (4.675 -3.488 -80.8) ref -85.4 e_lat -0.011 e_yaw +4.6 trk (+0.65 +0.27 -0.68) out (+0.65 +0.27 -0.68)
+[controller_server-5] [INFO] [1794597135.616047554] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.919 w 1.00 pose (4.675 -3.488 -80.8) ref -85.4 e_lat -0.011 e_yaw +4.6 trk (+0.65 +0.27 -0.68) out (+0.65 +0.27 -0.68)
+[controller_server-5] [INFO] [1794597135.665961918] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.849 w 1.00 pose (4.709 -3.548 -86.5) ref -87.4 e_lat -0.009 e_yaw +0.9 trk (+0.64 +0.29 -0.31) out (+0.64 +0.29 -0.31)
+[controller_server-5] [INFO] [1794597135.715931878] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.849 w 1.00 pose (4.709 -3.548 -86.5) ref -87.4 e_lat -0.009 e_yaw +0.9 trk (+0.64 +0.29 -0.31) out (+0.64 +0.29 -0.31)
+[cmd_gate-13] [INFO] [1794597135.766026152] [cmd_gate]: mode normal -> tunnel
+[controller_server-5] [INFO] [1794597135.766186076] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.780 w 1.00 pose (4.727 -3.614 -91.2) ref -88.3 e_lat -0.018 e_yaw -2.9 trk (+0.54 +0.27 +0.06) out (+0.54 +0.27 +0.06)
+[controller_server-5] [INFO] [1794597135.815969252] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.780 w 1.00 pose (4.727 -3.614 -91.2) ref -88.3 e_lat -0.018 e_yaw -2.9 trk (+0.54 +0.27 +0.06) out (+0.54 +0.27 +0.06)
+[controller_server-5] [INFO] [1794597135.866074837] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.708 w 1.00 pose (4.752 -3.680 -94.3) ref -88.9 e_lat -0.014 e_yaw -5.4 trk (+0.55 +0.24 +0.21) out (+0.55 +0.24 +0.21)
+[controller_server-5] [INFO] [1794597135.916032936] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.708 w 1.00 pose (4.752 -3.680 -94.3) ref -88.9 e_lat -0.014 e_yaw -5.4 trk (+0.55 +0.24 +0.21) out (+0.55 +0.24 +0.21)
+[controller_server-5] [WARN] [1794597135.965755739] [controller_server]: ZoneAwareController: slope_3+tunnel_3 gate: lateral -0.021 m, heading -5.85 deg, slowing down
+[controller_server-5] [INFO] [1794597135.965993909] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.689 w 1.00 pose (4.749 -3.700 -94.8) ref -89.0 e_lat -0.021 e_yaw -5.8 trk (+0.55 +0.25 +0.24) out (+0.55 +0.25 +0.24) GATED
+[controller_server-5] [INFO] [1794597136.016273943] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.689 w 1.00 pose (4.749 -3.700 -94.8) ref -89.0 e_lat -0.021 e_yaw -5.8 trk (+0.55 +0.25 +0.24) out (+0.55 +0.25 +0.24) GATED
+[controller_server-5] [INFO] [1794597136.066039959] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.672 w 1.00 pose (4.746 -3.718 -93.9) ref -89.1 e_lat -0.029 e_yaw -4.8 trk (+0.52 +0.23 +0.20) out (+0.52 +0.23 +0.20) GATED
+[controller_server-5] [INFO] [1794597136.115945751] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.672 w 1.00 pose (4.746 -3.718 -93.9) ref -89.1 e_lat -0.029 e_yaw -4.8 trk (+0.52 +0.23 +0.20) out (+0.52 +0.23 +0.20) GATED
+[controller_server-5] [INFO] [1794597136.165993438] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.605 w 1.00 pose (4.766 -3.781 -92.5) ref -89.4 e_lat -0.020 e_yaw -3.1 trk (+0.39 +0.13 +0.14) out (+0.39 +0.13 +0.14) GATED
+[controller_server-5] [INFO] [1794597136.215929765] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.605 w 1.00 pose (4.766 -3.781 -92.5) ref -89.4 e_lat -0.020 e_yaw -3.1 trk (+0.39 +0.13 +0.14) out (+0.39 +0.13 +0.14) GATED
+[controller_server-5] [INFO] [1794597136.266143396] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.544 w 1.00 pose (4.789 -3.838 -91.3) ref -89.5 e_lat -0.002 e_yaw -1.7 trk (+0.60 +0.05 +0.07) out (+0.60 +0.05 +0.07)
+[controller_server-5] [INFO] [1794597136.316170929] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.544 w 1.00 pose (4.789 -3.838 -91.3) ref -89.5 e_lat -0.002 e_yaw -1.7 trk (+0.60 +0.05 +0.07) out (+0.60 +0.05 +0.07)
+[controller_server-5] [INFO] [1794597136.366135820] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.501 w 1.00 pose (4.807 -3.881 -90.4) ref -89.6 e_lat +0.015 e_yaw -0.8 trk (+0.60 -0.03 +0.03) out (+0.60 -0.03 +0.03)
+[controller_server-5] [INFO] [1794597136.416089436] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.501 w 1.00 pose (4.807 -3.881 -90.4) ref -89.6 e_lat +0.015 e_yaw -0.8 trk (+0.60 -0.03 +0.03) out (+0.60 -0.03 +0.03)
+[controller_server-5] [INFO] [1794597136.466074063] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.458 w 1.00 pose (4.816 -3.924 -89.8) ref -89.6 e_lat +0.023 e_yaw -0.2 trk (+0.60 -0.07 +0.01) out (+0.60 -0.07 +0.01)
+[controller_server-5] [INFO] [1794597136.516105616] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.458 w 1.00 pose (4.816 -3.924 -89.8) ref -89.6 e_lat +0.023 e_yaw -0.2 trk (+0.60 -0.07 +0.01) out (+0.60 -0.07 +0.01)
+[controller_server-5] [INFO] [1794597136.566187903] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.399 w 1.00 pose (4.815 -3.983 -89.6) ref -89.6 e_lat +0.022 e_yaw +0.0 trk (+0.60 -0.07 -0.00) out (+0.60 -0.07 -0.00)
+[controller_server-5] [INFO] [1794597136.616293703] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.399 w 1.00 pose (4.815 -3.983 -89.6) ref -89.6 e_lat +0.022 e_yaw +0.0 trk (+0.60 -0.07 -0.00) out (+0.60 -0.07 -0.00)
+[controller_server-5] [INFO] [1794597136.666237804] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.365 w 1.00 pose (4.797 -4.017 -89.4) ref -89.6 e_lat +0.004 e_yaw +0.2 trk (+0.60 -0.01 -0.01) out (+0.60 -0.01 -0.01)
+[controller_server-5] [INFO] [1794597136.716058748] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.365 w 1.00 pose (4.797 -4.017 -89.4) ref -89.6 e_lat +0.004 e_yaw +0.2 trk (+0.60 -0.01 -0.01) out (+0.60 -0.01 -0.01)
+[controller_server-5] [INFO] [1794597136.766076587] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.313 w 1.00 pose (4.790 -4.070 -89.4) ref -89.6 e_lat -0.004 e_yaw +0.2 trk (+0.60 +0.01 -0.01) out (+0.60 +0.01 -0.01)
+[controller_server-5] [INFO] [1794597136.816136007] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.313 w 1.00 pose (4.790 -4.070 -89.4) ref -89.6 e_lat -0.004 e_yaw +0.2 trk (+0.60 +0.01 -0.01) out (+0.60 +0.01 -0.01)
+[controller_server-5] [INFO] [1794597136.866492544] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.266 w 1.00 pose (4.795 -4.116 -89.1) ref -89.6 e_lat +0.001 e_yaw +0.5 trk (+0.60 -0.01 -0.03) out (+0.60 -0.01 -0.03)
+[controller_server-5] [INFO] [1794597136.916256727] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.266 w 1.00 pose (4.795 -4.116 -89.1) ref -89.6 e_lat +0.001 e_yaw +0.5 trk (+0.60 -0.01 -0.03) out (+0.60 -0.01 -0.03)
+[controller_server-5] [INFO] [1794597136.966224945] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.209 w 1.00 pose (4.800 -4.173 -89.2) ref -89.6 e_lat +0.006 e_yaw +0.4 trk (+0.60 -0.02 -0.02) out (+0.60 -0.02 -0.02)
+[controller_server-5] [INFO] [1794597137.016069852] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.209 w 1.00 pose (4.800 -4.173 -89.2) ref -89.6 e_lat +0.006 e_yaw +0.4 trk (+0.60 -0.02 -0.02) out (+0.60 -0.02 -0.02)
+[controller_server-5] [INFO] [1794597137.066154339] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.152 w 1.00 pose (4.806 -4.231 -89.3) ref -89.6 e_lat +0.011 e_yaw +0.3 trk (+0.60 -0.04 -0.02) out (+0.60 -0.04 -0.02)
+[controller_server-5] [INFO] [1794597137.116108729] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.152 w 1.00 pose (4.806 -4.231 -89.3) ref -89.6 e_lat +0.011 e_yaw +0.3 trk (+0.60 -0.04 -0.02) out (+0.60 -0.04 -0.02)
+[controller_server-5] [INFO] [1794597137.166143436] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.099 w 1.00 pose (4.803 -4.283 -89.4) ref -89.6 e_lat +0.008 e_yaw +0.2 trk (+0.60 -0.03 -0.01) out (+0.60 -0.03 -0.01)
+[controller_server-5] [INFO] [1794597137.216156375] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.099 w 1.00 pose (4.803 -4.283 -89.4) ref -89.6 e_lat +0.008 e_yaw +0.2 trk (+0.60 -0.03 -0.01) out (+0.60 -0.03 -0.01)
+[controller_server-5] [INFO] [1794597137.266170497] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.018 w 1.00 pose (4.787 -4.364 -89.5) ref -89.6 e_lat -0.009 e_yaw +0.1 trk (+0.60 +0.03 -0.00) out (+0.60 +0.03 -0.00)
+[controller_server-5] [INFO] [1794597137.316795934] [controller_server]: ZTRACE slope_3+tunnel_3 ph align s -0.018 w 1.00 pose (4.787 -4.364 -89.5) ref -89.6 e_lat -0.009 e_yaw +0.1 trk (+0.60 +0.03 -0.00) out (+0.60 +0.03 -0.00)
+[controller_server-5] [INFO] [1794597137.366279945] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.040 w 1.00 pose (4.773 -4.422 -89.6) ref -89.6 e_lat -0.023 e_yaw -0.0 trk (+0.60 +0.07 +0.00) out (+0.60 +0.07 +0.00)
+[collision_monitor-10] [INFO] [1794597137.372269279] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [INFO] [1794597137.415991469] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.040 w 1.00 pose (4.773 -4.422 -89.6) ref -89.6 e_lat -0.023 e_yaw -0.0 trk (+0.60 +0.07 +0.00) out (+0.60 +0.07 +0.00)
+[controller_server-5] [INFO] [1794597137.466165485] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.093 w 1.00 pose (4.775 -4.476 -89.6) ref -89.6 e_lat -0.021 e_yaw -0.0 trk (+0.60 +0.06 +0.00) out (+0.60 +0.06 +0.00)
+[controller_server-5] [INFO] [1794597137.516116814] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.093 w 1.00 pose (4.775 -4.476 -89.6) ref -89.6 e_lat -0.021 e_yaw -0.0 trk (+0.60 +0.06 +0.00) out (+0.60 +0.06 +0.00)
+[controller_server-5] [INFO] [1794597137.566197437] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.129 w 1.00 pose (4.785 -4.512 -89.7) ref -89.6 e_lat -0.011 e_yaw -0.1 trk (+0.60 +0.04 +0.00) out (+0.60 +0.04 +0.00)
+[collision_monitor-10] [INFO] [1794597137.570354566] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [INFO] [1794597137.616096827] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.129 w 1.00 pose (4.785 -4.512 -89.7) ref -89.6 e_lat -0.011 e_yaw -0.1 trk (+0.60 +0.04 +0.00) out (+0.60 +0.04 +0.00)
+[controller_server-5] [INFO] [1794597137.666147075] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.159 w 1.00 pose (4.792 -4.542 -89.7) ref -89.6 e_lat -0.005 e_yaw -0.1 trk (+0.60 +0.02 +0.00) out (+0.60 +0.02 +0.00)
+[controller_server-5] [INFO] [1794597137.716064001] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.159 w 1.00 pose (4.792 -4.542 -89.7) ref -89.6 e_lat -0.005 e_yaw -0.1 trk (+0.60 +0.02 +0.00) out (+0.60 +0.02 +0.00)
+[controller_server-5] [INFO] [1794597137.766241880] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.216 w 1.00 pose (4.791 -4.598 -89.8) ref -89.6 e_lat -0.007 e_yaw -0.2 trk (+0.60 +0.02 +0.01) out (+0.60 +0.02 +0.01)
+[controller_server-5] [INFO] [1794597137.816108021] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.216 w 1.00 pose (4.791 -4.598 -89.8) ref -89.6 e_lat -0.007 e_yaw -0.2 trk (+0.60 +0.02 +0.01) out (+0.60 +0.02 +0.01)
+[controller_server-5] [INFO] [1794597137.866189552] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.287 w 1.00 pose (4.787 -4.669 -89.8) ref -89.6 e_lat -0.010 e_yaw -0.2 trk (+0.60 +0.03 +0.01) out (+0.60 +0.03 +0.01)
+[controller_server-5] [INFO] [1794597137.916040068] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.287 w 1.00 pose (4.787 -4.669 -89.8) ref -89.6 e_lat -0.010 e_yaw -0.2 trk (+0.60 +0.03 +0.01) out (+0.60 +0.03 +0.01)
+[controller_server-5] [INFO] [1794597137.966117519] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.327 w 1.00 pose (4.780 -4.709 -89.3) ref -89.6 e_lat -0.018 e_yaw +0.3 trk (+0.60 +0.05 -0.01) out (+0.60 +0.05 -0.01)
+[controller_server-5] [INFO] [1794597138.016172301] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.327 w 1.00 pose (4.780 -4.709 -89.3) ref -89.6 e_lat -0.018 e_yaw +0.3 trk (+0.60 +0.05 -0.01) out (+0.60 +0.05 -0.01)
+[controller_server-5] [INFO] [1794597138.066289173] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.358 w 1.00 pose (4.776 -4.740 -88.7) ref -89.6 e_lat -0.022 e_yaw +0.9 trk (+0.60 +0.06 -0.04) out (+0.60 +0.06 -0.04)
+[controller_server-5] [INFO] [1794597138.116091313] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.358 w 1.00 pose (4.776 -4.740 -88.7) ref -89.6 e_lat -0.022 e_yaw +0.9 trk (+0.60 +0.06 -0.04) out (+0.60 +0.06 -0.04)
+[collision_monitor-10] [INFO] [1794597138.164276613] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [INFO] [1794597138.166259292] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.412 w 1.00 pose (4.780 -4.794 -88.9) ref -89.6 e_lat -0.018 e_yaw +0.7 trk (+0.60 +0.05 -0.04) out (+0.60 +0.05 -0.04)
+[controller_server-5] [INFO] [1794597138.216356905] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.412 w 1.00 pose (4.780 -4.794 -88.9) ref -89.6 e_lat -0.018 e_yaw +0.7 trk (+0.60 +0.05 -0.04) out (+0.60 +0.05 -0.04)
+[smoother_server-6] [INFO] [1794597138.224697786] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794597138.225078935] [smoother_server]: ZonePathShaper: slope_3+tunnel_3 (narrow chain) shaped, dir -1, heading -89.6 deg, lead 2.50 m, turn locked, offset in/body/out +0.00/+0.00/+0.00 m
+[smoother_server-6] [WARN] [1794597138.225119966] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[controller_server-5] [INFO] [1794597138.265770662] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794597138.266295892] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.472 w 1.00 pose (4.787 -4.854 -89.1) ref -89.6 e_lat -0.001 e_yaw +0.5 trk (+0.59 +0.10 -0.03) out (+0.59 +0.10 -0.03)
+[controller_server-5] [WARN] [1794597138.266547259] [controller_server]: Zone collision: command braking at (4.814 -5.002 -89.5 deg), robot (4.787 -4.854), occupied cells 1
+[controller_server-5] [INFO] [1794597138.316078298] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.472 w 1.00 pose (4.787 -4.854 -89.1) ref -89.6 e_lat -0.001 e_yaw +0.5 trk (+0.52 +0.09 -0.03) out (+0.52 +0.09 -0.03)
+[controller_server-5] [INFO] [1794597138.366173785] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.532 w 1.00 pose (4.794 -4.914 -89.2) ref -89.6 e_lat -0.003 e_yaw +0.4 trk (+0.52 +0.08 -0.02) out (+0.52 +0.08 -0.02)
+[controller_server-5] [INFO] [1794597138.416051064] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.532 w 1.00 pose (4.794 -4.914 -89.2) ref -89.6 e_lat -0.003 e_yaw +0.4 trk (+0.52 +0.08 -0.02) out (+0.52 +0.08 -0.02)
+[collision_monitor-10] [INFO] [1794597138.461315571] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [INFO] [1794597138.466189795] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.541 w 1.00 pose (4.768 -4.924 -88.7) ref -89.6 e_lat -0.031 e_yaw +0.9 trk (+0.51 +0.11 -0.05) out (+0.51 +0.11 -0.05)
+[controller_server-5] [INFO] [1794597138.516271565] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.541 w 1.00 pose (4.768 -4.924 -88.7) ref -89.6 e_lat -0.031 e_yaw +0.9 trk (+0.51 +0.11 -0.05) out (+0.51 +0.11 -0.05)
+[collision_monitor-10] [INFO] [1794597138.560362988] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[controller_server-5] [INFO] [1794597138.566120280] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.557 w 1.00 pose (4.760 -4.940 -88.8) ref -89.6 e_lat -0.039 e_yaw +0.8 trk (+0.51 +0.13 -0.04) out (+0.51 +0.13 -0.04)
+[controller_server-5] [WARN] [1794597138.566468295] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[collision_monitor-10] [INFO] [1794597138.593305510] [collision_monitor]: Robot to continue normal operation
+[controller_server-5] [INFO] [1794597138.616091564] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.557 w 1.00 pose (4.760 -4.940 -88.8) ref -89.6 e_lat -0.039 e_yaw +0.8 trk (+0.51 +0.13 -0.04) out (+0.51 +0.13 -0.04)
+[controller_server-5] [INFO] [1794597138.666625086] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.595 w 1.00 pose (4.768 -4.976 -88.9) ref -89.6 e_lat -0.032 e_yaw +0.7 trk (+0.52 +0.09 -0.04) out (+0.52 +0.09 -0.04)
+[controller_server-5] [INFO] [1794597138.716148469] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.595 w 1.00 pose (4.768 -4.976 -88.9) ref -89.6 e_lat -0.032 e_yaw +0.7 trk (+0.52 +0.09 -0.04) out (+0.52 +0.09 -0.04)
+[controller_server-5] [INFO] [1794597138.766191128] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.620 w 1.00 pose (4.775 -5.001 -88.9) ref -89.6 e_lat -0.025 e_yaw +0.7 trk (+0.52 +0.07 -0.04) out (+0.52 +0.07 -0.04)
+[controller_server-5] [INFO] [1794597138.816147989] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.620 w 1.00 pose (4.775 -5.001 -88.9) ref -89.6 e_lat -0.025 e_yaw +0.7 trk (+0.52 +0.07 -0.04) out (+0.52 +0.07 -0.04)
+[controller_server-5] [INFO] [1794597138.866166704] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.642 w 1.00 pose (4.784 -5.023 -89.1) ref -89.6 e_lat -0.016 e_yaw +0.5 trk (+0.52 +0.04 -0.03) out (+0.52 +0.04 -0.03)
+[controller_server-5] [INFO] [1794597138.916075269] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.642 w 1.00 pose (4.784 -5.023 -89.1) ref -89.6 e_lat -0.016 e_yaw +0.5 trk (+0.52 +0.04 -0.03) out (+0.52 +0.04 -0.03)
+[controller_server-5] [INFO] [1794597138.966119005] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.688 w 1.00 pose (4.797 -5.069 -89.3) ref -89.6 e_lat -0.004 e_yaw +0.3 trk (+0.52 +0.01 -0.01) out (+0.52 +0.01 -0.01)
+[controller_server-5] [INFO] [1794597139.016554431] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.688 w 1.00 pose (4.797 -5.069 -89.3) ref -89.6 e_lat -0.004 e_yaw +0.3 trk (+0.52 +0.01 -0.01) out (+0.52 +0.01 -0.01)
+[controller_server-5] [INFO] [1794597139.066288054] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.721 w 1.00 pose (4.809 -5.102 -89.6) ref -89.6 e_lat +0.008 e_yaw +0.0 trk (+0.52 -0.03 -0.00) out (+0.52 -0.03 -0.00)
+[controller_server-5] [INFO] [1794597139.116119552] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.721 w 1.00 pose (4.809 -5.102 -89.6) ref -89.6 e_lat +0.008 e_yaw +0.0 trk (+0.52 -0.03 -0.00) out (+0.52 -0.03 -0.00)
+[controller_server-5] [INFO] [1794597139.166294551] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.745 w 1.00 pose (4.818 -5.126 -89.9) ref -89.6 e_lat +0.017 e_yaw -0.3 trk (+0.52 -0.05 +0.01) out (+0.52 -0.05 +0.01)
+[controller_server-5] [INFO] [1794597139.216251031] [controller_server]: ZTRACE slope_3+tunnel_3 ph traverse s +0.745 w 1.00 pose (4.818 -5.126 -89.9) ref -89.6 e_lat +0.017 e_yaw -0.3 trk (+0.52 -0.05 +0.01) out (+0.52 -0.05 +0.01)
+[controller_server-5] [INFO] [1794597139.266348444] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.793 w 1.00 pose (4.816 -5.174 -89.9) ref -89.6 e_lat +0.015 e_yaw -0.3 trk (+0.52 -0.04 +0.02) out (+0.52 -0.04 +0.02)
+[controller_server-5] [INFO] [1794597139.316084219] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.793 w 1.00 pose (4.816 -5.174 -89.9) ref -89.6 e_lat +0.015 e_yaw -0.3 trk (+0.60 -0.04 +0.02) out (+0.60 -0.04 +0.02)
+[controller_server-5] [INFO] [1794597139.366266166] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.844 w 1.00 pose (4.801 -5.224 -89.8) ref -89.6 e_lat -0.001 e_yaw -0.2 trk (+0.60 +0.01 +0.01) out (+0.60 +0.01 +0.01)
+[controller_server-5] [INFO] [1794597139.416599737] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.844 w 1.00 pose (4.801 -5.224 -89.8) ref -89.6 e_lat -0.001 e_yaw -0.2 trk (+0.60 +0.01 +0.01) out (+0.60 +0.01 +0.01)
+[controller_server-5] [INFO] [1794597139.466229433] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.906 w 1.00 pose (4.795 -5.287 -89.7) ref -89.6 e_lat -0.007 e_yaw -0.1 trk (+0.68 +0.02 +0.00) out (+0.68 +0.02 +0.00)
+[controller_server-5] [WARN] [1794597139.466475873] [controller_server]: Zone collision: measured braking at (4.721 -5.318 -87.7 deg), robot (4.795 -5.287), occupied cells 3
+[controller_server-5] [WARN] [1794597139.467019494] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794597139.516105324] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.906 w 1.00 pose (4.795 -5.287 -89.7) ref -89.6 e_lat -0.007 e_yaw -0.1 trk (+0.68 +0.02 +0.00) out (+0.68 +0.02 +0.00)
+[controller_server-5] [INFO] [1794597139.566154207] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.942 w 1.00 pose (4.773 -5.323 -89.2) ref -89.6 e_lat -0.029 e_yaw +0.4 trk (+0.76 +0.08 -0.02) out (+0.76 +0.08 -0.02)
+[cmd_gate-13] [WARN] [1794597139.612890720] [cmd_gate]: holding: localization not trusted
+[controller_server-5] [INFO] [1794597139.616059971] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.942 w 1.00 pose (4.773 -5.323 -89.2) ref -89.6 e_lat -0.029 e_yaw +0.4 trk (+0.76 +0.08 -0.02) out (+0.76 +0.08 -0.02)
+[controller_server-5] [INFO] [1794597139.666672291] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.979 w 1.00 pose (4.759 -5.360 -89.1) ref -89.6 e_lat -0.043 e_yaw +0.5 trk (+0.83 +0.12 -0.03) out (+0.83 +0.12 -0.03)
+[controller_server-5] [INFO] [1794597139.716305249] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.979 w 1.00 pose (4.759 -5.360 -89.1) ref -89.6 e_lat -0.043 e_yaw +0.5 trk (+0.83 +0.12 -0.03) out (+0.83 +0.12 -0.03)
+[controller_server-5] [INFO] [1794597139.766229522] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.992 w 1.00 pose (4.761 -5.373 -88.9) ref -89.6 e_lat -0.042 e_yaw +0.7 trk (+0.85 +0.11 -0.04) out (+0.85 +0.11 -0.04)
+[controller_server-5] [INFO] [1794597139.816144780] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.992 w 1.00 pose (4.761 -5.373 -88.9) ref -89.6 e_lat -0.042 e_yaw +0.7 trk (+0.85 +0.11 -0.04) out (+0.85 +0.11 -0.04)
+[controller_server-5] [INFO] [1794597139.866300944] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.996 w 1.00 pose (4.768 -5.377 -88.9) ref -89.6 e_lat -0.035 e_yaw +0.7 trk (+0.86 +0.09 -0.04) out (+0.86 +0.09 -0.04)
+[controller_server-5] [INFO] [1794597139.916219954] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.996 w 1.00 pose (4.768 -5.377 -88.9) ref -89.6 e_lat -0.035 e_yaw +0.7 trk (+0.86 +0.09 -0.04) out (+0.86 +0.09 -0.04)
+[controller_server-5] [INFO] [1794597139.966218151] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.995 w 1.00 pose (4.777 -5.376 -88.9) ref -89.6 e_lat -0.026 e_yaw +0.7 trk (+0.86 +0.07 -0.04) out (+0.86 +0.07 -0.04)
+[cmd_gate-13] [INFO] [1794597140.012885286] [cmd_gate]: released
+[controller_server-5] [INFO] [1794597140.016491189] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +0.995 w 1.00 pose (4.777 -5.376 -88.9) ref -89.6 e_lat -0.026 e_yaw +0.7 trk (+0.86 +0.07 -0.04) out (+0.86 +0.07 -0.04)
+[cmd_gate-13] [INFO] [1794597140.065973580] [cmd_gate]: mode tunnel -> normal
+[controller_server-5] [INFO] [1794597140.066366169] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.132 w 1.00 pose (4.752 -5.514 -90.0) ref -89.6 e_lat -0.052 e_yaw -0.4 trk (+1.00 +0.16 +0.02) out (+1.00 +0.16 +0.02)
+[controller_server-5] [INFO] [1794597140.116166132] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.132 w 1.00 pose (4.752 -5.514 -90.0) ref -89.6 e_lat -0.052 e_yaw -0.4 trk (+1.00 +0.16 +0.02) out (+1.00 +0.16 +0.02)
+[controller_server-5] [INFO] [1794597140.166192028] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.152 w 1.00 pose (4.766 -5.533 -89.8) ref -89.6 e_lat -0.038 e_yaw -0.2 trk (+1.00 +0.12 +0.01) out (+1.00 +0.12 +0.01)
+[controller_server-5] [WARN] [1794597140.166512700] [controller_server]: ZoneAwareController: slope_3+tunnel_3 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794597140.216084953] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.152 w 1.00 pose (4.766 -5.533 -89.8) ref -89.6 e_lat -0.038 e_yaw -0.2 trk (+1.00 +0.12 +0.01) out (+1.00 +0.12 +0.01)
+[controller_server-5] [INFO] [1794597140.266216164] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.234 w 1.00 pose (4.804 -5.615 -89.6) ref -89.6 e_lat -0.000 e_yaw -0.0 trk (+1.00 +0.00 +0.02) out (+1.00 +0.00 +0.02)
+[controller_server-5] [INFO] [1794597140.316102016] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.234 w 1.00 pose (4.804 -5.615 -89.6) ref -89.6 e_lat -0.000 e_yaw -0.0 trk (+1.00 +0.00 +0.02) out (+1.00 +0.00 +0.02)
+[controller_server-5] [INFO] [1794597140.367346157] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.308 w 0.98 pose (4.807 -5.688 -89.6) ref -89.4 e_lat +0.000 e_yaw -0.2 trk (+0.99 +0.10 +0.16) out (+0.99 +0.10 +0.15)
+[controller_server-5] [INFO] [1794597140.417263789] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.308 w 0.98 pose (4.807 -5.688 -89.6) ref -89.4 e_lat +0.000 e_yaw -0.2 trk (+0.99 +0.10 +0.16) out (+0.99 +0.10 +0.15)
+[controller_server-5] [INFO] [1794597140.467357300] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.391 w 0.79 pose (4.800 -5.781 -89.4) ref -88.1 e_lat -0.031 e_yaw -1.3 trk (+0.89 +0.47 +0.42) out (+0.84 +0.43 +0.35)
+[controller_server-5] [INFO] [1794597140.517050176] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.391 w 0.79 pose (4.800 -5.781 -89.4) ref -88.1 e_lat -0.031 e_yaw -1.3 trk (+0.89 +0.47 +0.42) out (+0.78 +0.42 +0.35)
+[controller_server-5] [INFO] [1794597140.567229110] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.446 w 0.60 pose (4.818 -5.857 -89.0) ref -86.7 e_lat -0.059 e_yaw -2.3 trk (+0.57 +0.84 +0.66) out (+0.47 +0.60 +0.44)
+[controller_server-5] [INFO] [1794597140.617019604] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.446 w 0.60 pose (4.818 -5.857 -89.0) ref -86.7 e_lat -0.059 e_yaw -2.3 trk (+0.57 +0.84 +0.66) out (+0.44 +0.63 +0.47)
+[controller_server-5] [INFO] [1794597140.667265115] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.554 w 0.21 pose (4.974 -5.790 -87.2) ref -82.4 e_lat +0.082 e_yaw -4.7 trk (+0.55 +0.83 +1.00) out (+0.31 +0.49 +0.39)
+[controller_server-5] [INFO] [1794597140.717189935] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.554 w 0.21 pose (4.974 -5.790 -87.2) ref -82.4 e_lat +0.082 e_yaw -4.7 trk (+0.55 +0.83 +1.00) out (+0.30 +0.55 +0.39)
+[controller_server-5] [INFO] [1794597140.767214635] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.634 w 0.03 pose (5.032 -5.837 -84.6) ref -78.3 e_lat +0.045 e_yaw -6.4 trk (+0.26 +0.77 +1.00) out (+0.19 +0.51 +0.26)
+[controller_server-5] [INFO] [1794597140.817240902] [controller_server]: ZTRACE slope_3+tunnel_3 ph exit s +1.634 w 0.03 pose (5.032 -5.837 -84.6) ref -78.3 e_lat +0.045 e_yaw -6.4 trk (+0.26 +0.77 +1.00) out (+0.18 +0.56 +0.21)
+[controller_server-5] [INFO] [1794597140.865815579] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 41.1 deg, lateral +0.008 m
+[controller_server-5] [INFO] [1794597140.866179504] [controller_server]: ZTRACE step_l1_1 ph align s -1.644 w 1.00 pose (5.081 -5.875 -82.2) ref -75.1 e_lat +0.008 e_yaw -7.1 trk (+0.10 +0.69 +1.00) out (+0.10 +0.69 +1.00)
+[controller_server-5] [INFO] [1794597140.916101042] [controller_server]: ZTRACE step_l1_1 ph align s -1.644 w 1.00 pose (5.081 -5.875 -82.2) ref -75.1 e_lat +0.008 e_yaw -7.1 trk (+0.10 +0.69 +1.00) out (+0.10 +0.69 +1.00)
+[controller_server-5] [INFO] [1794597140.966286073] [controller_server]: ZTRACE step_l1_1 ph align s -1.592 w 1.00 pose (5.135 -5.892 -80.8) ref -71.6 e_lat -0.013 e_yaw -9.2 trk (-0.00 +0.66 +1.00) out (-0.00 +0.66 +1.00)
+[controller_server-5] [INFO] [1794597141.016094100] [controller_server]: ZTRACE step_l1_1 ph align s -1.592 w 1.00 pose (5.135 -5.892 -80.8) ref -71.6 e_lat -0.013 e_yaw -9.2 trk (-0.00 +0.66 +1.00) out (-0.00 +0.66 +1.00)
+[controller_server-5] [INFO] [1794597141.066288588] [controller_server]: ZTRACE step_l1_1 ph align s -1.533 w 1.00 pose (5.196 -5.895 -78.0) ref -67.3 e_lat -0.026 e_yaw -10.7 trk (-0.06 +0.59 +1.00) out (-0.06 +0.59 +1.00)
+[controller_server-5] [INFO] [1794597141.116093961] [controller_server]: ZTRACE step_l1_1 ph align s -1.533 w 1.00 pose (5.196 -5.895 -78.0) ref -67.3 e_lat -0.026 e_yaw -10.7 trk (-0.06 +0.59 +1.00) out (-0.06 +0.59 +1.00)
+[controller_server-5] [INFO] [1794597141.166189505] [controller_server]: ZTRACE step_l1_1 ph align s -1.468 w 1.00 pose (5.260 -5.878 -73.0) ref -62.2 e_lat -0.022 e_yaw -10.8 trk (-0.03 +0.56 +1.00) out (-0.03 +0.56 +1.00)
+[controller_server-5] [INFO] [1794597141.216129072] [controller_server]: ZTRACE step_l1_1 ph align s -1.468 w 1.00 pose (5.260 -5.878 -73.0) ref -62.2 e_lat -0.022 e_yaw -10.8 trk (-0.03 +0.56 +1.00) out (-0.03 +0.56 +1.00)
+[controller_server-5] [INFO] [1794597141.266205330] [controller_server]: ZTRACE step_l1_1 ph align s -1.382 w 1.00 pose (5.334 -5.821 -66.9) ref -54.9 e_lat +0.014 e_yaw -12.1 trk (+0.09 +0.50 +1.00) out (+0.09 +0.50 +1.00)
+[controller_server-5] [INFO] [1794597141.316062491] [controller_server]: ZTRACE step_l1_1 ph align s -1.382 w 1.00 pose (5.334 -5.821 -66.9) ref -54.9 e_lat +0.014 e_yaw -12.1 trk (+0.09 +0.50 +1.00) out (+0.09 +0.50 +1.00)
+[controller_server-5] [INFO] [1794597141.366101092] [controller_server]: ZTRACE step_l1_1 ph align s -1.323 w 1.00 pose (5.387 -5.797 -61.2) ref -49.6 e_lat +0.020 e_yaw -11.6 trk (+0.15 +0.47 +1.00) out (+0.15 +0.47 +1.00)
+[controller_server-5] [INFO] [1794597141.416190347] [controller_server]: ZTRACE step_l1_1 ph align s -1.323 w 1.00 pose (5.387 -5.797 -61.2) ref -49.6 e_lat +0.020 e_yaw -11.6 trk (+0.15 +0.47 +1.00) out (+0.15 +0.47 +1.00)
+[controller_server-5] [INFO] [1794597141.466271491] [controller_server]: ZTRACE step_l1_1 ph align s -1.270 w 1.00 pose (5.435 -5.774 -55.4) ref -44.7 e_lat +0.025 e_yaw -10.8 trk (+0.19 +0.45 +1.00) out (+0.19 +0.45 +1.00)
+[controller_server-5] [INFO] [1794597141.516193995] [controller_server]: ZTRACE step_l1_1 ph align s -1.270 w 1.00 pose (5.435 -5.774 -55.4) ref -44.7 e_lat +0.025 e_yaw -10.8 trk (+0.19 +0.45 +1.00) out (+0.19 +0.45 +1.00)
+[controller_server-5] [INFO] [1794597141.566273995] [controller_server]: ZTRACE step_l1_1 ph align s -1.215 w 1.00 pose (5.484 -5.751 -49.7) ref -39.5 e_lat +0.030 e_yaw -10.2 trk (+0.24 +0.42 +1.00) out (+0.24 +0.42 +1.00)
+[controller_server-5] [INFO] [1794597141.616133833] [controller_server]: ZTRACE step_l1_1 ph align s -1.215 w 1.00 pose (5.484 -5.751 -49.7) ref -39.5 e_lat +0.030 e_yaw -10.2 trk (+0.24 +0.42 +1.00) out (+0.24 +0.42 +1.00)
+[controller_server-5] [INFO] [1794597141.666251811] [controller_server]: ZTRACE step_l1_1 ph align s -1.166 w 1.00 pose (5.530 -5.735 -44.0) ref -34.8 e_lat +0.028 e_yaw -9.2 trk (+0.26 +0.39 +1.00) out (+0.26 +0.39 +1.00)
+[controller_server-5] [INFO] [1794597141.716074911] [controller_server]: ZTRACE step_l1_1 ph align s -1.166 w 1.00 pose (5.530 -5.735 -44.0) ref -34.8 e_lat +0.028 e_yaw -9.2 trk (+0.26 +0.39 +1.00) out (+0.26 +0.39 +1.00)
+[controller_server-5] [INFO] [1794597141.766200828] [controller_server]: ZTRACE step_l1_1 ph align s -1.154 w 1.00 pose (5.536 -5.720 -38.2) ref -33.5 e_lat +0.039 e_yaw -4.6 trk (+0.33 +0.35 +1.00) out (+0.33 +0.35 +1.00)
+[controller_server-5] [INFO] [1794597141.816137044] [controller_server]: ZTRACE step_l1_1 ph align s -1.154 w 1.00 pose (5.536 -5.720 -38.2) ref -33.5 e_lat +0.039 e_yaw -4.6 trk (+0.33 +0.35 +1.00) out (+0.33 +0.35 +1.00)
+[controller_server-5] [INFO] [1794597141.866181498] [controller_server]: ZTRACE step_l1_1 ph align s -1.188 w 1.00 pose (5.487 -5.689 -32.5) ref -36.9 e_lat +0.086 e_yaw +4.3 trk (+0.48 +0.24 +0.57) out (+0.48 +0.24 +0.57)
+[controller_server-5] [INFO] [1794597141.916061368] [controller_server]: ZTRACE step_l1_1 ph align s -1.188 w 1.00 pose (5.487 -5.689 -32.5) ref -36.9 e_lat +0.086 e_yaw +4.3 trk (+0.48 +0.24 +0.57) out (+0.48 +0.24 +0.57)
+[controller_server-5] [INFO] [1794597140.642866023] [controller_server]: ZTRACE step_l1_1 ph align s -1.130 w 1.00 pose (5.542 -5.672 -26.8) ref -31.2 e_lat +0.081 e_yaw +4.4 trk (+0.48 +0.20 +0.57) out (+0.48 +0.20 +0.57)
+[controller_server-5] [INFO] [1794597140.692676907] [controller_server]: ZTRACE step_l1_1 ph align s -1.130 w 1.00 pose (5.542 -5.672 -26.8) ref -31.2 e_lat +0.081 e_yaw +4.4 trk (+0.48 +0.20 +0.57) out (+0.48 +0.20 +0.57)
+[controller_server-5] [INFO] [1794597140.742836557] [controller_server]: ZTRACE step_l1_1 ph align s -1.070 w 1.00 pose (5.597 -5.652 -21.9) ref -25.3 e_lat +0.077 e_yaw +3.3 trk (+0.49 +0.18 +0.63) out (+0.49 +0.18 +0.63)
+[controller_server-5] [INFO] [1794597140.792645158] [controller_server]: ZTRACE step_l1_1 ph align s -1.070 w 1.00 pose (5.597 -5.652 -21.9) ref -25.3 e_lat +0.077 e_yaw +3.3 trk (+0.49 +0.18 +0.63) out (+0.49 +0.18 +0.63)
+[controller_server-5] [INFO] [1794597140.842988487] [controller_server]: ZTRACE step_l1_1 ph align s -1.021 w 1.00 pose (5.648 -5.648 -18.7) ref -20.4 e_lat +0.059 e_yaw +1.8 trk (+0.46 +0.20 +0.71) out (+0.46 +0.20 +0.71)
+[controller_server-5] [INFO] [1794597140.893008159] [controller_server]: ZTRACE step_l1_1 ph align s -1.021 w 1.00 pose (5.648 -5.648 -18.7) ref -20.4 e_lat +0.059 e_yaw +1.8 trk (+0.46 +0.20 +0.71) out (+0.46 +0.20 +0.71)
+[controller_server-5] [INFO] [1794597140.942945076] [controller_server]: ZTRACE step_l1_1 ph align s -0.977 w 1.00 pose (5.697 -5.651 -15.2) ref -16.1 e_lat +0.034 e_yaw +1.0 trk (+0.42 +0.23 +0.75) out (+0.42 +0.23 +0.75)
+[controller_server-5] [INFO] [1794597140.993058581] [controller_server]: ZTRACE step_l1_1 ph align s -0.977 w 1.00 pose (5.697 -5.651 -15.2) ref -16.1 e_lat +0.034 e_yaw +1.0 trk (+0.42 +0.23 +0.75) out (+0.42 +0.23 +0.75)
+[controller_server-5] [INFO] [1794597141.042835368] [controller_server]: ZTRACE step_l1_1 ph align s -0.929 w 1.00 pose (5.749 -5.647 -11.2) ref -11.4 e_lat +0.015 e_yaw +0.1 trk (+0.40 +0.26 +0.79) out (+0.40 +0.26 +0.79)
+[controller_server-5] [INFO] [1794597141.092653411] [controller_server]: ZTRACE step_l1_1 ph align s -0.929 w 1.00 pose (5.749 -5.647 -11.2) ref -11.4 e_lat +0.015 e_yaw +0.1 trk (+0.40 +0.26 +0.79) out (+0.40 +0.26 +0.79)
+[controller_server-5] [INFO] [1794597141.142845984] [controller_server]: ZTRACE step_l1_1 ph align s -0.930 w 1.00 pose (5.750 -5.652 -6.8) ref -11.5 e_lat +0.010 e_yaw +4.7 trk (+0.41 +0.24 +0.55) out (+0.41 +0.24 +0.55)
+[controller_server-5] [INFO] [1794597141.192687276] [controller_server]: ZTRACE step_l1_1 ph align s -0.930 w 1.00 pose (5.750 -5.652 -6.8) ref -11.5 e_lat +0.010 e_yaw +4.7 trk (+0.41 +0.24 +0.55) out (+0.41 +0.24 +0.55)
+[controller_server-5] [INFO] [1794597141.242770290] [controller_server]: ZTRACE step_l1_1 ph align s -0.878 w 1.00 pose (5.794 -5.623 -2.3) ref -6.4 e_lat +0.015 e_yaw +4.1 trk (+0.43 +0.20 +0.59) out (+0.43 +0.20 +0.59)
+[controller_server-5] [INFO] [1794597141.292670502] [controller_server]: ZTRACE step_l1_1 ph align s -0.878 w 1.00 pose (5.794 -5.623 -2.3) ref -6.4 e_lat +0.015 e_yaw +4.1 trk (+0.43 +0.20 +0.59) out (+0.43 +0.20 +0.59)
+[controller_server-5] [INFO] [1794597141.342917459] [controller_server]: ZTRACE step_l1_1 ph align s -0.830 w 1.00 pose (5.835 -5.600 1.4) ref -1.8 e_lat +0.016 e_yaw +3.2 trk (+0.45 +0.18 +0.63) out (+0.45 +0.18 +0.63)
+[controller_server-5] [INFO] [1794597141.392727443] [controller_server]: ZTRACE step_l1_1 ph align s -0.830 w 1.00 pose (5.835 -5.600 1.4) ref -1.8 e_lat +0.016 e_yaw +3.2 trk (+0.45 +0.18 +0.63) out (+0.45 +0.18 +0.63)
+[cmd_gate-13] [INFO] [1794597141.442719743] [cmd_gate]: mode normal -> ramp
+[controller_server-5] [INFO] [1794597141.442956934] [controller_server]: ZTRACE step_l1_1 ph align s -0.784 w 1.00 pose (5.875 -5.578 4.7) ref 2.4 e_lat +0.016 e_yaw +2.3 trk (+0.47 +0.16 +0.68) out (+0.47 +0.16 +0.68)
+[controller_server-5] [INFO] [1794597141.492929801] [controller_server]: ZTRACE step_l1_1 ph align s -0.784 w 1.00 pose (5.875 -5.578 4.7) ref 2.4 e_lat +0.016 e_yaw +2.3 trk (+0.47 +0.16 +0.68) out (+0.47 +0.16 +0.68)
+[controller_server-5] [INFO] [1794597141.542916421] [controller_server]: ZTRACE step_l1_1 ph align s -0.734 w 1.00 pose (5.918 -5.551 8.3) ref 7.1 e_lat +0.018 e_yaw +1.2 trk (+0.50 +0.14 +0.74) out (+0.50 +0.14 +0.74)
+[controller_server-5] [INFO] [1794597141.592628092] [controller_server]: ZTRACE step_l1_1 ph align s -0.734 w 1.00 pose (5.918 -5.551 8.3) ref 7.1 e_lat +0.018 e_yaw +1.2 trk (+0.50 +0.14 +0.74) out (+0.50 +0.14 +0.74)
+[controller_server-5] [INFO] [1794597141.642814610] [controller_server]: ZTRACE step_l1_1 ph align s -0.681 w 1.00 pose (5.963 -5.526 12.1) ref 11.7 e_lat +0.017 e_yaw +0.4 trk (+0.52 +0.12 +0.78) out (+0.52 +0.12 +0.78)
+[controller_server-5] [INFO] [1794597141.693761406] [controller_server]: ZTRACE step_l1_1 ph align s -0.681 w 1.00 pose (5.963 -5.526 12.1) ref 11.7 e_lat +0.017 e_yaw +0.4 trk (+0.52 +0.12 +0.78) out (+0.52 +0.12 +0.78)
+[controller_server-5] [INFO] [1794597141.743199680] [controller_server]: ZTRACE step_l1_1 ph align s -0.623 w 1.00 pose (5.997 -5.469 16.0) ref 16.6 e_lat +0.048 e_yaw -0.6 trk (+0.57 +0.01 +0.83) out (+0.57 +0.01 +0.83)
+[controller_server-5] [INFO] [1794597141.792656879] [controller_server]: ZTRACE step_l1_1 ph align s -0.623 w 1.00 pose (5.997 -5.469 16.0) ref 16.6 e_lat +0.048 e_yaw -0.6 trk (+0.57 +0.01 +0.83) out (+0.57 +0.01 +0.83)
+[controller_server-5] [INFO] [1794597141.842918614] [controller_server]: ZTRACE step_l1_1 ph align s -0.565 w 1.00 pose (6.042 -5.434 20.4) ref 21.2 e_lat +0.054 e_yaw -0.8 trk (+0.62 -0.03 +0.84) out (+0.62 -0.03 +0.84)
+[controller_server-5] [INFO] [1794597141.892715731] [controller_server]: ZTRACE step_l1_1 ph align s -0.565 w 1.00 pose (6.042 -5.434 20.4) ref 21.2 e_lat +0.054 e_yaw -0.8 trk (+0.62 -0.03 +0.84) out (+0.62 -0.03 +0.84)
+[controller_server-5] [INFO] [1794597141.942840536] [controller_server]: ZTRACE step_l1_1 ph align s -0.516 w 1.00 pose (6.086 -5.413 25.1) ref 24.9 e_lat +0.048 e_yaw +0.1 trk (+0.65 -0.05 +0.79) out (+0.65 -0.05 +0.79)
+[controller_server-5] [INFO] [1794597141.992695889] [controller_server]: ZTRACE step_l1_1 ph align s -0.516 w 1.00 pose (6.086 -5.413 25.1) ref 24.9 e_lat +0.048 e_yaw +0.1 trk (+0.65 -0.05 +0.79) out (+0.65 -0.05 +0.79)
+[controller_server-5] [INFO] [1794597142.042943216] [controller_server]: ZTRACE step_l1_1 ph align s -0.452 w 1.00 pose (6.145 -5.387 29.9) ref 29.3 e_lat +0.036 e_yaw +0.5 trk (+0.70 -0.06 +0.77) out (+0.70 -0.06 +0.77)
+[controller_server-5] [INFO] [1794597142.092671368] [controller_server]: ZTRACE step_l1_1 ph align s -0.452 w 1.00 pose (6.145 -5.387 29.9) ref 29.3 e_lat +0.036 e_yaw +0.5 trk (+0.70 -0.06 +0.77) out (+0.70 -0.06 +0.77)
+[controller_server-5] [INFO] [1794597142.142836745] [controller_server]: ZTRACE step_l1_1 ph align s -0.393 w 1.00 pose (6.200 -5.364 34.5) ref 33.0 e_lat +0.024 e_yaw +1.5 trk (+0.70 -0.06 +0.62) out (+0.70 -0.06 +0.62)
+[controller_server-5] [INFO] [1794597142.192670102] [controller_server]: ZTRACE step_l1_1 ph align s -0.393 w 1.00 pose (6.200 -5.364 34.5) ref 33.0 e_lat +0.024 e_yaw +1.5 trk (+0.70 -0.06 +0.62) out (+0.70 -0.06 +0.62)
+[controller_server-5] [INFO] [1794597142.242936859] [controller_server]: ZTRACE step_l1_1 ph align s -0.324 w 1.00 pose (6.257 -5.326 38.9) ref 36.8 e_lat +0.021 e_yaw +2.1 trk (+0.70 -0.09 +0.51) out (+0.70 -0.09 +0.51)
+[controller_server-5] [INFO] [1794597142.293875596] [controller_server]: ZTRACE step_l1_1 ph align s -0.324 w 1.00 pose (6.257 -5.326 38.9) ref 36.8 e_lat +0.021 e_yaw +2.1 trk (+0.70 -0.09 +0.51) out (+0.70 -0.09 +0.51)
+[controller_server-5] [INFO] [1794597142.342869665] [controller_server]: ZTRACE step_l1_1 ph align s -0.238 w 1.00 pose (6.324 -5.273 42.3) ref 40.5 e_lat +0.023 e_yaw +1.8 trk (+0.69 -0.12 +0.35) out (+0.69 -0.12 +0.35)
+[controller_server-5] [INFO] [1794597142.392882379] [controller_server]: ZTRACE step_l1_1 ph align s -0.238 w 1.00 pose (6.324 -5.273 42.3) ref 40.5 e_lat +0.023 e_yaw +1.8 trk (+0.69 -0.12 +0.35) out (+0.69 -0.12 +0.35)
+[controller_server-5] [INFO] [1794597142.442830170] [controller_server]: ZTRACE step_l1_1 ph align s -0.163 w 1.00 pose (6.385 -5.230 45.1) ref 42.9 e_lat +0.018 e_yaw +2.2 trk (+0.69 -0.12 +0.18) out (+0.69 -0.12 +0.18)
+[controller_server-5] [INFO] [1794597142.492718418] [controller_server]: ZTRACE step_l1_1 ph align s -0.163 w 1.00 pose (6.385 -5.230 45.1) ref 42.9 e_lat +0.018 e_yaw +2.2 trk (+0.69 -0.12 +0.18) out (+0.69 -0.12 +0.18)
+[controller_server-5] [INFO] [1794597142.542905783] [controller_server]: ZTRACE step_l1_1 ph align s -0.107 w 1.00 pose (6.440 -5.209 47.1) ref 44.0 e_lat -0.002 e_yaw +3.1 trk (+0.70 -0.06 +0.03) out (+0.70 -0.06 +0.03)
+[controller_server-5] [INFO] [1794597142.592730625] [controller_server]: ZTRACE step_l1_1 ph align s -0.107 w 1.00 pose (6.440 -5.209 47.1) ref 44.0 e_lat -0.002 e_yaw +3.1 trk (+0.70 -0.06 +0.03) out (+0.70 -0.06 +0.03)
+[controller_server-5] [INFO] [1794597142.643107732] [controller_server]: ZTRACE step_l1_1 ph align s -0.063 w 1.00 pose (6.490 -5.197 48.2) ref 44.5 e_lat -0.027 e_yaw +3.7 trk (+0.70 +0.02 -0.09) out (+0.70 +0.02 -0.09)
+[controller_server-5] [INFO] [1794597142.692955817] [controller_server]: ZTRACE step_l1_1 ph align s -0.063 w 1.00 pose (6.490 -5.197 48.2) ref 44.5 e_lat -0.027 e_yaw +3.7 trk (+0.70 +0.02 -0.09) out (+0.70 +0.02 -0.09)
+[controller_server-5] [INFO] [1794597142.742793269] [controller_server]: ZTRACE step_l1_1 ph align s -0.023 w 1.00 pose (6.542 -5.191 48.5) ref 44.7 e_lat -0.059 e_yaw +3.7 trk (+0.71 +0.13 -0.17) out (+0.71 +0.13 -0.17)
+[controller_server-5] [INFO] [1794597142.792817055] [controller_server]: ZTRACE step_l1_1 ph align s -0.023 w 1.00 pose (6.542 -5.191 48.5) ref 44.7 e_lat -0.059 e_yaw +3.7 trk (+0.71 +0.13 -0.17) out (+0.71 +0.13 -0.17)
+[controller_server-5] [INFO] [1794597142.843096226] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.008 w 1.00 pose (6.593 -5.199 48.0) ref 44.8 e_lat -0.100 e_yaw +3.2 trk (+1.41 +0.22 -0.16) out (+1.41 +0.22 -0.16)
+[controller_server-5] [INFO] [1794597142.892768078] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.008 w 1.00 pose (6.593 -5.199 48.0) ref 44.8 e_lat -0.100 e_yaw +3.2 trk (+1.41 +0.22 -0.16) out (+1.41 +0.22 -0.16)
+[controller_server-5] [INFO] [1794597142.942909917] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.028 w 1.00 pose (6.635 -5.213 47.1) ref 44.8 e_lat -0.139 e_yaw +2.4 trk (+1.41 +0.24 -0.15) out (+1.41 +0.24 -0.15)
+[controller_server-5] [INFO] [1794597142.992940223] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.028 w 1.00 pose (6.635 -5.213 47.1) ref 44.8 e_lat -0.139 e_yaw +2.4 trk (+1.41 +0.24 -0.15) out (+1.41 +0.24 -0.15)
+[controller_server-5] [INFO] [1794597143.043035891] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.051 w 1.00 pose (6.686 -5.232 46.3) ref 44.7 e_lat -0.189 e_yaw +1.5 trk (+1.41 +0.26 -0.13) out (+1.41 +0.26 -0.13)
+[controller_server-5] [INFO] [1794597143.093014446] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.051 w 1.00 pose (6.686 -5.232 46.3) ref 44.7 e_lat -0.189 e_yaw +1.5 trk (+1.41 +0.26 -0.13) out (+1.41 +0.26 -0.13)
+[controller_server-5] [INFO] [1794597143.142870092] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.088 w 1.00 pose (6.757 -5.252 45.4) ref 44.6 e_lat -0.253 e_yaw +0.8 trk (+1.40 +0.28 -0.11) out (+1.40 +0.28 -0.11)
+[controller_server-5] [INFO] [1794597143.192901493] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.088 w 1.00 pose (6.757 -5.252 45.4) ref 44.6 e_lat -0.253 e_yaw +0.8 trk (+1.40 +0.28 -0.11) out (+1.40 +0.28 -0.11)
+[controller_server-5] [INFO] [1794597143.242891694] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.134 w 1.00 pose (6.840 -5.271 44.8) ref 44.5 e_lat -0.325 e_yaw +0.3 trk (+1.40 +0.29 -0.12) out (+1.40 +0.29 -0.12)
+[controller_server-5] [INFO] [1794597143.292813492] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.134 w 1.00 pose (6.840 -5.271 44.8) ref 44.5 e_lat -0.325 e_yaw +0.3 trk (+1.40 +0.29 -0.12) out (+1.40 +0.29 -0.12)
+[controller_server-5] [INFO] [1794597143.342920274] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.178 w 1.00 pose (6.914 -5.284 44.2) ref 44.2 e_lat -0.386 e_yaw +0.0 trk (+1.40 +0.31 -0.14) out (+1.40 +0.31 -0.14)
+[controller_server-5] [INFO] [1794597143.392926605] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.178 w 1.00 pose (6.914 -5.284 44.2) ref 44.2 e_lat -0.386 e_yaw +0.0 trk (+1.40 +0.31 -0.14) out (+1.40 +0.31 -0.14)
+[controller_server-5] [INFO] [1794597143.442937146] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.228 w 1.00 pose (6.994 -5.297 43.7) ref 43.9 e_lat -0.451 e_yaw -0.2 trk (+1.40 +0.31 -0.18) out (+1.40 +0.31 -0.18)
+[controller_server-5] [INFO] [1794597143.493191891] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.228 w 1.00 pose (6.994 -5.297 43.7) ref 43.9 e_lat -0.451 e_yaw -0.2 trk (+1.40 +0.31 -0.18) out (+1.40 +0.31 -0.18)
+[controller_server-5] [INFO] [1794597143.543018069] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.273 w 1.00 pose (7.066 -5.314 43.0) ref 43.5 e_lat -0.514 e_yaw -0.4 trk (+1.40 +0.32 -0.23) out (+1.40 +0.32 -0.23)
+[controller_server-5] [INFO] [1794597143.592891665] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.273 w 1.00 pose (7.066 -5.314 43.0) ref 43.5 e_lat -0.514 e_yaw -0.4 trk (+1.40 +0.32 -0.23) out (+1.40 +0.32 -0.23)
+[controller_server-5] [INFO] [1794597143.642954632] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.337 w 1.00 pose (7.146 -5.317 42.2) ref 42.7 e_lat -0.571 e_yaw -0.5 trk (+1.40 +0.32 -0.31) out (+1.40 +0.32 -0.31)
+[controller_server-5] [INFO] [1794597143.692791303] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.337 w 1.00 pose (7.146 -5.317 42.2) ref 42.7 e_lat -0.571 e_yaw -0.5 trk (+1.40 +0.32 -0.31) out (+1.40 +0.32 -0.31)
+[controller_server-5] [INFO] [1794597143.742968484] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.408 w 1.00 pose (7.219 -5.307 41.1) ref 41.6 e_lat -0.613 e_yaw -0.5 trk (+1.40 +0.32 -0.34) out (+1.40 +0.32 -0.34)
+[controller_server-5] [INFO] [1794597143.793273695] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.408 w 1.00 pose (7.219 -5.307 41.1) ref 41.6 e_lat -0.613 e_yaw -0.5 trk (+1.40 +0.32 -0.34) out (+1.40 +0.32 -0.34)
+[controller_server-5] [INFO] [1794597143.843077011] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.489 w 1.00 pose (7.300 -5.296 39.6) ref 40.5 e_lat -0.659 e_yaw -0.9 trk (+1.39 +0.33 -0.15) out (+1.39 +0.33 -0.15)
+[controller_server-5] [INFO] [1794597143.893035550] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.489 w 1.00 pose (7.300 -5.296 39.6) ref 40.5 e_lat -0.659 e_yaw -0.9 trk (+1.39 +0.33 -0.15) out (+1.39 +0.33 -0.15)
+[controller_server-5] [INFO] [1794597143.942890057] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.566 w 1.00 pose (7.383 -5.285 37.9) ref 40.5 e_lat -0.704 e_yaw -2.6 trk (+1.39 +0.35 +0.34) out (+1.39 +0.35 +0.34)
+[controller_server-5] [INFO] [1794597143.992848546] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.566 w 1.00 pose (7.383 -5.285 37.9) ref 40.5 e_lat -0.704 e_yaw -2.6 trk (+1.39 +0.35 +0.34) out (+1.39 +0.35 +0.34)
+[controller_server-5] [INFO] [1794597144.042902907] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.625 w 1.00 pose (7.459 -5.271 36.7) ref 41.3 e_lat -0.743 e_yaw -4.6 trk (+1.38 +0.40 +0.60) out (+1.38 +0.40 +0.60)
+[controller_server-5] [INFO] [1794597144.093231405] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.625 w 1.00 pose (7.459 -5.271 36.7) ref 41.3 e_lat -0.743 e_yaw -4.6 trk (+1.38 +0.40 +0.60) out (+1.38 +0.40 +0.60)
+[controller_server-5] [INFO] [1794597144.142848997] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.675 w 1.00 pose (7.523 -5.246 36.7) ref 42.1 e_lat -0.766 e_yaw -5.3 trk (+1.37 +0.42 +0.65) out (+1.37 +0.42 +0.65)
+[controller_server-5] [INFO] [1794597144.192970245] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.675 w 1.00 pose (7.523 -5.246 36.7) ref 42.1 e_lat -0.766 e_yaw -5.3 trk (+1.37 +0.42 +0.65) out (+1.37 +0.42 +0.65)
+[controller_server-5] [INFO] [1794597144.243078963] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.726 w 1.00 pose (7.588 -5.231 39.0) ref 42.8 e_lat -0.799 e_yaw -3.8 trk (+1.38 +0.37 +0.52) out (+1.38 +0.37 +0.52)
+[controller_server-5] [INFO] [1794597144.292826443] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.726 w 1.00 pose (7.588 -5.231 39.0) ref 42.8 e_lat -0.799 e_yaw -3.8 trk (+1.38 +0.37 +0.52) out (+1.38 +0.37 +0.52)
+[controller_server-5] [INFO] [1794597144.343260608] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.764 w 1.00 pose (7.650 -5.231 42.8) ref 43.3 e_lat -0.841 e_yaw -0.5 trk (+1.40 +0.30 +0.30) out (+1.40 +0.30 +0.30)
+[controller_server-5] [INFO] [1794597144.393113885] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.764 w 1.00 pose (7.650 -5.231 42.8) ref 43.3 e_lat -0.841 e_yaw -0.5 trk (+1.40 +0.30 +0.30) out (+1.40 +0.30 +0.30)
+[controller_server-5] [INFO] [1794597144.442978942] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.805 w 1.00 pose (7.724 -5.233 46.0) ref 43.7 e_lat -0.892 e_yaw +2.3 trk (+1.41 +0.24 +0.09) out (+1.41 +0.24 +0.09)
+[controller_server-5] [INFO] [1794597144.493320739] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.805 w 1.00 pose (7.724 -5.233 46.0) ref 43.7 e_lat -0.892 e_yaw +2.3 trk (+1.41 +0.24 +0.09) out (+1.41 +0.24 +0.09)
+[controller_server-5] [INFO] [1794597144.542940653] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.856 w 1.00 pose (7.805 -5.245 48.3) ref 44.1 e_lat -0.957 e_yaw +4.3 trk (+1.42 +0.18 -0.07) out (+1.42 +0.18 -0.07)
+[controller_server-5] [INFO] [1794597144.592850610] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.856 w 1.00 pose (7.805 -5.245 48.3) ref 44.1 e_lat -0.957 e_yaw +4.3 trk (+1.42 +0.18 -0.07) out (+1.42 +0.18 -0.07)
+[controller_server-5] [INFO] [1794597144.642992979] [controller_server]: ZTRACE step_l1_1 ph exit s +0.904 w 1.00 pose (7.890 -5.251 49.5) ref 44.3 e_lat -1.020 e_yaw +5.1 trk (+1.42 +0.17 -0.17) out (+1.42 +0.17 -0.17)
+[controller_server-5] [WARN] [1794597144.643739830] [controller_server]: Zone collision: measured braking at (8.270 -5.303 48.8 deg), robot (7.890 -5.251), occupied cells 2
+[controller_server-5] [WARN] [1794597144.646018690] [controller_server]: ZoneAwareController: step_l1_1 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794597144.693125417] [controller_server]: ZTRACE step_l1_1 ph exit s +0.904 w 1.00 pose (7.890 -5.251 49.5) ref 44.3 e_lat -1.020 e_yaw +5.1 trk (+1.42 +0.17 -0.17) out (+1.42 +0.17 -0.17)
+[controller_server-5] [INFO] [1794597144.742994960] [controller_server]: ZTRACE step_l1_1 ph exit s +0.968 w 1.00 pose (7.984 -5.249 49.4) ref 44.5 e_lat -1.085 e_yaw +4.9 trk (+1.42 +0.18 -0.22) out (+1.42 +0.18 -0.22)
+[controller_server-5] [INFO] [1794597144.793079646] [controller_server]: ZTRACE step_l1_1 ph exit s +0.968 w 1.00 pose (7.984 -5.249 49.4) ref 44.5 e_lat -1.085 e_yaw +4.9 trk (+1.42 +0.18 -0.22) out (+1.42 +0.18 -0.22)
+[controller_server-5] [INFO] [1794597144.843004060] [controller_server]: ZTRACE step_l1_1 ph exit s +1.024 w 1.00 pose (8.076 -5.260 49.4) ref 44.5 e_lat -1.157 e_yaw +4.9 trk (+1.42 +0.18 -0.27) out (+1.42 +0.18 -0.27)
+[controller_server-5] [INFO] [1794597144.892873462] [controller_server]: ZTRACE step_l1_1 ph exit s +1.024 w 1.00 pose (8.076 -5.260 49.4) ref 44.5 e_lat -1.157 e_yaw +4.9 trk (+1.42 +0.18 -0.27) out (+1.42 +0.18 -0.27)
+[controller_server-5] [INFO] [1794597144.943137988] [controller_server]: ZTRACE step_l1_1 ph exit s +1.064 w 1.00 pose (8.141 -5.269 49.6) ref 44.4 e_lat -1.209 e_yaw +5.1 trk (+1.42 +0.18 -0.31) out (+1.42 +0.18 -0.31)
+[controller_server-5] [INFO] [1794597144.993317502] [controller_server]: ZTRACE step_l1_1 ph exit s +1.064 w 1.00 pose (8.141 -5.269 49.6) ref 44.4 e_lat -1.209 e_yaw +5.1 trk (+1.42 +0.18 -0.31) out (+1.42 +0.18 -0.31)
+[controller_server-5] [INFO] [1794597145.043891255] [controller_server]: ZTRACE step_l1_1 ph exit s +1.105 w 0.97 pose (8.192 -5.264 49.7) ref 44.3 e_lat -1.242 e_yaw +5.4 trk (+1.42 +0.17 -0.37) out (+1.39 +0.17 -0.36)
+[controller_server-5] [INFO] [1794597145.093975048] [controller_server]: ZTRACE step_l1_1 ph exit s +1.105 w 0.97 pose (8.192 -5.264 49.7) ref 44.3 e_lat -1.242 e_yaw +5.4 trk (+1.42 +0.17 -0.37) out (+1.39 +0.17 -0.37)
+[controller_server-5] [INFO] [1794597145.144577301] [controller_server]: ZTRACE step_l1_1 ph exit s +1.117 w 0.96 pose (8.213 -5.268 49.7) ref 44.3 e_lat -1.259 e_yaw +5.4 trk (+1.42 +0.17 -0.38) out (+1.37 +0.17 -0.37)
+[controller_server-5] [INFO] [1794597145.193910426] [controller_server]: ZTRACE step_l1_1 ph exit s +1.117 w 0.96 pose (8.213 -5.268 49.7) ref 44.3 e_lat -1.259 e_yaw +5.4 trk (+1.42 +0.17 -0.38) out (+1.37 +0.17 -0.37)
+[controller_server-5] [WARN] [1794597145.196559055] [controller_server]: ZoneAwareController: step_l1_1 obstacle on the path ahead, stopping
+[controller_server-5] [INFO] [1794597145.244041176] [controller_server]: ZTRACE step_l1_1 ph exit s +1.126 w 0.94 pose (8.226 -5.269 48.9) ref 44.3 e_lat -1.269 e_yaw +4.7 trk (+1.42 +0.19 -0.37) out (+1.35 +0.19 -0.36)
+[controller_server-5] [INFO] [1794597145.293982278] [controller_server]: ZTRACE step_l1_1 ph exit s +1.126 w 0.94 pose (8.226 -5.269 48.9) ref 44.3 e_lat -1.269 e_yaw +4.7 trk (+1.42 +0.19 -0.37) out (+1.35 +0.19 -0.35)
+[controller_server-5] [INFO] [1794597145.344080821] [controller_server]: ZTRACE step_l1_1 ph exit s +1.148 w 0.89 pose (8.248 -5.268 47.8) ref 44.1 e_lat -1.284 e_yaw +3.6 trk (+1.42 +0.21 -0.35) out (+1.29 +0.22 -0.32)
+[controller_server-5] [INFO] [1794597145.393972949] [controller_server]: ZTRACE step_l1_1 ph exit s +1.148 w 0.89 pose (8.248 -5.268 47.8) ref 44.1 e_lat -1.284 e_yaw +3.6 trk (+1.42 +0.21 -0.35) out (+1.29 +0.22 -0.32)
+[controller_server-5] [INFO] [1794597145.444025300] [controller_server]: ZTRACE step_l1_1 ph exit s +1.157 w 0.87 pose (8.256 -5.263 47.8) ref 44.1 e_lat -1.285 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.26 +0.22 -0.31)
+[controller_server-5] [INFO] [1794597145.493968245] [controller_server]: ZTRACE step_l1_1 ph exit s +1.157 w 0.87 pose (8.256 -5.263 47.8) ref 44.1 e_lat -1.285 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.26 +0.22 -0.31)
+[controller_server-5] [INFO] [1794597145.544679665] [controller_server]: ZTRACE step_l1_1 ph exit s +1.159 w 0.86 pose (8.256 -5.261 47.8) ref 44.1 e_lat -1.284 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.25 +0.22 -0.32)
+[controller_server-5] [INFO] [1794597145.593836097] [controller_server]: ZTRACE step_l1_1 ph exit s +1.159 w 0.86 pose (8.256 -5.261 47.8) ref 44.1 e_lat -1.284 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.25 +0.22 -0.31)
+[controller_server-5] [INFO] [1794597145.644132589] [controller_server]: ZTRACE step_l1_1 ph exit s +1.156 w 0.87 pose (8.257 -5.265 47.8) ref 44.1 e_lat -1.287 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.26 +0.22 -0.31)
+[controller_server-5] [WARN] [1794597145.644859660] [controller_server]: Zone collision: command braking at (8.263 -5.256 47.6 deg), robot (8.257 -5.265), occupied cells 2
+[controller_server-5] [INFO] [1794597145.693872259] [controller_server]: ZTRACE step_l1_1 ph exit s +1.156 w 0.87 pose (8.257 -5.265 47.8) ref 44.1 e_lat -1.287 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.26 +0.22 -0.31)
+[controller_server-5] [INFO] [1794597145.743904880] [controller_server]: ZTRACE step_l1_1 ph exit s +1.156 w 0.87 pose (8.258 -5.266 47.8) ref 44.1 e_lat -1.289 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.26 +0.22 -0.31)
+[controller_server-5] [INFO] [1794597145.793968501] [controller_server]: ZTRACE step_l1_1 ph exit s +1.156 w 0.87 pose (8.258 -5.266 47.8) ref 44.1 e_lat -1.289 e_yaw +3.7 trk (+1.42 +0.21 -0.35) out (+1.26 +0.22 -0.31)
+[controller_server-5] [INFO] [1794597145.843657295] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[smoother_server-6] [INFO] [1794597148.351650471] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794597148.351901236] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn locked, offset in/body/out +0.34/+0.34/+0.34 m
+[controller_server-5] [INFO] [1794597148.392578720] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794597148.392860891] [controller_server]: ZoneAwareController: slope_1+tunnel_2 (narrow) window, heading locked at -0.0 deg, lateral -0.000 m
+[cmd_gate-13] [INFO] [1794597148.393038258] [cmd_gate]: mode ramp -> normal
+[controller_server-5] [ERROR] [1794597154.792716874] [controller_server]: Failed to make progress
+[controller_server-5] [INFO] [1794597154.793142351] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794597154.793352523] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-5] [INFO] [1794597154.811238653] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794597154.819082115] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794597154.825028511] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794597154.830850191] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794597154.830888271] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794597154.830894987] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794597154.842740605] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[controller_server-5] [INFO] [1794597154.847673770] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.317 w 1.00 pose (8.233 -5.278 47.9) ref -6.9 e_lat +0.006 e_yaw +54.8 trk (+0.03 +0.24 -1.00) out (+0.03 +0.24 -1.00)
+[controller_server-5] [INFO] [1794597154.876895005] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.317 w 1.00 pose (8.233 -5.278 47.9) ref -6.9 e_lat +0.006 e_yaw +54.8 trk (+0.03 +0.24 -1.00) out (+0.03 +0.24 -1.00)
+[controller_server-5] [INFO] [1794597154.926785054] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.317 w 1.00 pose (8.230 -5.278 47.9) ref -7.4 e_lat +0.008 e_yaw +55.3 trk (+0.03 +0.23 -1.00) out (+0.03 +0.23 -1.00)
+[controller_server-5] [INFO] [1794597154.976593685] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.317 w 1.00 pose (8.230 -5.278 47.9) ref -7.4 e_lat +0.008 e_yaw +55.3 trk (+0.03 +0.23 -1.00) out (+0.03 +0.23 -1.00)
+[controller_server-5] [INFO] [1794597155.026932054] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.317 w 1.00 pose (8.224 -5.279 47.1) ref -8.6 e_lat +0.013 e_yaw +55.7 trk (+0.05 +0.22 -1.00) out (+0.05 +0.22 -1.00)
+[controller_server-5] [INFO] [1794597155.076381285] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.317 w 1.00 pose (8.224 -5.279 47.1) ref -8.6 e_lat +0.013 e_yaw +55.7 trk (+0.05 +0.22 -1.00) out (+0.05 +0.22 -1.00)
+[controller_server-5] [INFO] [1794597155.126662915] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.321 w 1.00 pose (8.210 -5.287 44.0) ref -11.8 e_lat +0.029 e_yaw +55.8 trk (+0.08 +0.20 -1.00) out (+0.08 +0.20 -1.00)
+[controller_server-5] [INFO] [1794597155.176328211] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.321 w 1.00 pose (8.210 -5.287 44.0) ref -11.8 e_lat +0.029 e_yaw +55.8 trk (+0.08 +0.20 -1.00) out (+0.08 +0.20 -1.00)
+[controller_server-5] [INFO] [1794597155.226535467] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.335 w 0.99 pose (8.196 -5.281 38.8) ref -15.2 e_lat +0.035 e_yaw +54.0 trk (+0.08 +0.19 -1.00) out (+0.08 +0.19 -1.00)
+[controller_server-5] [INFO] [1794597155.276419500] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.335 w 0.99 pose (8.196 -5.281 38.8) ref -15.2 e_lat +0.035 e_yaw +54.0 trk (+0.08 +0.19 -1.00) out (+0.08 +0.19 -1.00)
+[controller_server-5] [INFO] [1794597155.326670019] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.360 w 0.96 pose (8.188 -5.275 33.2) ref -17.4 e_lat +0.034 e_yaw +50.6 trk (-0.01 +0.20 -1.00) out (-0.02 +0.20 -0.98)
+[controller_server-5] [INFO] [1794597155.376339607] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.360 w 0.96 pose (8.188 -5.275 33.2) ref -17.4 e_lat +0.034 e_yaw +50.6 trk (-0.01 +0.20 -1.00) out (-0.02 +0.20 -0.98)
+[controller_server-5] [INFO] [1794597155.426588669] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.367 w 0.94 pose (8.182 -5.269 27.6) ref -19.0 e_lat +0.031 e_yaw +46.6 trk (-0.04 +0.18 -1.00) out (-0.05 +0.19 -0.98)
+[controller_server-5] [INFO] [1794597155.476321040] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.367 w 0.94 pose (8.182 -5.269 27.6) ref -19.0 e_lat +0.031 e_yaw +46.6 trk (-0.04 +0.18 -1.00) out (-0.05 +0.19 -0.98)
+[controller_server-5] [INFO] [1794597155.526634613] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.383 w 0.91 pose (8.166 -5.267 22.0) ref -23.6 e_lat +0.034 e_yaw +45.7 trk (-0.04 +0.18 -1.00) out (-0.05 +0.19 -0.97)
+[controller_server-5] [INFO] [1794597155.576389823] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.383 w 0.91 pose (8.166 -5.267 22.0) ref -23.6 e_lat +0.034 e_yaw +45.7 trk (-0.04 +0.18 -1.00) out (-0.05 +0.19 -0.97)
+[controller_server-5] [INFO] [1794597155.626394713] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.397 w 0.88 pose (8.155 -5.258 16.5) ref -27.1 e_lat +0.031 e_yaw +43.6 trk (-0.06 +0.16 -1.00) out (-0.08 +0.18 -0.95)
+[controller_server-5] [INFO] [1794597155.676464421] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.397 w 0.88 pose (8.155 -5.258 16.5) ref -27.1 e_lat +0.031 e_yaw +43.6 trk (-0.06 +0.16 -1.00) out (-0.08 +0.18 -0.95)
+[controller_server-5] [INFO] [1794597155.726471186] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.421 w 0.81 pose (8.138 -5.240 11.1) ref -32.5 e_lat +0.019 e_yaw +43.6 trk (-0.10 +0.12 -1.00) out (-0.13 +0.14 -0.92)
+[controller_server-5] [INFO] [1794597155.776280363] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.421 w 0.81 pose (8.138 -5.240 11.1) ref -32.5 e_lat +0.019 e_yaw +43.6 trk (-0.10 +0.12 -1.00) out (-0.13 +0.14 -0.92)
+[controller_server-5] [INFO] [1794597155.826602715] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.437 w 0.76 pose (8.126 -5.221 5.7) ref -36.2 e_lat +0.004 e_yaw +41.9 trk (-0.12 +0.06 -1.00) out (-0.16 +0.10 -0.89)
+[controller_server-5] [INFO] [1794597155.876314747] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.437 w 0.76 pose (8.126 -5.221 5.7) ref -36.2 e_lat +0.004 e_yaw +41.9 trk (-0.12 +0.06 -1.00) out (-0.16 +0.09 -0.89)
+[controller_server-5] [INFO] [1794597155.926569163] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.450 w 0.72 pose (8.115 -5.213 0.6) ref -39.9 e_lat +0.000 e_yaw +40.5 trk (-0.13 +0.04 -1.00) out (-0.16 +0.07 -0.87)
+[controller_server-5] [INFO] [1794597155.976357631] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.450 w 0.72 pose (8.115 -5.213 0.6) ref -39.9 e_lat +0.000 e_yaw +40.5 trk (-0.13 +0.04 -1.00) out (-0.16 +0.06 -0.87)
+[controller_server-5] [INFO] [1794597156.026472786] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.464 w 0.67 pose (8.102 -5.207 -4.4) ref -44.2 e_lat -0.002 e_yaw +39.8 trk (-0.13 +0.02 -1.00) out (-0.18 +0.05 -0.85)
+[controller_server-5] [INFO] [1794597156.076319913] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.464 w 0.67 pose (8.102 -5.207 -4.4) ref -44.2 e_lat -0.002 e_yaw +39.8 trk (-0.13 +0.02 -1.00) out (-0.18 +0.05 -0.84)
+[controller_server-5] [INFO] [1794597156.126574415] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.486 w 0.59 pose (8.082 -5.196 -9.3) ref -50.9 e_lat -0.007 e_yaw +41.7 trk (-0.14 -0.00 -1.00) out (-0.20 +0.03 -0.80)
+[controller_server-5] [INFO] [1794597156.176308949] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.486 w 0.59 pose (8.082 -5.196 -9.3) ref -50.9 e_lat -0.007 e_yaw +41.7 trk (-0.14 -0.00 -1.00) out (-0.20 +0.02 -0.79)
+[controller_server-5] [INFO] [1794597156.226564446] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.506 w 0.51 pose (8.064 -5.188 -14.0) ref -56.8 e_lat -0.010 e_yaw +42.9 trk (-0.14 -0.02 -1.00) out (-0.20 +0.01 -0.71)
+[controller_server-5] [INFO] [1794597156.276305957] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.506 w 0.51 pose (8.064 -5.188 -14.0) ref -56.8 e_lat -0.010 e_yaw +42.9 trk (-0.14 -0.02 -1.00) out (-0.20 +0.01 -0.71)
+[controller_server-5] [INFO] [1794597156.326660853] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.519 w 0.46 pose (8.052 -5.184 -18.2) ref -60.9 e_lat -0.010 e_yaw +42.7 trk (-0.14 -0.03 -1.00) out (-0.21 +0.03 -0.68)
+[controller_server-5] [INFO] [1794597156.376292154] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.519 w 0.46 pose (8.052 -5.184 -18.2) ref -60.9 e_lat -0.010 e_yaw +42.7 trk (-0.14 -0.03 -1.00) out (-0.20 +0.04 -0.68)
+[controller_server-5] [INFO] [1794597156.426506787] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.543 w 0.38 pose (8.032 -5.166 -22.2) ref -66.8 e_lat -0.021 e_yaw +44.6 trk (-0.15 -0.08 -1.00) out (-0.21 +0.02 -0.63)
+[controller_server-5] [INFO] [1794597156.476345757] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.543 w 0.38 pose (8.032 -5.166 -22.2) ref -66.8 e_lat -0.021 e_yaw +44.6 trk (-0.15 -0.08 -1.00) out (-0.20 -0.01 -0.61)
+[controller_server-5] [INFO] [1794597156.526633995] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.564 w 0.30 pose (8.012 -5.166 -26.0) ref -72.6 e_lat -0.015 e_yaw +46.6 trk (-0.17 -0.06 -1.00) out (-0.20 -0.02 -0.56)
+[controller_server-5] [INFO] [1794597156.576407589] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.564 w 0.30 pose (8.012 -5.166 -26.0) ref -72.6 e_lat -0.015 e_yaw +46.6 trk (-0.17 -0.06 -1.00) out (-0.18 -0.04 -0.53)
+[controller_server-5] [INFO] [1794597156.626335930] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.572 w 0.27 pose (7.998 -5.179 -29.4) ref -76.3 e_lat +0.003 e_yaw +46.8 trk (-0.18 -0.02 -1.00) out (-0.16 -0.04 -0.48)
+[controller_server-5] [INFO] [1794597156.676408483] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.572 w 0.27 pose (7.998 -5.179 -29.4) ref -76.3 e_lat +0.003 e_yaw +46.8 trk (-0.18 -0.02 -1.00) out (-0.14 -0.03 -0.46)
+[controller_server-5] [INFO] [1794597156.726630093] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.562 w 0.31 pose (7.992 -5.219 -32.5) ref -77.6 e_lat +0.042 e_yaw +45.2 trk (-0.21 +0.09 -1.00) out (-0.14 +0.02 -0.47)
+[controller_server-5] [INFO] [1794597156.776340370] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.562 w 0.31 pose (7.992 -5.219 -32.5) ref -77.6 e_lat +0.042 e_yaw +45.2 trk (-0.21 +0.09 -1.00) out (-0.12 +0.03 -0.46)
+[controller_server-5] [INFO] [1794597156.826328886] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.565 w 0.30 pose (7.982 -5.238 -35.2) ref -79.9 e_lat +0.064 e_yaw +44.8 trk (-0.25 +0.14 -1.00) out (-0.12 +0.04 -0.45)
+[controller_server-5] [INFO] [1794597156.876457864] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.565 w 0.30 pose (7.982 -5.238 -35.2) ref -79.9 e_lat +0.064 e_yaw +44.8 trk (-0.25 +0.14 -1.00) out (-0.11 +0.03 -0.45)
+[controller_server-5] [INFO] [1794597156.926638183] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.556 w 0.33 pose (7.979 -5.270 -37.8) ref -80.7 e_lat +0.095 e_yaw +42.9 trk (-0.29 +0.21 -1.00) out (-0.13 +0.06 -0.46)
+[controller_server-5] [INFO] [1794597156.976498061] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.556 w 0.33 pose (7.979 -5.270 -37.8) ref -80.7 e_lat +0.095 e_yaw +42.9 trk (-0.29 +0.21 -1.00) out (-0.12 +0.07 -0.47)
+[controller_server-5] [INFO] [1794597157.026714851] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.555 w 0.33 pose (7.974 -5.302 -40.3) ref -81.6 e_lat +0.126 e_yaw +41.3 trk (-0.33 +0.19 -1.00) out (-0.14 +0.06 -0.47)
+[controller_server-5] [INFO] [1794597157.076392552] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.555 w 0.33 pose (7.974 -5.302 -40.3) ref -81.6 e_lat +0.126 e_yaw +41.3 trk (-0.33 +0.19 -1.00) out (-0.15 +0.06 -0.48)
+[controller_server-5] [INFO] [1794597157.126620631] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.555 w 0.33 pose (7.969 -5.330 -42.9) ref -82.7 e_lat +0.154 e_yaw +39.8 trk (-0.35 +0.16 -1.00) out (-0.17 +0.07 -0.48)
+[controller_server-5] [INFO] [1794597157.176431872] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.555 w 0.33 pose (7.969 -5.330 -42.9) ref -82.7 e_lat +0.154 e_yaw +39.8 trk (-0.35 +0.16 -1.00) out (-0.18 +0.08 -0.48)
+[controller_server-5] [INFO] [1794597157.226708414] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.553 w 0.34 pose (7.965 -5.353 -45.5) ref -83.3 e_lat +0.177 e_yaw +37.8 trk (-0.36 +0.14 -1.00) out (-0.21 +0.10 -0.49)
+[controller_server-5] [INFO] [1794597157.276406471] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.553 w 0.34 pose (7.965 -5.353 -45.5) ref -83.3 e_lat +0.177 e_yaw +37.8 trk (-0.36 +0.14 -1.00) out (-0.23 +0.12 -0.50)
+[controller_server-5] [INFO] [1794597157.326593815] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.549 w 0.35 pose (7.964 -5.367 -48.1) ref -83.5 e_lat +0.191 e_yaw +35.4 trk (-0.37 +0.12 -1.00) out (-0.27 +0.12 -0.51)
+[controller_server-5] [INFO] [1794597157.376375258] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.549 w 0.35 pose (7.964 -5.367 -48.1) ref -83.5 e_lat +0.191 e_yaw +35.4 trk (-0.37 +0.12 -1.00) out (-0.28 +0.13 -0.52)
+[controller_server-5] [INFO] [1794597157.426642228] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.555 w 0.33 pose (7.957 -5.357 -50.9) ref -84.8 e_lat +0.184 e_yaw +33.9 trk (-0.40 +0.09 -1.00) out (-0.32 +0.13 -0.50)
+[controller_server-5] [INFO] [1794597157.476393067] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.555 w 0.33 pose (7.957 -5.357 -50.9) ref -84.8 e_lat +0.184 e_yaw +33.9 trk (-0.40 +0.09 -1.00) out (-0.34 +0.14 -0.50)
+[controller_server-5] [INFO] [1794597157.526690252] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.559 w 0.32 pose (7.949 -5.338 -53.7) ref -86.0 e_lat +0.169 e_yaw +32.3 trk (-0.43 +0.08 -1.00) out (-0.35 +0.13 -0.48)
+[controller_server-5] [INFO] [1794597157.576461134] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.559 w 0.32 pose (7.949 -5.338 -53.7) ref -86.0 e_lat +0.169 e_yaw +32.3 trk (-0.43 +0.08 -1.00) out (-0.36 +0.14 -0.48)
+[controller_server-5] [INFO] [1794597157.626696275] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.574 w 0.27 pose (7.940 -5.319 -56.5) ref -87.1 e_lat +0.154 e_yaw +30.6 trk (-0.49 +0.03 -1.00) out (-0.37 +0.12 -0.44)
+[controller_server-5] [INFO] [1794597157.676473202] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.574 w 0.27 pose (7.940 -5.319 -56.5) ref -87.1 e_lat +0.154 e_yaw +30.6 trk (-0.49 +0.03 -1.00) out (-0.37 +0.11 -0.43)
+[controller_server-5] [INFO] [1794597157.726762738] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.595 w 0.20 pose (7.926 -5.297 -59.2) ref -88.5 e_lat +0.139 e_yaw +29.4 trk (-0.63 -0.11 -1.00) out (-0.39 +0.09 -0.38)
+[controller_server-5] [INFO] [1794597157.776436756] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.595 w 0.20 pose (7.926 -5.297 -59.2) ref -88.5 e_lat +0.139 e_yaw +29.4 trk (-0.63 -0.11 -1.00) out (-0.39 +0.09 -0.36)
+[controller_server-5] [INFO] [1794597157.826647792] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.613 w 0.15 pose (7.914 -5.273 -61.6) ref -89.3 e_lat +0.121 e_yaw +27.7 trk (-0.96 -0.41 -1.00) out (-0.41 +0.04 -0.30)
+[controller_server-5] [INFO] [1794597157.876424643] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.613 w 0.15 pose (7.914 -5.273 -61.6) ref -89.3 e_lat +0.121 e_yaw +27.7 trk (-0.96 -0.41 -1.00) out (-0.40 +0.01 -0.28)
+[controller_server-5] [INFO] [1794597157.926367483] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.613 w 0.15 pose (7.884 -5.265 -63.6) ref -89.6 e_lat +0.125 e_yaw +26.0 trk (-0.94 -0.45 -1.00) out (-0.40 +0.00 -0.27)
+[controller_server-5] [INFO] [1794597157.976372240] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.613 w 0.15 pose (7.884 -5.265 -63.6) ref -89.6 e_lat +0.125 e_yaw +26.0 trk (-0.94 -0.45 -1.00) out (-0.39 -0.00 -0.26)
+[controller_server-5] [INFO] [1794597158.026744881] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.615 w 0.14 pose (7.870 -5.248 -65.3) ref -89.6 e_lat +0.126 e_yaw +24.3 trk (-1.04 -0.07 -1.00) out (-0.37 +0.03 -0.25)
+[controller_server-5] [INFO] [1794597158.076404642] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.615 w 0.14 pose (7.870 -5.248 -65.3) ref -89.6 e_lat +0.126 e_yaw +24.3 trk (-1.04 -0.07 -1.00) out (-0.35 +0.02 -0.25)
+[controller_server-5] [INFO] [1794597158.126401489] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.636 w 0.09 pose (7.845 -5.245 -66.8) ref -89.6 e_lat +0.141 e_yaw +22.8 trk (-1.04 -0.09 -1.00) out (-0.29 +0.02 -0.20)
+[controller_server-5] [INFO] [1794597158.176384664] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.636 w 0.09 pose (7.845 -5.245 -66.8) ref -89.6 e_lat +0.141 e_yaw +22.8 trk (-1.04 -0.09 -1.00) out (-0.27 +0.01 -0.20)
+[controller_server-5] [INFO] [1794597158.226739862] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.822 -5.246 -68.2) ref -89.6 e_lat +0.158 e_yaw +21.4 trk (-1.04 -0.12 -1.00) out (-0.23 +0.01 -0.17)
+[controller_server-5] [INFO] [1794597158.276403806] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.822 -5.246 -68.2) ref -89.6 e_lat +0.158 e_yaw +21.4 trk (-1.04 -0.12 -1.00) out (-0.21 -0.01 -0.18)
+[controller_server-5] [INFO] [1794597158.326476076] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.793 -5.254 -69.4) ref -89.6 e_lat +0.184 e_yaw +20.2 trk (-1.03 -0.14 -1.00) out (-0.19 -0.01 -0.17)
+[controller_server-5] [INFO] [1794597158.376298698] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.793 -5.254 -69.4) ref -89.6 e_lat +0.184 e_yaw +20.2 trk (-1.03 -0.14 -1.00) out (-0.18 -0.01 -0.17)
+[controller_server-5] [INFO] [1794597158.426473410] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.770 -5.259 -70.5) ref -89.6 e_lat +0.204 e_yaw +19.1 trk (-1.03 -0.16 -1.00) out (-0.17 -0.01 -0.14)
+[controller_server-5] [INFO] [1794597158.476461347] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.770 -5.259 -70.5) ref -89.6 e_lat +0.204 e_yaw +19.1 trk (-1.03 -0.16 -1.00) out (-0.18 -0.01 -0.15)
+[cmd_gate-13] [WARN] [1794597158.489525598] [cmd_gate]: holding: localization not trusted
+[controller_server-5] [INFO] [1794597158.526775784] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.746 -5.269 -71.5) ref -89.6 e_lat +0.228 e_yaw +18.1 trk (-1.03 -0.18 -0.95) out (-0.15 +0.02 -0.11)
+[controller_server-5] [INFO] [1794597158.576429196] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.746 -5.269 -71.5) ref -89.6 e_lat +0.228 e_yaw +18.1 trk (-1.03 -0.18 -0.95) out (-0.14 +0.04 -0.10)
+[controller_server-5] [INFO] [1794597158.626633668] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.735 -5.290 -71.9) ref -89.6 e_lat +0.251 e_yaw +17.7 trk (-1.03 -0.18 -0.93) out (-0.15 +0.05 -0.07)
+[controller_server-5] [INFO] [1794597158.676394127] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.735 -5.290 -71.9) ref -89.6 e_lat +0.251 e_yaw +17.7 trk (-1.03 -0.18 -0.93) out (-0.15 +0.06 -0.06)
+[controller_server-5] [INFO] [1794597158.726655789] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.724 -5.305 -71.9) ref -89.6 e_lat +0.269 e_yaw +17.7 trk (-1.03 -0.18 -0.93) out (-0.17 +0.07 -0.07)
+[controller_server-5] [INFO] [1794597158.776415414] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.724 -5.305 -71.9) ref -89.6 e_lat +0.269 e_yaw +17.7 trk (-1.03 -0.18 -0.93) out (-0.18 +0.08 -0.08)
+[controller_server-5] [INFO] [1794597158.826725340] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.717 -5.314 -71.9) ref -89.6 e_lat +0.281 e_yaw +17.7 trk (-1.03 -0.18 -0.93) out (-0.21 +0.10 -0.07)
+[controller_server-5] [INFO] [1794597158.876461797] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.717 -5.314 -71.9) ref -89.6 e_lat +0.281 e_yaw +17.7 trk (-1.03 -0.18 -0.93) out (-0.22 +0.12 -0.07)
+[cmd_gate-13] [INFO] [1794597158.889873785] [cmd_gate]: released
+[controller_server-5] [INFO] [1794597158.926545966] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.706 -5.256 -72.2) ref -89.6 e_lat +0.247 e_yaw +17.4 trk (-1.03 -0.19 -0.91) out (-0.24 +0.12 -0.09)
+[controller_server-5] [INFO] [1794597158.976369824] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.706 -5.256 -72.2) ref -89.6 e_lat +0.247 e_yaw +17.4 trk (-1.03 -0.19 -0.91) out (-0.27 +0.12 -0.11)
+[controller_server-5] [INFO] [1794597159.026618973] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.703 -5.252 -72.5) ref -89.6 e_lat +0.246 e_yaw +17.1 trk (-1.03 -0.20 -0.90) out (-0.30 +0.13 -0.12)
+[controller_server-5] [INFO] [1794597159.076423643] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.703 -5.252 -72.5) ref -89.6 e_lat +0.246 e_yaw +17.1 trk (-1.03 -0.20 -0.90) out (-0.31 +0.13 -0.12)
+[controller_server-5] [INFO] [1794597159.126699357] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.696 -5.244 -73.1) ref -89.6 e_lat +0.245 e_yaw +16.5 trk (-1.02 -0.21 -0.86) out (-0.31 +0.13 -0.12)
+[controller_server-5] [INFO] [1794597159.176494007] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.696 -5.244 -73.1) ref -89.6 e_lat +0.245 e_yaw +16.5 trk (-1.02 -0.21 -0.86) out (-0.31 +0.14 -0.11)
+[controller_server-5] [INFO] [1794597159.226588041] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.692 -5.228 -73.8) ref -89.6 e_lat +0.237 e_yaw +15.8 trk (-1.02 -0.22 -0.83) out (-0.32 +0.14 -0.10)
+[controller_server-5] [INFO] [1794597159.276438462] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.692 -5.228 -73.8) ref -89.6 e_lat +0.237 e_yaw +15.8 trk (-1.02 -0.22 -0.83) out (-0.33 +0.14 -0.11)
+[controller_server-5] [INFO] [1794597159.326658804] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.692 -5.214 -74.4) ref -89.6 e_lat +0.227 e_yaw +15.2 trk (-1.02 -0.23 -0.79) out (-0.33 +0.14 -0.10)
+[controller_server-5] [INFO] [1794597159.376495289] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.692 -5.214 -74.4) ref -89.6 e_lat +0.227 e_yaw +15.2 trk (-1.02 -0.23 -0.79) out (-0.32 +0.14 -0.11)
+[controller_server-5] [INFO] [1794597159.426692226] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.687 -5.200 -75.1) ref -89.6 e_lat +0.221 e_yaw +14.5 trk (-1.02 -0.24 -0.76) out (-0.32 +0.15 -0.12)
+[controller_server-5] [INFO] [1794597159.476401571] [controller_server]: ZTRACE slope_1+tunnel_2 ph exit s +2.644 w 0.07 pose (7.687 -5.200 -75.1) ref -89.6 e_lat +0.221 e_yaw +14.5 trk (-1.02 -0.24 -0.76) out (-0.33 +0.16 -0.12)
+[smoother_server-6] [INFO] [1794597159.481392056] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [INFO] [1794597159.481638141] [smoother_server]: ZonePathShaper: step_l1_1 (open) shaped, dir +1, heading 90.4 deg, lead 2.50 m, turn locked, offset in/body/out +0.60/+0.60/+0.60 m
+[controller_server-5] [INFO] [1794597159.525490586] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794597159.525805442] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 90.4 deg, lateral -0.035 m
+[controller_server-5] [WARN] [1794597159.525864594] [controller_server]: ZoneAwareController: step_l1_1 gate: lateral -0.035 m, heading -166.10 deg, slowing down
+[controller_server-5] [INFO] [1794597159.525986396] [controller_server]: ZTRACE step_l1_1 ph align s -0.029 w 1.00 pose (7.719 -5.165 -75.7) ref 90.4 e_lat -0.035 e_yaw -166.1 trk (+0.14 -0.12 +1.00) out (+0.14 -0.12 +1.00) GATED
+[cmd_gate-13] [INFO] [1794597159.526060460] [cmd_gate]: mode normal -> ramp
+[controller_server-5] [INFO] [1794597159.575419268] [controller_server]: ZTRACE step_l1_1 ph align s -0.029 w 1.00 pose (7.719 -5.165 -75.7) ref 90.4 e_lat -0.035 e_yaw -166.1 trk (+0.14 -0.12 +1.00) out (+0.14 -0.12 +1.00) GATED
+[controller_server-5] [INFO] [1794597159.625623351] [controller_server]: ZTRACE step_l1_1 ph align s -0.008 w 1.00 pose (7.717 -5.147 -76.3) ref 90.4 e_lat -0.036 e_yaw -166.7 trk (+0.13 -0.13 +1.00) out (+0.13 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597159.675454780] [controller_server]: ZTRACE step_l1_1 ph align s -0.008 w 1.00 pose (7.717 -5.147 -76.3) ref 90.4 e_lat -0.036 e_yaw -166.7 trk (+0.13 -0.13 +1.00) out (+0.13 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597159.725567133] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.004 w 1.00 pose (7.712 -5.137 -75.4) ref 90.4 e_lat -0.031 e_yaw -165.8 trk (-0.02 -0.09 +1.00) out (-0.02 -0.09 +1.00)
+[controller_server-5] [INFO] [1794597159.775454438] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.004 w 1.00 pose (7.712 -5.137 -75.4) ref 90.4 e_lat -0.031 e_yaw -165.8 trk (-0.02 -0.09 +1.00) out (-0.02 -0.09 +1.00)
+[controller_server-5] [INFO] [1794597159.825623024] [controller_server]: ZTRACE step_l1_1 ph align s -0.002 w 1.00 pose (7.698 -5.142 -72.3) ref 90.4 e_lat -0.017 e_yaw -162.7 trk (+0.13 -0.08 +1.00) out (+0.13 -0.08 +1.00) GATED
+[controller_server-5] [INFO] [1794597159.875412537] [controller_server]: ZTRACE step_l1_1 ph align s -0.002 w 1.00 pose (7.698 -5.142 -72.3) ref 90.4 e_lat -0.017 e_yaw -162.7 trk (+0.13 -0.08 +1.00) out (+0.13 -0.08 +1.00) GATED
+[controller_server-5] [INFO] [1794597159.925596448] [controller_server]: ZTRACE step_l1_1 ph align s -0.010 w 1.00 pose (7.679 -5.151 -67.1) ref 90.4 e_lat +0.002 e_yaw -157.5 trk (+0.14 -0.04 +1.00) out (+0.14 -0.04 +1.00) GATED
+[controller_server-5] [INFO] [1794597159.975422824] [controller_server]: ZTRACE step_l1_1 ph align s -0.010 w 1.00 pose (7.679 -5.151 -67.1) ref 90.4 e_lat +0.002 e_yaw -157.5 trk (+0.14 -0.04 +1.00) out (+0.14 -0.04 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.025616434] [controller_server]: ZTRACE step_l1_1 ph align s -0.030 w 1.00 pose (7.679 -5.171 -61.5) ref 90.4 e_lat +0.005 e_yaw -151.9 trk (+0.15 -0.04 +1.00) out (+0.15 -0.04 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.075360491] [controller_server]: ZTRACE step_l1_1 ph align s -0.030 w 1.00 pose (7.679 -5.171 -61.5) ref 90.4 e_lat +0.005 e_yaw -151.9 trk (+0.15 -0.04 +1.00) out (+0.15 -0.04 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.125652271] [controller_server]: ZTRACE step_l1_1 ph align s -0.058 w 1.00 pose (7.702 -5.198 -55.9) ref 90.4 e_lat -0.015 e_yaw -146.3 trk (+0.11 -0.11 +1.00) out (+0.11 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.175412729] [controller_server]: ZTRACE step_l1_1 ph align s -0.058 w 1.00 pose (7.702 -5.198 -55.9) ref 90.4 e_lat -0.015 e_yaw -146.3 trk (+0.11 -0.11 +1.00) out (+0.11 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.225603367] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.701 -5.231 -50.4) ref 90.4 e_lat -0.011 e_yaw -140.8 trk (+0.10 -0.11 +1.00) out (+0.10 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.275407311] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.701 -5.231 -50.4) ref 90.4 e_lat -0.011 e_yaw -140.8 trk (+0.10 -0.11 +1.00) out (+0.10 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.325607049] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.695 -5.262 -44.8) ref 90.4 e_lat -0.003 e_yaw -135.2 trk (+0.11 -0.11 +1.00) out (+0.11 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.375405122] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.695 -5.262 -44.8) ref 90.4 e_lat -0.003 e_yaw -135.2 trk (+0.11 -0.11 +1.00) out (+0.11 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.425634035] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.695 -5.284 -39.3) ref 90.4 e_lat -0.001 e_yaw -129.7 trk (+0.10 -0.11 +1.00) out (+0.10 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.475456359] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.695 -5.284 -39.3) ref 90.4 e_lat -0.001 e_yaw -129.7 trk (+0.10 -0.11 +1.00) out (+0.10 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.525571317] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.699 -5.293 -33.6) ref 90.4 e_lat -0.004 e_yaw -124.0 trk (+0.08 -0.13 +1.00) out (+0.08 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.575420383] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.699 -5.293 -33.6) ref 90.4 e_lat -0.004 e_yaw -124.0 trk (+0.08 -0.13 +1.00) out (+0.08 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.625610036] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.697 -5.290 -28.2) ref 90.4 e_lat -0.002 e_yaw -118.6 trk (+0.08 -0.13 +1.00) out (+0.08 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.675462103] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.697 -5.290 -28.2) ref 90.4 e_lat -0.002 e_yaw -118.6 trk (+0.08 -0.13 +1.00) out (+0.08 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.725690485] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.678 -5.304 -22.5) ref 90.4 e_lat +0.017 e_yaw -112.9 trk (+0.11 -0.11 +1.00) out (+0.11 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.775437640] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.678 -5.304 -22.5) ref 90.4 e_lat +0.017 e_yaw -112.9 trk (+0.11 -0.11 +1.00) out (+0.11 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.825616262] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.681 -5.322 -16.9) ref 90.4 e_lat +0.015 e_yaw -107.3 trk (+0.10 -0.12 +1.00) out (+0.10 -0.12 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.875422017] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.681 -5.322 -16.9) ref 90.4 e_lat +0.015 e_yaw -107.3 trk (+0.10 -0.12 +1.00) out (+0.10 -0.12 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.925486507] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.694 -5.343 -11.2) ref 90.4 e_lat +0.004 e_yaw -101.6 trk (+0.05 -0.14 +1.00) out (+0.05 -0.14 +1.00) GATED
+[controller_server-5] [INFO] [1794597160.975420920] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.694 -5.343 -11.2) ref 90.4 e_lat +0.004 e_yaw -101.6 trk (+0.05 -0.14 +1.00) out (+0.05 -0.14 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.025484860] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.704 -5.358 -5.5) ref 90.4 e_lat -0.004 e_yaw -95.9 trk (+0.01 -0.15 +1.00) out (+0.01 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.075403132] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.704 -5.358 -5.5) ref 90.4 e_lat -0.004 e_yaw -95.9 trk (+0.01 -0.15 +1.00) out (+0.01 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.125613497] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.706 -5.370 0.3) ref 90.4 e_lat -0.005 e_yaw -90.1 trk (-0.00 -0.15 +1.00) out (-0.00 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.175440972] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.706 -5.370 0.3) ref 90.4 e_lat -0.005 e_yaw -90.1 trk (-0.00 -0.15 +1.00) out (-0.00 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.225612402] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.711 -5.381 6.0) ref 90.4 e_lat -0.010 e_yaw -84.4 trk (-0.03 -0.15 +1.00) out (-0.03 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.275427110] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.711 -5.381 6.0) ref 90.4 e_lat -0.010 e_yaw -84.4 trk (-0.03 -0.15 +1.00) out (-0.03 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.325568632] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.692 -5.423 11.6) ref 90.4 e_lat +0.013 e_yaw -78.8 trk (+0.02 -0.15 +1.00) out (+0.02 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.375404710] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.692 -5.423 11.6) ref 90.4 e_lat +0.013 e_yaw -78.8 trk (+0.02 -0.15 +1.00) out (+0.02 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.425608737] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.689 -5.439 17.4) ref 90.4 e_lat +0.017 e_yaw -73.0 trk (+0.02 -0.16 +1.00) out (+0.02 -0.16 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.475446034] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.689 -5.439 17.4) ref 90.4 e_lat +0.017 e_yaw -73.0 trk (+0.02 -0.16 +1.00) out (+0.02 -0.16 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.525570504] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.689 -5.454 23.1) ref 90.4 e_lat +0.018 e_yaw -67.3 trk (+0.00 -0.16 +1.00) out (+0.00 -0.16 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.575326998] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.689 -5.454 23.1) ref 90.4 e_lat +0.018 e_yaw -67.3 trk (+0.00 -0.16 +1.00) out (+0.00 -0.16 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.625614423] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.702 -5.468 28.9) ref 90.4 e_lat +0.007 e_yaw -61.5 trk (-0.04 -0.15 +1.00) out (-0.04 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.675497886] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.702 -5.468 28.9) ref 90.4 e_lat +0.007 e_yaw -61.5 trk (-0.04 -0.15 +1.00) out (-0.04 -0.15 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.725591845] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.709 -5.485 34.6) ref 90.4 e_lat +0.001 e_yaw -55.8 trk (-0.07 -0.13 +1.00) out (-0.07 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.775439866] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.709 -5.485 34.6) ref 90.4 e_lat +0.001 e_yaw -55.8 trk (-0.07 -0.13 +1.00) out (-0.07 -0.13 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.825608311] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.717 -5.501 40.4) ref 90.4 e_lat -0.006 e_yaw -50.0 trk (-0.10 -0.11 +1.00) out (-0.10 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.875419395] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.717 -5.501 40.4) ref 90.4 e_lat -0.006 e_yaw -50.0 trk (-0.10 -0.11 +1.00) out (-0.10 -0.11 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.925567131] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.729 -5.513 46.1) ref 90.4 e_lat -0.016 e_yaw -44.3 trk (-0.14 -0.08 +1.00) out (-0.14 -0.08 +1.00) GATED
+[controller_server-5] [INFO] [1794597161.975438965] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.729 -5.513 46.1) ref 90.4 e_lat -0.016 e_yaw -44.3 trk (-0.14 -0.08 +1.00) out (-0.14 -0.08 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.025619554] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.725 -5.529 51.8) ref 90.4 e_lat -0.012 e_yaw -38.6 trk (-0.13 -0.08 +1.00) out (-0.13 -0.08 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.075440042] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.725 -5.529 51.8) ref 90.4 e_lat -0.012 e_yaw -38.6 trk (-0.13 -0.08 +1.00) out (-0.13 -0.08 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.125596391] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.727 -5.539 57.6) ref 90.4 e_lat -0.013 e_yaw -32.8 trk (-0.14 -0.06 +1.00) out (-0.14 -0.06 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.175485639] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.727 -5.539 57.6) ref 90.4 e_lat -0.013 e_yaw -32.8 trk (-0.14 -0.06 +1.00) out (-0.14 -0.06 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.225616963] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.730 -5.554 63.3) ref 90.4 e_lat -0.014 e_yaw -27.1 trk (-0.15 -0.04 +1.00) out (-0.15 -0.04 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.275444242] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.730 -5.554 63.3) ref 90.4 e_lat -0.014 e_yaw -27.1 trk (-0.15 -0.04 +1.00) out (-0.15 -0.04 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.325592716] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.736 -5.566 69.0) ref 90.4 e_lat -0.020 e_yaw -21.4 trk (-0.16 -0.01 +1.00) out (-0.16 -0.01 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.375429302] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.736 -5.566 69.0) ref 90.4 e_lat -0.020 e_yaw -21.4 trk (-0.16 -0.01 +1.00) out (-0.16 -0.01 +1.00) GATED
+[controller_server-5] [INFO] [1794597162.425601056] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.738 -5.574 74.8) ref 90.4 e_lat -0.020 e_yaw -15.6 trk (-0.16 +0.01 +0.82) out (-0.16 +0.01 +0.82) GATED
+[controller_server-5] [INFO] [1794597162.475416506] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.738 -5.574 74.8) ref 90.4 e_lat -0.020 e_yaw -15.6 trk (-0.16 +0.01 +0.82) out (-0.16 +0.01 +0.82) GATED
+[controller_server-5] [INFO] [1794597162.525569107] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.742 -5.576 80.5) ref 90.4 e_lat -0.024 e_yaw -9.9 trk (-0.16 +0.03 +0.52) out (-0.16 +0.03 +0.52) GATED
+[controller_server-5] [INFO] [1794597162.575425713] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.742 -5.576 80.5) ref 90.4 e_lat -0.024 e_yaw -9.9 trk (-0.16 +0.03 +0.52) out (-0.16 +0.03 +0.52) GATED
+[controller_server-5] [INFO] [1794597162.625628626] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.741 -5.599 85.2) ref 90.4 e_lat -0.021 e_yaw -5.2 trk (+0.68 +0.18 +0.27) out (+0.68 +0.18 +0.27)
+[controller_server-5] [INFO] [1794597162.675430209] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.741 -5.599 85.2) ref 90.4 e_lat -0.021 e_yaw -5.2 trk (+0.68 +0.18 +0.27) out (+0.68 +0.18 +0.27)
+[controller_server-5] [INFO] [1794597162.725625970] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.732 -5.615 88.4) ref 90.4 e_lat -0.011 e_yaw -2.0 trk (+0.69 +0.11 +0.10) out (+0.69 +0.11 +0.10)
+[controller_server-5] [INFO] [1794597162.775450445] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.732 -5.615 88.4) ref 90.4 e_lat -0.011 e_yaw -2.0 trk (+0.69 +0.11 +0.10) out (+0.69 +0.11 +0.10)
+[controller_server-5] [INFO] [1794597162.825334893] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.717 -5.612 90.1) ref 90.4 e_lat +0.003 e_yaw -0.3 trk (+0.70 +0.04 +0.01) out (+0.70 +0.04 +0.01)
+[controller_server-5] [INFO] [1794597162.875445120] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.717 -5.612 90.1) ref 90.4 e_lat +0.003 e_yaw -0.3 trk (+0.70 +0.04 +0.01) out (+0.70 +0.04 +0.01)
+[controller_server-5] [INFO] [1794597162.925606154] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.705 -5.575 90.8) ref 90.4 e_lat +0.013 e_yaw +0.4 trk (+0.70 +0.01 -0.02) out (+0.70 +0.01 -0.02)
+[controller_server-5] [INFO] [1794597162.975428363] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.705 -5.575 90.8) ref 90.4 e_lat +0.013 e_yaw +0.4 trk (+0.70 +0.01 -0.02) out (+0.70 +0.01 -0.02)
+[controller_server-5] [INFO] [1794597163.025665434] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.697 -5.503 90.8) ref 90.4 e_lat +0.014 e_yaw +0.4 trk (+0.70 +0.00 -0.02) out (+0.70 +0.00 -0.02)
+[controller_server-5] [INFO] [1794597163.075432832] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.697 -5.503 90.8) ref 90.4 e_lat +0.014 e_yaw +0.4 trk (+0.70 +0.00 -0.02) out (+0.70 +0.00 -0.02)
+[controller_server-5] [INFO] [1794597163.125623326] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.695 -5.422 90.7) ref 90.4 e_lat +0.010 e_yaw +0.3 trk (+0.70 +0.02 -0.02) out (+0.70 +0.02 -0.02)
+[controller_server-5] [INFO] [1794597163.175443883] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.695 -5.422 90.7) ref 90.4 e_lat +0.010 e_yaw +0.3 trk (+0.70 +0.02 -0.02) out (+0.70 +0.02 -0.02)
+[controller_server-5] [INFO] [1794597163.225589508] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.688 -5.354 90.6) ref 90.4 e_lat +0.012 e_yaw +0.2 trk (+0.70 +0.02 -0.01) out (+0.70 +0.02 -0.01)
+[controller_server-5] [INFO] [1794597163.275457045] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.688 -5.354 90.6) ref 90.4 e_lat +0.012 e_yaw +0.2 trk (+0.70 +0.02 -0.01) out (+0.70 +0.02 -0.01)
+[controller_server-5] [INFO] [1794597163.325621649] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.687 -5.280 90.5) ref 90.4 e_lat +0.006 e_yaw +0.1 trk (+0.70 +0.03 -0.00) out (+0.70 +0.03 -0.00)
+[controller_server-5] [INFO] [1794597163.375423379] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.687 -5.280 90.5) ref 90.4 e_lat +0.006 e_yaw +0.1 trk (+0.70 +0.03 -0.00) out (+0.70 +0.03 -0.00)
+[controller_server-5] [INFO] [1794597163.425587923] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.686 -5.212 90.4) ref 90.4 e_lat +0.002 e_yaw +0.0 trk (+0.70 +0.05 -0.00) out (+0.70 +0.05 -0.00)
+[controller_server-5] [INFO] [1794597163.475435355] [controller_server]: ZTRACE step_l1_1 ph align s -0.060 w 1.00 pose (7.686 -5.212 90.4) ref 90.4 e_lat +0.002 e_yaw +0.0 trk (+0.70 +0.05 -0.00) out (+0.70 +0.05 -0.00)
+[controller_server-5] [INFO] [1794597163.525605851] [controller_server]: ZTRACE step_l1_1 ph align s -0.002 w 1.00 pose (7.679 -5.143 90.3) ref 90.4 e_lat +0.002 e_yaw -0.1 trk (+0.70 +0.05 +0.00) out (+0.70 +0.05 +0.00)
+[controller_server-5] [INFO] [1794597163.575434644] [controller_server]: ZTRACE step_l1_1 ph align s -0.002 w 1.00 pose (7.679 -5.143 90.3) ref 90.4 e_lat +0.002 e_yaw -0.1 trk (+0.70 +0.05 +0.00) out (+0.70 +0.05 +0.00)
+[controller_server-5] [INFO] [1794597163.625581030] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.059 w 1.00 pose (7.672 -5.083 90.2) ref 90.4 e_lat +0.008 e_yaw -0.2 trk (+1.40 -0.02 +0.01) out (+1.40 -0.02 +0.01)
+[controller_server-5] [INFO] [1794597163.675436300] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.059 w 1.00 pose (7.672 -5.083 90.2) ref 90.4 e_lat +0.008 e_yaw -0.2 trk (+1.40 -0.02 +0.01) out (+1.40 -0.02 +0.01)
+[controller_server-5] [INFO] [1794597163.725610399] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.140 w 1.00 pose (7.665 -5.001 90.2) ref 90.4 e_lat +0.015 e_yaw -0.2 trk (+1.40 -0.04 +0.01) out (+1.40 -0.04 +0.01)
+[controller_server-5] [INFO] [1794597163.775453366] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.140 w 1.00 pose (7.665 -5.001 90.2) ref 90.4 e_lat +0.015 e_yaw -0.2 trk (+1.40 -0.04 +0.01) out (+1.40 -0.04 +0.01)
+[controller_server-5] [INFO] [1794597163.825585449] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.220 w 1.00 pose (7.662 -4.921 90.3) ref 90.4 e_lat +0.017 e_yaw -0.1 trk (+1.40 -0.05 +0.01) out (+1.40 -0.05 +0.01)
+[controller_server-5] [INFO] [1794597163.875424522] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.220 w 1.00 pose (7.662 -4.921 90.3) ref 90.4 e_lat +0.017 e_yaw -0.1 trk (+1.40 -0.05 +0.01) out (+1.40 -0.05 +0.01)
+[controller_server-5] [INFO] [1794597163.925604677] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.324 w 1.00 pose (7.648 -4.817 90.4) ref 90.4 e_lat +0.031 e_yaw -0.0 trk (+1.40 -0.09 +0.00) out (+1.40 -0.09 +0.00)
+[controller_server-5] [INFO] [1794597163.975437688] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.324 w 1.00 pose (7.648 -4.817 90.4) ref 90.4 e_lat +0.031 e_yaw -0.0 trk (+1.40 -0.09 +0.00) out (+1.40 -0.09 +0.00)
+[controller_server-5] [INFO] [1794597164.025632952] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.443 w 1.00 pose (7.648 -4.698 90.4) ref 90.4 e_lat +0.029 e_yaw +0.0 trk (+1.40 -0.09 -0.00) out (+1.40 -0.09 -0.00)
+[controller_server-5] [INFO] [1794597164.075411681] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.443 w 1.00 pose (7.648 -4.698 90.4) ref 90.4 e_lat +0.029 e_yaw +0.0 trk (+1.40 -0.09 -0.00) out (+1.40 -0.09 -0.00)
+[controller_server-5] [INFO] [1794597164.125618878] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.590 w 1.00 pose (7.651 -4.552 90.5) ref 90.4 e_lat +0.026 e_yaw +0.1 trk (+1.40 -0.08 -0.01) out (+1.40 -0.08 -0.01)
+[controller_server-5] [INFO] [1794597164.175460009] [controller_server]: ZTRACE step_l1_1 ph traverse s +0.590 w 1.00 pose (7.651 -4.552 90.5) ref 90.4 e_lat +0.026 e_yaw +0.1 trk (+1.40 -0.08 -0.01) out (+1.40 -0.08 -0.01)
+[controller_server-5] [INFO] [1794597164.225629959] [controller_server]: ZTRACE step_l1_1 ph exit s +0.736 w 1.00 pose (7.665 -4.405 90.6) ref 90.4 e_lat +0.010 e_yaw +0.2 trk (+1.40 -0.03 -0.01) out (+1.40 -0.03 -0.01)
+[controller_server-5] [INFO] [1794597164.275435171] [controller_server]: ZTRACE step_l1_1 ph exit s +0.736 w 1.00 pose (7.665 -4.405 90.6) ref 90.4 e_lat +0.010 e_yaw +0.2 trk (+1.40 -0.03 -0.01) out (+1.40 -0.03 -0.01)
+[controller_server-5] [INFO] [1794597164.327233539] [controller_server]: ZTRACE step_l1_1 ph exit s +0.850 w 0.96 pose (7.658 -4.291 90.5) ref 90.4 e_lat +0.017 e_yaw +0.1 trk (+1.40 -0.05 -0.02) out (+1.38 -0.05 -0.02)
+[controller_server-5] [INFO] [1794597164.376491369] [controller_server]: ZTRACE step_l1_1 ph exit s +0.850 w 0.96 pose (7.658 -4.291 90.5) ref 90.4 e_lat +0.017 e_yaw +0.1 trk (+1.40 -0.05 -0.02) out (+1.39 -0.05 -0.03)
+[cmd_gate-13] [INFO] [1794597164.425795310] [cmd_gate]: mode ramp -> normal
+[controller_server-5] [INFO] [1794597164.426946843] [controller_server]: ZTRACE step_l1_1 ph exit s +0.979 w 0.58 pose (7.664 -4.154 90.5) ref 90.1 e_lat +0.026 e_yaw +0.4 trk (+1.26 -0.62 -0.21) out (+1.27 -0.39 -0.15)
+[controller_server-5] [INFO] [1794597164.476404893] [controller_server]: ZTRACE step_l1_1 ph exit s +0.979 w 0.58 pose (7.664 -4.154 90.5) ref 90.1 e_lat +0.026 e_yaw +0.4 trk (+1.26 -0.62 -0.21) out (+1.24 -0.41 -0.18)
+[controller_server-5] [INFO] [1794597164.526771609] [controller_server]: ZTRACE step_l1_1 ph exit s +1.068 w 0.25 pose (7.664 -4.023 90.3) ref 89.1 e_lat +0.098 e_yaw +1.2 trk (+0.82 -1.17 -0.39) out (+1.08 -0.45 -0.21)
+[controller_server-5] [INFO] [1794597164.576409416] [controller_server]: ZTRACE step_l1_1 ph exit s +1.068 w 0.25 pose (7.664 -4.023 90.3) ref 89.1 e_lat +0.098 e_yaw +1.2 trk (+0.82 -1.17 -0.39) out (+1.04 -0.52 -0.25)
+[controller_server-5] [INFO] [1794597164.626671971] [controller_server]: ZTRACE step_l1_1 ph exit s +1.127 w 0.09 pose (7.678 -3.892 89.3) ref 88.2 e_lat +0.191 e_yaw +1.2 trk (+0.52 -1.33 -0.51) out (+1.02 -0.45 -0.24)
+[controller_server-5] [INFO] [1794597164.676382075] [controller_server]: ZTRACE step_l1_1 ph exit s +1.127 w 0.09 pose (7.678 -3.892 89.3) ref 88.2 e_lat +0.191 e_yaw +1.2 trk (+0.52 -1.33 -0.51) out (+0.87 -0.54 -0.42)
+[controller_server-5] [INFO] [1794597164.726792623] [controller_server]: ZTRACE step_l1_1 ph exit s +1.196 w 0.00 pose (7.714 -3.763 88.1) ref 86.8 e_lat +0.285 e_yaw +1.3 trk (+0.41 -1.37 -0.59) out (+0.78 -0.54 -0.44)
+[controller_server-5] [INFO] [1794597164.776514586] [controller_server]: ZTRACE step_l1_1 ph exit s +1.196 w 0.00 pose (7.714 -3.763 88.1) ref 86.8 e_lat +0.285 e_yaw +1.3 trk (+0.41 -1.37 -0.59) out (+0.70 -0.63 -0.49)
+[controller_server-5] [INFO] [1794597164.825645690] [controller_server]: ZoneAwareController: step_l1_1 done, in body max |lateral| 0.031 m, max |heading| 165.80 deg, min speed 0.00 m/s
+[controller_server-5] [INFO] [1794597167.625310765] [controller_server]: Reached the goal!
+[controller_server-5] [INFO] [1794597167.625632207] [controller_server]: Optimizer reset
+[bt_navigator-11] [INFO] [1794597167.650899304] [bt_navigator]: Goal succeeded
+[bt_navigator-11] [INFO] [1794597177.218060225] [bt_navigator]: Begin navigating from current location (8.66, -3.66) to (12.78, -3.86)
+[smoother_server-6] [INFO] [1794597177.239619386] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597177.240389950] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597177.240442905] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[controller_server-5] [INFO] [1794597177.259790274] [controller_server]: Received a goal, begin computing control effort.
+[smoother_server-6] [INFO] [1794597178.299226051] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597178.300194914] [smoother_server]: ZonePathShaper: slope_18 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597178.300231966] [smoother_server]: ZonePathShaper: slope_17+tunnel_4 (narrow chain) shaped, dir -1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[bt_navigator-11] [ERROR] [1794597178.339461345] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[controller_server-5] [INFO] [1794597178.360053739] [controller_server]: Passing new path to controller.
+[controller_server-5] [INFO] [1794597178.360627373] [controller_server]: ZoneAwareController: step_l1_1 (open) window, heading locked at 90.4 deg, lateral +0.011 m
+[controller_server-5] [INFO] [1794597178.361651160] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.503 -4.016 13.0) ref 84.1 e_lat +0.011 e_yaw -71.1 trk (+0.10 +0.07 +1.00) out (-0.36 -0.22 +0.07)
+[controller_server-5] [INFO] [1794597178.410955600] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.475 -4.063 13.1) ref 89.2 e_lat +0.013 e_yaw -76.1 trk (+0.14 +0.10 +1.00) out (-0.33 -0.19 +0.11)
+[controller_server-5] [INFO] [1794597178.460827935] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.475 -4.063 13.1) ref 89.2 e_lat +0.013 e_yaw -76.1 trk (+0.14 +0.10 +1.00) out (-0.28 -0.16 +0.10)
+[controller_server-5] [INFO] [1794597178.510133934] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.445 -4.101 13.5) ref 90.4 e_lat +0.021 e_yaw -76.9 trk (+0.15 +0.08 +1.00) out (+0.15 +0.08 +1.00)
+[controller_server-5] [INFO] [1794597178.560125666] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.445 -4.101 13.5) ref 90.4 e_lat +0.021 e_yaw -76.9 trk (+0.15 +0.08 +1.00) out (+0.15 +0.08 +1.00)
+[controller_server-5] [INFO] [1794597178.610133835] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.417 -4.137 14.1) ref 90.4 e_lat +0.029 e_yaw -76.3 trk (+0.18 +0.06 +1.00) out (+0.18 +0.06 +1.00)
+[controller_server-5] [INFO] [1794597178.660147893] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.417 -4.137 14.1) ref 90.4 e_lat +0.029 e_yaw -76.3 trk (+0.18 +0.06 +1.00) out (+0.18 +0.06 +1.00)
+[controller_server-5] [INFO] [1794597178.710130148] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.399 -4.155 16.3) ref 90.4 e_lat +0.036 e_yaw -74.1 trk (+0.21 +0.06 +1.00) out (+0.21 +0.06 +1.00)
+[controller_server-5] [INFO] [1794597178.760129722] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.399 -4.155 16.3) ref 90.4 e_lat +0.036 e_yaw -74.1 trk (+0.21 +0.06 +1.00) out (+0.21 +0.06 +1.00)
+[controller_server-5] [INFO] [1794597178.810149581] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.399 -4.149 20.7) ref 90.4 e_lat +0.039 e_yaw -69.7 trk (+0.26 +0.07 +1.00) out (+0.26 +0.07 +1.00)
+[controller_server-5] [INFO] [1794597178.860134399] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.399 -4.149 20.7) ref 90.4 e_lat +0.039 e_yaw -69.7 trk (+0.26 +0.07 +1.00) out (+0.26 +0.07 +1.00)
+[controller_server-5] [INFO] [1794597178.910133922] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.423 -4.128 26.5) ref 90.4 e_lat +0.027 e_yaw -63.9 trk (+0.30 +0.11 +1.00) out (+0.30 +0.11 +1.00)
+[controller_server-5] [INFO] [1794597178.960126429] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.423 -4.128 26.5) ref 90.4 e_lat +0.027 e_yaw -63.9 trk (+0.30 +0.11 +1.00) out (+0.30 +0.11 +1.00)
+[controller_server-5] [INFO] [1794597179.010191412] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.442 -4.113 32.2) ref 90.4 e_lat +0.018 e_yaw -58.2 trk (+0.35 +0.13 +1.00) out (+0.35 +0.13 +1.00)
+[controller_server-5] [INFO] [1794597179.060127788] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 1.00 pose (8.442 -4.113 32.2) ref 90.4 e_lat +0.018 e_yaw -58.2 trk (+0.35 +0.13 +1.00) out (+0.35 +0.13 +1.00)
+[controller_server-5] [INFO] [1794597179.111192012] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.454 -4.094 38.0) ref 90.4 e_lat +0.016 e_yaw -52.4 trk (+0.41 +0.13 +1.00) out (+0.02 -0.02 +0.52)
+[controller_server-5] [INFO] [1794597179.161253939] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.454 -4.094 38.0) ref 90.4 e_lat +0.016 e_yaw -52.4 trk (+0.41 +0.13 +1.00) out (+0.17 +0.03 +0.55)
+[controller_server-5] [INFO] [1794597179.211423289] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.454 -4.094 38.0) ref 90.4 e_lat +0.016 e_yaw -52.4 trk (+0.41 +0.13 +1.00) out (+0.22 +0.08 +0.50)
+[controller_server-5] [INFO] [1794597179.261306178] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.472 -4.056 43.7) ref 88.7 e_lat +0.018 e_yaw -45.0 trk (+0.42 +0.08 +1.00) out (+0.23 +0.06 +0.38)
+[controller_server-5] [INFO] [1794597179.311361656] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.472 -4.056 43.7) ref 88.7 e_lat +0.018 e_yaw -45.0 trk (+0.42 +0.08 +1.00) out (+0.24 +0.03 +0.34)
+[controller_server-5] [INFO] [1794597179.361419474] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.485 -4.046 47.8) ref 87.8 e_lat +0.012 e_yaw -40.0 trk (+0.38 +0.06 +1.00) out (+0.26 +0.02 +0.27)
+[controller_server-5] [INFO] [1794597179.411321668] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.485 -4.046 47.8) ref 87.8 e_lat +0.012 e_yaw -40.0 trk (+0.38 +0.06 +1.00) out (+0.29 +0.01 +0.24)
+[controller_server-5] [INFO] [1794597179.461352012] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.495 -4.028 50.4) ref 85.7 e_lat +0.011 e_yaw -35.3 trk (+0.33 +0.03 +1.00) out (+0.33 -0.00 +0.20)
+[controller_server-5] [INFO] [1794597179.511296392] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.510 -4.005 52.2) ref 82.5 e_lat +0.009 e_yaw -30.3 trk (+0.30 +0.02 +0.89) out (+0.34 -0.03 +0.17)
+[controller_server-5] [INFO] [1794597179.561369605] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.510 -4.005 52.2) ref 82.5 e_lat +0.009 e_yaw -30.3 trk (+0.30 +0.02 +0.89) out (+0.37 -0.04 +0.13)
+[controller_server-5] [INFO] [1794597179.611636121] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.510 -4.005 52.2) ref 82.5 e_lat +0.009 e_yaw -30.3 trk (+0.30 +0.02 +0.89) out (+0.39 -0.03 +0.11)
+[controller_server-5] [INFO] [1794597179.661365942] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.530 -3.987 53.5) ref 79.4 e_lat -0.000 e_yaw -26.0 trk (+0.28 +0.04 +0.64) out (+0.43 -0.05 +0.09)
+[controller_server-5] [INFO] [1794597179.711324286] [controller_server]: ZTRACE step_l1_1 ph exit s +1.152 w 0.04 pose (8.530 -3.987 53.5) ref 79.4 e_lat -0.000 e_yaw -26.0 trk (+0.28 +0.04 +0.64) out (+0.45 -0.06 +0.09)
+[controller_server-5] [INFO] [1794597179.761382635] [controller_server]: ZTRACE step_l1_1 ph exit s +1.186 w 0.00 pose (8.557 -3.958 54.3) ref 75.3 e_lat -0.010 e_yaw -21.0 trk (+0.31 +0.07 +0.35) out (+0.48 -0.07 +0.04)
+[controller_server-5] [INFO] [1794597179.811284385] [controller_server]: ZTRACE step_l1_1 ph exit s +1.186 w 0.00 pose (8.557 -3.958 54.3) ref 75.3 e_lat -0.010 e_yaw -21.0 trk (+0.31 +0.07 +0.35) out (+0.50 -0.07 +0.03)
+[controller_server-5] [INFO] [1794597179.860269571] [controller_server]: ZoneAwareController: step_l1_1 done, in body max |lateral| 0.000 m, max |heading| 0.00 deg, min speed inf m/s
+[smoother_server-6] [INFO] [1794597189.442384424] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597189.443662645] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597189.443718958] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[bt_navigator-11] [ERROR] [1794597189.482568065] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[controller_server-5] [INFO] [1794597189.510096945] [controller_server]: Passing new path to controller.
+[cmd_gate-13] [WARN] [1794597195.281741352] [cmd_gate]: holding: localization not trusted
+[controller_server-5] [INFO] [1794597196.563017847] [controller_server]: ZoneAwareController: occupied footprint, escaping at 0.15 m/s without rotation
+[controller_server-5] [WARN] [1794597196.610151623] [controller_server]: Escape footprint contains unknown/out-of-map space
+[controller_server-5] [WARN] [1794597196.660264476] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597196.710127746] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597196.760257730] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597196.810137348] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597196.860286263] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597196.910134089] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597196.960259908] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597197.010141046] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597197.060254721] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [WARN] [1794597197.110134450] [controller_server]: Escape corridor changed or became blocked
+[controller_server-5] [ERROR] [1794597197.110204931] [controller_server]: Controller patience exceeded
+[controller_server-5] [INFO] [1794597197.110434242] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794597197.110602033] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-5] [INFO] [1794597197.124937019] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794597197.132543645] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794597197.137998524] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794597197.144003513] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794597197.144045605] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794597197.144052505] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794597197.155263363] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[cmd_gate-13] [INFO] [1794597198.481716524] [cmd_gate]: released
+[smoother_server-6] [INFO] [1794597200.585388613] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597200.586415567] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597200.586471661] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[controller_server-5] [INFO] [1794597200.638390614] [controller_server]: Passing new path to controller.
+[cmd_gate-13] [WARN] [1794597203.281460030] [cmd_gate]: holding: localization not trusted
+[cmd_gate-13] [INFO] [1794597202.036849513] [cmd_gate]: released
+[smoother_server-6] [INFO] [1794597206.670449237] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597206.671408069] [smoother_server]: ZonePathShaper: slope_18 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597206.671447505] [smoother_server]: ZonePathShaper: slope_17+tunnel_4 (narrow chain) shaped, dir -1, heading 90.4 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.00/+0.00 m
+[controller_server-5] [INFO] [1794597206.693871238] [controller_server]: Cancellation was successful. Stopping the robot.
+[controller_server-5] [INFO] [1794597206.693924242] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[controller_server-5] [INFO] [1794597206.694242633] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794597206.694561794] [controller_server]: Received a goal, begin computing control effort.
+[cmd_gate-13] [WARN] [1794597211.036914522] [cmd_gate]: holding: localization not trusted
+[smoother_server-6] [INFO] [1794597217.820496939] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597217.821387762] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597217.821431714] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[controller_server-5] [INFO] [1794597217.845398700] [controller_server]: Cancellation was successful. Stopping the robot.
+[controller_server-5] [INFO] [1794597217.845482173] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[controller_server-5] [INFO] [1794597217.845861565] [controller_server]: Optimizer reset
+[controller_server-5] [INFO] [1794597217.846124020] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [ERROR] [1794597227.896723917] [controller_server]: Failed to make progress
+[controller_server-5] [INFO] [1794597227.897046781] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794597227.897198289] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-5] [INFO] [1794597227.910237278] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794597227.917785516] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794597227.923266138] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794597227.929318668] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794597227.929386752] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794597227.929399324] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794597227.941237952] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[smoother_server-6] [INFO] [1794597228.970504894] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597228.971324464] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597228.971373457] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[controller_server-5] [INFO] [1794597229.023713885] [controller_server]: Passing new path to controller.
+[controller_server-5] [ERROR] [1794597236.290877004] [controller_server]: Failed to make progress
+[controller_server-5] [INFO] [1794597236.291160365] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794597236.291337980] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-11] [WARN] [1794597236.307303356] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 1/5 -> clear
+[controller_server-5] [INFO] [1794597236.309703192] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794597236.317065783] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[planner_server-7] [INFO] [1794597236.322576285] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[behavior_server-8] [INFO] [1794597236.323640789] [behavior_server]: Running wait
+[controller_server-5] [INFO] [1794597236.328323903] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794597236.328367968] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794597236.328374803] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794597236.341307642] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[cmd_gate-13] [INFO] [1794597237.054322960] [cmd_gate]: released
+[behavior_server-8] [INFO] [1794597237.324031981] [behavior_server]: wait completed successfully
+[controller_server-5] [INFO] [1794597237.338620389] [controller_server]: Received a goal, begin computing control effort.
+[cmd_gate-13] [WARN] [1794597237.387398118] [cmd_gate]: holding: localization not trusted
+[smoother_server-6] [INFO] [1794597238.367646536] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597238.368443941] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597238.368488651] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[controller_server-5] [INFO] [1794597238.389050630] [controller_server]: Passing new path to controller.
+[controller_server-5] [ERROR] [1794597247.389183334] [controller_server]: Failed to make progress
+[controller_server-5] [INFO] [1794597247.389443427] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794597247.389607209] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-5] [INFO] [1794597247.407499872] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-5] [INFO] [1794597247.415078345] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_info" topic for filter info...
+[controller_server-5] [INFO] [1794597247.420503830] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-5] [INFO] [1794597247.426583295] [local_costmap.local_costmap]: SpeedFilter: Received filter info from /speed_filter_info topic.
+[controller_server-5] [INFO] [1794597247.426627724] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 0.000000 + filter_mask_data * 1.000000
+[controller_server-5] [INFO] [1794597247.426634668] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-5] [WARN] [1794597247.438471927] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[smoother_server-6] [INFO] [1794597249.517458567] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597249.518251214] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597249.518290095] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[controller_server-5] [INFO] [1794597249.570817801] [controller_server]: Passing new path to controller.
+[controller_server-5] [ERROR] [1794597257.470936495] [controller_server]: Failed to make progress
+[controller_server-5] [INFO] [1794597257.471160030] [controller_server]: Optimizer reset
+[controller_server-5] [WARN] [1794597257.471326248] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-11] [WARN] [1794597257.487319790] [bt_navigator_navigate_to_pose_rclcpp_node]: ZoneRecovery: attempt 2/5 -> spin
+[behavior_server-8] [INFO] [1794597257.487902863] [behavior_server]: Running spin
+[behavior_server-8] [INFO] [1794597257.488080924] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-8] [WARN] [1794597265.977905592] [behavior_server]: Exceeded time allowance before reaching the Spin goal - Exiting Spin
+[behavior_server-8] [WARN] [1794597265.977957915] [behavior_server]: spin failed
+[behavior_server-8] [WARN] [1794597265.977969234] [behavior_server]: [spin] [ActionServer] Aborting handle.
+[smoother_server-6] [INFO] [1794597266.017192076] [smoother_server]: Received a path to smooth.
+[smoother_server-6] [WARN] [1794597266.018020624] [smoother_server]: ZonePathShaper: step_l1_1 planner path kept (downhill on a one-way slope, planner path kept)
+[smoother_server-6] [INFO] [1794597266.018067045] [smoother_server]: ZonePathShaper: slope_1+tunnel_2 (narrow chain) shaped, dir +1, heading 0.0 deg, lead 2.50 m, turn full lead, offset in/body/out +0.00/+0.01/+0.02 m
+[controller_server-5] [INFO] [1794597266.037305348] [controller_server]: Received a goal, begin computing control effort.
+[collision_monitor-10] [INFO] [1794597270.472464345] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[collision_monitor-10] [INFO] [1794597270.472549453] [collision_monitor]: Running Nav2 LifecycleNode rcl preshutdown (collision_monitor)
+[collision_monitor-10] [INFO] [1794597270.472652506] [collision_monitor]: Deactivating
+[collision_monitor-10] [INFO] [1794597270.472679950] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-12] [INFO] [1794597270.472565519] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[lifecycle_manager-12] [INFO] [1794597270.472655450] [lifecycle_manager_navigation]: Running Nav2 LifecycleManager rcl preshutdown (lifecycle_manager_navigation)
+[planner_server-7] [INFO] [1794597270.472591246] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[planner_server-7] [INFO] [1794597270.472655549] [planner_server]: Running Nav2 LifecycleNode rcl preshutdown (planner_server)
+[planner_server-7] [INFO] [1794597270.472716617] [planner_server]: Deactivating
+[planner_server-7] [INFO] [1794597270.472753498] [global_costmap.global_costmap]: Deactivating
+[controller_server-5] [INFO] [1794597270.472614618] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[controller_server-5] [INFO] [1794597270.472689799] [controller_server]: Running Nav2 LifecycleNode rcl preshutdown (controller_server)
+[controller_server-5] [INFO] [1794597270.472754113] [controller_server]: Deactivating
+[controller_server-5] [WARN] [1794597270.472768205] [controller_server]: [follow_path] [ActionServer] Requested to deactivate server but goal is still executing. Should check if action server is running before deactivating.
+[cmd_gate-13] [INFO] [1794597270.472751738] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[costmap_filter_info_server-3] [INFO] [1794597270.472849315] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[costmap_filter_info_server-3] [INFO] [1794597270.472930613] [speed_filter_info_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_filter_info_server)
+[costmap_filter_info_server-3] [INFO] [1794597270.473001221] [speed_filter_info_server]: Deactivating
+[costmap_filter_info_server-3] [INFO] [1794597270.473019135] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794597270.472944841] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[behavior_server-8] [INFO] [1794597270.472993591] [behavior_server]: Running Nav2 LifecycleNode rcl preshutdown (behavior_server)
+[behavior_server-8] [INFO] [1794597270.473040357] [behavior_server]: Deactivating
+[behavior_server-8] [INFO] [1794597270.473077248] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[bt_navigator-11] [INFO] [1794597270.473713108] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[bt_navigator-11] [INFO] [1794597270.473805795] [bt_navigator]: Running Nav2 LifecycleNode rcl preshutdown (bt_navigator)
+[bt_navigator-11] [INFO] [1794597270.473859180] [bt_navigator]: Deactivating
+[bt_navigator-11] [WARN] [1794597270.473923431] [bt_navigator]: [navigate_to_pose] [ActionServer] Requested to deactivate server but goal is still executing. Should check if action server is running before deactivating.
+[map_server-1] [INFO] [1794597270.474142799] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-1] [INFO] [1794597270.474241353] [nav_map_server]: Running Nav2 LifecycleNode rcl preshutdown (nav_map_server)
+[map_server-1] [INFO] [1794597270.474306993] [nav_map_server]: Deactivating
+[map_server-1] [INFO] [1794597270.474321868] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794597270.474891262] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[velocity_smoother-9] [INFO] [1794597270.474974815] [velocity_smoother]: Running Nav2 LifecycleNode rcl preshutdown (velocity_smoother)
+[velocity_smoother-9] [INFO] [1794597270.475049944] [velocity_smoother]: Deactivating
+[velocity_smoother-9] [INFO] [1794597270.475076229] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[smoother_server-6] [INFO] [1794597270.476177057] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[smoother_server-6] [INFO] [1794597270.476243479] [smoother_server]: Running Nav2 LifecycleNode rcl preshutdown (smoother_server)
+[smoother_server-6] [INFO] [1794597270.476300455] [smoother_server]: Deactivating
+[smoother_server-6] [INFO] [1794597270.476319923] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[map_server-2] [INFO] [1794597270.476823053] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[map_server-2] [INFO] [1794597270.476946639] [speed_mask_server]: Running Nav2 LifecycleNode rcl preshutdown (speed_mask_server)
+[map_server-2] [INFO] [1794597270.477005003] [speed_mask_server]: Deactivating
+[map_server-2] [INFO] [1794597270.477022572] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[behavior_server-8] [INFO] [1794597270.483317969] [behavior_server]: Cleaning up
+[costmap_filter_info_server-3] [INFO] [1794597270.483382565] [speed_filter_info_server]: Cleaning up
+[costmap_filter_info_server-3] [INFO] [1794597270.483439906] [speed_filter_info_server]: Destroying bond (speed_filter_info_server) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794597270.483471072] [collision_monitor]: Cleaning up
+[collision_monitor-10] [INFO] [1794597270.483520218] [collision_monitor]: [FootprintApproach]: Destroying Polygon
+[collision_monitor-10] [INFO] [1794597270.483532975] [collision_monitor]: [terrain]: Destroying PointCloud
+[map_server-1] [INFO] [1794597270.484876747] [nav_map_server]: Cleaning up
+[map_server-1] [INFO] [1794597270.484930048] [nav_map_server]: Destroying bond (nav_map_server) to lifecycle manager.
+[velocity_smoother-9] [INFO] [1794597270.485273373] [velocity_smoother]: Cleaning up
+[velocity_smoother-9] [INFO] [1794597270.485310911] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[smoother_server-6] [INFO] [1794597270.486588172] [smoother_server]: Cleaning up
+[map_server-2] [INFO] [1794597270.487195424] [speed_mask_server]: Cleaning up
+[map_server-2] [INFO] [1794597270.487280115] [speed_mask_server]: Destroying bond (speed_mask_server) to lifecycle manager.
+[controller_server-5] [WARN] [1794597270.488076518] [controller_server]: [follow_path] [ActionServer] Stopping the thread per request.
+[controller_server-5] [INFO] [1794597270.488127961] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-11] [WARN] [1794597270.489532210] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-11] [INFO] [1794597270.490010802] [bt_navigator]: Goal canceled
+[bt_navigator-11] [WARN] [1794597270.490046879] [bt_navigator]: [navigate_to_pose] [ActionServer] Stopping the thread per request.
+[bt_navigator-11] [INFO] [1794597270.490156274] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[collision_monitor-10] [INFO] [1794597270.490951378] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[controller_server-5] [INFO] [1794597270.491865631] [MPPIController]: Deactivated MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794597270.491919214] [local_costmap.local_costmap]: Deactivating
+[behavior_server-8] [INFO] [1794597270.492075976] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[costmap_filter_info_server-3] [INFO] [1794597270.497591119] [speed_filter_info_server]: Destroying
+[velocity_smoother-9] [INFO] [1794597270.498285980] [velocity_smoother]: Destroying
+[map_server-1] [INFO] [1794597270.498768762] [nav_map_server]: Destroying
+[bt_navigator-11] [INFO] [1794597270.503756857] [bt_navigator]: Cleaning up
+[controller_server-5] [INFO] [1794597270.503951929] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[map_server-2] [INFO] [1794597270.505599379] [speed_mask_server]: Destroying
+[collision_monitor-10] [INFO] [1794597270.509722319] [collision_monitor]: Destroying
+[smoother_server-6] [INFO] [1794597270.510067266] [smoother_server]: Destroying bond (smoother_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794597270.514309722] [controller_server]: Cleaning up
+[controller_server-5] [INFO] [1794597270.516146267] [MPPIController]: Cleaned up MPPI Controller: FollowPath
+[controller_server-5] [INFO] [1794597270.516496586] [local_costmap.local_costmap]: Cleaning up
+[smoother_server-6] [INFO] [1794597270.520797812] [smoother_server]: Destroying
+[lifecycle_manager-12] [INFO] [1794597270.528394357] [lifecycle_manager_navigation]: Destroying lifecycle_manager_navigation
+[behavior_server-8] [INFO] [1794597270.553493650] [behavior_server]: Destroying
+[terrain_obstacles.py-4] Traceback (most recent call last):
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 97, in <module>
+[terrain_obstacles.py-4]     main()
+[terrain_obstacles.py-4]   File "/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py", line 87, in main
+[terrain_obstacles.py-4]     rclpy.spin(node)
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+[terrain_obstacles.py-4]     executor.spin_once()
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 926, in spin_once
+[terrain_obstacles.py-4]     self._spin_once_impl(timeout_sec)
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 907, in _spin_once_impl
+[terrain_obstacles.py-4]     handler, entity, node = self.wait_for_ready_callbacks(
+[terrain_obstacles.py-4]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 877, in wait_for_ready_callbacks
+[terrain_obstacles.py-4]     return next(self._cb_iter)
+[terrain_obstacles.py-4]            ^^^^^^^^^^^^^^^^^^^
+[terrain_obstacles.py-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 785, in _wait_for_ready_callbacks
+[terrain_obstacles.py-4]     raise ExternalShutdownException()
+[terrain_obstacles.py-4] rclpy.executors.ExternalShutdownException
+[controller_server-5] [INFO] [1794597270.576446516] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[controller_server-5] [INFO] [1794597270.590157929] [local_costmap.local_costmap]: Destroying
+[controller_server-5] [INFO] [1794597270.604554410] [controller_server]: Destroying
+[INFO] [cmd_gate-13]: process has finished cleanly [pid 4124189]
+[bt_navigator-11] [INFO] [1794597270.644981939] [bt_navigator]: Completed Cleaning up
+[bt_navigator-11] [INFO] [1794597270.645047078] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[INFO] [velocity_smoother-9]: process has finished cleanly [pid 4124185]
+[INFO] [map_server-1]: process has finished cleanly [pid 4124177]
+[INFO] [costmap_filter_info_server-3]: process has finished cleanly [pid 4124179]
+[INFO] [map_server-2]: process has finished cleanly [pid 4124178]
+[bt_navigator-11] [INFO] [1794597270.657485468] [bt_navigator]: Destroying
+[INFO] [collision_monitor-10]: process has finished cleanly [pid 4124186]
+[INFO] [lifecycle_manager-12]: process has finished cleanly [pid 4124188]
+[INFO] [smoother_server-6]: process has finished cleanly [pid 4124182]
+[INFO] [behavior_server-8]: process has finished cleanly [pid 4124184]
+[INFO] [controller_server-5]: process has finished cleanly [pid 4124181]
+[ERROR] [terrain_obstacles.py-4]: process has died [pid 4124180, exit code 1, cmd '/home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py --ros-args -r __node:=terrain_obstacles --params-file /home/yang/yang_nav/reports/navigation/2026-11-14/navigation_followup/diagnostic_nav2.yaml --params-file /tmp/launch_params_306oufz_'].
+[planner_server-7] [INFO] [1794597270.768821156] [planner_server]: Deactivating plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597270.768890324] [planner_server]: Deactivating plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597270.768927194] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[INFO] [bt_navigator-11]: process has finished cleanly [pid 4124187]
+[planner_server-7] [INFO] [1794597270.779257867] [planner_server]: Cleaning up
+[planner_server-7] [INFO] [1794597270.785132438] [global_costmap.global_costmap]: Cleaning up
+[planner_server-7] [INFO] [1794597270.788867474] [planner_server]: Cleaning up plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597270.789007762] [planner_server]: Destroying plugin StrictGridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597270.789018378] [planner_server]: Cleaning up plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597270.789504079] [planner_server]: Destroying plugin GridBased of type SmacPlanner2D
+[planner_server-7] [INFO] [1794597270.798316342] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[planner_server-7] [INFO] [1794597270.802245655] [global_costmap.global_costmap]: Destroying
+[planner_server-7] [INFO] [1794597270.810222535] [planner_server]: Destroying
+[INFO] [planner_server-7]: process has finished cleanly [pid 4124183]

@@ -1,0 +1,18 @@
+[ 16%] Built target gtest_main
+[ 66%] Built target directional_zone_core
+[ 83%] Built target gtest
+[ 91%] Building CXX object CMakeFiles/test_costmap_collision.dir/test/test_costmap_collision.cpp.o
+[100%] Linking CXX executable test_costmap_collision
+[100%] Built target test_costmap_collision
+Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+Note: Google Test filter = CostmapCollision.ShaperFindsNarrowFreeBandWithPlanningReserve
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from CostmapCollision
+[ RUN      ] CostmapCollision.ShaperFindsNarrowFreeBandWithPlanningReserve
+[       OK ] CostmapCollision.ShaperFindsNarrowFreeBandWithPlanningReserve (1 ms)
+[----------] 1 test from CostmapCollision (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.

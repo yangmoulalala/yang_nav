@@ -1,0 +1,1404 @@
+Starting >>> nav_behaviors
+Starting >>> backend
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+   Site: AMD
+   Build name: (empty)
+ Add coverage exclude regular expressions.
+Create new tag: 20261113-2132 - Experimental
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/nav_behaviors/CTestConfiguration.ini
+Test project /home/yang/yang_nav/build/nav_behaviors
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+      Start  1: test_timed_obstacle_layer
+
+1: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_timed_obstacle_layer.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_timed_obstacle_layer" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml"
+1: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+1: Test timeout computed to be: 60
+1: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+1:  - /home/yang/yang_nav/build/nav_behaviors/test_timed_obstacle_layer --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml
+1: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+1: [==========] Running 5 tests from 1 test suite.
+1: [----------] Global test environment set-up.
+1: [----------] 5 tests from TimedLayerTest
+1: [ RUN      ] TimedLayerTest.OldCloudCannotRefreshItsOwnEvidence
+1: [INFO] [1794605532.601594755] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794605532.601801020] [timed_layer_test]: Subscribed to Topics: 
+1: [INFO] [1794605532.601933563] [timed_layer_test]: Destroying
+1: [       OK ] TimedLayerTest.OldCloudCannotRefreshItsOwnEvidence (32 ms)
+1: [ RUN      ] TimedLayerTest.NewAcquisitionRefreshesAndStationaryObstacleStays
+1: [INFO] [1794605532.610377037] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794605532.610480345] [timed_layer_test]: Subscribed to Topics: 
+1: [INFO] [1794605532.610559503] [timed_layer_test]: Destroying
+1: [       OK ] TimedLayerTest.NewAcquisitionRefreshesAndStationaryObstacleStays (8 ms)
+1: [ RUN      ] TimedLayerTest.ExpiryDoesNotClearAnotherLayer
+1: [INFO] [1794605532.617967171] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794605532.618057432] [timed_layer_test]: Subscribed to Topics: 
+1: [INFO] [1794605532.618105601] [timed_layer_test]: Destroying
+1: [       OK ] TimedLayerTest.ExpiryDoesNotClearAnotherLayer (8 ms)
+1: [ RUN      ] TimedLayerTest.EvidenceExpiresAfterObservationDisappears
+1: [INFO] [1794605532.626893889] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794605532.626989585] [timed_layer_test]: Subscribed to Topics: 
+1: [INFO] [1794605532.627053069] [timed_layer_test]: Destroying
+1: [       OK ] TimedLayerTest.EvidenceExpiresAfterObservationDisappears (8 ms)
+1: [ RUN      ] TimedLayerTest.ResetAndClockRewindDoNotLeaveImmortalMarks
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+   Site: AMD
+   Build name: (empty)
+ Add coverage exclude regular expressions.
+Create new tag: 20261113-2132 - Experimental
+UpdateCTestConfiguration  from :/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+Parse Config file:/home/yang/yang_nav/build/backend/CTestConfiguration.ini
+Test project /home/yang/yang_nav/build/backend
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+      Start  1: backend_fusion_test
+
+1: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_fusion_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_fusion_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_fusion_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_fusion_test.gtest.xml"
+1: Working Directory: /home/yang/yang_nav/build/backend/test
+1: Environment variables: 
+1:  PYTHONDONTWRITEBYTECODE=1
+1: Test timeout computed to be: 30
+1: [INFO] [1794605532.635102497] [timed_layer_test]: 
+1: 	timed_layer_test lifecycle node launched. 
+1: 	Waiting on external lifecycle transitions to activate
+1: 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+1: [INFO] [1794605532.635218903] [timed_layer_test]: Subscribed to Topics: 
+1: [WARN] [1794605532.635299836] [tf2_buffer]: Detected jump back in time. Clearing TF buffer.
+1: [INFO] [1794605532.635340072] [timed_layer_test]: Destroying
+1: [       OK ] TimedLayerTest.ResetAndClockRewindDoNotLeaveImmortalMarks (8 ms)
+1: [----------] 5 tests from TimedLayerTest (65 ms total)
+1: 
+1: [----------] Global test environment tear-down
+1: [==========] 5 tests from 1 test suite ran. (65 ms total)
+1: [  PASSED  ] 5 tests.
+1: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+1:  - /home/yang/yang_nav/build/backend/test/backend_fusion_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_fusion_test.gtest.xml
+1: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+1: [==========] Running 3 tests from 1 test suite.
+1: [----------] Global test environment set-up.
+1: [----------] 3 tests from ObservationPolicy
+1: [ RUN      ] ObservationPolicy.UnavailableEvidenceIsNotAConflictVote
+1: [       OK ] ObservationPolicy.UnavailableEvidenceIsNotAConflictVote (0 ms)
+1: [ RUN      ] ObservationPolicy.JointAssessmentControlsAcceptance
+1: [       OK ] ObservationPolicy.JointAssessmentControlsAcceptance (0 ms)
+1: [ RUN      ] ObservationPolicy.ConflictingMapIsAConflict
+1: [       OK ] ObservationPolicy.ConflictingMapIsAConflict (0 ms)
+1: [----------] 3 tests from ObservationPolicy (0 ms total)
+1: 
+1: [----------] Global test environment tear-down
+1: [==========] 3 tests from 1 test suite ran. (0 ms total)
+1: [  PASSED  ] 3 tests.
+1: -- run_test.py: return code 0
+1: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_fusion_test.gtest.xml'
+1: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_fusion_test.gtest.xml'
+ 1/19 Test  #1: backend_fusion_test ...............   Passed    0.08 sec
+test 2
+      Start  2: backend_measurement_test
+
+2: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_measurement_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_measurement_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_measurement_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_measurement_test.gtest.xml"
+2: Working Directory: /home/yang/yang_nav/build/backend/test
+2: Environment variables: 
+2:  PYTHONDONTWRITEBYTECODE=1
+2: Test timeout computed to be: 30
+1: -- run_test.py: return code 0
+1: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml'
+1: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_timed_obstacle_layer.gtest.xml'
+2: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+2:  - /home/yang/yang_nav/build/backend/test/backend_measurement_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_measurement_test.gtest.xml
+ 1/10 Test  #1: test_timed_obstacle_layer ........   Passed    0.27 sec
+test 2
+      Start  2: test_costmap_collision
+
+2: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_costmap_collision.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_costmap_collision" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml"
+2: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+2: Test timeout computed to be: 60
+2: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+2: [==========] Running 5 tests from 2 test suites.
+2: [----------] Global test environment set-up.
+2: [----------] 2 tests from PoseCovariance
+2: [ RUN      ] PoseCovariance.CoordinateRoundtripPreservesCrossTermsAndIgnoresAbsoluteTranslation
+2: [       OK ] PoseCovariance.CoordinateRoundtripPreservesCrossTermsAndIgnoresAbsoluteTranslation (0 ms)
+2: [ RUN      ] PoseCovariance.RegularizationCannotIncreaseConfidence
+2: [       OK ] PoseCovariance.RegularizationCannotIncreaseConfidence (0 ms)
+2: [----------] 2 tests from PoseCovariance (0 ms total)
+2: 
+2: [----------] 3 tests from PoseInformation
+2: [ RUN      ] PoseInformation.CommonNoisePreservesNullspaceAndAddsObservableVariance
+2: [       OK ] PoseInformation.CommonNoisePreservesNullspaceAndAddsObservableVariance (0 ms)
+2: [ RUN      ] PoseInformation.RankAndColumnOrderAreExplicit
+2: [       OK ] PoseInformation.RankAndColumnOrderAreExplicit (0 ms)
+2: [ RUN      ] PoseInformation.FullRankConversionRecoversCovariance
+2: [       OK ] PoseInformation.FullRankConversionRecoversCovariance (0 ms)
+2: [----------] 3 tests from PoseInformation (0 ms total)
+2: 
+2: [----------] Global test environment tear-down
+2: [==========] 5 tests from 2 test suites ran. (0 ms total)
+2: [  PASSED  ] 5 tests.
+2: -- run_test.py: return code 0
+2: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_measurement_test.gtest.xml'
+2: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_measurement_test.gtest.xml'
+ 2/19 Test  #2: backend_measurement_test ..........   Passed    0.04 sec
+test 3
+      Start  3: backend_body_test
+
+3: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_body_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_body_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_body_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_body_test.gtest.xml"
+3: Working Directory: /home/yang/yang_nav/build/backend/test
+3: Environment variables: 
+3:  PYTHONDONTWRITEBYTECODE=1
+3: Test timeout computed to be: 30
+2: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+2:  - /home/yang/yang_nav/build/nav_behaviors/test_costmap_collision --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml
+3: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+3:  - /home/yang/yang_nav/build/backend/test/backend_body_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_body_test.gtest.xml
+3: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+3: [==========] Running 3 tests from 1 test suite.
+3: [----------] Global test environment set-up.
+3: [----------] 3 tests from BodyTransform
+3: [ RUN      ] BodyTransform.IdentitySensorPoseYieldsTfExtrinsic
+3: [       OK ] BodyTransform.IdentitySensorPoseYieldsTfExtrinsic (0 ms)
+3: [ RUN      ] BodyTransform.ComposesWithParentPoseAndInverts
+3: [       OK ] BodyTransform.ComposesWithParentPoseAndInverts (0 ms)
+3: [ RUN      ] BodyTransform.MatchesLegacyOffsetRotationConvention
+3: [       OK ] BodyTransform.MatchesLegacyOffsetRotationConvention (0 ms)
+3: [----------] 3 tests from BodyTransform (0 ms total)
+3: 
+3: [----------] Global test environment tear-down
+3: [==========] 3 tests from 1 test suite ran. (0 ms total)
+3: [  PASSED  ] 3 tests.
+3: -- run_test.py: return code 0
+3: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_body_test.gtest.xml'
+3: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_body_test.gtest.xml'
+ 3/19 Test  #3: backend_body_test .................   Passed    0.04 sec
+test 4
+      Start  4: backend_body_extrinsic_test
+
+4: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_body_extrinsic_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_body_extrinsic_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_body_extrinsic_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_body_extrinsic_test.gtest.xml"
+4: Working Directory: /home/yang/yang_nav/build/backend/test
+4: Environment variables: 
+4:  PYTHONDONTWRITEBYTECODE=1
+4: Test timeout computed to be: 30
+2: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+2: [==========] Running 8 tests from 2 test suites.
+2: [----------] Global test environment set-up.
+2: [----------] 3 tests from CostmapCollision
+2: [ RUN      ] CostmapCollision.ChecksInteriorUnknownAndBounds
+2: [       OK ] CostmapCollision.ChecksInteriorUnknownAndBounds (0 ms)
+2: [ RUN      ] CostmapCollision.ChecksBetweenSparsePosesAndDuringRotation
+2: [       OK ] CostmapCollision.ChecksBetweenSparsePosesAndDuringRotation (0 ms)
+2: [ RUN      ] CostmapCollision.UsesActualHeadingForAsymmetricFootprint
+2: [       OK ] CostmapCollision.UsesActualHeadingForAsymmetricFootprint (0 ms)
+2: [----------] 3 tests from CostmapCollision (0 ms total)
+2: 
+2: [----------] 5 tests from OverlapEscape
+2: [ RUN      ] OverlapEscape.OccupiedCenterFindsFreeExitWithoutClearingTheMap
+2: [       OK ] OverlapEscape.OccupiedCenterFindsFreeExitWithoutClearingTheMap (4 ms)
+2: [ RUN      ] OverlapEscape.RejectsNewContactsRotationUnknownAndGrowingOverlap
+2: [       OK ] OverlapEscape.RejectsNewContactsRotationUnknownAndGrowingOverlap (0 ms)
+2: [ RUN      ] OverlapEscape.LeavingContactCannotReenterAndRollingOriginDoesNotChangeIdentity
+2: [       OK ] OverlapEscape.LeavingContactCannotReenterAndRollingOriginDoesNotChangeIdentity (0 ms)
+2: [ RUN      ] OverlapEscape.EmbeddedStartLeavesOriginalThickObstacle
+4: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+4:  - /home/yang/yang_nav/build/backend/test/backend_body_extrinsic_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_body_extrinsic_test.gtest.xml
+4: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+4: [==========] Running 4 tests from 1 test suite.
+4: [----------] Global test environment set-up.
+4: [----------] 4 tests from BodyExtrinsicResolver
+4: [ RUN      ] BodyExtrinsicResolver.InitializesFromLatestTransform
+4: [       OK ] BodyExtrinsicResolver.InitializesFromLatestTransform (0 ms)
+4: [ RUN      ] BodyExtrinsicResolver.ExactTimeInterpolatesTurretYaw
+4: [       OK ] BodyExtrinsicResolver.ExactTimeInterpolatesTurretYaw (0 ms)
+4: [ RUN      ] BodyExtrinsicResolver.LatestWithinToleranceElseKeepsLastGood
+4: [       OK ] BodyExtrinsicResolver.LatestWithinToleranceElseKeepsLastGood (0 ms)
+4: [ RUN      ] BodyExtrinsicResolver.StaticChainIsAlwaysValid
+4: [       OK ] BodyExtrinsicResolver.StaticChainIsAlwaysValid (0 ms)
+4: [----------] 4 tests from BodyExtrinsicResolver (0 ms total)
+4: 
+4: [----------] Global test environment tear-down
+4: [==========] 4 tests from 1 test suite ran. (0 ms total)
+4: [  PASSED  ] 4 tests.
+4: -- run_test.py: return code 0
+4: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_body_extrinsic_test.gtest.xml'
+4: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_body_extrinsic_test.gtest.xml'
+ 4/19 Test  #4: backend_body_extrinsic_test .......   Passed    0.06 sec
+test 5
+      Start  5: backend_lifecycle_test
+
+5: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_lifecycle_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_lifecycle_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml"
+5: Working Directory: /home/yang/yang_nav/build/backend/test
+5: Environment variables: 
+5:  PYTHONDONTWRITEBYTECODE=1
+5: Test timeout computed to be: 30
+5: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+5:  - /home/yang/yang_nav/build/backend/test/backend_lifecycle_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml
+5: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+5: [==========] Running 25 tests from 5 test suites.
+5: [----------] Global test environment set-up.
+5: [----------] 6 tests from LocalizationLifecycle
+5: [ RUN      ] LocalizationLifecycle.ConflictRecoveryAndFaultHistoryHaveDistinctLifetimes
+5: [       OK ] LocalizationLifecycle.ConflictRecoveryAndFaultHistoryHaveDistinctLifetimes (0 ms)
+5: [ RUN      ] LocalizationLifecycle.RegularObservationCannotUnfreezeLostState
+5: [       OK ] LocalizationLifecycle.RegularObservationCannotUnfreezeLostState (0 ms)
+5: [ RUN      ] LocalizationLifecycle.SevereConflictsEscalateBeforeRegularThreshold
+5: [       OK ] LocalizationLifecycle.SevereConflictsEscalateBeforeRegularThreshold (0 ms)
+5: [ RUN      ] LocalizationLifecycle.AcceptedObservationResetsSevereCount
+5: [       OK ] LocalizationLifecycle.AcceptedObservationResetsSevereCount (0 ms)
+5: [ RUN      ] LocalizationLifecycle.ProbationEscalatesOnFirstSevereConflict
+5: [       OK ] LocalizationLifecycle.ProbationEscalatesOnFirstSevereConflict (0 ms)
+5: [ RUN      ] LocalizationLifecycle.ProbationExpiresAfterAcceptedObservations
+5: [       OK ] LocalizationLifecycle.ProbationExpiresAfterAcceptedObservations (0 ms)
+5: [----------] 6 tests from LocalizationLifecycle (0 ms total)
+5: 
+5: [----------] 2 tests from ResetCoordinator
+5: [ RUN      ] ResetCoordinator.TimeoutRetriesSameIdentityAndTerminalReplyClosesOnce
+5: [       OK ] ResetCoordinator.TimeoutRetriesSameIdentityAndTerminalReplyClosesOnce (0 ms)
+5: [ RUN      ] ResetCoordinator.MismatchedReplyCannotReleasePendingTransaction
+5: [       OK ] ResetCoordinator.MismatchedReplyCannotReleasePendingTransaction (0 ms)
+5: [----------] 2 tests from ResetCoordinator (0 ms total)
+5: 
+5: [----------] 1 test from FrameHistory
+5: [ RUN      ] FrameHistory.InterpolationAndInvalidationKeepCausalTimeBoundary
+5: [       OK ] FrameHistory.InterpolationAndInvalidationKeepCausalTimeBoundary (0 ms)
+5: [----------] 1 test from FrameHistory (0 ms total)
+5: 
+5: [----------] 1 test from CandidateExecution
+5: [ RUN      ] CandidateExecution.AllWorkCompletesAndLowestInputExceptionWins
+5: [       OK ] CandidateExecution.AllWorkCompletesAndLowestInputExceptionWins (2 ms)
+5: [----------] 1 test from CandidateExecution (2 ms total)
+5: 
+5: [----------] 15 tests from FrontendSession
+5: [ RUN      ] FrontendSession.FrontendAndBackendEpochsRemainSeparateAcrossResetTranslation
+5: [       OK ] FrontendSession.FrontendAndBackendEpochsRemainSeparateAcrossResetTranslation (0 ms)
+5: [ RUN      ] FrontendSession.OnlyLatestRpcAttemptCanConfirmTheBusinessTransaction
+5: [       OK ] FrontendSession.OnlyLatestRpcAttemptCanConfirmTheBusinessTransaction (0 ms)
+5: [ RUN      ] FrontendSession.NewCandidateInvalidatesOldReplyAndRetiredProcessesCannotReturn
+5: [       OK ] FrontendSession.NewCandidateInvalidatesOldReplyAndRetiredProcessesCannotReturn (0 ms)
+5: [ RUN      ] FrontendSession.StaleSourceEpochDiscardsContinuityWithoutRejectingCompletedReset
+5: [       OK ] FrontendSession.StaleSourceEpochDiscardsContinuityWithoutRejectingCompletedReset (0 ms)
+5: [ RUN      ] FrontendSession.ColdAndNoncompletedRepliesDoNotCarryContinuity
+5: [       OK ] FrontendSession.ColdAndNoncompletedRepliesDoNotCarryContinuity (0 ms)
+5: [ RUN      ] FrontendSession.UnsentCancellationAndNonterminalRepliesCannotCommitBoundary
+5: [       OK ] FrontendSession.UnsentCancellationAndNonterminalRepliesCannotCommitBoundary (0 ms)
+5: [ RUN      ] FrontendSession.ReplayedGenerationCannotFinishAnotherTransaction
+5: [       OK ] FrontendSession.ReplayedGenerationCannotFinishAnotherTransaction (0 ms)
+5: [ RUN      ] FrontendSession.DuplicateSequenceAndChangedProcessCannotBeAdmitted
+5: [       OK ] FrontendSession.DuplicateSequenceAndChangedProcessCannotBeAdmitted (0 ms)
+5: [ RUN      ] FrontendSession.InputDiscontinuityIsLatchedUntilCommittedBoundary
+5: [       OK ] FrontendSession.InputDiscontinuityIsLatchedUntilCommittedBoundary (0 ms)
+5: [ RUN      ] FrontendSession.RejectedResetDoesNotClearInputDiscontinuity
+5: [       OK ] FrontendSession.RejectedResetDoesNotClearInputDiscontinuity (0 ms)
+5: [ RUN      ] FrontendSession.ForeignFailureDoesNotReplaceActiveHealth
+5: [       OK ] FrontendSession.ForeignFailureDoesNotReplaceActiveHealth (0 ms)
+5: [ RUN      ] FrontendSession.ProcessingFailureRequiresAnExplicitBoundary
+5: [       OK ] FrontendSession.ProcessingFailureRequiresAnExplicitBoundary (0 ms)
+5: [ RUN      ] FrontendSession.TargetEpochFaultSurvivesReplyAndBoundaryCommitOrdering
+5: [       OK ] FrontendSession.TargetEpochFaultSurvivesReplyAndBoundaryCommitOrdering (0 ms)
+5: [ RUN      ] FrontendSession.ForeignTargetFaultDoesNotContaminateConfirmedHealthyInstance
+5: [       OK ] FrontendSession.ForeignTargetFaultDoesNotContaminateConfirmedHealthyInstance (0 ms)
+5: [ RUN      ] FrontendSession.ReplacementProcessCanRecoverFromProcessingFailure
+5: [       OK ] FrontendSession.ReplacementProcessCanRecoverFromProcessingFailure (0 ms)
+5: [----------] 15 tests from FrontendSession (0 ms total)
+5: 
+5: [----------] Global test environment tear-down
+5: [==========] 25 tests from 5 test suites ran. (2 ms total)
+5: [  PASSED  ] 25 tests.
+5: -- run_test.py: return code 0
+5: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml'
+5: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_lifecycle_test.gtest.xml'
+ 5/19 Test  #5: backend_lifecycle_test ............   Passed    0.06 sec
+test 6
+      Start  6: backend_graph_test
+
+6: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_graph_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_graph_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_graph_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_graph_test.gtest.xml"
+6: Working Directory: /home/yang/yang_nav/build/backend/test
+6: Environment variables: 
+6:  PYTHONDONTWRITEBYTECODE=1
+6: Test timeout computed to be: 30
+6: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+6:  - /home/yang/yang_nav/build/backend/test/backend_graph_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_graph_test.gtest.xml
+6: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+6: [==========] Running 6 tests from 3 test suites.
+6: [----------] Global test environment set-up.
+6: [----------] 3 tests from PoseGraph
+6: [ RUN      ] PoseGraph.OdometryChainRecoversGeometryAndUncertaintyGrows
+6: [       OK ] PoseGraph.OdometryChainRecoversGeometryAndUncertaintyGrows (1 ms)
+6: [ RUN      ] PoseGraph.FixedLagRetiresOldStatesWithoutLosingCurrentMotion
+6: [       OK ] PoseGraph.FixedLagRetiresOldStatesWithoutLosingCurrentMotion (2 ms)
+6: [ RUN      ] PoseGraph.RankOneObservationConstrainsOnlyMeasuredTranslation
+6: [       OK ] PoseGraph.RankOneObservationConstrainsOnlyMeasuredTranslation (0 ms)
+6: [----------] 3 tests from PoseGraph (3 ms total)
+6: 
+6: [----------] 1 test from Registration
+6: [ RUN      ] Registration.PlaneConstrainsNormalMotionWithoutInventingFullPoseAnchor
+6: [       OK ] Registration.PlaneConstrainsNormalMotionWithoutInventingFullPoseAnchor (0 ms)
+6: [----------] 1 test from Registration (0 ms total)
+6: 
+6: [----------] 2 tests from LoopConsensus
+6: [ RUN      ] LoopConsensus.SelectsLargestGroupBeforeBestIndividualResidual
+6: [backend] Candidate PCM clique selected: 3 / 5
+6: [       OK ] LoopConsensus.SelectsLargestGroupBeforeBestIndividualResidual (0 ms)
+6: [ RUN      ] LoopConsensus.HistoricalSupportThresholdAndMissingHistoryHaveSeparateMeaning
+6: [       OK ] LoopConsensus.HistoricalSupportThresholdAndMissingHistoryHaveSeparateMeaning (0 ms)
+6: [----------] 2 tests from LoopConsensus (0 ms total)
+6: 
+6: [----------] Global test environment tear-down
+6: [==========] 6 tests from 3 test suites ran. (3 ms total)
+6: [  PASSED  ] 6 tests.
+6: -- run_test.py: return code 0
+6: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_graph_test.gtest.xml'
+6: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_graph_test.gtest.xml'
+ 6/19 Test  #6: backend_graph_test ................   Passed    0.05 sec
+test 7
+      Start  7: backend_innovation_test
+
+7: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_innovation_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_innovation_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_innovation_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_innovation_test.gtest.xml"
+7: Working Directory: /home/yang/yang_nav/build/backend/test
+7: Environment variables: 
+7:  PYTHONDONTWRITEBYTECODE=1
+7: Test timeout computed to be: 30
+7: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+7:  - /home/yang/yang_nav/build/backend/test/backend_innovation_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_innovation_test.gtest.xml
+7: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+7: [==========] Running 6 tests from 1 test suite.
+7: [----------] Global test environment set-up.
+7: [----------] 6 tests from InnovationGraph
+7: [ RUN      ] InnovationGraph.SharedPriorProducesCorrelatedJointInnovation
+7: [       OK ] InnovationGraph.SharedPriorProducesCorrelatedJointInnovation (0 ms)
+7: [ RUN      ] InnovationGraph.RelativeMeasurementCancelsCommonPoseUncertainty
+7: [       OK ] InnovationGraph.RelativeMeasurementCancelsCommonPoseUncertainty (0 ms)
+7: [ RUN      ] InnovationGraph.IndependentTreesHaveAdditiveInnovationEnergy
+7: [       OK ] InnovationGraph.IndependentTreesHaveAdditiveInnovationEnergy (0 ms)
+7: [ RUN      ] InnovationGraph.PendingFactorsCannotBeAssessedAsCommittedPrediction
+7: [       OK ] InnovationGraph.PendingFactorsCannotBeAssessedAsCommittedPrediction (0 ms)
+7: [ RUN      ] InnovationGraph.MalformedTermsAreRejectedWithoutChangingTheGraph
+7: [       OK ] InnovationGraph.MalformedTermsAreRejectedWithoutChangingTheGraph (0 ms)
+7: [ RUN      ] InnovationGraph.MarginalizedKeyIsUnavailableWithoutInvalidatingLiveKeys
+7: [       OK ] InnovationGraph.MarginalizedKeyIsUnavailableWithoutInvalidatingLiveKeys (0 ms)
+7: [----------] 6 tests from InnovationGraph (3 ms total)
+7: 
+7: [----------] Global test environment tear-down
+7: [==========] 6 tests from 1 test suite ran. (3 ms total)
+7: [  PASSED  ] 6 tests.
+7: -- run_test.py: return code 0
+7: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_innovation_test.gtest.xml'
+7: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_innovation_test.gtest.xml'
+ 7/19 Test  #7: backend_innovation_test ...........   Passed    0.05 sec
+test 8
+      Start  8: backend_relocalization_test
+
+8: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_relocalization_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_relocalization_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml"
+8: Working Directory: /home/yang/yang_nav/build/backend/test
+8: Environment variables: 
+8:  PYTHONDONTWRITEBYTECODE=1
+8: Test timeout computed to be: 120
+8: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+8:  - /home/yang/yang_nav/build/backend/test/backend_relocalization_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml
+8: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+8: [==========] Running 7 tests from 3 test suites.
+8: [----------] Global test environment set-up.
+8: [----------] 1 test from TrackingReference
+8: [ RUN      ] TrackingReference.InvalidNewSubmapRetriesThePreviousReferenceWithoutRelaxingGates
+8: [backend] prior scan-to-map reference switch 1 rejected; previous reference 0 passed unchanged geometry and correction gates
+8: [       OK ] TrackingReference.InvalidNewSubmapRetriesThePreviousReferenceWithoutRelaxingGates (2 ms)
+8: [----------] 1 test from TrackingReference (2 ms total)
+8: 
+8: [----------] 5 tests from RelocalizationSearch
+8: [ RUN      ] RelocalizationSearch.DescriptorRetrievalProducesVerifiedMapToOdometryTransform
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=1, matched via local descriptor yaw seed batch)
+8: [       OK ] RelocalizationSearch.DescriptorRetrievalProducesVerifiedMapToOdometryTransform (1 ms)
+8: [ RUN      ] RelocalizationSearch.EmptyLocalNeighborhoodRequiresExplicitGlobalFallback
+8: [backend] tryRelocalization: no prior KFs within radius 1m of pose prior
+8: [backend] tryRelocalization: no prior KFs within radius 1m of pose prior; falling back to global Scan Context retrieval
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=1, matched via local descriptor yaw seed batch)
+8: [       OK ] RelocalizationSearch.EmptyLocalNeighborhoodRequiresExplicitGlobalFallback (1 ms)
+8: [ RUN      ] RelocalizationSearch.HorizontalPositionPriorIgnoresHeightAndAccountsForLeverArm
+8: [backend] tryRelocalization: matched KF 0 source=antenna hypothesis=antenna_yaw (yaw_seed=5.72958deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+8: [backend] tryRelocalization: antenna position-prior verification failed after 4 alignment attempts (best_residual_score=4.10144e-08, best_quality=residual_ok=true, support_ok=true, observable=false, corr=319/726, corr_ratio=0.439394, sectors=35, rmse=4.10144e-08, min_eig=0, cond=inf)
+8: [       OK ] RelocalizationSearch.HorizontalPositionPriorIgnoresHeightAndAccountsForLeverArm (4 ms)
+8: [ RUN      ] RelocalizationSearch.DegeneratePlaneCannotEstablishFullPoseAnchor
+8: [backend] tryRelocalization: position position-prior verification failed after 4 alignment attempts (best_residual_score=0, best_quality=residual_ok=true, support_ok=true, observable=false, corr=128/165, corr_ratio=0.775758, sectors=33, rmse=0, min_eig=0, cond=inf)
+8: [       OK ] RelocalizationSearch.DegeneratePlaneCannotEstablishFullPoseAnchor (0 ms)
+8: [ RUN      ] RelocalizationSearch.ParallelCandidateVerificationAgreesWithSerialResult
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=2, matched via local descriptor yaw seed batch)
+8: [backend] tryRelocalization: matched KF 0 hypothesis=descriptor_yaw (descriptor_distance=0.132501, descriptor_score=0.867499, descriptor_yaw=12deg, residual_score=9.05161e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.05161e-08, min_eig=1, cond=1}, tried_verifications=2, matched via local descriptor yaw seed batch)
+8: [       OK ] RelocalizationSearch.ParallelCandidateVerificationAgreesWithSerialResult (4 ms)
+8: [----------] 5 tests from RelocalizationSearch (12 ms total)
+8: 
+8: [----------] 1 test from RelocalizationScheduling
+8: [ RUN      ] RelocalizationScheduling.YawSchedulesVisitEachDiscreteHeadingOnce
+8: [       OK ] RelocalizationScheduling.YawSchedulesVisitEachDiscreteHeadingOnce (0 ms)
+8: [----------] 1 test from RelocalizationScheduling (0 ms total)
+8: 
+8: [----------] Global test environment tear-down
+8: [==========] 7 tests from 3 test suites ran. (15 ms total)
+8: [  PASSED  ] 7 tests.
+8: -- run_test.py: return code 0
+8: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml'
+8: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_relocalization_test.gtest.xml'
+ 8/19 Test  #8: backend_relocalization_test .......   Passed    0.08 sec
+test 9
+      Start  9: backend_localization_test
+
+9: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_localization_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_localization_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml"
+9: Working Directory: /home/yang/yang_nav/build/backend/test
+9: Environment variables: 
+9:  PYTHONDONTWRITEBYTECODE=1
+9: Test timeout computed to be: 120
+9: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+9:  - /home/yang/yang_nav/build/backend/test/backend_localization_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml
+9: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+9: [==========] Running 26 tests from 2 test suites.
+9: [----------] Global test environment set-up.
+9: [----------] 23 tests from LocalizationFlow
+9: [ RUN      ] LocalizationFlow.WarmBoundaryPreservesMotionBeforeTheFirstNewFrame
+9: [       OK ] LocalizationFlow.WarmBoundaryPreservesMotionBeforeTheFirstNewFrame (0 ms)
+9: [ RUN      ] LocalizationFlow.ConsecutiveWarmBoundariesPreserveDelayedGraphMotionAndUncertainty
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.ConsecutiveWarmBoundariesPreserveDelayedGraphMotionAndUncertainty (2 ms)
+9: [ RUN      ] LocalizationFlow.StaleWarmBoundaryCannotSupplyANewCoordinateTransform
+9: [backend] reset coordinate boundary is inconsistent; stationary reset contract is required
+9: [       OK ] LocalizationFlow.StaleWarmBoundaryCannotSupplyANewCoordinateTransform (0 ms)
+9: [ RUN      ] LocalizationFlow.WarmBoundaryRejectsNoncausalFramesWithoutConsumingTheTransform
+9: [       OK ] LocalizationFlow.WarmBoundaryRejectsNoncausalFramesWithoutConsumingTheTransform (0 ms)
+9: [ RUN      ] LocalizationFlow.WarmBoundaryCannotMakeLostPriorLocalizationTrusted
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [backend] tryRelocalization: uwb position-prior verification failed after 4 alignment attempts (best_residual_score=0, best_quality=residual_ok=true, support_ok=false, observable=false, corr=1/1, corr_ratio=1, sectors=1, rmse=0, min_eig=0, cond=inf)
+9: [backend] localization recovery pending: UWB position prior local recovery failed 1/1 in SUSPECT; escalating to LOST
+9: [       OK ] LocalizationFlow.WarmBoundaryCannotMakeLostPriorLocalizationTrusted (1 ms)
+9: [ RUN      ] LocalizationFlow.InputDiscontinuityFreezesBeforeResetServiceIsAvailable
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.InputDiscontinuityFreezesBeforeResetServiceIsAvailable (0 ms)
+9: [ RUN      ] LocalizationFlow.InputDiscontinuityInvalidatesManualResetRollback
+9: [       OK ] LocalizationFlow.InputDiscontinuityInvalidatesManualResetRollback (0 ms)
+9: [ RUN      ] LocalizationFlow.AutomaticColdResetDoesNotReconnectAnExistingMap
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.AutomaticColdResetDoesNotReconnectAnExistingMap (0 ms)
+9: [ RUN      ] LocalizationFlow.FrontendFailureRequiresAnExplicitCompletedReset
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] front-end reset outcome is indeterminate; advancing the backend epoch to avoid a false odometry edge
+9: [       OK ] LocalizationFlow.FrontendFailureRequiresAnExplicitCompletedReset (0 ms)
+9: [ RUN      ] LocalizationFlow.LostWithoutTrustedPoseCannotPublishGlobalTransforms
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw_sweep (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=4, matched via position-prior full yaw sweep batch)
+9: [backend] localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.LostWithoutTrustedPoseCannotPublishGlobalTransforms (1 ms)
+9: [ RUN      ] LocalizationFlow.InputDiscontinuityRetainsTrustedReferenceNoiseForColdReset
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.InputDiscontinuityRetainsTrustedReferenceNoiseForColdReset (0 ms)
+9: [ RUN      ] LocalizationFlow.ResetRejectedDuringRecoveryStillInvalidatesOldWork
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] discarding stale recovery result: runtime=0, epoch=0, generation=1, reset_transaction=0->1, manual_request=0
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.ResetRejectedDuringRecoveryStillInvalidatesOldWork (1 ms)
+9: [ RUN      ] LocalizationFlow.ResetFailureRetryAndNewEpochPreservePhysicalContinuity
+9: [backend] front-end reset response exceeded timeout; transaction remains pending and will be retried with the same idempotency key
+9: [       OK ] LocalizationFlow.ResetFailureRetryAndNewEpochPreservePhysicalContinuity (0 ms)
+9: [ RUN      ] LocalizationFlow.ColdIdentityResetBeforeFirstFrameCanStartANewMap
+9: [       OK ] LocalizationFlow.ColdIdentityResetBeforeFirstFrameCanStartANewMap (0 ms)
+9: [ RUN      ] LocalizationFlow.IndeterminateResetCannotConfirmStationaryContinuity
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] front-end reset outcome is indeterminate; advancing the backend epoch to avoid a false odometry edge
+9: [       OK ] LocalizationFlow.IndeterminateResetCannotConfirmStationaryContinuity (0 ms)
+9: [ RUN      ] LocalizationFlow.FrontendFaultRevokesAnInFlightStationaryAssumption
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [       OK ] LocalizationFlow.FrontendFaultRevokesAnInFlightStationaryAssumption (0 ms)
+9: [ RUN      ] LocalizationFlow.UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=63.0254deg, residual_score=9.15258e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.15258e-08, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=5.81364e-08m, delta_r_deg=1.70755e-06)
+9: [backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw (yaw_seed=64.1713deg, residual_score=8.42266e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=8.42266e-08, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0.4m, delta_r_deg=3.81819e-06)
+9: [       OK ] LocalizationFlow.UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading (1 ms)
+9: [ RUN      ] LocalizationFlow.PriorRecoveryAndTrackingCommitGeometryOnce
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=2.86479deg, residual_score=9.08819e-08, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=9.08819e-08, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0.05m, delta_r_deg=0)
+9: [backend] prior scan-to-map factor accepted: runtime=1, reference=0, source_frames=1/1, source_span=0s, rmse=8.91466e-08, support=726/726, ratio=1, sectors=36, min_eig=1, rank=6/6, observable=true, schur_t=1, schur_r=1, weak=000000, iterations=2, coarse=false, NIS=0.0449832/6, p=0.999998, elapsed_ms=0.301, measurement_ms=0.74191
+9: [backend] global correction committed: runtime=1, sources=prior_scan_to_map, joint_NIS=0.044983/6, delta_t=0.0299944m, delta_r_deg=1.19528e-05
+9: [       OK ] LocalizationFlow.PriorRecoveryAndTrackingCommitGeometryOnce (1 ms)
+9: [ RUN      ] LocalizationFlow.RecoveryPropagatesNewerFrameArrivingBeforeCommit
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.RecoveryPropagatesNewerFrameArrivingBeforeCommit (0 ms)
+9: [ RUN      ] LocalizationFlow.LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [backend] tryRelocalization: uwb position-prior verification failed after 4 alignment attempts (best_residual_score=0, best_quality=residual_ok=true, support_ok=false, observable=false, corr=1/1, corr_ratio=1, sectors=1, rmse=0, min_eig=0, cond=inf)
+9: [backend] localization recovery pending: UWB position prior local recovery failed 1/1 in SUSPECT; escalating to LOST
+2: [       OK ] OverlapEscape.EmbeddedStartLeavesOriginalThickObstacle (360 ms)
+2: [ RUN      ] OverlapEscape.InflationOnlyStartStillFindsACollisionFreePrefix
+9: [backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw_sweep (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=4, matched via position-prior full yaw sweep batch)
+9: [backend] localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable (2 ms)
+9: [ RUN      ] LocalizationFlow.ActualLoopRetrievalVerificationAndGraphCommitRespectCooldown
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+2: [       OK ] OverlapEscape.InflationOnlyStartStillFindsACollisionFreePrefix (0 ms)
+2: [----------] 5 tests from OverlapEscape (365 ms total)
+2: 
+2: [----------] Global test environment tear-down
+2: [==========] 8 tests from 2 test suites ran. (366 ms total)
+2: [  PASSED  ] 8 tests.
+2: -- run_test.py: return code 0
+2: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml'
+2: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_costmap_collision.gtest.xml'
+9: [backend] loop scan-to-map accepted: latest=2, target=0, source_keyframes=3, factors=1, nis=0/6, p=1, joint_nis=0/6, joint_p=1, delta_t=0m, delta_r_deg=0
+9: [backend] Candidate PCM clique selected: 3 / 3
+9: [backend] loop scan-to-map accepted: latest=4, target=0, source_keyframes=4, factors=1, nis=0/6, p=1, joint_nis=0/6, joint_p=1, delta_t=0m, delta_r_deg=0
+9: [backend] Candidate PCM clique selected: 5 / 5
+9: [backend] loop scan-to-map accepted: latest=6, target=0, source_keyframes=4, factors=1, nis=0/6, p=1, joint_nis=0/6, joint_p=1, delta_t=0m, delta_r_deg=0
+9: [       OK ] LocalizationFlow.ActualLoopRetrievalVerificationAndGraphCommitRespectCooldown (6 ms)
+9: [ RUN      ] LocalizationFlow.InconsistentLoopCannotRewriteOdometryOrDegradeTrackingHealth
+9: [backend] configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+9: [backend] loop rejected by joint pre-update NIS: latest=2, target=0, individual_NIS=6994.22/6, individual_p=0, joint_NIS=6994.22/6, joint_p=0
+ 2/10 Test  #2: test_costmap_collision ...........   Passed    0.43 sec
+test 3
+      Start  3: test_path_shaper
+
+3: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_path_shaper.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_path_shaper" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml"
+3: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+3: Test timeout computed to be: 60
+9: [backend] Candidate PCM clique selected: 2 / 2
+9: [backend] loop rejected by joint pre-update NIS: latest=3, target=0, individual_NIS=13394.8/6, individual_p=0, joint_NIS=13394.8/6, joint_p=0
+9: [backend] Candidate PCM clique selected: 2 / 2
+9: [       OK ] LocalizationFlow.InconsistentLoopCannotRewriteOdometryOrDegradeTrackingHealth (5 ms)
+9: [ RUN      ] LocalizationFlow.InGameRecoveryWaitsForUwbAndThenRecoversNearIt
+9: [backend] UWB team set to red; recovery uses T_map_uwb={x=0, y=0, yaw_deg=0}
+9: [backend] tryRelocalization: matched KF 0 source=startup_hint hypothesis=startup_hint_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via startup hint + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [backend] tryRelocalization: matched KF 0 source=uwb hypothesis=uwb_yaw (yaw_seed=0deg, residual_score=0, quality={residual_ok=true, support_ok=true, observable=true, corr=726/726, corr_ratio=1, sectors=36, rmse=0, min_eig=1, cond=1}, tried_verifications=1, matched via position-prior yaw seed batch)
+9: [backend] localization state -> NORMAL (recovered via UWB + scan-to-map, source_frames=1/1, source_span=0s, delta_t=0m, delta_r_deg=0)
+9: [       OK ] LocalizationFlow.InGameRecoveryWaitsForUwbAndThenRecoversNearIt (1 ms)
+9: [----------] 23 tests from LocalizationFlow (29 ms total)
+9: 
+9: [----------] 3 tests from PoseOutput
+9: [ RUN      ] PoseOutput.ReframingPreservesPhysicalProjectionAndRetainedGraphUncertainty
+9: [       OK ] PoseOutput.ReframingPreservesPhysicalProjectionAndRetainedGraphUncertainty (0 ms)
+9: [ RUN      ] PoseOutput.SuspectExtrapolatesWithOdometryWhileLostFreezes
+9: [       OK ] PoseOutput.SuspectExtrapolatesWithOdometryWhileLostFreezes (0 ms)
+9: [ RUN      ] PoseOutput.ParkedCovarianceAnchorSurvivesWarmBoundariesWithoutGraphNodes
+9: [       OK ] PoseOutput.ParkedCovarianceAnchorSurvivesWarmBoundariesWithoutGraphNodes (0 ms)
+9: [----------] 3 tests from PoseOutput (0 ms total)
+9: 
+9: [----------] Global test environment tear-down
+9: [==========] 26 tests from 2 test suites ran. (29 ms total)
+9: [  PASSED  ] 26 tests.
+9: -- run_test.py: return code 0
+9: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml'
+9: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_localization_test.gtest.xml'
+ 9/19 Test  #9: backend_localization_test .........   Passed    0.09 sec
+test 10
+      Start 10: backend_descriptor_test
+
+10: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_descriptor_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_descriptor_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_descriptor_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_descriptor_test.gtest.xml"
+10: Working Directory: /home/yang/yang_nav/build/backend/test
+10: Environment variables: 
+10:  PYTHONDONTWRITEBYTECODE=1
+10: Test timeout computed to be: 30
+3: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+3:  - /home/yang/yang_nav/build/nav_behaviors/test_path_shaper --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml
+3: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+3: [==========] Running 19 tests from 1 test suite.
+3: [----------] Global test environment set-up.
+3: [----------] 19 tests from PathShaper
+3: [ RUN      ] PathShaper.GridOffsetSnapsToAxis
+3: [       OK ] PathShaper.GridOffsetSnapsToAxis (0 ms)
+3: [ RUN      ] PathShaper.ReverseDirectionLocksOppositeHeading
+3: [       OK ] PathShaper.ReverseDirectionLocksOppositeHeading (0 ms)
+3: [ RUN      ] PathShaper.DiagonalApproachTurnsWhileDriving
+3: [       OK ] PathShaper.DiagonalApproachTurnsWhileDriving (0 ms)
+3: [ RUN      ] PathShaper.RotatedZoneFromMap
+3: [       OK ] PathShaper.RotatedZoneFromMap (0 ms)
+3: [ RUN      ] PathShaper.TwoTunnelsOnOnePath
+3: [       OK ] PathShaper.TwoTunnelsOnOnePath (0 ms)
+3: [ RUN      ] PathShaper.CollisionKeepsPlannerPath
+3: [       OK ] PathShaper.CollisionKeepsPlannerPath (0 ms)
+3: [ RUN      ] PathShaper.NoCrossingUnchanged
+3: [       OK ] PathShaper.NoCrossingUnchanged (0 ms)
+3: [ RUN      ] PathShaper.GoalInsideTunnelShapesUpToTheGoal
+3: [       OK ] PathShaper.GoalInsideTunnelShapesUpToTheGoal (0 ms)
+3: [ RUN      ] PathShaper.GoalJustInsideNearMouthIsShaped
+3: [       OK ] PathShaper.GoalJustInsideNearMouthIsShaped (0 ms)
+3: [ RUN      ] PathShaper.GoalJustAfterExitIsShaped
+3: [       OK ] PathShaper.GoalJustAfterExitIsShaped (0 ms)
+3: [ RUN      ] PathShaper.OneSidedNarrowingShiftsLaterally
+3: [       OK ] PathShaper.OneSidedNarrowingShiftsLaterally (0 ms)
+3: [ RUN      ] PathShaper.LeadInTurnsFromTheRobotHeading
+3: [       OK ] PathShaper.LeadInTurnsFromTheRobotHeading (0 ms)
+3: [ RUN      ] PathShaper.NearlyAlignedRobotTurnsEarly
+3: [       OK ] PathShaper.NearlyAlignedRobotTurnsEarly (0 ms)
+3: [ RUN      ] PathShaper.ResumeInsideTheBody
+3: [       OK ] PathShaper.ResumeInsideTheBody (0 ms)
+3: [ RUN      ] PathShaper.NarrowApproachTurnsEarly
+3: [       OK ] PathShaper.NarrowApproachTurnsEarly (0 ms)
+3: [ RUN      ] PathShaper.NeverMovesGoalToMakeItFit
+3: [       OK ] PathShaper.NeverMovesGoalToMakeItFit (0 ms)
+3: [ RUN      ] PathShaper.KeepsStartAndGoalInsideBody
+3: [       OK ] PathShaper.KeepsStartAndGoalInsideBody (0 ms)
+3: [ RUN      ] PathShaper.RobotStartCannotBypassCollisionChecks
+3: [       OK ] PathShaper.RobotStartCannotBypassCollisionChecks (2 ms)
+3: [ RUN      ] PathShaper.LeadOutJoinsNextDirectionAfterFullChassisClears
+3: [       OK ] PathShaper.LeadOutJoinsNextDirectionAfterFullChassisClears (0 ms)
+3: [----------] 19 tests from PathShaper (2 ms total)
+3: 
+3: [----------] Global test environment tear-down
+3: [==========] 19 tests from 1 test suite ran. (2 ms total)
+3: [  PASSED  ] 19 tests.
+3: -- run_test.py: return code 0
+3: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml'
+3: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_path_shaper.gtest.xml'
+10: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+10:  - /home/yang/yang_nav/build/backend/test/backend_descriptor_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_descriptor_test.gtest.xml
+ 3/10 Test  #3: test_path_shaper .................   Passed    0.04 sec
+test 4
+      Start  4: test_zone_path_handoff
+
+4: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_path_handoff.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_path_handoff" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml"
+4: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+4: Test timeout computed to be: 60
+10: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+10: [==========] Running 8 tests from 1 test suite.
+10: [----------] Global test environment set-up.
+10: [----------] 8 tests from ScanContextAndGProbe/PlaceRetrieval
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.LocalizationHonorsExplicitEligibilityAndResultBudget/0
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.LocalizationHonorsExplicitEligibilityAndResultBudget/0 (0 ms)
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.LocalizationHonorsExplicitEligibilityAndResultBudget/1
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.LocalizationHonorsExplicitEligibilityAndResultBudget/1 (3 ms)
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.LoopEligibilityNeverReintroducesRecentOrCurrentFrames/0
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.LoopEligibilityNeverReintroducesRecentOrCurrentFrames/0 (0 ms)
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.LoopEligibilityNeverReintroducesRecentOrCurrentFrames/1
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.LoopEligibilityNeverReintroducesRecentOrCurrentFrames/1 (2 ms)
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.SavedIndexPreservesRetrievalAndIndependentEmptyCopy/0
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.SavedIndexPreservesRetrievalAndIndependentEmptyCopy/0 (1 ms)
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.SavedIndexPreservesRetrievalAndIndependentEmptyCopy/1
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.SavedIndexPreservesRetrievalAndIndependentEmptyCopy/1 (4 ms)
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.InvalidPositionUpdatePreservesRetrievableIndex/0
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.InvalidPositionUpdatePreservesRetrievableIndex/0 (0 ms)
+10: [ RUN      ] ScanContextAndGProbe/PlaceRetrieval.InvalidPositionUpdatePreservesRetrievableIndex/1
+10: [       OK ] ScanContextAndGProbe/PlaceRetrieval.InvalidPositionUpdatePreservesRetrievableIndex/1 (1 ms)
+10: [----------] 8 tests from ScanContextAndGProbe/PlaceRetrieval (14 ms total)
+10: 
+10: [----------] Global test environment tear-down
+10: [==========] 8 tests from 1 test suite ran. (14 ms total)
+10: [  PASSED  ] 8 tests.
+10: -- run_test.py: return code 0
+10: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_descriptor_test.gtest.xml'
+10: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_descriptor_test.gtest.xml'
+10/19 Test #10: backend_descriptor_test ...........   Passed    0.06 sec
+test 11
+      Start 11: backend_calibration_test
+
+11: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_calibration_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_calibration_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_test.gtest.xml"
+11: Working Directory: /home/yang/yang_nav/build/backend/test
+11: Environment variables: 
+11:  PYTHONDONTWRITEBYTECODE=1
+11: Test timeout computed to be: 30
+4: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+4:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_path_handoff --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml
+4: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+4: [==========] Running 4 tests from 1 test suite.
+4: [----------] Global test environment set-up.
+4: [----------] 4 tests from PathHandoff
+4: [ RUN      ] PathHandoff.TemporaryLargeDetourWaitsButPersistentBlockageCanReroute
+4: [       OK ] PathHandoff.TemporaryLargeDetourWaitsButPersistentBlockageCanReroute (0 ms)
+4: [ RUN      ] PathHandoff.NewGoalWaitsForItsOwnSuccessfulPlanAndShape
+4: [       OK ] PathHandoff.NewGoalWaitsForItsOwnSuccessfulPlanAndShape (0 ms)
+4: [ RUN      ] PathHandoff.DetourHoldRespectsRemappedOutputAndNewGoals
+4: [       OK ] PathHandoff.DetourHoldRespectsRemappedOutputAndNewGoals (0 ms)
+4: [ RUN      ] PathHandoff.ApproachPointStaysPendingUntilOriginalGoalCanBeFollowed
+4: [       OK ] PathHandoff.ApproachPointStaysPendingUntilOriginalGoalCanBeFollowed (0 ms)
+4: [----------] 4 tests from PathHandoff (1 ms total)
+4: 
+4: [----------] Global test environment tear-down
+4: [==========] 4 tests from 1 test suite ran. (1 ms total)
+4: [  PASSED  ] 4 tests.
+4: -- run_test.py: return code 0
+4: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml'
+4: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_path_handoff.gtest.xml'
+ 4/10 Test  #4: test_zone_path_handoff ...........   Passed    0.05 sec
+test 5
+      Start  5: test_zone_tracker
+
+5: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_tracker.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_tracker" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml"
+5: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+5: Test timeout computed to be: 60
+11: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+11:  - /home/yang/yang_nav/build/backend/test/backend_calibration_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_test.gtest.xml
+11: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+11: [==========] Running 2 tests from 1 test suite.
+11: [----------] Global test environment set-up.
+11: [----------] 2 tests from BodyCalibrationScenario
+11: [ RUN      ] BodyCalibrationScenario.RotationAndLeverArmRecoverKnownPhysicalGeometry
+11: [       OK ] BodyCalibrationScenario.RotationAndLeverArmRecoverKnownPhysicalGeometry (0 ms)
+11: [ RUN      ] BodyCalibrationScenario.RepeatedHeadingAndOversamplingDoNotProvideYawExcitation
+11: [       OK ] BodyCalibrationScenario.RepeatedHeadingAndOversamplingDoNotProvideYawExcitation (0 ms)
+11: [----------] 2 tests from BodyCalibrationScenario (0 ms total)
+11: 
+11: [----------] Global test environment tear-down
+11: [==========] 2 tests from 1 test suite ran. (0 ms total)
+11: [  PASSED  ] 2 tests.
+11: -- run_test.py: return code 0
+11: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_test.gtest.xml'
+11: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_test.gtest.xml'
+11/19 Test #11: backend_calibration_test ..........   Passed    0.04 sec
+test 12
+      Start 12: backend_storage_test
+
+12: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_storage_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_storage_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_storage_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_storage_test.gtest.xml"
+12: Working Directory: /home/yang/yang_nav/build/backend/test
+12: Environment variables: 
+12:  PYTHONDONTWRITEBYTECODE=1
+12: Test timeout computed to be: 30
+5: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+5:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_tracker --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml
+5: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+5: [==========] Running 17 tests from 1 test suite.
+5: [----------] Global test environment set-up.
+5: [----------] 17 tests from ZoneTracker
+5: [ RUN      ] ZoneTracker.PassesWithoutStopping
+5: [       OK ] ZoneTracker.PassesWithoutStopping (0 ms)
+5: [ RUN      ] ZoneTracker.DiagonalApproach
+5: [       OK ] ZoneTracker.DiagonalApproach (0 ms)
+5: [ RUN      ] ZoneTracker.LocksTheCloserHeading
+5: [       OK ] ZoneTracker.LocksTheCloserHeading (0 ms)
+5: [ RUN      ] ZoneTracker.GateHoldsUntilAligned
+5: [       OK ] ZoneTracker.GateHoldsUntilAligned (0 ms)
+5: [ RUN      ] ZoneTracker.NoSpinOnDuplicatePoses
+5: [       OK ] ZoneTracker.NoSpinOnDuplicatePoses (0 ms)
+5: [ RUN      ] ZoneTracker.BacksOffWhenWedgedInTheMouth
+5: [       OK ] ZoneTracker.BacksOffWhenWedgedInTheMouth (0 ms)
+5: [ RUN      ] ZoneTracker.BacksOffWhenDraggedOffHeadingInTheChannel
+5: [       OK ] ZoneTracker.BacksOffWhenDraggedOffHeadingInTheChannel (0 ms)
+5: [ RUN      ] ZoneTracker.NoTunnelOnPath
+5: [       OK ] ZoneTracker.NoTunnelOnPath (0 ms)
+5: [ RUN      ] ZoneTracker.SpeedLimitIncludesLateralCorrectionAndBackoff
+5: [       OK ] ZoneTracker.SpeedLimitIncludesLateralCorrectionAndBackoff (0 ms)
+5: [ RUN      ] ZoneTracker.GoalInsideZoneRetainsOwnershipToTheEnd
+5: [       OK ] ZoneTracker.GoalInsideZoneRetainsOwnershipToTheEnd (0 ms)
+5: [ RUN      ] ZoneTracker.PlanWhollyInsideZoneAndReversePlanAreTracked
+5: [       OK ] ZoneTracker.PlanWhollyInsideZoneAndReversePlanAreTracked (0 ms)
+5: [ RUN      ] ZoneTracker.CollisionSamplesCoverSparsePlanAndPhysicalReverseHeading
+5: [       OK ] ZoneTracker.CollisionSamplesCoverSparsePlanAndPhysicalReverseHeading (0 ms)
+5: [ RUN      ] ZoneTracker.ExitSuffixReplanKeepsControlAndHeadingUntilRearClears
+5: [       OK ] ZoneTracker.ExitSuffixReplanKeepsControlAndHeadingUntilRearClears (0 ms)
+5: [ RUN      ] ZoneTracker.ColdExitSuffixAndReverseSuffixRemainTracked
+5: [       OK ] ZoneTracker.ColdExitSuffixAndReverseSuffixRemainTracked (0 ms)
+5: [ RUN      ] ZoneTracker.ExitCollisionSamplesUseTheSameHeadingAsControl
+5: [       OK ] ZoneTracker.ExitCollisionSamplesUseTheSameHeadingAsControl (0 ms)
+5: [ RUN      ] ZoneTracker.SuffixPastExitWindowAndSidewaysPathDoNotLatch
+5: [       OK ] ZoneTracker.SuffixPastExitWindowAndSidewaysPathDoNotLatch (0 ms)
+5: [ RUN      ] ZoneTracker.AdjacentRampDoesNotAcquireAnUntraversedTunnelExit
+5: [       OK ] ZoneTracker.AdjacentRampDoesNotAcquireAnUntraversedTunnelExit (0 ms)
+5: [----------] 17 tests from ZoneTracker (1 ms total)
+5: 
+5: [----------] Global test environment tear-down
+5: [==========] 17 tests from 1 test suite ran. (1 ms total)
+5: [  PASSED  ] 17 tests.
+5: -- run_test.py: return code 0
+5: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml'
+5: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_tracker.gtest.xml'
+ 5/10 Test  #5: test_zone_tracker ................   Passed    0.04 sec
+test 6
+      Start  6: test_slope
+
+6: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_slope.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_slope" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml"
+6: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+6: Test timeout computed to be: 60
+12: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+12:  - /home/yang/yang_nav/build/backend/test/backend_storage_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_storage_test.gtest.xml
+12: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+12: [==========] Running 13 tests from 2 test suites.
+12: [----------] Global test environment set-up.
+12: [----------] 3 tests from MapCache
+12: [ RUN      ] MapCache.ConcurrentMissesShareOneLoadAndTheSameFailureOutcome
+12: [       OK ] MapCache.ConcurrentMissesShareOneLoadAndTheSameFailureOutcome (0 ms)
+12: [ RUN      ] MapCache.ClearDuringLoadCannotOverwriteNewGeneration
+12: [       OK ] MapCache.ClearDuringLoadCannotOverwriteNewGeneration (0 ms)
+12: [ RUN      ] MapCache.FailedLoadCanBeRetriedAndEvictionPreservesBorrowedGeometry
+12: [       OK ] MapCache.FailedLoadCanBeRetriedAndEvictionPreservesBorrowedGeometry (0 ms)
+12: [----------] 3 tests from MapCache (0 ms total)
+12: 
+12: [----------] 10 tests from MapStorage
+12: [ RUN      ] MapStorage.DirectoryAbortAndFailedReplacementKeepPreviousContents
+6: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+6:  - /home/yang/yang_nav/build/nav_behaviors/test_slope --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml
+12: [       OK ] MapStorage.DirectoryAbortAndFailedReplacementKeepPreviousContents (2 ms)
+12: [ RUN      ] MapStorage.CreateChecksDestinationAgainAtCommitAndRetrySucceeds
+6: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+6: [==========] Running 10 tests from 1 test suite.
+6: [----------] Global test environment set-up.
+6: [----------] 10 tests from Slope
+6: [ RUN      ] Slope.UphillIsShaped
+6: [       OK ] Slope.UphillIsShaped (0 ms)
+6: [ RUN      ] Slope.DownhillIsLeftToThePlanner
+6: [       OK ] Slope.DownhillIsLeftToThePlanner (0 ms)
+6: [ RUN      ] Slope.DownhillIsNotTracked
+6: [       OK ] Slope.DownhillIsNotTracked (0 ms)
+6: [ RUN      ] Slope.ChargesUpFasterThanATunnel
+6: [       OK ] Slope.ChargesUpFasterThanATunnel (0 ms)
+6: [ RUN      ] Slope.NoseFirstEvenWhenArrivingBackwards
+6: [       OK ] Slope.NoseFirstEvenWhenArrivingBackwards (0 ms)
+6: [ RUN      ] Slope.WideLateralGate
+6: [       OK ] Slope.WideLateralGate (0 ms)
+6: [ RUN      ] Slope.AmbiguousDirectionIsLeftToThePlanner
+6: [       OK ] Slope.AmbiguousDirectionIsLeftToThePlanner (0 ms)
+6: [ RUN      ] Slope.ChainsWithTheTunnelBehindIt
+6: [       OK ] Slope.ChainsWithTheTunnelBehindIt (0 ms)
+6: [ RUN      ] Slope.ChainIsDrivenWithoutATurnInBetween
+6: [       OK ] Slope.ChainIsDrivenWithoutATurnInBetween (0 ms)
+6: [ RUN      ] Slope.TwoSeparateSlopesAreTwoStretches
+6: [       OK ] Slope.TwoSeparateSlopesAreTwoStretches (0 ms)
+6: [----------] 10 tests from Slope (0 ms total)
+6: 
+6: [----------] Global test environment tear-down
+6: [==========] 10 tests from 1 test suite ran. (0 ms total)
+6: [  PASSED  ] 10 tests.
+6: -- run_test.py: return code 0
+6: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml'
+6: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_slope.gtest.xml'
+ 6/10 Test  #6: test_slope .......................   Passed    0.04 sec
+test 7
+      Start  7: test_zone_state
+
+7: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_state.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_state" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml"
+7: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+7: Test timeout computed to be: 60
+7: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+7:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_state --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml
+7: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+7: [==========] Running 9 tests from 1 test suite.
+7: [----------] Global test environment set-up.
+7: [----------] 9 tests from ZoneState
+7: [ RUN      ] ZoneState.PhasesOnTheApproach
+7: [       OK ] ZoneState.PhasesOnTheApproach (0 ms)
+7: [ RUN      ] ZoneState.ReplanPausedOnlyWhenTrackerOwnsPath
+7: [       OK ] ZoneState.ReplanPausedOnlyWhenTrackerOwnsPath (0 ms)
+7: [ RUN      ] ZoneState.ParsePublishedPhase
+7: [       OK ] ZoneState.ParsePublishedPhase (0 ms)
+7: [ RUN      ] ZoneState.PhaseNamesRoundTrip
+7: [       OK ] ZoneState.PhaseNamesRoundTrip (0 ms)
+7: [ RUN      ] ZoneState.RecoveryBlockedFromAlign
+7: [       OK ] ZoneState.RecoveryBlockedFromAlign (0 ms)
+7: [ RUN      ] ZoneState.PhaseMemoryTracksTheNewestSample
+7: [       OK ] ZoneState.PhaseMemoryTracksTheNewestSample (0 ms)
+7: [ RUN      ] ZoneState.PhaseMemoryIgnoresUnstampedSamples
+7: [       OK ] ZoneState.PhaseMemoryIgnoresUnstampedSamples (0 ms)
+7: [ RUN      ] ZoneState.InvalidAndFutureTimestampsCannotPauseNavigation
+7: [       OK ] ZoneState.InvalidAndFutureTimestampsCannotPauseNavigation (0 ms)
+7: [ RUN      ] ZoneState.BlockedPathReplansWithoutEnablingMotionRecovery
+7: [       OK ] ZoneState.BlockedPathReplansWithoutEnablingMotionRecovery (0 ms)
+7: [----------] 9 tests from ZoneState (0 ms total)
+7: 
+7: [----------] Global test environment tear-down
+7: [==========] 9 tests from 1 test suite ran. (0 ms total)
+7: [  PASSED  ] 9 tests.
+7: -- run_test.py: return code 0
+7: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml'
+7: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_state.gtest.xml'
+ 7/10 Test  #7: test_zone_state ..................   Passed    0.04 sec
+test 8
+      Start  8: test_recovery_policy
+
+8: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_recovery_policy.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_recovery_policy" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml"
+8: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+8: Test timeout computed to be: 60
+8: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+8:  - /home/yang/yang_nav/build/nav_behaviors/test_recovery_policy --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml
+8: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+8: [==========] Running 8 tests from 1 test suite.
+8: [----------] Global test environment set-up.
+8: [----------] 8 tests from RecoveryPolicy
+8: [ RUN      ] RecoveryPolicy.FirstAttemptOnlyClears
+8: [       OK ] RecoveryPolicy.FirstAttemptOnlyClears (0 ms)
+8: [ RUN      ] RecoveryPolicy.EscalatesSpinThenBackUp
+8: [       OK ] RecoveryPolicy.EscalatesSpinThenBackUp (0 ms)
+8: [ RUN      ] RecoveryPolicy.GivesUpAfterTheRetries
+8: [       OK ] RecoveryPolicy.GivesUpAfterTheRetries (0 ms)
+8: [ RUN      ] RecoveryPolicy.ZeroRetriesFailsImmediately
+8: [       OK ] RecoveryPolicy.ZeroRetriesFailsImmediately (0 ms)
+8: [ RUN      ] RecoveryPolicy.NoMotionInsideAZone
+8: [       OK ] RecoveryPolicy.NoMotionInsideAZone (0 ms)
+8: [ RUN      ] RecoveryPolicy.MotionCanBeDisabledPerAction
+8: [       OK ] RecoveryPolicy.MotionCanBeDisabledPerAction (0 ms)
+8: [ RUN      ] RecoveryPolicy.NegativeRetriesBehaveLikeZero
+8: [       OK ] RecoveryPolicy.NegativeRetriesBehaveLikeZero (0 ms)
+8: [ RUN      ] RecoveryPolicy.NamesCoverEveryAction
+8: [       OK ] RecoveryPolicy.NamesCoverEveryAction (0 ms)
+8: [----------] 8 tests from RecoveryPolicy (0 ms total)
+8: 
+8: [----------] Global test environment tear-down
+8: [==========] 8 tests from 1 test suite ran. (0 ms total)
+8: [  PASSED  ] 8 tests.
+8: -- run_test.py: return code 0
+8: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml'
+8: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_recovery_policy.gtest.xml'
+ 8/10 Test  #8: test_recovery_policy .............   Passed    0.04 sec
+test 9
+      Start  9: test_zone_recovery
+
+9: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_recovery.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_recovery" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml"
+9: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+9: Test timeout computed to be: 60
+12: [       OK ] MapStorage.CreateChecksDestinationAgainAtCommitAndRetrySucceeds (96 ms)
+12: [ RUN      ] MapStorage.FailedFileSyncPreservesPreviousMapAndAllowsRetry
+9: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+9:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_recovery --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml
+12: [       OK ] MapStorage.FailedFileSyncPreservesPreviousMapAndAllowsRetry (35 ms)
+12: [ RUN      ] MapStorage.PublicationSyncFailureRetainsBothVersionsAfterDestruction
+9: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+9: [==========] Running 9 tests from 1 test suite.
+9: [----------] Global test environment set-up.
+9: [----------] 9 tests from ZoneRecoveryTest
+9: [ RUN      ] ZoneRecoveryTest.LadderEscalatesClearSpinBackUpThenGivesUp
+9: [WARN] [1794605533.497897455] [zone_recovery_test_1]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794605533.498150095] [zone_recovery_test_1]: ZoneRecovery: attempt 2/4 -> spin
+9: [WARN] [1794605533.498370510] [zone_recovery_test_1]: ZoneRecovery: attempt 3/4 -> backup
+9: [WARN] [1794605533.498577909] [zone_recovery_test_1]: ZoneRecovery: attempt 4/4 -> backup
+9: [WARN] [1794605533.498789719] [zone_recovery_test_1]: ZoneRecovery: navigation failed 4 times, giving up
+9: [       OK ] ZoneRecoveryTest.LadderEscalatesClearSpinBackUpThenGivesUp (13 ms)
+9: [ RUN      ] ZoneRecoveryTest.StopsRecoveringOnceNavigationSucceeds
+9: [WARN] [1794605533.505341759] [zone_recovery_test_2]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794605533.505566607] [zone_recovery_test_2]: ZoneRecovery: attempt 2/4 -> spin
+9: [       OK ] ZoneRecoveryTest.StopsRecoveringOnceNavigationSucceeds (7 ms)
+9: [ RUN      ] ZoneRecoveryTest.FirstSuccessNeedsNoRecovery
+9: [       OK ] ZoneRecoveryTest.FirstSuccessNeedsNoRecovery (5 ms)
+9: [ RUN      ] ZoneRecoveryTest.LadderResetsBetweenGoals
+9: [WARN] [1794605533.518082599] [zone_recovery_test_4]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794605533.518422981] [zone_recovery_test_4]: ZoneRecovery: attempt 1/4 -> clear
+9: [       OK ] ZoneRecoveryTest.LadderResetsBetweenGoals (6 ms)
+9: [ RUN      ] ZoneRecoveryTest.NoMotionInsideAZone
+12: [       OK ] MapStorage.PublicationSyncFailureRetainsBothVersionsAfterDestruction (86 ms)
+12: [ RUN      ] MapStorage.InitialPublicationSyncFailureDoesNotReportSuccessOrRemovePublishedMap
+12: [       OK ] MapStorage.InitialPublicationSyncFailureDoesNotReportSuccessOrRemovePublishedMap (29 ms)
+12: [ RUN      ] MapStorage.ProcessExitAfterPublicationLeavesACompleteTargetAndPreviousMap
+12: [       OK ] MapStorage.ProcessExitAfterPublicationLeavesACompleteTargetAndPreviousMap (15 ms)
+12: [ RUN      ] MapStorage.SnapshotRoundtripKeepsGeometryPoseAndDescriptorInAgreement
+9: [WARN] [1794605533.635962623] [zone_recovery_test_5]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.636234166] [zone_recovery_test_5]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.636431286] [zone_recovery_test_5]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.636635534] [zone_recovery_test_5]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.636845430] [zone_recovery_test_5]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+12: [backend] loaded validated map: keyframes=2, cloud_cache_bytes=0
+12: [       OK ] MapStorage.SnapshotRoundtripKeepsGeometryPoseAndDescriptorInAgreement (66 ms)
+12: [ RUN      ] MapStorage.FailedLoadKeepsExistingMapAndLeasesSurviveClear
+12: [backend] loaded validated map: keyframes=1, cloud_cache_bytes=0
+12: [backend] map load failed: unsupported map version
+12: [       OK ] MapStorage.FailedLoadKeepsExistingMapAndLeasesSurviveClear (1 ms)
+12: [ RUN      ] MapStorage.EmptySaveCannotReplaceValidBundle
+9: [WARN] [1794605533.748966883] [zone_recovery_test_5]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.749247814] [zone_recovery_test_5]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.749517944] [zone_recovery_test_5]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.749757424] [zone_recovery_test_5]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.749982925] [zone_recovery_test_5]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+12: [       OK ] MapStorage.EmptySaveCannotReplaceValidBundle (82 ms)
+12: [ RUN      ] MapStorage.SpatialIndexTracksOptimizedPoseAndSnapshotsRemainImmutable
+12: [       OK ] MapStorage.SpatialIndexTracksOptimizedPoseAndSnapshotsRemainImmutable (0 ms)
+12: [----------] 10 tests from MapStorage (417 ms total)
+12: 
+12: [----------] Global test environment tear-down
+12: [==========] 13 tests from 2 test suites ran. (417 ms total)
+12: [  PASSED  ] 13 tests.
+12: -- run_test.py: return code 0
+12: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_storage_test.gtest.xml'
+12: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_storage_test.gtest.xml'
+12/19 Test #12: backend_storage_test ..............   Passed    0.48 sec
+test 13
+      Start 13: backend_cleanup_test
+
+13: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_cleanup_test.gtest.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_gtest/backend_cleanup_test.txt" "--command" "/home/yang/yang_nav/build/backend/test/backend_cleanup_test" "--gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_cleanup_test.gtest.xml"
+13: Working Directory: /home/yang/yang_nav/build/backend/test
+13: Environment variables: 
+13:  PYTHONDONTWRITEBYTECODE=1
+13: Test timeout computed to be: 30
+13: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+13:  - /home/yang/yang_nav/build/backend/test/backend_cleanup_test --gtest_output=xml:/home/yang/yang_nav/build/backend/test_results/backend/backend_cleanup_test.gtest.xml
+13: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+13: [==========] Running 7 tests from 3 test suites.
+13: [----------] Global test environment set-up.
+13: [----------] 1 test from CleanupGrid
+13: [ RUN      ] CleanupGrid.PageEncodingRoundtripsAcrossSignedBoundaries
+13: [       OK ] CleanupGrid.PageEncodingRoundtripsAcrossSignedBoundaries (0 ms)
+13: [----------] 1 test from CleanupGrid (0 ms total)
+13: 
+13: [----------] 4 tests from CleanupPipeline
+13: [ RUN      ] CleanupPipeline.LaterFreeSpaceRemovesEarlierReturnWithoutChangingInput
+13: [       OK ] CleanupPipeline.LaterFreeSpaceRemovesEarlierReturnWithoutChangingInput (3 ms)
+13: [ RUN      ] CleanupPipeline.SingleRayDoesNotProveUnobservedNeighborCellsAreFree
+13: [       OK ] CleanupPipeline.SingleRayDoesNotProveUnobservedNeighborCellsAreFree (0 ms)
+13: [ RUN      ] CleanupPipeline.ParallelismAndIntegerGridTranslationPreserveClassification
+13: [       OK ] CleanupPipeline.ParallelismAndIntegerGridTranslationPreserveClassification (7 ms)
+13: [ RUN      ] CleanupPipeline.InvalidConfigurationAndInterruptedWorkCannotMutateInput
+13: [       OK ] CleanupPipeline.InvalidConfigurationAndInterruptedWorkCannotMutateInput (2 ms)
+13: [----------] 4 tests from CleanupPipeline (13 ms total)
+13: 
+13: [----------] 2 tests from SignedBoundary/AxisRay
+13: [ RUN      ] SignedBoundary/AxisRay.VisitsAnalyticCellsAndExcludesEndpointCell/0
+13: [       OK ] SignedBoundary/AxisRay.VisitsAnalyticCellsAndExcludesEndpointCell/0 (0 ms)
+13: [ RUN      ] SignedBoundary/AxisRay.VisitsAnalyticCellsAndExcludesEndpointCell/1
+13: [       OK ] SignedBoundary/AxisRay.VisitsAnalyticCellsAndExcludesEndpointCell/1 (0 ms)
+13: [----------] 2 tests from SignedBoundary/AxisRay (0 ms total)
+13: 
+13: [----------] Global test environment tear-down
+13: [==========] 7 tests from 3 test suites ran. (13 ms total)
+13: [  PASSED  ] 7 tests.
+13: -- run_test.py: return code 0
+13: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_cleanup_test.gtest.xml'
+13: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_cleanup_test.gtest.xml'
+13/19 Test #13: backend_cleanup_test ..............   Passed    0.07 sec
+test 14
+      Start 14: backend_tools_test
+
+14: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_tools_test.xunit.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_pytest/backend_tools_test.txt" "--env" "BACKEND_BINARY_DIR=/home/yang/yang_nav/build/backend" "--command" "/usr/bin/python3" "-u" "-m" "pytest" "/home/yang/yang_nav/src/z-localization/backend/test/tools/test_map_tools.py" "-o" "cache_dir=/home/yang/yang_nav/build/backend/test/ament_cmake_pytest/backend_tools_test/.cache" "--junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_tools_test.xunit.xml" "--junit-prefix=backend"
+14: Working Directory: /home/yang/yang_nav/build/backend/test
+14: Environment variables: 
+14:  PYTHONDONTWRITEBYTECODE=1
+14: Test timeout computed to be: 90
+9: [WARN] [1794605533.862491224] [zone_recovery_test_5]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.862695494] [zone_recovery_test_5]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.863034812] [zone_recovery_test_5]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.863247215] [zone_recovery_test_5]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605533.863454975] [zone_recovery_test_5]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [       OK ] ZoneRecoveryTest.NoMotionInsideAZone (345 ms)
+9: [ RUN      ] ZoneRecoveryTest.MotionAllowedOnTheApproach
+14: -- run_test.py: extra environment variables:
+14:  - BACKEND_BINARY_DIR=/home/yang/yang_nav/build/backend
+14: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+14:  - /usr/bin/python3 -u -m pytest /home/yang/yang_nav/src/z-localization/backend/test/tools/test_map_tools.py -o cache_dir=/home/yang/yang_nav/build/backend/test/ament_cmake_pytest/backend_tools_test/.cache --junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_tools_test.xunit.xml --junit-prefix=backend
+9: [WARN] [1794605533.981591318] [zone_recovery_test_6]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794605533.981845331] [zone_recovery_test_6]: ZoneRecovery: attempt 2/4 -> spin
+9: [WARN] [1794605533.982079767] [zone_recovery_test_6]: ZoneRecovery: attempt 3/4 -> backup
+9: [WARN] [1794605533.982322919] [zone_recovery_test_6]: ZoneRecovery: attempt 4/4 -> backup
+9: [WARN] [1794605533.982542111] [zone_recovery_test_6]: ZoneRecovery: navigation failed 4 times, giving up
+9: [       OK ] ZoneRecoveryTest.MotionAllowedOnTheApproach (119 ms)
+9: [ RUN      ] ZoneRecoveryTest.FailureKeepsNoMotionInterlockAfterPhaseExpires
+9: [WARN] [1794605534.100438371] [zone_recovery_test_7]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.100682836] [zone_recovery_test_7]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.100886083] [zone_recovery_test_7]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.101114883] [zone_recovery_test_7]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.101303999] [zone_recovery_test_7]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [       OK ] ZoneRecoveryTest.FailureKeepsNoMotionInterlockAfterPhaseExpires (118 ms)
+9: [ RUN      ] ZoneRecoveryTest.NewGoalStartsItsOwnRecoveryLadder
+9: [WARN] [1794605534.108149094] [zone_recovery_test_8]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794605534.108388415] [zone_recovery_test_8]: ZoneRecovery: attempt 1/4 -> clear
+9: [       OK ] ZoneRecoveryTest.NewGoalStartsItsOwnRecoveryLadder (6 ms)
+9: [ RUN      ] ZoneRecoveryTest.PhysicalOccupancyAndMissingTransformPreventMotionWithoutPhase
+9: [WARN] [1794605534.116111341] [zone_recovery_test_9]: ZoneRecovery: no robot transform, motion recovery inhibited: "map" passed to lookupTransform argument target_frame does not exist. 
+9: [WARN] [1794605534.116159109] [zone_recovery_test_9]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.116356278] [zone_recovery_test_9]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.116601044] [zone_recovery_test_9]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.116812343] [zone_recovery_test_9]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.117017474] [zone_recovery_test_9]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [WARN] [1794605534.117481302] [zone_recovery_test_9]: ZoneRecovery: attempt 1/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.117699371] [zone_recovery_test_9]: ZoneRecovery: attempt 2/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.117895708] [zone_recovery_test_9]: ZoneRecovery: attempt 3/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.118108663] [zone_recovery_test_9]: ZoneRecovery: attempt 4/4 -> clear (in a zone, no motion)
+9: [WARN] [1794605534.118457539] [zone_recovery_test_9]: ZoneRecovery: navigation failed 4 times (in a zone), giving up
+9: [WARN] [1794605534.118892393] [zone_recovery_test_9]: ZoneRecovery: attempt 1/4 -> clear
+9: [WARN] [1794605534.119109108] [zone_recovery_test_9]: ZoneRecovery: attempt 2/4 -> spin
+9: [WARN] [1794605534.119362710] [zone_recovery_test_9]: ZoneRecovery: attempt 3/4 -> backup
+9: [WARN] [1794605534.119576466] [zone_recovery_test_9]: ZoneRecovery: attempt 4/4 -> backup
+9: [WARN] [1794605534.119792378] [zone_recovery_test_9]: ZoneRecovery: navigation failed 4 times, giving up
+9: [       OK ] ZoneRecoveryTest.PhysicalOccupancyAndMissingTransformPreventMotionWithoutPhase (11 ms)
+9: [----------] 9 tests from ZoneRecoveryTest (635 ms total)
+9: 
+9: [----------] Global test environment tear-down
+9: [==========] 9 tests from 1 test suite ran. (640 ms total)
+9: [  PASSED  ] 9 tests.
+14: ============================= test session starts ==============================
+14: platform linux -- Python 3.12.3, pytest-7.4.4, pluggy-1.4.0
+14: cachedir: build/backend/test/ament_cmake_pytest/backend_tools_test/.cache
+14: rootdir: /home/yang/yang_nav
+14: plugins: ament-copyright-0.17.5, ament-lint-0.17.5, ament-flake8-0.17.5, ament-pep257-0.17.5, launch-testing-3.4.12, colcon-core-0.21.3, cov-4.1.0, typeguard-4.1.5
+14: collected 21 items
+14: 
+9: -- run_test.py: return code 0
+9: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml'
+9: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_recovery.gtest.xml'
+ 9/10 Test  #9: test_zone_recovery ...............   Passed    0.80 sec
+test 10
+      Start 10: test_zone_drive
+
+10: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml" "--package-name" "nav_behaviors" "--output-file" "/home/yang/yang_nav/build/nav_behaviors/ament_cmake_gtest/test_zone_drive.txt" "--command" "/home/yang/yang_nav/build/nav_behaviors/test_zone_drive" "--gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml"
+10: Working Directory: /home/yang/yang_nav/build/nav_behaviors
+10: Test timeout computed to be: 60
+10: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/nav_behaviors':
+10:  - /home/yang/yang_nav/build/nav_behaviors/test_zone_drive --gtest_output=xml:/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml
+10: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+10: [==========] Running 5 tests from 1 test suite.
+10: [----------] Global test environment set-up.
+10: [----------] 5 tests from TunnelDrive
+10: [ RUN      ] TunnelDrive.AllTunnelsBothDirections
+10: [       OK ] TunnelDrive.AllTunnelsBothDirections (24 ms)
+10: [ RUN      ] TunnelDrive.ResumeFromInsideTheBody
+10: [       OK ] TunnelDrive.ResumeFromInsideTheBody (1 ms)
+10: [ RUN      ] TunnelDrive.ReplanKeepsTheLock
+10: [       OK ] TunnelDrive.ReplanKeepsTheLock (0 ms)
+10: [ RUN      ] TunnelDrive.MisalignedEntryIsGatedNotCrashed
+10: [       OK ] TunnelDrive.MisalignedEntryIsGatedNotCrashed (0 ms)
+10: [ RUN      ] TunnelDrive.DiagonalApproachStaysInsideTheOpening
+10: [       OK ] TunnelDrive.DiagonalApproachStaysInsideTheOpening (1 ms)
+10: [----------] 5 tests from TunnelDrive (28 ms total)
+10: 
+10: [----------] Global test environment tear-down
+10: [==========] 5 tests from 1 test suite ran. (28 ms total)
+10: [  PASSED  ] 5 tests.
+10: -- run_test.py: return code 0
+10: -- run_test.py: inject classname prefix into gtest result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml'
+10: -- run_test.py: verify result file '/home/yang/yang_nav/build/nav_behaviors/test_results/nav_behaviors/test_zone_drive.gtest.xml'
+10/10 Test #10: test_zone_drive ..................   Passed    0.07 sec
+
+100% tests passed, 0 tests failed out of 10
+
+Label Time Summary:
+gtest    =   1.82 sec*proc (10 tests)
+
+Total Test time (real) =   1.82 sec
+Finished <<< nav_behaviors [1.98s]
+14: ../../../src/z-localization/backend/test/tools/test_map_tools.py ....... [ 33%]
+14: ..............                                                           [100%]
+14: 
+14: - generated xml file: /home/yang/yang_nav/build/backend/test_results/backend/backend_tools_test.xunit.xml -
+14: ============================== 21 passed in 2.61s ==============================
+14: -- run_test.py: return code 0
+14: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_tools_test.xunit.xml'
+14/19 Test #14: backend_tools_test ................   Passed    3.00 sec
+test 15
+      Start 15: backend_launch_config_test
+
+15: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_launch_config_test.xunit.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_pytest/backend_launch_config_test.txt" "--command" "/usr/bin/python3" "-u" "-m" "pytest" "/home/yang/yang_nav/src/z-localization/backend/test/ros/test_launch_config.py" "-o" "cache_dir=/home/yang/yang_nav/build/backend/test/ament_cmake_pytest/backend_launch_config_test/.cache" "--junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_launch_config_test.xunit.xml" "--junit-prefix=backend"
+15: Working Directory: /home/yang/yang_nav/build/backend/test
+15: Environment variables: 
+15:  PYTHONDONTWRITEBYTECODE=1
+15: Test timeout computed to be: 30
+15: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+15:  - /usr/bin/python3 -u -m pytest /home/yang/yang_nav/src/z-localization/backend/test/ros/test_launch_config.py -o cache_dir=/home/yang/yang_nav/build/backend/test/ament_cmake_pytest/backend_launch_config_test/.cache --junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_launch_config_test.xunit.xml --junit-prefix=backend
+15: ============================= test session starts ==============================
+15: platform linux -- Python 3.12.3, pytest-7.4.4, pluggy-1.4.0
+15: cachedir: build/backend/test/ament_cmake_pytest/backend_launch_config_test/.cache
+15: rootdir: /home/yang/yang_nav
+15: plugins: ament-copyright-0.17.5, ament-lint-0.17.5, ament-flake8-0.17.5, ament-pep257-0.17.5, launch-testing-3.4.12, colcon-core-0.21.3, cov-4.1.0, typeguard-4.1.5
+15: collected 16 items
+15: 
+15: ../../../src/z-localization/backend/test/ros/test_launch_config.py ..... [ 31%]
+15: ...........                                                              [100%]
+15: 
+15: - generated xml file: /home/yang/yang_nav/build/backend/test_results/backend/backend_launch_config_test.xunit.xml -
+15: ============================== 16 passed in 0.20s ==============================
+15: -- run_test.py: return code 0
+15: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_launch_config_test.xunit.xml'
+15/19 Test #15: backend_launch_config_test ........   Passed    0.47 sec
+test 16
+      Start 16: backend_calibration_launch_test
+
+16: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_launch_test.xunit.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/launch_test/backend_calibration_launch_test.txt" "--command" "/usr/bin/python3" "-m" "launch_testing.launch_test" "/home/yang/yang_nav/src/z-localization/backend/test/ros/test_calibration_launch.py" "--junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_launch_test.xunit.xml" "--package-name=backend"
+16: Working Directory: /home/yang/yang_nav/build/backend/test
+16: Environment variables: 
+16:  ROS_LOG_DIR=/home/yang/yang_nav/build/backend/test/ros_logs
+16:  PYTHONDONTWRITEBYTECODE=1
+16: Test timeout computed to be: 60
+16: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+16:  - /usr/bin/python3 -m launch_testing.launch_test /home/yang/yang_nav/src/z-localization/backend/test/ros/test_calibration_launch.py --junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_launch_test.xunit.xml --package-name=backend
+16: [INFO] [launch]: All log files can be found below /home/yang/yang_nav/build/backend/test/ros_logs/2026-11-14-05-32-17-474772-AMD-65760
+16: [INFO] [launch]: Default logging verbosity is set to INFO
+16: test_parameter_values_and_types (backend.TestCalibrationParameters.test_parameter_values_and_types)
+16: 读取实际节点参数，核对 launch 覆盖后的值与 ROS 参数类型。 ... [WARN] [1794605537.532226138] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+16: [WARN] [1794605537.532251498] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+16: [INFO] [body_calibration_node-1]: process started with pid [65778]
+16: [body_calibration_node-1] [WARN] [1794605537.550542514] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+16: [body_calibration_node-1] [WARN] [1794605537.550570441] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+16: [body_calibration_node-1] [INFO] [1794605537.562341658] [body_calibration_node]: Body extrinsic calibration started. raw T_map_sensor is composed from TF test_map->odom and /calibration/input (frontend odom->sensor), tf_lookup_timeout=0.08s.
+16: [body_calibration_node-1] [INFO] [1794605537.562427846] [body_calibration_node]: Stage 1: keep the robot body facing map +X. The result printed below is R_body_sensor; write the sensor<-body extrinsic into the URDF (backend reads it from TF).
+16: ok
+16: 
+16: ----------------------------------------------------------------------
+16: Ran 1 test in 0.437s
+16: 
+16: OK
+16: [INFO] [body_calibration_node-1]: sending signal 'SIGINT' to process[body_calibration_node-1]
+16: [body_calibration_node-1] [INFO] [1794605537.966555141] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+16: [INFO] [body_calibration_node-1]: process has finished cleanly [pid 65778]
+16: test_clean_exit (backend.TestCalibrationExit.test_clean_exit)
+16: 确认被测节点正常退出。 ... ok
+16: 
+16: ----------------------------------------------------------------------
+16: Ran 1 test in 0.000s
+16: 
+16: OK
+16: -- run_test.py: return code 0
+16: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_calibration_launch_test.xunit.xml'
+16/19 Test #16: backend_calibration_launch_test ...   Passed    0.90 sec
+test 17
+      Start 17: backend_map_service_test
+
+17: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_map_service_test.xunit.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/launch_test/backend_map_service_test.txt" "--command" "/usr/bin/python3" "-m" "launch_testing.launch_test" "/home/yang/yang_nav/src/z-localization/backend/test/ros/test_map_service.py" "node:=/home/yang/yang_nav/build/backend/backend_node" "--junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_map_service_test.xunit.xml" "--package-name=backend"
+17: Working Directory: /home/yang/yang_nav/build/backend/test
+17: Environment variables: 
+17:  ROS_LOG_DIR=/home/yang/yang_nav/build/backend/test/ros_logs
+17:  PYTHONDONTWRITEBYTECODE=1
+17: Test timeout computed to be: 90
+17: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+17:  - /usr/bin/python3 -m launch_testing.launch_test /home/yang/yang_nav/src/z-localization/backend/test/ros/test_map_service.py node:=/home/yang/yang_nav/build/backend/backend_node --junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_map_service_test.xunit.xml --package-name=backend
+17: [INFO] [launch]: All log files can be found below /home/yang/yang_nav/build/backend/test/ros_logs/2026-11-14-05-32-18-502080-AMD-65803
+17: [INFO] [launch]: Default logging verbosity is set to INFO
+17: [WARN] [1794605538.535482760] [rcl]: Found remap rule 'node:=/home/yang/yang_nav/build/backend/backend_node'. This syntax is deprecated. Use '--ros-args --remap node:=/home/yang/yang_nav/build/backend/backend_node' instead.
+17: [WARN] [1794605538.535512065] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+17: [WARN] [1794605538.535515210] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+17: [INFO] [static_transform_publisher-1]: process started with pid [65809]
+17: [INFO] [backend_node-2]: process started with pid [65810]
+17: [static_transform_publisher-1] [WARN] [1794605538.554516726] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+17: [static_transform_publisher-1] [WARN] [1794605538.554544589] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+17: [static_transform_publisher-1] [INFO] [1794605538.566019933] [imu_body_tf]: Spinning until stopped - publishing transform
+17: [static_transform_publisher-1] translation: ('0.100000', '-0.050000', '0.000000')
+17: [static_transform_publisher-1] rotation: ('0.000000', '0.000000', '0.149438', '0.988771')
+17: [static_transform_publisher-1] from 'imu' to 'body'
+17: [backend_node-2] [WARN] [1794605538.588866068] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+17: [backend_node-2] [WARN] [1794605538.588896298] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+17: [backend_node-2] [WARN] [1794605538.601411567] [backend_node]: waiting for TF imu <- body (body extrinsic): Invalid frame ID "imu" passed to canTransform argument target_frame - frame does not exist
+17: test_save_failure_retry_and_reload (backend.TestMapService.test_save_failure_retry_and_reload)
+17: 覆盖实际保存、权限失败、重试与第二个节点重载，核对地图内容。 ... [backend_node-2] [INFO] [1794605539.010639002] [backend_node]: body extrinsic from TF imu <- body: t_sensor_body=[0.1, -0.05, 0] m, rpy_sensor_body=[0, -0, 17.1887] deg
+17: [backend_node-2] [WARN] [1794605539.010795211] [backend]: configuration override: startup_hint.force_until_matched requested=true -> effective=false (no startup hint pose is available)
+17: [backend_node-2] [INFO] [1794605539.021293068] [backend_node]: unified backend ready: prior_map=disabled, loop=disabled, uwb_recovery=disabled, frontend=zlio
+17: [backend_node-2] [INFO] [1794605539.203516323] [backend_node]: first synchronized front-end frame: stamp=11, points=64, covariance=valid
+17: [backend_node-2] [WARN] [1794605539.203834770] [backend_node]: body extrinsic TF imu <- body unavailable (Could not find a connection between 'imu' and 'body' because they are not part of the same tree.Tf has two or more unconnected trees.); keeping the last good extrinsic
+17: [backend_node-2] [ERROR] [1794605539.301022142] [backend]: map save failed: Permission denied
+17: ok
+17: 
+17: ----------------------------------------------------------------------
+17: Ran 1 test in 4.182s
+17: 
+17: OK
+17: [INFO] [backend_node-2]: sending signal 'SIGINT' to process[backend_node-2]
+17: [INFO] [static_transform_publisher-1]: sending signal 'SIGINT' to process[static_transform_publisher-1]
+17: [backend_node-2] [INFO] [1794605542.715909838] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+17: [static_transform_publisher-1] [INFO] [1794605542.716197422] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+17: [INFO] [static_transform_publisher-1]: process has finished cleanly [pid 65809]
+17: [INFO] [backend_node-2]: process has finished cleanly [pid 65810]
+17: test_clean_exit (backend.TestBackendExit.test_clean_exit)
+17: 确认被测节点正常退出。 ... ok
+17: 
+17: ----------------------------------------------------------------------
+17: Ran 1 test in 0.000s
+17: 
+17: OK
+17: -- run_test.py: return code 0
+17: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_map_service_test.xunit.xml'
+17/19 Test #17: backend_map_service_test ..........   Passed    4.77 sec
+test 18
+      Start 18: backend_example_config_test
+
+18: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_example_config_test.xunit.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/launch_test/backend_example_config_test.txt" "--command" "/usr/bin/python3" "-m" "launch_testing.launch_test" "/home/yang/yang_nav/src/z-localization/backend/test/ros/test_example_config.py" "--junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_example_config_test.xunit.xml" "--package-name=backend"
+18: Working Directory: /home/yang/yang_nav/build/backend/test
+18: Environment variables: 
+18:  ROS_LOG_DIR=/home/yang/yang_nav/build/backend/test/ros_logs
+18:  PYTHONDONTWRITEBYTECODE=1
+18: Test timeout computed to be: 60
+18: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+18:  - /usr/bin/python3 -m launch_testing.launch_test /home/yang/yang_nav/src/z-localization/backend/test/ros/test_example_config.py --junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_example_config_test.xunit.xml --package-name=backend
+18: [INFO] [launch]: All log files can be found below /home/yang/yang_nav/build/backend/test/ros_logs/2026-11-14-05-32-23-179099-AMD-65897
+18: [INFO] [launch]: Default logging verbosity is set to INFO
+18: test_node_starts_with_example_yaml (backend.TestExampleConfig.test_node_starts_with_example_yaml)
+18: 服务在参数校验与 TF 外参读取完成后才创建，可用即表示启动成功。 ... [WARN] [1794605543.201714327] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+18: [WARN] [1794605543.201740560] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+18: [INFO] [static_transform_publisher-1]: process started with pid [65903]
+18: [INFO] [backend_node-2]: process started with pid [65904]
+18: [static_transform_publisher-1] [WARN] [1794605543.220952234] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+18: [static_transform_publisher-1] [WARN] [1794605543.220984031] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+18: [static_transform_publisher-1] [INFO] [1794605543.232614617] [imu_body_tf]: Spinning until stopped - publishing transform
+18: [static_transform_publisher-1] translation: ('0.000000', '0.000000', '0.000000')
+18: [static_transform_publisher-1] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+18: [static_transform_publisher-1] from 'imu' to 'body'
+18: [backend_node-2] [WARN] [1794605543.255404152] [rcl]: ROS_LOCALHOST_ONLY is deprecated but still honored if it is enabled. Use ROS_AUTOMATIC_DISCOVERY_RANGE and ROS_STATIC_PEERS instead.
+18: [backend_node-2] [WARN] [1794605543.255434802] [rcl]: 'localhost_only' is enabled, 'automatic_discovery_range' and 'static_peers' will be ignored.
+18: [backend_node-2] [WARN] [1794605543.269619534] [backend_node]: waiting for TF imu <- body (body extrinsic): Invalid frame ID "imu" passed to canTransform argument target_frame - frame does not exist
+18: [backend_node-2] [INFO] [1794605543.473173410] [backend_node]: body extrinsic from TF imu <- body: t_sensor_body=[0, 0, 0] m, rpy_sensor_body=[0, -0, 0] deg
+18: [backend_node-2] [WARN] [1794605543.473378835] [backend]: configuration override: startup_hint.force_until_matched requested=true -> effective=false (no startup hint pose is available)
+18: [backend_node-2] [WARN] [1794605543.473386913] [backend]: configuration override: graph.fixed_lag_seconds requested=30.000000 -> effective=0 (loop closure requires historical pose variables)
+18: [backend_node-2] [INFO] [1794605543.481607995] [backend_node]: unified backend ready: prior_map=disabled, loop=enabled, uwb_recovery=disabled, frontend=zlio
+18: ok
+18: 
+18: ----------------------------------------------------------------------
+18: Ran 1 test in 0.399s
+18: 
+18: OK
+18: [INFO] [backend_node-2]: sending signal 'SIGINT' to process[backend_node-2]
+18: [INFO] [static_transform_publisher-1]: sending signal 'SIGINT' to process[static_transform_publisher-1]
+18: [backend_node-2] [INFO] [1794605543.599035521] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+18: [static_transform_publisher-1] [INFO] [1794605543.599261247] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+18: [INFO] [static_transform_publisher-1]: process has finished cleanly [pid 65903]
+18: [INFO] [backend_node-2]: process has finished cleanly [pid 65904]
+18: test_clean_exit (backend.TestExampleExit.test_clean_exit)
+18: 确认后端未因参数错误异常退出。 ... ok
+18: 
+18: ----------------------------------------------------------------------
+18: Ran 1 test in 0.000s
+18: 
+18: OK
+18: -- run_test.py: return code 0
+18: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_example_config_test.xunit.xml'
+18/19 Test #18: backend_example_config_test .......   Passed    0.88 sec
+test 19
+      Start 19: backend_evaluation_metrics_test
+
+19: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/home/yang/yang_nav/build/backend/test_results/backend/backend_evaluation_metrics_test.xunit.xml" "--package-name" "backend" "--output-file" "/home/yang/yang_nav/build/backend/ament_cmake_pytest/backend_evaluation_metrics_test.txt" "--command" "/usr/bin/python3" "-u" "-m" "pytest" "/home/yang/yang_nav/src/z-localization/backend/test/evaluation/test_metrics.py" "-o" "cache_dir=/home/yang/yang_nav/build/backend/test/ament_cmake_pytest/backend_evaluation_metrics_test/.cache" "--junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_evaluation_metrics_test.xunit.xml" "--junit-prefix=backend"
+19: Working Directory: /home/yang/yang_nav/build/backend/test
+19: Environment variables: 
+19:  PYTHONDONTWRITEBYTECODE=1
+19: Test timeout computed to be: 30
+19: -- run_test.py: invoking following command in '/home/yang/yang_nav/build/backend/test':
+19:  - /usr/bin/python3 -u -m pytest /home/yang/yang_nav/src/z-localization/backend/test/evaluation/test_metrics.py -o cache_dir=/home/yang/yang_nav/build/backend/test/ament_cmake_pytest/backend_evaluation_metrics_test/.cache --junit-xml=/home/yang/yang_nav/build/backend/test_results/backend/backend_evaluation_metrics_test.xunit.xml --junit-prefix=backend
+19: ============================= test session starts ==============================
+19: platform linux -- Python 3.12.3, pytest-7.4.4, pluggy-1.4.0
+19: cachedir: build/backend/test/ament_cmake_pytest/backend_evaluation_metrics_test/.cache
+19: rootdir: /home/yang/yang_nav
+19: plugins: ament-copyright-0.17.5, ament-lint-0.17.5, ament-flake8-0.17.5, ament-pep257-0.17.5, launch-testing-3.4.12, colcon-core-0.21.3, cov-4.1.0, typeguard-4.1.5
+19: collected 3 items
+19: 
+19: ../../../src/z-localization/backend/test/evaluation/test_metrics.py ...  [100%]
+19: 
+19: - generated xml file: /home/yang/yang_nav/build/backend/test_results/backend/backend_evaluation_metrics_test.xunit.xml -
+19: ============================== 3 passed in 0.05s ===============================
+19: -- run_test.py: return code 0
+19: -- run_test.py: verify result file '/home/yang/yang_nav/build/backend/test_results/backend/backend_evaluation_metrics_test.xunit.xml'
+19/19 Test #19: backend_evaluation_metrics_test ...   Passed    0.31 sec
+
+100% tests passed, 0 tests failed out of 19
+
+Label Time Summary:
+geometry       =   0.07 sec*proc (1 test)
+integration    =   3.85 sec*proc (8 tests)
+ros            =   6.55 sec*proc (3 tests)
+tools          =   3.11 sec*proc (3 tests)
+unit           =   1.07 sec*proc (7 tests)
+
+Total Test time (real) =  11.55 sec
+Finished <<< backend [11.8s]
+
+Summary: 2 packages finished [12.0s]

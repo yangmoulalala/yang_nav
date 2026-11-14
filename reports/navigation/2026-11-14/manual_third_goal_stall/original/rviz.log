@@ -1,0 +1,48 @@
+[INFO] [1794635602.557713066] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794635602.557796338] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[INFO] [1794635602.608276676] [rviz2]: Stereo is NOT SUPPORTED
+[INFO] [1794635603.370325043] [rviz2]: Trying to create a map of size 320 x 320 using 1 swatches
+[ERROR] [1794635603.402564057] [rviz2]: rviz/glsl120/indexed_8bit_image.vert
+rviz/glsl120/indexed_8bit_image.frag
+ GLSL link result : 
+active samplers with a different type refer to the same texture image unit
+[INFO] [1794635603.430275126] [rviz2]: Trying to create a map of size 577 x 338 using 1 swatches
+[ERROR] [1794635604.737046510] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794635605.006043171] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794635605.258385382] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794635607.929797920] [rviz2]: Could not load resource [meshes/base_link.stl]: File is empty
+[ERROR] [1794635608.173879164] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794635608.438316722] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794635608.696152461] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794635608.949927201] [rviz2]: Could not load resource [meshes/l2_link.stl]: File is empty
+[ERROR] [1794635609.188523848] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794635609.440470368] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794635609.675354524] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794635609.955355431] [rviz2]: Could not load resource [meshes/mid360_link.stl]: File is empty
+[ERROR] [1794635610.210511378] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794635610.454081991] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794635610.712635592] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794635610.977707571] [rviz2]: Could not load resource [meshes/wheel_front_left.stl]: File is empty
+[ERROR] [1794635611.220750020] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794635611.479484261] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794635611.727963087] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794635611.977990930] [rviz2]: Could not load resource [meshes/wheel_front_right.stl]: File is empty
+[ERROR] [1794635612.231140440] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794635612.481845279] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794635612.726641610] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794635612.980558290] [rviz2]: Could not load resource [meshes/wheel_rear_left.stl]: File is empty
+[ERROR] [1794635613.250931704] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794635613.497597744] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794635613.746435180] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794635614.001603884] [rviz2]: Could not load resource [meshes/wheel_rear_right.stl]: File is empty
+[ERROR] [1794635614.258984645] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794635614.530537238] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794635614.791266866] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+[ERROR] [1794635615.042992845] [rviz2]: Could not load resource [meshes/yaw_link.stl]: File is empty
+Start navigation
+[INFO] [1794635621.729874616] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+Start navigation
+[INFO] [1794635629.721267415] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+Start navigation
+[INFO] [1794635650.296371491] [rviz_navigation_dialog_action_client]: NavigateToPose will be called using the BT Navigator's default behavior tree.
+[INFO] [1794635730.451819836] [rclcpp]: signal_handler(SIGINT/SIGTERM)

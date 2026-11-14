@@ -1,0 +1,183 @@
+--- before/frontend/src/input.cpp
++++ after/frontend/src/input.cpp
+@@ -342,6 +342,14 @@
+             continue;
+         }
+         const auto packet = packets_.front();
++        // A flash scan observes one instant, not an interval of continuous returns.
++        // Updating at a synthetic window boundary extrapolates past its evidence
++        // and can also create empty updates when the next window falls in a gap.
++        if (packet.first == packet.second) {
++            if (packet.second <= available)
++                return packet.second;
++            break;
++        }
+         if (packet.second - packet.first < minimum) {
+             if (points_.nextEnd() <= available)
+                 return points_.nextEnd();
+--- before/frontend/CMakeLists.txt
++++ after/frontend/CMakeLists.txt
+@@ -102,4 +102,10 @@
+ 
+ localization_enable_warnings()
+ 
++if(BUILD_TESTING)
++    find_package(ament_cmake_gtest REQUIRED)
++    ament_add_gtest(frontend_input_timing_test test/input_timing_test.cpp)
++    target_link_libraries(frontend_input_timing_test zlio)
++endif()
++
+ ament_package()
+--- before/frontend/package.xml
++++ after/frontend/package.xml
+@@ -22,6 +22,7 @@
+   <exec_depend>launch</exec_depend>
+   <exec_depend>launch_ros</exec_depend>
+   <exec_depend>rviz2</exec_depend>
++  <test_depend>ament_cmake_gtest</test_depend>
+ 
+   <export><build_type>ament_cmake</build_type></export>
+ </package>
+--- before/frontend/test/input_timing_test.cpp
++++ after/frontend/test/input_timing_test.cpp
+@@ -0,0 +1,51 @@
++#include <gtest/gtest.h>
++
++#include "zlio/input.hpp"
++
++namespace zlio {
++namespace {
++class FlashScanTiming : public ::testing::Test {
++protected:
++    Config config;
++    Input input{config, {}};
++
++    void SetUp() override {
++        for (int i = 0; i <= 50; ++i)
++            input.addImu({nanoseconds(.01 * i), Vec3::Zero(), Vec3(0, 0, 9.81)});
++        input.start(0);
++    }
++
++    Scan flash(double time) {
++        return {{Vec3(1, 0, 0), nanoseconds(time)},
++                {Vec3(1, 1, 0), nanoseconds(time)}};
++    }
++};
++
++TEST_F(FlashScanTiming, UpdatesAtAcquisitionWithoutWaitingForNextScan) {
++    input.addScan(flash(.1));
++    ASSERT_TRUE(input.nextEnd(false));
++    EXPECT_EQ(*input.nextEnd(false), nanoseconds(.1));
++    EXPECT_EQ(input.points(*input.nextEnd(false)).size(), 2U);
++}
++
++TEST_F(FlashScanTiming, AdaptiveWindowDoesNotCreateUpdatesInScanGaps) {
++    input.addScan(flash(.1));
++    input.addScan(flash(.2));
++    ASSERT_EQ(input.nextEnd(false), nanoseconds(.1));
++    input.advance(nanoseconds(.1), .03);
++    ASSERT_EQ(input.nextEnd(false), nanoseconds(.2));
++    input.advance(nanoseconds(.2), .03);
++    EXPECT_FALSE(input.nextEnd(false));
++}
++
++TEST_F(FlashScanTiming, ContinuousScanRetainsBoundedObservationWindows) {
++    Scan scan;
++    for (int i = 1; i <= 30; ++i)
++        scan.push_back({Vec3(1, 0, 0), nanoseconds(.01 * i)});
++    input.addScan(std::move(scan));
++    ASSERT_EQ(input.nextEnd(false), nanoseconds(.12));
++    input.advance(nanoseconds(.12), .06);
++    ASSERT_EQ(input.nextEnd(false), nanoseconds(.18));
++}
++}  // namespace
++}  // namespace zlio
+--- before/bringup/config/sim/frontend.yaml
++++ after/bringup/config/sim/frontend.yaml
+@@ -168,7 +168,9 @@
+       # 导航状态变化的收敛限值，使用对应 SI 单位。
+       convergence_tolerance: 0.001
+       # 原始 IMU 区间的角速度有效方差，rad²/s²。
+-      gyro_variance: 0.25
++      # Match Gazebo's 0.002 rad/s gyro standard deviation (sdf_builder.imu_xml).
++      # An inflated gyro variance lets ambiguous scan geometry rotate the estimate.
++      gyro_variance: 0.000004
+       # 原始 IMU 区间的比力有效方差，m²/s⁴。
+       accel_variance: 0.5
+       # 陀螺偏置随机游走强度，rad²/s³。
+--- before/backend/src/localization_recovery.cpp
++++ after/backend/src/localization_recovery.cpp
+@@ -155,8 +155,8 @@
+     return applied_correction;
+ }
+ 
+-/// 由新鲜 UWB 读数构造局中恢复的位置先验：天线点经固定 T_map_uwb 换算到 map，
+-/// 杆臂按测量时刻的里程计与外参换算到当前帧传感器系；航向未知，全圈扫描。
++/// Build a fresh UWB position prior with the antenna lever arm at measurement time.
++/// Same-epoch SUSPECT tries continuous heading first; LOST retains the full yaw sweep.
+ std::optional<RelocalizationPositionPrior> Localization::makeUwbRecoveryPriorLocked(
+     const FrontendFrame& frame) const {
+     if (!config_.uwb.enabled || !latest_uwb_ || !T_map_uwb_ || frames_.odometry().empty())
+@@ -189,6 +189,23 @@
+     prior.runtime_sensor_point =
+         R_odom_sensor.transpose() * (antenna_odom - frame.odom_pose.block<3, 1>(0, 3));
+     prior.yaw_seed_rad.reset();
++    // SUSPECT still has a continuous same-epoch orientation estimate. UWB only
++    // measures position: do not discard that heading and start with an unconstrained
++    // full-circle search through similar tunnel geometry. The existing search
++    // falls back to the full sweep if this seed cannot establish a valid anchor.
++    if (state_.status() == LocalizationStatus::Suspect && poses_.trusted().hasPose() &&
++        poses_.trusted().epoch() == frame.epoch) {
++        const Eigen::Matrix4d predicted = poses_.trusted()
++                                              .project(state_.status(), poses_.transform(),
++                                                       frame.odom_pose, frame.epoch)
++                                              .T_map_sensor;
++        const double predicted_yaw = yawFromRotation(
++            predicted.block<3, 3>(0, 0) * T_sensor_body.block<3, 3>(0, 0));
++        prior.R_yawless_sensor =
++            yawGuess(-predicted_yaw, Eigen::Vector3d::Zero()).block<3, 3>(0, 0) *
++            predicted.block<3, 3>(0, 0);
++        prior.yaw_seed_rad = predicted_yaw;
++    }
+     prior.search_radius = config_.uwb.search_radius;
+     prior.max_candidates = config_.uwb.candidates;
+     if (!prior.map_point.allFinite() || !prior.runtime_sensor_point.allFinite())
+--- before/backend/test/integration/localization_test.cpp
++++ after/backend/test/integration/localization_test.cpp
+@@ -4,6 +4,36 @@
+ namespace backend {
+ namespace {
+ using testing::LocalizationFlow;
++
++TEST_F(LocalizationFlow, UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading) {
++    const auto anchor = testing::scenePose(.2, -.1, .05, 1.1);
++    config.startup_hint.T_map_sensor = anchor;
++    config.uwb.enabled = true;
++    // A coarse full sweep cannot replace the continuous heading in this scene.
++    config.relocalization.relocalization_yaw_sweep_count = 1;
++    start(true);
++    ASSERT_TRUE(controller->setUwbTeam("red"));
++    auto first = frame(10, anchor, Eigen::Matrix4d::Identity());
++    ASSERT_TRUE(ingest(first));
++    maintain();
++    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
++
++    // Interrupt full-pose evidence while retaining continuous odometry and UWB.
++    auto sparse = frame(11, anchor, testing::scenePose(.4, 0, 0, .01));
++    sparse.cloud_local->resize(1);
++    ASSERT_TRUE(controller->ingestUwbPosition(11, anchor.block<3, 1>(0, 3)));
++    ASSERT_TRUE(ingest(sparse, Eigen::Vector3d(10, 0, 0)));
++    ASSERT_EQ(controller->status(), LocalizationStatus::Suspect);
++
++    const Eigen::Matrix4d truth = anchor * testing::scenePose(.1, 0, 0, .02);
++    auto restored = frame(12, truth, testing::scenePose(.5, 0, 0, .02));
++    ASSERT_TRUE(controller->ingestUwbPosition(12, truth.block<3, 1>(0, 3)));
++    ASSERT_TRUE(ingest(restored));
++    maintain();
++    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
++    EXPECT_LT((output(restored).T_map_sensor - truth).norm(), 2e-4);
++    EXPECT_TRUE(output(restored).pose_trusted);
++}
+ 
+ /// 验证先验重定位、后续跟踪及输出版本更新，同一几何观测只提交一次。
+ TEST_F(LocalizationFlow, PriorRecoveryAndTrackingCommitGeometryOnce) {

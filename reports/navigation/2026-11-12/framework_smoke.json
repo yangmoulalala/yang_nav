@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "checks": [
+    "all navigation lifecycle nodes active",
+    "navigate_m0.xml loaded (ZoneRecovery ladder registered)",
+    "ground/ceiling filtering and SpeedFilter percentage mask",
+    "final velocity capped at 0.75 m/s for 50% mask",
+    "live obstacle marks local costmap lethal",
+    "collision monitor slows a fresh command near a live obstacle",
+    "observed free ground clears disappeared obstacle",
+    "lost observation stops output despite fresh velocity commands"
+  ]
+}

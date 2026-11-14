@@ -1,0 +1,10 @@
+Starting >>> nav_behaviors
+Starting >>> nav_safety
+Starting >>> nav_terrain
+Finished <<< nav_terrain [0.38s]
+Finished <<< nav_safety [13.1s]
+Finished <<< nav_behaviors [15.2s]
+Starting >>> nav_bringup
+Finished <<< nav_bringup [0.63s]
+
+Summary: 4 packages finished [16.2s]

@@ -1,0 +1,23 @@
+build/backend/Testing/20261113-1749/Test.xml: 19 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_body_extrinsic_test.gtest.xml: 4 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_body_test.gtest.xml: 3 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_calibration_launch_test.xunit.xml: 2 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_calibration_test.gtest.xml: 2 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_cleanup_test.gtest.xml: 7 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_descriptor_test.gtest.xml: 8 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_evaluation_metrics_test.xunit.xml: 3 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_example_config_test.xunit.xml: 2 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_fusion_test.gtest.xml: 3 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_graph_test.gtest.xml: 6 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_innovation_test.gtest.xml: 6 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_launch_config_test.xunit.xml: 16 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_lifecycle_test.gtest.xml: 25 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_localization_test.gtest.xml: 26 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_map_service_test.xunit.xml: 2 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_measurement_test.gtest.xml: 5 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_relocalization_test.gtest.xml: 6 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_storage_test.gtest.xml: 13 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_tools_test.xunit.xml: 21 tests, 0 errors, 0 failures, 0 skipped
+build/backend/test_results/backend/backend_uwb_factor_test.gtest.xml: 18 tests, 0 errors, 0 failures, 0 skipped
+
+Summary: 197 tests, 0 errors, 0 failures, 0 skipped

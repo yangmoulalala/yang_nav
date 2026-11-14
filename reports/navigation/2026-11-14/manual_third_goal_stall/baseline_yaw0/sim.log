@@ -1,0 +1,127 @@
+[INFO] [launch]: All log files can be found below /home/yang/.ros/log/2026-11-14-13-59-03-483344-AMD-189238
+[INFO] [launch]: Default logging verbosity is set to INFO
+[sentry_gazebo] generated rmuc_2027.sdf in /tmp/sentry_gazebo_generated (urdf /home/yang/yang_nav/install/sentry_description/share/sentry_description/urdf/sentry_robot.urdf)
+[INFO] [gazebo-1]: process started with pid [189251]
+[INFO] [parameter_bridge-2]: process started with pid [189252]
+[INFO] [robot_state_publisher-3]: process started with pid [189253]
+[INFO] [joint_state_publisher-4]: process started with pid [189254]
+[INFO] [static_transform_publisher-5]: process started with pid [189255]
+[INFO] [static_transform_publisher-6]: process started with pid [189256]
+[INFO] [static_transform_publisher-7]: process started with pid [189258]
+[INFO] [static_transform_publisher-8]: process started with pid [189259]
+[INFO] [uwb_sim-9]: process started with pid [189260]
+[static_transform_publisher-6] [INFO] [1794635943.743016172] [alias_l2_lidar]: Spinning until stopped - publishing transform
+[static_transform_publisher-6] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-6] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-6] from 'l2_link' to 'sentry/l2_link/l2_lidar'
+[static_transform_publisher-7] [INFO] [1794635943.743069994] [alias_mid360_imu]: Spinning until stopped - publishing transform
+[static_transform_publisher-7] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-7] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-7] from 'mid360_link' to 'sentry/mid360_link/mid360_imu'
+[static_transform_publisher-5] [INFO] [1794635943.746041909] [alias_mid360_lidar]: Spinning until stopped - publishing transform
+[static_transform_publisher-5] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-5] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-5] from 'mid360_link' to 'sentry/mid360_link/mid360_lidar'
+[robot_state_publisher-3] [INFO] [1794635943.747205340] [robot_state_publisher]: Robot initialized
+[static_transform_publisher-8] [INFO] [1794635943.749791438] [alias_l2_imu]: Spinning until stopped - publishing transform
+[static_transform_publisher-8] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-8] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-8] from 'l2_link' to 'sentry/l2_link/l2_imu'
+[joint_state_publisher-4] [INFO] [1794635943.968811332] [joint_state_publisher]: Waiting for robot_description to be published on the robot_description topic...
+[uwb_sim-9] [INFO] [1794635943.975148714] [uwb_sim]: team: blue (on /uwb_pose/team)
+[uwb_sim-9] [INFO] [1794635943.997171332] [uwb_sim]: UWB (0x0203) sim: /uwb_pose [uwb] @ 1.00 Hz, truth from gz /model/sentry/pose; referee origin (14.000, 8.000) in world, +X heading 180.0 deg, right-handed; noise 0.080 m, bias 0.050 m/30 s, outliers 3.0% x 0.30 m, latency 0.200+-0.030 s, loss 1.0%, antenna (-0.245, 0.0, 0.0)
+[gazebo-1] [1;32m[Msg] [0m[1;32mGazebo Sim Server v[0m[1;32m8.15.0[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mLoading SDF world file[[0m[1;32m/tmp/sentry_gazebo_generated/rmuc_2027.sdf[0m[1;32m].[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mServing entity system service on [[0m[1;32m/[0m[1;32mentity/system/add[0m[1;32m][0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mCreate[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/create_multiple[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mCreate[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/create_multiple/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mRemove[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/remove[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mRemove[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/remove/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mPose[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_pose[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mPose[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_pose/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mPose[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_pose_vector[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mPose[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_pose_vector/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mLight configuration[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/light_config[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mLight configuration[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/light_config/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mPhysics[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_physics[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mPhysics[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_physics/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mSphericalCoordinates[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_spherical_coordinates[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mSphericalCoordinates[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/set_spherical_coordinates/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mEnable collision[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/enable_collision[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mEnable collision[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/enable_collision/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mDisable collision[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/disable_collision[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mDisable collision[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/disable_collision/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mMaterial[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/visual_config[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mMaterial[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/visual_config/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mMaterial[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/wheel_slip[0m[1;32m] (async)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mMaterial[0m[1;32m service on [[0m[1;32m/world/rmuc_2027/wheel_slip/blocking[0m[1;32m] (blocking)[0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mMecanumDrive publishing odom messages on [[0m[1;32m/model/sentry/odometry[0m[1;32m][0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mMecanumDrive subscribing to twist messages on [[0m[1;32m/cmd_vel[0m[1;32m][0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mLoaded level [[0m[1;32mdefault[0m[1;32m][0m[1;32m[0m
+[gazebo-1] [1;32m[Msg] [0m[1;32mServing world controls on [[0m[1;32m/world/rmuc_2027[0m[1;32m/control], [[0m[1;32m/world/rmuc_2027[0m[1;32m/control/state] and [[0m[1;32m/world/rmuc_2027[0m[1;32m/playback/control][0m[1;32m[0m
+[joint_state_publisher-4] [INFO] [1794635944.311952013] [joint_state_publisher]: Got description, configuring robot
+[parameter_bridge-2] [INFO] [1794635944.796206117] [gz_bridge]: Creating GZ->ROS Bridge: [/clock (gz.msgs.Clock) -> /clock (rosgraph_msgs/msg/Clock)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1794635944.798663859] [gz_bridge]: Creating ROS->GZ Bridge: [/cmd_vel (geometry_msgs/msg/Twist) -> /cmd_vel (gz.msgs.Twist)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1794635944.801447714] [gz_bridge]: Creating GZ->ROS Bridge: [/lidar_mid360/points/points (gz.msgs.PointCloudPacked) -> /lidar_mid360/points (sensor_msgs/msg/PointCloud2)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1794635944.804075099] [gz_bridge]: Creating GZ->ROS Bridge: [/lidar_l2/points/points (gz.msgs.PointCloudPacked) -> /lidar_l2/points (sensor_msgs/msg/PointCloud2)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1794635944.805824031] [gz_bridge]: Creating GZ->ROS Bridge: [/lidar_mid360/imu (gz.msgs.IMU) -> /lidar_mid360/imu (sensor_msgs/msg/Imu)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1794635944.807733712] [gz_bridge]: Creating GZ->ROS Bridge: [/lidar_l2/imu (gz.msgs.IMU) -> /lidar_l2/imu (sensor_msgs/msg/Imu)] (Lazy 0)
+[gazebo-1] MESA-EGL: warning: egl: failed to create dri2 screen
+[gazebo-1] MESA-EGL: warning: egl: failed to create dri2 screen
+[gazebo-1] MESA-EGL: warning: NEEDS EXTENSION: falling back to kms_swrast
+[gazebo-1] MESA-EGL: warning: egl: failed to create dri2 screen
+[gazebo-1] MESA-EGL: warning: egl: failed to create dri2 screen
+[gazebo-1] MESA-EGL: warning: NEEDS EXTENSION: falling back to kms_swrast
+[parameter_bridge-2] [INFO] [1794635983.653169265] [gz_bridge]: Passing message from ROS geometry_msgs/msg/Twist to Gazebo gz.msgs.Twist (showing msg only once per type)
+[static_transform_publisher-8] [INFO] [1794636067.543708913] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[static_transform_publisher-7] [INFO] [1794636067.543728047] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[static_transform_publisher-6] [INFO] [1794636067.543751594] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[static_transform_publisher-5] [INFO] [1794636067.543767634] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[robot_state_publisher-3] [INFO] [1794636067.543809375] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[parameter_bridge-2] [INFO] [1794636067.543827650] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[uwb_sim-9] Traceback (most recent call last):
+[uwb_sim-9]   File "/home/yang/yang_nav/install/sentry_gazebo/lib/sentry_gazebo/uwb_sim", line 8, in <module>
+[uwb_sim-9]     sys.exit(main())
+[uwb_sim-9]              ^^^^^^
+[uwb_sim-9]   File "/home/yang/yang_nav/install/sentry_gazebo/lib/python3.12/site-packages/sentry_gazebo/uwb_sim.py", line 338, in main
+[uwb_sim-9]     rclpy.spin(node)
+[uwb_sim-9]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+[uwb_sim-9]     executor.spin_once()
+[uwb_sim-9]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 926, in spin_once
+[uwb_sim-9]     self._spin_once_impl(timeout_sec)
+[uwb_sim-9]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 907, in _spin_once_impl
+[uwb_sim-9]     handler, entity, node = self.wait_for_ready_callbacks(
+[uwb_sim-9]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[uwb_sim-9]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 877, in wait_for_ready_callbacks
+[uwb_sim-9]     return next(self._cb_iter)
+[uwb_sim-9]            ^^^^^^^^^^^^^^^^^^^
+[uwb_sim-9]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 785, in _wait_for_ready_callbacks
+[uwb_sim-9]     raise ExternalShutdownException()
+[uwb_sim-9] rclpy.executors.ExternalShutdownException
+[INFO] [parameter_bridge-2]: process has finished cleanly [pid 189252]
+[INFO] [static_transform_publisher-6]: process has finished cleanly [pid 189256]
+[INFO] [static_transform_publisher-8]: process has finished cleanly [pid 189259]
+[INFO] [static_transform_publisher-7]: process has finished cleanly [pid 189258]
+[INFO] [static_transform_publisher-5]: process has finished cleanly [pid 189255]
+[INFO] [robot_state_publisher-3]: process has finished cleanly [pid 189253]
+[ERROR] [uwb_sim-9]: process has died [pid 189260, exit code 1, cmd '/home/yang/yang_nav/install/sentry_gazebo/lib/sentry_gazebo/uwb_sim --ros-args -r __node:=uwb_sim --params-file /tmp/launch_params_n4cn03mo'].
+[joint_state_publisher-4] Traceback (most recent call last):
+[joint_state_publisher-4]   File "/opt/ros/jazzy/lib/joint_state_publisher/joint_state_publisher", line 33, in <module>
+[joint_state_publisher-4]     sys.exit(load_entry_point('joint-state-publisher==2.4.3', 'console_scripts', 'joint_state_publisher')())
+[joint_state_publisher-4]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[joint_state_publisher-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/joint_state_publisher/joint_state_publisher.py", line 567, in main
+[joint_state_publisher-4]     rclpy.spin(jsp)
+[joint_state_publisher-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+[joint_state_publisher-4]     executor.spin_once()
+[joint_state_publisher-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 926, in spin_once
+[joint_state_publisher-4]     self._spin_once_impl(timeout_sec)
+[joint_state_publisher-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 907, in _spin_once_impl
+[joint_state_publisher-4]     handler, entity, node = self.wait_for_ready_callbacks(
+[joint_state_publisher-4]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[joint_state_publisher-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 877, in wait_for_ready_callbacks
+[joint_state_publisher-4]     return next(self._cb_iter)
+[joint_state_publisher-4]            ^^^^^^^^^^^^^^^^^^^
+[joint_state_publisher-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 785, in _wait_for_ready_callbacks
+[joint_state_publisher-4]     raise ExternalShutdownException()
+[joint_state_publisher-4] rclpy.executors.ExternalShutdownException
+[ERROR] [joint_state_publisher-4]: process has died [pid 189254, exit code 1, cmd '/opt/ros/jazzy/lib/joint_state_publisher/joint_state_publisher --ros-args -r __node:=joint_state_publisher --params-file /tmp/launch_params_lm81rezq'].

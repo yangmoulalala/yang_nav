@@ -1,0 +1,40 @@
+Traceback (most recent call last):
+  File "/home/yang/yang_nav/reports/navigation/2026-11-14/exit_pose_repeat/scripts/record_localization.py", line 50, in <module>
+    try:rclpy.spin(node)
+        ^^^^^^^^^^^^^^^^
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+    executor.spin_once()
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 926, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 907, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 877, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 757, in _wait_for_ready_callbacks
+    wait_set = _rclpy.WaitSet(
+               ^^^^^^^^^^^^^^^
+rclpy._rclpy_pybind11.RCLError: failed to initialize wait set: the given context is not valid, either rcl_init() was not called or rcl_shutdown() was called., at ./src/rcl/wait.c:130
+Traceback (most recent call last):
+  File "/opt/ros/jazzy/opt/gz_transport_vendor/lib/python/gz/transport13/__init__.py", line 115, in cb_deserialize
+    callback(deserialized_msg)
+  File "/home/yang/yang_nav/reports/navigation/2026-11-14/exit_pose_repeat/scripts/record_localization.py", line 47, in truth
+    lasttruth=t;emit('truth',{'stamp':t,'pose':pose(m)})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/yang/yang_nav/reports/navigation/2026-11-14/exit_pose_repeat/scripts/record_localization.py", line 22, in emit
+    with lock:f.write(json.dumps({'kind':kind,'sim':node.get_clock().now().nanoseconds*1e-9,'monotonic':time.monotonic(),'wall':time.time(),'data':data},allow_nan=False)+'\n')
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: I/O operation on closed file.
+ <_io.TextIOWrapper name='<stderr>' mode='w' encoding='utf-8'>
+Traceback (most recent call last):
+  File "/opt/ros/jazzy/opt/gz_transport_vendor/lib/python/gz/transport13/__init__.py", line 115, in cb_deserialize
+    callback(deserialized_msg)
+  File "/home/yang/yang_nav/reports/navigation/2026-11-14/exit_pose_repeat/scripts/record_localization.py", line 47, in truth
+    lasttruth=t;emit('truth',{'stamp':t,'pose':pose(m)})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/yang/yang_nav/reports/navigation/2026-11-14/exit_pose_repeat/scripts/record_localization.py", line 22, in emit
+    with lock:f.write(json.dumps({'kind':kind,'sim':node.get_clock().now().nanoseconds*1e-9,'monotonic':time.monotonic(),'wall':time.time(),'data':data},allow_nan=False)+'\n')
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: I/O operation on closed file.
+ <_io.TextIOWrapper name='<stderr>' mode='w' encoding='utf-8'>

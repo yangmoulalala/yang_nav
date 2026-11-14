@@ -1,0 +1,51 @@
+Internal ctest changing into directory: /home/yang/yang_nav/build/backend
+Test project /home/yang/yang_nav/build/backend
+      Start  1: backend_fusion_test
+      Start  2: backend_measurement_test
+ 1/19 Test  #2: backend_measurement_test ..........   Passed    0.05 sec
+      Start  3: backend_body_test
+ 2/19 Test  #1: backend_fusion_test ...............   Passed    0.07 sec
+      Start  4: backend_body_extrinsic_test
+ 3/19 Test  #3: backend_body_test .................   Passed    0.05 sec
+      Start  5: backend_lifecycle_test
+ 4/19 Test  #4: backend_body_extrinsic_test .......   Passed    0.06 sec
+      Start  6: backend_graph_test
+ 5/19 Test  #5: backend_lifecycle_test ............   Passed    0.07 sec
+      Start  7: backend_innovation_test
+ 6/19 Test  #6: backend_graph_test ................   Passed    0.06 sec
+      Start  8: backend_relocalization_test
+ 7/19 Test  #7: backend_innovation_test ...........   Passed    0.05 sec
+      Start  9: backend_localization_test
+ 8/19 Test  #8: backend_relocalization_test .......   Passed    0.08 sec
+      Start 10: backend_descriptor_test
+ 9/19 Test  #9: backend_localization_test .........   Passed    0.10 sec
+      Start 11: backend_calibration_test
+10/19 Test #10: backend_descriptor_test ...........   Passed    0.07 sec
+      Start 12: backend_storage_test
+11/19 Test #11: backend_calibration_test ..........   Passed    0.05 sec
+      Start 13: backend_cleanup_test
+12/19 Test #13: backend_cleanup_test ..............   Passed    0.08 sec
+      Start 14: backend_tools_test
+13/19 Test #12: backend_storage_test ..............   Passed    0.29 sec
+      Start 15: backend_launch_config_test
+14/19 Test #15: backend_launch_config_test ........   Passed    0.44 sec
+      Start 16: backend_calibration_launch_test
+15/19 Test #16: backend_calibration_launch_test ...   Passed    0.88 sec
+      Start 17: backend_map_service_test
+16/19 Test #14: backend_tools_test ................   Passed    2.45 sec
+      Start 18: backend_example_config_test
+17/19 Test #18: backend_example_config_test .......   Passed    0.84 sec
+      Start 19: backend_evaluation_metrics_test
+18/19 Test #19: backend_evaluation_metrics_test ...   Passed    0.33 sec
+19/19 Test #17: backend_map_service_test ..........   Passed    4.63 sec
+
+100% tests passed, 0 tests failed out of 19
+
+Label Time Summary:
+geometry       =   0.08 sec*proc (1 test)
+integration    =   3.14 sec*proc (8 tests)
+ros            =   6.35 sec*proc (3 tests)
+tools          =   2.57 sec*proc (3 tests)
+unit           =   1.07 sec*proc (7 tests)
+
+Total Test time (real) =   6.58 sec

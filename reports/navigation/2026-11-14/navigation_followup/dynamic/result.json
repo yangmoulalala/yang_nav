@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "moving cross traffic is avoided without footprint contact",
+    "path blocker permits safe reroute and continues after it moves away",
+    "occupied goal is approached and remains pending, sensor outage stops it, removal resumes original goal",
+    "persistent occupied goal remains pending and cancellation stops output",
+    "fresh target preempts an occupied pending target",
+    "static wall target remains an error rather than an unsafe approach target"
+  ],
+  "metrics": {
+    "crossing_min_clearance_m": 0.018885990964715507,
+    "crossing_total_seconds": 9.10080195199771,
+    "fixed_min_clearance_m": 0.3955587633352028,
+    "occupied_min_clearance_m": 0.41734816524118146,
+    "occupied_wait_distance_m": 0.9587120999859972,
+    "goal_release_to_success_seconds": 5.204005734001839
+  },
+  "model": "real Nav2; deterministic final-command omni fixture"
+}

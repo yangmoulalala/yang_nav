@@ -1,5 +1,7 @@
 # 2026-11-14 手动第三目标洞口停车
 
+> 归档说明（2026-11-14）：本目录保留结论、脚本和精简证据。大型原始数据已转入本机 `backup/report-evidence-2026-11-14.tar.zst`，源码快照、编译产物和重复中间记录已清理；清单与恢复方法见 `reports/maintenance/2026-11-14/commit_cleanup/README.md`（路径均从仓库根目录解析）。下文的 before/after、trace 和输入文件路径按原实验记录保留，现存状态以清单为准。
+
 用户使用 `GUI=true OUT=/tmp/nav_manual_gui bash tools/nav_regress/sim_rviz.sh`，第三个手发目标经过洞口后长期不走。本报告对应此次运行，不沿用先前 `(12.78,-3.86)` 等其他坐标的通过结论。
 
 ## 原始证据

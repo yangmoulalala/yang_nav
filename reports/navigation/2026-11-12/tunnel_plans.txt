@@ -1,0 +1,14 @@
+tunnel_zones: dropping tunnel_6 (2 cells < 50, label fragment)
+tunnel    dir   appr through  max|v|  ratio  n_in corridor (centre, min gap)
+tunnel_1  fwd    1.5 yes       0.000   1.00    21 -0.006 m, 0.812 m hdg 0.00 deg
+tunnel_1  rev    1.5 yes       0.000   1.00    21 -0.006 m, 0.812 m hdg 0.00 deg
+tunnel_2  fwd    1.5 SMOOTH FAILED
+tunnel_2  rev    1.5 SMOOTH FAILED
+tunnel_3  fwd    1.5 yes       0.000   1.00    23 -0.003 m, 0.812 m hdg 0.00 deg
+tunnel_3  rev    1.5 yes       0.000   1.00    23 -0.003 m, 0.812 m hdg 0.00 deg
+tunnel_4  fwd    1.5 yes       0.000   1.00    23 +0.004 m, 0.812 m hdg 0.00 deg
+tunnel_4  rev    1.5 yes       0.000   1.00    23 +0.004 m, 0.812 m hdg 0.00 deg
+tunnel_5  fwd    1.5 SMOOTH FAILED
+tunnel_5  rev    1.5 SMOOTH FAILED
+tunnel_7  fwd    1.5 yes       0.000   1.00    21 -0.006 m, 0.812 m hdg 0.00 deg
+tunnel_7  rev    1.5 yes       0.000   0.98    21 -0.006 m, 0.812 m hdg 0.00 deg

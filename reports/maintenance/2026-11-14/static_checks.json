@@ -1,0 +1,13 @@
+{
+  "counts": {
+    "markdown": 32,
+    "python": 77,
+    "bash": 11,
+    "xml": 19,
+    "html_svg_documents": 2,
+    "yaml": 18,
+    "cmake": 16
+  },
+  "errors": [],
+  "cpp_without_cmake_mentions": []
+}

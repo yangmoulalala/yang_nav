@@ -1,0 +1,8 @@
+[  2%] Built target gtest_main
+[  6%] Built target gtest
+[  8%] Building CXX object CMakeFiles/backend_core.dir/src/localization_recovery.cpp.o
+[ 10%] Linking CXX static library libbackend_core.a
+[ 89%] Built target backend_core
+[ 91%] Building CXX object test/CMakeFiles/backend_localization_test.dir/integration/localization_test.cpp.o
+[ 93%] Linking CXX executable backend_localization_test
+[100%] Built target backend_localization_test

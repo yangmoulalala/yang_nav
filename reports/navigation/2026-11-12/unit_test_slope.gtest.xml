@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="10" failures="0" disabled="0" errors="0" time="0." timestamp="2026-11-12T21:13:18.911" name="AllTests">
+  <testsuite name="Slope" tests="10" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-12T21:13:18.911">
+    <testcase name="UphillIsShaped" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="159" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.911" classname="nav_behaviors.Slope" />
+    <testcase name="DownhillIsLeftToThePlanner" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="181" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.911" classname="nav_behaviors.Slope" />
+    <testcase name="DownhillIsNotTracked" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="194" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.911" classname="nav_behaviors.Slope" />
+    <testcase name="ChargesUpFasterThanATunnel" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="205" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.912" classname="nav_behaviors.Slope" />
+    <testcase name="NoseFirstEvenWhenArrivingBackwards" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="220" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.912" classname="nav_behaviors.Slope" />
+    <testcase name="WideLateralGate" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="231" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.912" classname="nav_behaviors.Slope" />
+    <testcase name="AmbiguousDirectionIsLeftToThePlanner" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="241" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.912" classname="nav_behaviors.Slope" />
+    <testcase name="ChainsWithTheTunnelBehindIt" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="253" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.912" classname="nav_behaviors.Slope" />
+    <testcase name="ChainIsDrivenWithoutATurnInBetween" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="268" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.912" classname="nav_behaviors.Slope" />
+    <testcase name="TwoSeparateSlopesAreTwoStretches" file="/home/yang/yang_nav/src/nav_behaviors/test/test_slope.cpp" line="288" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.912" classname="nav_behaviors.Slope" />
+  </testsuite>
+</testsuites>

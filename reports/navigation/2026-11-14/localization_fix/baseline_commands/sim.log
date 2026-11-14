@@ -1,0 +1,4 @@
+[INFO] [launch]: All log files can be found below /home/yang/.ros/log/2026-11-14-01-27-04-578717-AMD-4056962
+[INFO] [launch]: Default logging verbosity is set to INFO
+[sentry_gazebo] generated rmuc_2027.sdf in /tmp/sentry_gazebo_generated (urdf /home/yang/yang_nav/install/sentry_description/share/sentry_description/urdf/sentry_robot.urdf)
+[ERROR] [launch]: Caught exception in launch (see debug for traceback): 'rosbag2_interfaces.dpkg-new' is not a valid package name

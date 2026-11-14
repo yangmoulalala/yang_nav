@@ -1,0 +1,83 @@
+{
+  "sessions": [
+    {
+      "sim": 0.0,
+      "instance_id": 1642303639094665917,
+      "epoch": 0,
+      "reset_required": false,
+      "failed": false
+    }
+  ],
+  "state_transitions": [
+    {
+      "sim": 0.43200000000000005,
+      "state": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+    },
+    {
+      "sim": 3.1,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+    },
+    {
+      "sim": 68.488,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=3;pose_revision=239;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.109855, support=309/361, ratio=0.855956, sectors=19, min_eig=0.07974, rank=6/6, observable=true, schur_t=12.5408, schur_r=3.04312, weak=100000, converged=false, iterations=30, final_step=0.0241136m/0.128203deg, pred_offset=0.0228878m/0.298894deg"
+    },
+    {
+      "sim": 68.888,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=4;pose_revision=240;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 81.488,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=5;pose_revision=285;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.140734, support=286/340, ratio=0.841176, sectors=17, min_eig=0.0544179, rank=6/6, observable=true, schur_t=18.3763, schur_r=2.35783, weak=100000, converged=false, iterations=30, final_step=0.02156m/0.0960019deg, pred_offset=0.0762437m/0.688798deg"
+    },
+    {
+      "sim": 81.89200000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=6;pose_revision=286;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 92.08800000000001,
+      "state": "status=OBS_DEGRADED;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=7;pose_revision=322;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=correction conflict 1/7: all available global observations conflicted: prior scan-to-map NIS=36.6392/6, p=2.07024e-06%3B joint system NIS=36.6392/6, p=2.07024e-06"
+    },
+    {
+      "sim": 93.888,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=8;pose_revision=329;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=system global observation accepted: prior scan-to-map NIS=14.7574/6, p=0.0222299"
+    },
+    {
+      "sim": 106.488,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=9;pose_revision=374;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.153224, support=146/256, ratio=0.570312, sectors=18, min_eig=0.01631, rank=6/6, observable=true, schur_t=61.3119, schur_r=8.02225, weak=100000, converged=false, iterations=30, final_step=0.0229786m/0.236886deg, pred_offset=0.115641m/0.361457deg"
+    },
+    {
+      "sim": 106.888,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=10;pose_revision=375;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 108.688,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=11;pose_revision=380;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.21798, support=185/345, ratio=0.536232, sectors=17, min_eig=0.0167886, rank=6/6, observable=true, schur_t=59.5643, schur_r=6.25272, weak=101000, converged=false, iterations=30, final_step=0.0386966m/0.197951deg, pred_offset=1.44632m/7.07259deg"
+    },
+    {
+      "sim": 109.08800000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=12;pose_revision=381;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 112.08800000000001,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=13;pose_revision=391;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.238789, support=195/334, ratio=0.583832, sectors=16, min_eig=0.0193011, rank=6/6, observable=true, schur_t=51.8106, schur_r=5.89483, weak=101000, converged=false, iterations=30, final_step=0.0479234m/0.26341deg, pred_offset=1.61329m/6.95967deg"
+    },
+    {
+      "sim": 112.48800000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=14;pose_revision=392;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 116.688,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=15;pose_revision=406;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.133642, support=187/321, ratio=0.582555, sectors=19, min_eig=0.026955, rank=6/6, observable=true, schur_t=37.0988, schur_r=7.48881, weak=101000, converged=false, iterations=30, final_step=0.0356982m/0.176154deg, pred_offset=0.113891m/0.577571deg"
+    },
+    {
+      "sim": 117.09200000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=16;pose_revision=407;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    }
+  ],
+  "paired_tf_messages": 33316,
+  "edge_jumps_over_30cm": [],
+  "max_latest_received_composition_step_m": 0.13600603820251986,
+  "latest_received_composition_jumps_over_30cm": [],
+  "costmap_snapshots": 261,
+  "costmap_origin_jumps": []
+}

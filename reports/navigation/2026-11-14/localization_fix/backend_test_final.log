@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /home/yang/yang_nav/build/backend
+Test project /home/yang/yang_nav/build/backend
+    Start 5: backend_lifecycle_test
+1/3 Test #5: backend_lifecycle_test ...........   Passed    0.06 sec
+    Start 8: backend_relocalization_test
+2/3 Test #8: backend_relocalization_test ......   Passed    0.06 sec
+    Start 9: backend_localization_test
+3/3 Test #9: backend_localization_test ........   Passed    0.08 sec
+
+100% tests passed, 0 tests failed out of 3
+
+Label Time Summary:
+integration    =   0.14 sec*proc (2 tests)
+unit           =   0.06 sec*proc (1 test)
+
+Total Test time (real) =   0.20 sec

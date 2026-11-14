@@ -1,0 +1,11 @@
+[INFO] [1794594571.448968555] [lm_plan]: Creating
+[INFO] [1794594571.452619505] [lm_plan]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[INFO] [1794594571.545511416] [lm_plan]: [34m[1mStarting managed nodes bringup...[0m[0m
+[INFO] [1794594571.545583601] [lm_plan]: [34m[1mConfiguring nav_map_server[0m[0m
+[INFO] [1794594571.558791639] [lm_plan]: [34m[1mConfiguring planner_server[0m[0m
+[INFO] [1794594571.618606461] [lm_plan]: [34m[1mActivating nav_map_server[0m[0m
+[INFO] [1794594571.622253132] [lm_plan]: [34m[1mActivating planner_server[0m[0m
+[INFO] [1794594572.178281311] [lm_plan]: [34m[1mManaged nodes are active[0m[0m
+[INFO] [1794594575.557001461] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1794594575.557140984] [lm_plan]: Running Nav2 LifecycleManager rcl preshutdown (lm_plan)
+[INFO] [1794594575.561560779] [lm_plan]: Destroying lm_plan

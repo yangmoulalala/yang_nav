@@ -1,0 +1,134 @@
+ M .claude/settings.local.json
+ M docs/localization_issues.md
+ M docs/nav_plan.md
+ M src/nav_behaviors/CMakeLists.txt
+ M src/nav_behaviors/include/nav_behaviors/path_shaper.hpp
+ D src/nav_behaviors/include/nav_behaviors/tunnel_tracker.hpp
+ M src/nav_behaviors/include/nav_behaviors/zones_yaml.hpp
+ M src/nav_behaviors/package.xml
+ M src/nav_behaviors/plugins.xml
+ M src/nav_behaviors/src/path_shaper.cpp
+D  src/nav_behaviors/src/tunnel_tracker.cpp
+ M src/nav_behaviors/src/zone_aware_controller.cpp
+ M src/nav_behaviors/src/zone_path_shaper.cpp
+ M src/nav_behaviors/src/zones_yaml.cpp
+ M src/nav_behaviors/test/test_path_shaper.cpp
+ D src/nav_behaviors/test/test_tunnel_tracker.cpp
+ D src/nav_bringup/behavior_trees/navigate_m0.xml
+ M src/nav_bringup/launch/navigation.launch.py
+ M src/nav_bringup/package.xml
+ M src/nav_bringup/params/sim/nav2.yaml
+ M src/nav_bringup/rviz/navigation.rviz
+ M src/nav_safety/CMakeLists.txt
+ M src/nav_safety/include/nav_safety/gate_logic.hpp
+ M src/nav_safety/package.xml
+ M src/nav_safety/src/cmd_gate.cpp
+ M src/nav_safety/test/test_gate_logic.cpp
+ M src/nav_terrain/CMakeLists.txt
+ M src/nav_terrain/package.xml
+ M src/nav_terrain/scripts/surface_project.py
+ M src/nav_terrain/scripts/terrain_export.py
+ M src/nav_terrain/scripts/terrain_map.py
+ M src/nav_terrain/terrain_studio.md
+ M src/nav_terrain/test/test_terrain_export.py
+ M src/z-localization/backend/apps/config.hpp
+ M src/z-localization/backend/apps/parameters.cpp
+ M src/z-localization/backend/apps/publisher.cpp
+ M src/z-localization/backend/apps/publisher.hpp
+ M src/z-localization/backend/apps/publisher_state.cpp
+ M src/z-localization/backend/config/example.yaml
+ M src/z-localization/backend/include/backend/matching.hpp
+ M src/z-localization/backend/src/localization_recovery.cpp
+ M src/z-localization/backend/src/tracking_matcher.cpp
+ M src/z-localization/backend/test/integration/localization_test.cpp
+ M src/z-localization/backend/test/integration/relocalization_test.cpp
+ M src/z-localization/backend/test/ros/test_map_service.py
+ M src/z-localization/bringup/config/real/backend.yaml
+ M src/z-localization/bringup/config/real/backend_single.yaml
+ M src/z-localization/bringup/config/real/frontend.yaml
+ M src/z-localization/bringup/config/sim/backend.yaml
+ M src/z-localization/bringup/config/sim/backend_single.yaml
+ M src/z-localization/bringup/config/sim/frontend.yaml
+ M src/z-localization/bringup/launch/localization.launch.py
+ M src/z-localization/frontend/CMakeLists.txt
+ M src/z-localization/frontend/apps/node.cpp
+ M src/z-localization/frontend/package.xml
+ M src/z-localization/frontend/src/input.cpp
+ M tools/check_bringup_params.py
+ M tools/nav_regress/goal.py
+ M tools/nav_regress/plan_tunnels.py
+ M tools/nav_regress/plan_tunnels.sh
+ M tools/nav_regress/run_nav.sh
+?? NUL/
+?? docs/README.md
+?? docs/history/
+?? docs/navigation.md
+?? docs/navigation_usage.md
+?? docs/real_mapping.md
+?? reports/
+?? src/nav_behaviors/README.md
+?? src/nav_behaviors/costmap_plugins.xml
+?? src/nav_behaviors/include/nav_behaviors/costmap_collision.hpp
+?? src/nav_behaviors/include/nav_behaviors/detour_hold.hpp
+?? src/nav_behaviors/include/nav_behaviors/goal_pending.hpp
+?? src/nav_behaviors/include/nav_behaviors/math_utils.hpp
+?? src/nav_behaviors/include/nav_behaviors/overlap_escape.hpp
+?? src/nav_behaviors/include/nav_behaviors/recovery_policy.hpp
+?? src/nav_behaviors/include/nav_behaviors/timed_obstacle_layer.hpp
+?? src/nav_behaviors/include/nav_behaviors/zone_path_handoff.hpp
+?? src/nav_behaviors/include/nav_behaviors/zone_phase_monitor.hpp
+?? src/nav_behaviors/include/nav_behaviors/zone_recovery.hpp
+?? src/nav_behaviors/include/nav_behaviors/zone_replan_paused.hpp
+?? src/nav_behaviors/include/nav_behaviors/zone_state.hpp
+?? src/nav_behaviors/include/nav_behaviors/zone_tracker.hpp
+?? src/nav_behaviors/src/recovery_policy.cpp
+?? src/nav_behaviors/src/start_aware_planner.cpp
+?? src/nav_behaviors/src/timed_obstacle_layer.cpp
+?? src/nav_behaviors/src/zone_bt_nodes.cpp
+?? src/nav_behaviors/src/zone_phase_monitor.cpp
+?? src/nav_behaviors/src/zone_recovery.cpp
+?? src/nav_behaviors/src/zone_replan_paused.cpp
+?? src/nav_behaviors/src/zone_state.cpp
+?? src/nav_behaviors/src/zone_tracker.cpp
+?? src/nav_behaviors/test/test_costmap_collision.cpp
+?? src/nav_behaviors/test/test_recovery_policy.cpp
+?? src/nav_behaviors/test/test_slope.cpp
+?? src/nav_behaviors/test/test_timed_obstacle_layer.cpp
+?? src/nav_behaviors/test/test_zone_drive.cpp
+?? src/nav_behaviors/test/test_zone_path_handoff.cpp
+?? src/nav_behaviors/test/test_zone_recovery.cpp
+?? src/nav_behaviors/test/test_zone_state.cpp
+?? src/nav_behaviors/test/test_zone_tracker.cpp
+?? src/nav_bringup/behavior_trees/navigate_through_poses.xml
+?? src/nav_bringup/behavior_trees/navigate_to_pose.xml
+?? src/nav_terrain/scripts/obstacle_filter.py
+?? src/nav_terrain/scripts/terrain_obstacles.py
+?? src/nav_terrain/test/test_obstacle_filter.py
+?? src/z-localization/frontend/test/
+?? tools/nav_regress/README.md
+?? tools/nav_regress/analyze_tf_continuity.py
+?? tools/nav_regress/chaincheck.py
+?? tools/nav_regress/chaincheck.sh
+?? tools/nav_regress/cm_dump.py
+?? tools/nav_regress/dynamic_accept.py
+?? tools/nav_regress/framework_accept.py
+?? tools/nav_regress/framework_smoke.py
+?? tools/nav_regress/gz_truth.py
+?? tools/nav_regress/occupied_start.py
+?? tools/nav_regress/record_costmap.py
+?? tools/nav_regress/record_localization.py
+?? tools/nav_regress/record_obs.py
+?? tools/nav_regress/record_plan.py
+?? tools/nav_regress/recovery_ladder.py
+?? tools/nav_regress/reset_tf_accept.py
+?? tools/nav_regress/run_tunnel_accept.sh
+?? tools/nav_regress/showpath.py
+?? tools/nav_regress/sim_rviz.sh
+?? tools/nav_regress/terrain_check.py
+?? tools/nav_regress/terrain_path.py
+?? tools/nav_regress/tunnel_accept.py
+?? tools/nav_regress/tunnel_stats.py
+?? tools/nav_regress/verify_nav_system.sh
+?? tools/record_real_mapping.py
+?? tools/record_real_mapping.sh
+?? tools/start_navigation.sh

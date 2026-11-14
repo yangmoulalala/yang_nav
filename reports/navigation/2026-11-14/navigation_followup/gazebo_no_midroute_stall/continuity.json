@@ -1,0 +1,43 @@
+{
+  "sessions": [
+    {
+      "sim": 0.0,
+      "instance_id": 17162810549524368608,
+      "epoch": 0,
+      "reset_required": false,
+      "failed": false
+    }
+  ],
+  "state_transitions": [
+    {
+      "sim": 0.35600000000000004,
+      "state": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+    },
+    {
+      "sim": 2.8720000000000003,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+    },
+    {
+      "sim": 46.064,
+      "state": "status=OBS_DEGRADED;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=3;pose_revision=158;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=correction conflict 1/7 (severe 1/2): all available global observations conflicted: prior scan-to-map physical correction cap: delta_t=6.42315m, delta_r_deg=36.794, rmse=0.192955, support=275/412, ratio=0.667476, sectors=7, min_eig=0.0200852, rank=6/6, observable=true, schur_t=49.7878, schur_r=24.3425, weak=001010"
+    },
+    {
+      "sim": 46.660000000000004,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=4;pose_revision=160;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=system global observation accepted: prior scan-to-map NIS=6.75336/6, p=0.344259"
+    },
+    {
+      "sim": 51.46,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=5;pose_revision=176;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.142679, support=276/318, ratio=0.867925, sectors=18, min_eig=0.0348315, rank=6/6, observable=true, schur_t=28.7096, schur_r=7.93667, weak=100000, converged=false, iterations=30, final_step=0.0312487m/0.216614deg, pred_offset=0.0809437m/0.247362deg"
+    },
+    {
+      "sim": 51.86000000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=6;pose_revision=177;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    }
+  ],
+  "paired_tf_messages": 25072,
+  "edge_jumps_over_30cm": [],
+  "max_latest_received_composition_step_m": 0.05542934194578605,
+  "latest_received_composition_jumps_over_30cm": [],
+  "costmap_snapshots": 183,
+  "costmap_origin_jumps": []
+}

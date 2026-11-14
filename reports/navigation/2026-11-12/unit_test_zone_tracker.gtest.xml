@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="12" failures="0" disabled="0" errors="0" time="0.001" timestamp="2026-11-12T21:13:18.865" name="AllTests">
+  <testsuite name="ZoneTracker" tests="12" failures="0" disabled="0" skipped="0" errors="0" time="0.001" timestamp="2026-11-12T21:13:18.865">
+    <testcase name="PassesWithoutStopping" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="114" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="DiagonalApproach" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="126" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="LocksTheCloserHeading" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="137" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="GateHoldsUntilAligned" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="148" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="NoSpinOnDuplicatePoses" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="160" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="BacksOffWhenWedgedInTheMouth" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="187" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="BacksOffWhenDraggedOffHeadingInTheChannel" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="202" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="NoTunnelOnPath" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="227" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.865" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="SpeedLimitIncludesLateralCorrectionAndBackoff" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="236" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.866" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="GoalInsideZoneRetainsOwnershipToTheEnd" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="248" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.866" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="PlanWhollyInsideZoneAndReversePlanAreTracked" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="266" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.866" classname="nav_behaviors.ZoneTracker" />
+    <testcase name="CollisionSamplesCoverSparsePlanAndPhysicalReverseHeading" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp" line="282" status="run" result="completed" time="0." timestamp="2026-11-12T21:13:18.866" classname="nav_behaviors.ZoneTracker" />
+  </testsuite>
+</testsuites>

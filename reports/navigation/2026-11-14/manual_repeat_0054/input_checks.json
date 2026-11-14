@@ -1,0 +1,72 @@
+{
+  "truth": {
+    "count": 3658,
+    "source_dt_min": 0.023999999999972488,
+    "source_dt_max": 0.02400000000000091,
+    "source_dt_p50": 0.02400000000000091,
+    "nonpositive_source_dt": 0,
+    "receive_age_p50": 0.0,
+    "receive_age_max": 2.842170943040401e-14,
+    "incident_90_100_max_gap": 0.02400000000000091
+  },
+  "imu": {
+    "count": 17557,
+    "source_dt_min": 0.003999999999990678,
+    "source_dt_max": 0.008000000000009777,
+    "source_dt_p50": 0.0040000000000048885,
+    "nonpositive_source_dt": 0,
+    "receive_age_p50": 0.0,
+    "receive_age_max": 2.842170943040401e-14,
+    "incident_90_100_max_gap": 0.008000000000009777
+  },
+  "raw_tf": {
+    "count": 17557,
+    "source_dt_min": 0.003999999999990678,
+    "source_dt_max": 0.008000000000009777,
+    "source_dt_p50": 0.0040000000000048885,
+    "nonpositive_source_dt": 0,
+    "receive_age_p50": 0.0,
+    "receive_age_max": 2.842170943040401e-14,
+    "incident_90_100_max_gap": 0.008000000000009777
+  },
+  "frontend_prediction": {
+    "count": 2926,
+    "source_dt_min": 0.027999999999991587,
+    "source_dt_max": 0.03200000000001069,
+    "source_dt_p50": 0.031999999999982265,
+    "nonpositive_source_dt": 0,
+    "receive_age_p50": 0.0,
+    "receive_age_max": 2.842170943040401e-14,
+    "incident_90_100_max_gap": 0.03200000000001069
+  },
+  "frontend_frame": {
+    "count": 740,
+    "source_dt_min": 0.053812925000002565,
+    "source_dt_max": 0.12000000000000455,
+    "source_dt_p50": 0.12000000000000455,
+    "nonpositive_source_dt": 0,
+    "receive_age_p50": 0.1084116480000148,
+    "receive_age_max": 0.15885856300000967,
+    "incident_90_100_max_gap": 0.12000000000000455
+  },
+  "imu_from_base": {
+    "samples": 2926,
+    "max_translation_change_m": 4.6785488931070135e-15,
+    "max_rotation_change_deg": 2.985144592098753e-14,
+    "baseline_pose": [
+      -0.05576005509598259,
+      -0.17432949817519053,
+      -0.12265450201643609,
+      -0.7933534211927963,
+      9.947004686637964e-08,
+      -1.2963192486149182e-07,
+      0.6087613235757172
+    ]
+  },
+  "posterior": {
+    "max_error_m": 1.6445677504086047,
+    "max_error_time": 115.751665102,
+    "max_yaw_error_deg": 8.585044979711446,
+    "final_error_m": 1.2385166644461496
+  }
+}

@@ -1,0 +1,21 @@
+Session: /home/yang/yang_nav/reports/navigation/2026-11-14/navigation_followup/bag_smoke
+Recording existing topics. Ctrl-C stops only this recorder.
+
+Files:             bag_0.mcap
+Bag size:          159.9 KiB
+Storage id:        mcap
+ROS Distro:        jazzy
+Duration:          5.771523529s
+Start:             Nov 14 2026 02:58:15.266520748 (1794596295.266520748)
+End:               Nov 14 2026 02:58:21.038044277 (1794596301.038044277)
+Messages:          382
+Topic information: Topic: /livox/imu | Type: sensor_msgs/msg/Imu | Count: 273 | Serialization Format: cdr
+                   Topic: /livox/lidar | Type: sensor_msgs/msg/PointCloud2 | Count: 91 | Serialization Format: cdr
+                   Topic: /parameter_events | Type: rcl_interfaces/msg/ParameterEvent | Count: 0 | Serialization Format: cdr
+                   Topic: /robot_description | Type: std_msgs/msg/String | Count: 1 | Serialization Format: cdr
+                   Topic: /rosout | Type: rcl_interfaces/msg/Log | Count: 16 | Serialization Format: cdr
+                   Topic: /tf_static | Type: tf2_msgs/msg/TFMessage | Count: 1 | Serialization Format: cdr
+Service:           0
+Service information: 
+
+Saved session: /home/yang/yang_nav/reports/navigation/2026-11-14/navigation_followup/bag_smoke

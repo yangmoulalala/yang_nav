@@ -1,0 +1,31 @@
+=== Navigation System Verification ===
+Workspace: /home/yang/yang_nav
+Map/Terrain: /home/yang/yang_nav/maps/sim/terrain
+
+[1/5] Checking zone configuration...
+  ✓ Found zones.yaml with 7 tunnels
+[2/5] Checking installed navigation libraries...
+  ✓ libzone_aware_controller.so installed
+  ✓ libzone_path_shaper.so installed
+  ✓ libzone_bt_nodes.so installed
+[3/5] Checking plugin registration...
+  ✓ nav_behaviors::ZoneAwareController registered
+  ✓ nav_behaviors::ZonePathShaper registered
+  ✓ pluginlib class index exported
+  ✓ ZoneReplanPaused registered in libzone_bt_nodes.so
+  ✓ ZoneRecovery registered in libzone_bt_nodes.so
+[4/5] Checking behavior tree configuration...
+  ✓ navigate_to_pose.xml configures shaping, zone-path retention and protected recovery
+  ✓ navigate_through_poses.xml configures shaping, zone-path retention and protected recovery
+[5/5] Checking Nav2 parameters...
+  ✓ ZoneAwareController configured in nav2.yaml
+  ✓ zone_bt_nodes configured in bt_navigator
+
+=== All Checks Passed ✓ ===
+Static installation checks passed. Run the integration tools for runtime verification.
+
+Next steps:
+  • Run unit tests: colcon test --packages-select nav_behaviors nav_safety nav_terrain
+  • Full-stack smoke: python3 tools/nav_regress/framework_smoke.py
+  • Recovery ladder: python3 tools/nav_regress/recovery_ladder.py
+  • Shaped planning: SMOOTHER=zone_shaper tools/nav_regress/plan_tunnels.sh

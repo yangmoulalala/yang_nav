@@ -1,0 +1,14 @@
+[INFO] [launch]: All log files can be found below /home/yang/.ros/log/2026-11-14-01-30-06-162628-AMD-4059019
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [merge_node-1]: process started with pid [4059083]
+[INFO] [zlio_node-2]: process started with pid [4059084]
+[INFO] [backend_node-3]: process started with pid [4059085]
+[zlio_node-2] [INFO] [1794591006.312603424] [zlio]: extrinsic mid360_link <- mid360_link from TF: translation [0.000000, 0.000000, 0.000000] m, rotation xyzw [0.000000, 0.000000, 0.000000, 1.000000]
+[backend_node-3] [WARN] [1794591006.408244600] [backend_node]: immutable-prior localization does not accumulate a runtime map; disabling visualization.publish_runtime_map
+[merge_node-1] [INFO] [1794591006.600203346] [lidar_merge]: merging /lidar_mid360/points + /lidar_l2/points -> /lidar/points (frame mid360_link)
+[backend_node-3] [INFO] [1794591013.163094449] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[zlio_node-2] [INFO] [1794591013.163094741] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[backend_node-3] [FATAL] [1794591013.181778146] [backend]: backend failed: shutdown requested while waiting for body extrinsic TF mid360_link <- base_link
+[INFO] [zlio_node-2]: process has finished cleanly [pid 4059084]
+[ERROR] [backend_node-3]: process has died [pid 4059085, exit code 1, cmd '/home/yang/yang_nav/install/backend/lib/backend/backend_node --ros-args -r __node:=backend_node --params-file /home/yang/yang_nav/install/bringup/share/bringup/config/sim/backend.yaml --params-file /tmp/launch_params_u3lpe_3z'].
+[INFO] [merge_node-1]: process has finished cleanly [pid 4059083]

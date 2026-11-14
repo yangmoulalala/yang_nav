@@ -1,0 +1,8 @@
+Starting >>> backend
+Starting >>> frontend
+Finished <<< frontend [0.60s]
+Finished <<< backend [3.34s]
+Starting >>> bringup
+Finished <<< bringup [0.98s]
+
+Summary: 3 packages finished [4.42s]
