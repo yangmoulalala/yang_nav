@@ -200,6 +200,7 @@ class TerrainMap:
     origin: tuple = (0.0, 0.0)
     elevation: Optional[np.ndarray] = None   # float32 [H, W], NaN = unknown
     extra: dict = field(default_factory=dict)
+    clearance: Optional[np.ndarray] = None  # metres above ground, inf = open sky
 
     @property
     def height(self):
@@ -233,6 +234,8 @@ class TerrainMap:
             raise ValueError('invalid terrain label %d at row %d col %d' % (self.terrain[r, c], r, c))
         if self.elevation is not None and self.elevation.shape != self.terrain.shape:
             raise ValueError('elevation shape mismatch')
+        if self.clearance is not None and self.clearance.shape != self.terrain.shape:
+            raise ValueError('clearance shape mismatch')
 
     def to_dict(self):
         self.validate()
@@ -245,6 +248,8 @@ class TerrainMap:
         })
         if self.elevation is not None:
             d['elevation'] = np.ascontiguousarray(self.elevation, '<f4').tobytes()
+        if self.clearance is not None:
+            d['clearance'] = np.ascontiguousarray(self.clearance, '<f4').tobytes()
         return d
 
     @classmethod
@@ -263,12 +268,14 @@ class TerrainMap:
                 raise ValueError('%s size mismatch: expected %d, got %d' % (key, n, a.size))
             return a.reshape(h, w).copy()
 
-        known = {'width', 'height', 'resolution', 'origin_x', 'origin_y', 'terrain', 'direction', 'elevation'}
+        known = {'width', 'height', 'resolution', 'origin_x', 'origin_y', 'terrain', 'direction', 'elevation', 'clearance'}
         m = cls(grid('terrain', np.uint8), grid('direction', np.uint8), float(d.get('resolution', 0.05)),
                 (float(d.get('origin_x', 0.0)), float(d.get('origin_y', 0.0))),
                 grid('elevation', '<f4').astype(np.float32) if 'elevation' in d else None,
                 {k: v for k, v in d.items() if k not in known})
         m.validate()
+        if 'clearance' in d:
+            m.clearance = grid('clearance', '<f4').astype(np.float32)
         return m
 
     def save(self, path):

@@ -13,6 +13,13 @@
   <exec_depend>python3-yaml</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>python3-pyqt5</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tf2_ros_py</exec_depend>
+  <exec_depend>localization_interfaces</exec_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>python3-pytest</test_depend>
 
   <export>

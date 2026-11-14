@@ -1,0 +1,399 @@
+--- before/src/nav_behaviors/src/zone_tracker.cpp
++++ after/src/nav_behaviors/src/zone_tracker.cpp
+@@ -124,7 +124,6 @@
+       for (const auto & o : old) {   // a replan inside the window keeps the heading already chosen
+         if (o.zone == k && o.dir == dir && o.locked) {
+           c.locked = true;
+-          c.flip = o.flip;
+           c.e0 = o.e0;
+           c.entry_s = o.entry_s;
+         }
+@@ -162,11 +161,13 @@
+     Crossing c; c.zone = k; c.dir = dir; c.exit_only = true;
+     c.s0 = -dir * u - 0.5 * z.depth;
+     c.s1 = -beyond;
+-    c.body_yaw = normAngle(z.yaw + (dir < 0 ? M_PI : 0.0));
++    // The shaper has already chosen and collision-checked the physical heading.
++    // Recover its axis direction, including a backwards traversal.
++    c.body_yaw = normAngle(z.yaw +
++      (std::cos(path_.front().yaw - z.yaw) < 0.0 ? M_PI : 0.0));
+     for (const auto & o : old) {
+       if (o.zone == k && o.dir == dir && o.locked) {
+-        c.locked = true; c.flip = o.flip; c.e0 = o.e0; c.entry_s = o.entry_s;
+-        c.body_yaw = o.body_yaw;
++        c.locked = true; c.e0 = o.e0; c.entry_s = o.entry_s;
+       }
+     }
+     crossings_.push_back(c);
+@@ -207,7 +208,6 @@
+       const auto & c = crossings_[active_crossing_];
+       pose.yaw = normAngle(c.body_yaw + smooth01(exitProgress(c, pose)) * normAngle(pose.yaw - c.body_yaw));
+     }
+-    pose.yaw = normAngle(pose.yaw + active_flip_);
+     out.push_back(pose);
+   }
+   return out;
+@@ -285,9 +285,10 @@
+   } else if (s_rel > end_rel - prm_.blend) {
+     w = smooth01((end_rel - s_rel) / prm_.blend);
+   }
+-  // heading reference = path heading (+ pi when the robot arrived the other way round); the heading error
+-  // seen when the window starts decays to zero until align_before before the mouth.  A slope never flips:
+-  // it is charged nose first, so a robot arriving the other way round turns 180 deg on the run-up.
++  // The path carries the physical heading validated by the shaper, including
++  // backwards tunnel traversal. Choosing another pi flip here invalidates that
++  // footprint check, especially for the asymmetric chassis and exit turns.
++  // Decay the initial tracking error before the mouth without changing the path.
+   const double s_al = -kp.align_before;
+   double p_yaw = pathYaw(bj, bf);
+   double exit_blend = 1.0, exit_rate = 0.0;
+@@ -302,12 +303,10 @@
+     p_yaw = normAngle(c->body_yaw + exit_blend * delta);
+   }
+   if (!c->locked || s_rel < c->entry_s - 0.2) {   // re-lock when a new approach starts behind the old one
+-    c->flip = (t.allow_flip && std::abs(normAngle(p_yaw - r.yaw)) > M_PI / 2) ? M_PI : 0.0;
+-    c->e0 = normAngle(r.yaw - (p_yaw + c->flip));
++    c->e0 = normAngle(r.yaw - p_yaw);
+     c->entry_s = s_rel;
+     c->locked = true;
+   }
+-  active_flip_ = c->flip;
+   // path heading rate over +-5 cm of arc length: a per-segment difference divided by a near-zero segment
+   // (joints of the shaped stretch, duplicate planner poses) spun the robot at max_wz in Gazebo
+   size_t ja = bj, jb = bj + 1;
+@@ -319,7 +318,7 @@
+   }
+   const double ds_win = s_[jb] - s_[ja];
+   const double dyaw_path = (ds_win > 0.04 ? normAngle(yaw_[jb] - yaw_[ja]) / ds_win : 0.0) * exit_blend + exit_rate;
+-  double yaw_ref = normAngle(p_yaw + c->flip), dyaw_ds = dyaw_path;
++  double yaw_ref = p_yaw, dyaw_ds = dyaw_path;
+   if (s_rel < s_al && c->entry_s < s_al) {
+     // the entry error goes over the shortest distance the turn rate allows (at most up to align_before):
+     // a slow relax over the whole approach kept the robot 8 deg off inside the 0.7 m channel before
+@@ -347,12 +346,15 @@
+   v = std::min(v, std::sqrt(2.0 * kp.decel * std::max(0.0, s_.back() - s_r)));
+   // the heading must be able to follow the path: slow down where the path turns faster than 0.8 max_wz
+   // allows (lead-in from the robot heading, Gazebo tunnel_3 lagged 15 - 30 deg behind at 1 m/s)
+-  if (std::abs(dyaw_path) > 1e-6) {
+-    v = std::min(v, 0.8 * prm_.max_wz / std::abs(dyaw_path));
++  // Include the entry-error relaxation: its heading rate can exceed the
++  // geometric path rate even on a straight approach.
++  if (std::abs(dyaw_ds) > 1e-6) {
++    v = std::min(v, 0.8 * prm_.max_wz / std::abs(dyaw_ds));
+   }
+   const double e_yaw = normAngle(r.yaw - yaw_ref);
+-  // a slope is charged only once the nose points uphill: still turning -> hold the alignment speed
+-  if (t.profile == ZoneProfile::OpenDirectional && std::abs(e_yaw) > 2.0 * prm_.yaw_tol) {
++  // Align before advancing into either a ramp or a narrow approach channel.
++  // The mouth gate is too late when a large heading error starts farther away.
++  if (std::abs(e_yaw) > 2.0 * prm_.yaw_tol) {
+     v = std::min(v, prm_.align_speed) * std::max(0.0, std::cos(e_yaw));
+   }
+   // leading edge: the front when the robot faces the travel direction, the rear when it drives backwards
+@@ -439,7 +441,7 @@
+   o.s_rel = s_rel;
+   o.e_yaw = e_yaw;
+   o.v_ref = v;
+-  o.lock = normAngle(c->body_yaw + c->flip);
++  o.lock = c->body_yaw;
+   return o;
+ }
+ 
+--- before/src/nav_behaviors/src/zone_aware_controller.cpp
++++ after/src/nav_behaviors/src/zone_aware_controller.cpp
+@@ -251,7 +251,10 @@
+           std::atan2(2.0 * (o.w * o.z + o.x * o.y), 1.0 - 2.0 * (o.y * o.y + o.z * o.z))});
+     }
+     if (plan_goal_ && (std::hypot(poses.back().x - plan_goal_->x, poses.back().y - plan_goal_->y) > 0.01 ||
+-      std::abs(normAngle(poses.back().yaw - plan_goal_->yaw)) > 0.01)) {escape_target_.reset();}
++      std::abs(normAngle(poses.back().yaw - plan_goal_->yaw)) > 0.01)) {tracker_.resetProgress();}
++    // A newly committed, shaped path may carry a different escape from the
++    // current footprint. Do not keep a stale target/allowance from its predecessor.
++    escape_target_.reset();
+     plan_goal_ = poses.back();
+     tracker_.setPath(poses);
+   }
+@@ -267,10 +270,17 @@
+     track(o);
+     publishMode(o.profile, o.weight > 0.0 && o.zone_mode);
+     publishTracker(robot, o, pose.header.stamp);
+-    if (auto escape = escapeCommand(robot, velocity, pose.header)) {
+-      publishPhase(o.phase, o.zone_id);
+-      capSpeed(escape->twist);
+-      return *escape;
++    try {
++      if (auto escape = escapeCommand(robot, velocity, pose.header)) {
++        publishPhase(o.phase, o.zone_id);
++        capSpeed(escape->twist);
++        return *escape;
++      }
++    } catch (const nav2_core::ControllerException &) {
++      // Escape failures need a new plan too. Publishing the nominal TRAVERSE
++      // heartbeat here otherwise leaves the BT holding an unusable path.
++      publishPhase(ZonePhase::Blocked, o.zone_id);
++      throw;
+     }
+     if (o.weight <= 0.0) {
+       publishPhase(o.phase, o.zone_id);
+--- before/tools/nav_regress/record_plan.py
++++ after/tools/nav_regress/record_plan.py
+@@ -11,30 +11,35 @@
+ rarely needed and the plan is re-published at the planner rate, so a run produces
+ hundreds of copies of almost the same path.
+ 
++A sibling OUT.txt.jsonl preserves every pose quaternion and its topic, including
++/plan_smoothed, so physical heading changes can be compared with the controller.
++
+ Goals are logged by goal.py, but the path is not: a run where the robot drives to
+ the wrong part of the field cannot be told apart from a controller bug without
+ seeing what the planner actually sent.
+ """
+ import sys
+ import time
++import json
+ 
+ import rclpy
+ from nav_msgs.msg import Path
+ from rclpy.node import Node
+ 
+-TOPICS = ('/plan', '/local_plan', '/received_global_plan')
++TOPICS = ('/plan', '/plan_smoothed', '/local_plan', '/received_global_plan')
+ 
+ 
+ class PlanRecorder(Node):
+     def __init__(self, path):
+         super().__init__('record_plan')
+         self.f = open(path, 'w')
++        self.detail = open(path + '.jsonl', 'w')
+         self.f.write('# wall_time frame n_poses x0 y0 x1 y1 ...  (every 5th pose)\n')
+         self.count = 0
+         for t in TOPICS:
+-            self.create_subscription(Path, t, self.cb, 10)
++            self.create_subscription(Path, t, lambda msg, topic=t: self.cb(msg, topic), 10)
+ 
+-    def cb(self, msg):
++    def cb(self, msg, topic):
+         self.count += 1
+         pts = ' '.join('%.3f %.3f' % (p.pose.position.x, p.pose.position.y)
+                        for p in msg.poses[::5])
+@@ -42,6 +47,14 @@
+             self.get_clock().now().nanoseconds * 1e-9,
+             msg.header.frame_id or '-', len(msg.poses), pts))
+         self.f.flush()
++        self.detail.write(json.dumps(dict(
++            time=self.get_clock().now().nanoseconds * 1e-9,
++            topic=topic, frame=msg.header.frame_id,
++            stamp=msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9,
++            poses=[[p.pose.position.x, p.pose.position.y, p.pose.position.z,
++                    p.pose.orientation.x, p.pose.orientation.y,
++                    p.pose.orientation.z, p.pose.orientation.w] for p in msg.poses])) + '\n')
++        self.detail.flush()
+ 
+ 
+ def main():
+--- before/src/nav_behaviors/include/nav_behaviors/zone_tracker.hpp
++++ after/src/nav_behaviors/include/nav_behaviors/zone_tracker.hpp
+@@ -8,9 +8,7 @@
+ // Tracking (world frame, then rotated into the robot frame):
+ //   translation  v_ref along the path tangent + lateral P correction towards the path (clamped)
+ //   heading      the path heading is the only reference (the shaper wrote it and collision-checked it),
+-//                plus a flip of 0 or pi chosen once when the window starts, whichever is closer to the
+-//                robot when allowed by zone policy. The caller checks the actual flipped footprint.
+-//                The heading
++//                including any backwards traversal selected by the shaper. The heading
+ //                error found at that moment decays smoothly to zero over the shortest distance the turn
+ //                rate allows (>= min_turn_span, at the latest `align_before` before the mouth), with
+ //                feed-forward; from there the path heading is held.  A slope never flips: it is charged
+@@ -100,7 +98,7 @@
+   double e_yaw{0.0};             // robot yaw - reference, rad
+   double yaw_ref{0.0};           // heading reference this cycle, rad
+   double v_ref{0.0};
+-  double lock{0.0};              // heading held through the body (path heading + flip)
++  double lock{0.0};              // collision-checked path heading held through the body
+ };
+ 
+ class ZoneTracker
+@@ -140,7 +138,7 @@
+     bool have_prev{false};
+     double prev_yaw{0.0}, prev_wz{0.0};
+     int against{0};            // consecutive cycles rotating against the commanded turn
+-    double flip{0.0}, e0{0.0}, entry_s{0.0};
++    double e0{0.0}, entry_s{0.0};
+   };
+   double pathYaw(size_t j, double f) const;
+   double exitProgress(const Crossing & crossing, const Pose2 & pose) const;
+@@ -152,7 +150,7 @@
+   TrackerParams prm_;
+   size_t nearest_{0};
+   size_t active_crossing_{std::numeric_limits<size_t>::max()};
+-  double nearest_s_{0.0}, active_flip_{0.0};
++  double nearest_s_{0.0};
+   bool have_nearest_{false};
+ };
+ 
+--- before/src/nav_behaviors/test/test_zone_tracker.cpp
++++ after/src/nav_behaviors/test/test_zone_tracker.cpp
+@@ -100,10 +100,10 @@
+   return run;
+ }
+ 
+-std::vector<Pose2> shaped(const std::vector<std::pair<double, double>> & pts)
++std::vector<Pose2> shaped(const std::vector<std::pair<double, double>> & pts, const double * start_yaw = nullptr)
+ {
+   std::vector<ShapeEvent> ev;
+-  auto out = shapePath(polyline(pts), {zone0()}, ShaperParams{}, [](const Pose2 &) {return true;}, &ev);
++  auto out = shapePath(polyline(pts), {zone0()}, ShaperParams{}, [](const Pose2 &) {return true;}, &ev, start_yaw);
+   EXPECT_EQ(ev.size(), 1u);
+   EXPECT_TRUE(!ev.empty() && ev[0].shaped);
+   return out;
+@@ -134,27 +134,41 @@
+   EXPECT_GT(run.min_speed_window, 0.3);
+ }
+ 
+-TEST(ZoneTracker, LocksTheCloserHeading)
++TEST(ZoneTracker, FollowsShaperSelectedBackwardsHeading)
+ {
+   // driving -x with the robot facing +x: omni passes backwards instead of turning around
+-  const auto path = shaped({{3.0, 0.0}, {-3.0, 0.0}});
+-  const auto run = simulate(path, {3.0, 0.0, 0.2}, TrackerParams{});
++  const double start_yaw = .2;
++  const auto path = shaped({{2.0, 0.0}, {-3.0, 0.0}}, &start_yaw);
++  const auto run = simulate(path, {2.0, 0.0, 0.2}, TrackerParams{});
+   EXPECT_TRUE(run.passed);
+   EXPECT_NEAR(run.lock, 0.0, 1e-9);
+   EXPECT_LT(run.max_lat_body, 0.01);
+   EXPECT_LT(run.max_yaw_body, 2.0 * M_PI / 180.0);
+ }
+ 
+-TEST(ZoneTracker, GateHoldsUntilAligned)
++TEST(ZoneTracker, SlowHeadingActuatorAlignsBeforeMouth)
+ {
+   TrackerParams prm;
+   prm.max_wz = 0.25;   // too slow to align before the gate
+   const auto path = shaped({{-3.0, 0.0}, {3.0, 0.0}});
+   const auto run = simulate(path, {-3.0, 0.0, 1.4}, prm, 60.0);
+-  EXPECT_TRUE(run.gated);
++  // Rate limiting may finish alignment before the mouth gate is reached.
+   EXPECT_TRUE(run.passed);
+   EXPECT_LT(run.max_yaw_body, prm.yaw_tol + 0.5 * M_PI / 180.0);
+   EXPECT_LT(run.max_yaw_front, prm.yaw_tol + 0.5 * M_PI / 180.0);   // front enters aligned too
++}
++
++TEST(ZoneTracker, NarrowApproachAlignsBeforeAdvancingWithLargeHeadingError)
++{
++  ZoneTracker tr; tr.setZones({zone0()});
++  TrackerParams prm; prm.align_before = 1.5;
++  tr.setParams(prm);
++  tr.setPath(polyline({{-3., 0.}, {3., 0.}}));
++  tr.compute({-1.5, 0., 2.4});
++  const auto o = tr.compute({-1.3, 0., 2.4});
++  ASSERT_GT(std::abs(o.e_yaw), M_PI / 2);
++  EXPECT_NEAR(std::hypot(o.vx, o.vy), 0., 1e-9);
++  EXPECT_LT(o.wz, 0.);  // keep correcting the heading while longitudinal motion waits
+ }
+ 
+ TEST(ZoneTracker, NoSpinOnDuplicatePoses)
+@@ -270,7 +284,9 @@
+   for (int dir : {-1, 1}) {
+     ZoneTracker tr;
+     tr.setZones({z});
+-    tr.setPath(polyline({{-dir * 0.6, 0.0}, {dir * 0.6, 0.0}}));
++    auto path = polyline({{-dir * 0.6, 0.0}, {dir * 0.6, 0.0}});
++    for (auto & q : path) {q.yaw = 0.;}  // both directions use the validated physical heading
++    tr.setPath(path);
+     ASSERT_EQ(tr.crossingCount(), 1u);
+     const auto o = tr.compute({0.0, 0.0, 0.0});
+     EXPECT_EQ(o.phase, ZonePhase::Traverse);
+@@ -283,7 +299,7 @@
+ {
+   ZoneTracker tr;
+   tr.setZones({zone0()});
+-  tr.setPath({{-3.0, 0.0, 0.0}, {-0.1, 0.0, 0.0}, {3.0, 0.0, 0.0}});
++  tr.setPath({{-3.0, 0.0, M_PI}, {-0.1, 0.0, M_PI}, {3.0, 0.0, M_PI}});
+   tr.compute({-0.1, 0.0, M_PI});
+   const auto samples = tr.ahead(0.4);
+   ASSERT_GT(samples.size(), 2u);
+@@ -318,7 +334,9 @@
+ {
+   for (int dir : {-1, 1}) {
+     ZoneTracker tr; tr.setZones({zone0()});
+-    tr.setPath(polyline({{dir * .4, 0}, {dir * 2., 0}}));
++    auto path = polyline({{dir * .4, 0}, {dir * 2., 0}});
++    for (auto & q : path) {q.yaw = 0.;}  // collision-checked backwards heading for dir -1
++    tr.setPath(path);
+     const auto o = tr.compute({dir * .4, 0, 0});
+     EXPECT_EQ(o.phase, ZonePhase::Exit);
+     EXPECT_DOUBLE_EQ(o.weight, 1.0);
+@@ -331,7 +349,11 @@
+ {
+   for (int dir : {-1, 1}) {
+     ZoneTracker tr; tr.setZones({zone0()});
+-    tr.setPath(polyline({{dir * .4, 0}, {dir * 1.5, .3}, {dir * 2., .8}}));
++    auto path = polyline({{dir * .4, 0}, {dir * 1.5, .3}, {dir * 2., .8}});
++    if (dir < 0) {
++      for (auto & q : path) {q.yaw = normAngle(q.yaw + M_PI);}
++    }
++    tr.setPath(path);
+     const auto o = tr.compute({dir * .4, 0, 0});
+     ASSERT_EQ(o.phase, ZonePhase::Exit);
+     const auto samples = tr.ahead(.8);
+--- before/src/nav_behaviors/test/test_zone_drive.cpp
++++ after/src/nav_behaviors/test/test_zone_drive.cpp
+@@ -274,7 +274,7 @@
+   EXPECT_LT(r.max_lat_body, 0.03);
+ }
+ 
+-TEST(TunnelDrive, MisalignedEntryIsGatedNotCrashed)
++TEST(TunnelDrive, MisalignedEntryAlignsBeforeBody)
+ {
+   // an obviously misaligned approach is slowed / stopped before the mouth, never inside the body
+   TrackerParams prm;
+@@ -284,7 +284,7 @@
+   c.yaw_deg = 60.0;
+   const auto t = simTunnels().front();
+   const auto r = drive(t, 1, 5u, prm, c);
+-  EXPECT_TRUE(r.gated);
++  // Early heading-rate limiting can align before the mouth gate activates.
+   EXPECT_TRUE(r.passed);
+   EXPECT_LT(r.max_yaw_body, prm.yaw_tol + 0.5 * M_PI / 180.0);
+   EXPECT_LT(r.max_lat_body, 0.03);
+--- before/src/nav_behaviors/test/test_costmap_collision.cpp
++++ after/src/nav_behaviors/test/test_costmap_collision.cpp
+@@ -53,6 +53,28 @@
+   obstacle(map, -0.36, 0.0);
+   EXPECT_TRUE(footprintFree(map, footprint(), {0, 0, 0}));
+   EXPECT_FALSE(footprintFree(map, footprint(), {0, 0, 3.14159265359}));
++}
++
++TEST(CostmapCollision, TrackerKeepsCollisionValidatedHeadingWhenApproachFacesBackwards)
++{
++  nav2_costmap_2d::Costmap2D map(240, 160, .025, -3., -2., 0);
++  // A corner behind the path is clear of the short rear, but not the long nose
++  // after a pi flip. The shaper validated yaw zero, regardless of arrival yaw.
++  obstacle(map, -.36, .29);
++  Zone zone; zone.depth = .35; zone.width = .8;
++  ZoneTracker tracker; tracker.setZones({zone});
++  std::vector<Pose2> path;
++  for (int i = 0; i <= 200; ++i) {path.push_back({-2.5 + .025 * i, 0., 0.});}
++  tracker.setPath(path);
++  const auto entry = tracker.compute({-1.9, 0., 2.5});
++  EXPECT_NEAR(entry.lock, 0., 1e-9);
++  tracker.compute({0., 0., 0.});
++  const auto ahead = tracker.ahead(.1);
++  ASSERT_FALSE(ahead.empty());
++  for (const auto & q : ahead) {
++    EXPECT_NEAR(q.yaw, 0., 1e-9);
++    EXPECT_TRUE(footprintFree(map, footprint(), q));
++  }
+ }
+ 
+ TEST(CostmapCollision, ShaperFindsNarrowFreeBandWithPlanningReserve)
+@@ -98,7 +120,7 @@
+   Zone zone; zone.depth = .35; zone.width = .8;
+   ZoneTracker tracker; tracker.setZones({zone});
+   std::vector<Pose2> path;
+-  for (int i = 0; i <= 160; ++i) {path.push_back({-2. + .025 * i, .025, 0.});}
++  for (int i = 0; i <= 160; ++i) {path.push_back({-2. + .025 * i, .025, M_PI});}
+   tracker.setPath(path);
+   Pose2 robot{.35, -.04, M_PI};
+   auto integrate = [](const Pose2 & r, double vx, double vy, double dt) {

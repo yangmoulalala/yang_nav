@@ -12,10 +12,11 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(nav2_msgs REQUIRED)
 
 add_executable(cmd_gate src/cmd_gate.cpp)
 target_include_directories(cmd_gate PRIVATE include)
-ament_target_dependencies(cmd_gate rclcpp geometry_msgs std_msgs)
+ament_target_dependencies(cmd_gate rclcpp geometry_msgs std_msgs nav2_msgs)
 
 install(TARGETS cmd_gate DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include)

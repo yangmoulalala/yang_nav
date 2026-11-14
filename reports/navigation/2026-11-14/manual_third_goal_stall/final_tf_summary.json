@@ -1,0 +1,68 @@
+{
+  "sessions": [
+    {
+      "sim": 0.0,
+      "instance_id": 14359003956704051642,
+      "epoch": 0,
+      "reset_required": false,
+      "failed": false
+    }
+  ],
+  "state_transitions": [
+    {
+      "sim": 0.464,
+      "state": "status=INITIALIZING;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=1;pose_revision=0;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=waiting for startup-hint or descriptor scan-to-map"
+    },
+    {
+      "sim": 3.152,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=2;pose_revision=1;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via Scan Context + scan-to-map"
+    },
+    {
+      "sim": 71.74000000000001,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=3;pose_revision=251;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.109297, support=298/379, ratio=0.78628, sectors=19, min_eig=0.0651118, rank=6/6, observable=true, schur_t=15.3582, schur_r=2.30008, weak=100000, converged=false, iterations=30, final_step=0.0219757m/0.104409deg, pred_offset=0.189995m/1.0535deg"
+    },
+    {
+      "sim": 72.144,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=4;pose_revision=252;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 90.74000000000001,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=5;pose_revision=319;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=observation model invalid: prior scan-to-map cannot construct a pose likelihood: rmse=0.13223, support=252/322, ratio=0.782609, sectors=17, min_eig=0.0295732, rank=6/6, observable=true, schur_t=33.8144, schur_r=2.87494, weak=100000, converged=false, iterations=30, final_step=0.0243747m/0.114496deg, pred_offset=0.0797579m/0.564781deg"
+    },
+    {
+      "sim": 91.34400000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=6;pose_revision=320;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 97.34,
+      "state": "status=OBS_DEGRADED;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=7;pose_revision=341;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=correction conflict 1/7: all available global observations conflicted: prior scan-to-map NIS=31.1331/6, p=2.39084e-05%3B joint system NIS=31.1331/6, p=2.39084e-05"
+    },
+    {
+      "sim": 100.94000000000001,
+      "state": "status=SUSPECT;pose_trusted=false;tf_frozen=false;tf_published=false;epoch=0;generation=8;pose_revision=353;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=correction conflict 7/7: all available global observations conflicted: prior scan-to-map NIS=33.3136/6, p=9.12487e-06%3B joint system NIS=33.3136/6, p=9.12487e-06"
+    },
+    {
+      "sim": 101.34400000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=9;pose_revision=354;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=recovered via UWB + scan-to-map"
+    },
+    {
+      "sim": 104.34,
+      "state": "status=OBS_DEGRADED;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=10;pose_revision=364;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=correction conflict 1/7: all available global observations conflicted: prior scan-to-map NIS=25.0644/6, p=0.000332202%3B joint system NIS=25.0644/6, p=0.000332202"
+    },
+    {
+      "sim": 104.94000000000001,
+      "state": "status=NORMAL;pose_trusted=true;tf_frozen=false;tf_published=false;epoch=0;generation=11;pose_revision=366;stamp_ns=0;estimator_failure_count=0;last_estimator_failure=;reason=system global observation accepted: prior scan-to-map NIS=5.26382/6, p=0.510448"
+    }
+  ],
+  "paired_tf_messages": 29860,
+  "edge_jumps_over_30cm": [],
+  "max_latest_received_composition_step_m": 0.3062252133459311,
+  "latest_received_composition_jumps_over_30cm": [
+    {
+      "sim": 101.34800000000001,
+      "distance": 0.3062252133459311
+    }
+  ],
+  "costmap_snapshots": 229,
+  "costmap_origin_jumps": []
+}

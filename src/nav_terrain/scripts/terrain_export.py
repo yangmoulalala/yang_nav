@@ -18,7 +18,10 @@ Output (terrain_dir for nav_bringup):
   direction_map.png         3 channels: angle code / magnitude 0..255 / label (HWSentryNav26 layout)
   terrain.png               label colour preview
   zones.yaml                one entry per connected directional region (tunnel, slope, steps ...):
-                            centre, yaw (up / forward), size, entry and exit approach poses
+                            centre, yaw (up / forward), size, entry and exit approach poses.  A label
+                            region is also cut where the direction field jumps by more than
+                            --direction-split-deg, so each face of a multi-direction patch (fortress
+                            hexagon ring, ridge) is its own zone instead of one box spanned over the ring
   terrain.json              grid metadata and the parameters used
 """
 import argparse
@@ -28,7 +31,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from scipy import ndimage
+from scipy import ndimage, sparse
+from scipy.sparse import csgraph
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from terrain_map import (DIRECTIONAL, FIRST_DIRECTIONAL, LABEL_COUNT, LABELS, OBSTACLE,  # noqa: E402
@@ -114,12 +118,55 @@ def inflate_direction(terrain, direction, resolution, full, cutoff, decay, cap):
 
 
 # ----------------------------------------------------------------------------- zones
-def region_zones(m, approach_dist):
-    """One zone per 8-connected component of each directional label."""
+def direction_components(m, lab, split_deg):
+    """8-connected components of one label, also cut where adjacent cells point further than split_deg
+    apart.  A fortress ring is one label component but six faces: without the cut its zone box spans the
+    whole ring and its axis is the meaningless mean of the six uphill directions."""
+    if not (0.0 < split_deg <= 180.0):
+        raise ValueError('direction split must be in (0, 180] degrees')
+    mask = m.terrain == lab
+    rows, cols = np.nonzero(mask)
+    n = rows.size
+    out = np.zeros(mask.shape, np.int32)
+    if n == 0:
+        return out, 0
+    index = np.full(mask.shape, -1, np.int64)
+    index[rows, cols] = np.arange(n)
+    ang = decode_angle(m.direction[rows, cols])
+    jump = math.radians(split_deg)
+    h, w = mask.shape
+    src, dst = [], []
+    for dy, dx in ((0, 1), (1, 0), (1, 1), (1, -1)):        # 8-neighbourhood, each pair once
+        r0, r1 = max(0, -dy), h - max(0, dy)
+        c0, c1 = max(0, -dx), w - max(0, dx)
+        a = index[r0:r1, c0:c1]
+        b = index[r0 + dy:r1 + dy, c0 + dx:c1 + dx]
+        ok = (a >= 0) & (b >= 0)
+        if not ok.any():
+            continue
+        d = np.abs((ang[a[ok]] - ang[b[ok]] + math.pi) % (2 * math.pi) - math.pi)
+        keep = d <= jump
+        src.append(a[ok][keep])
+        dst.append(b[ok][keep])
+    if src and sum(s.size for s in src):
+        s, t = np.concatenate(src), np.concatenate(dst)
+        graph = sparse.coo_matrix((np.ones(s.size, np.int8), (s, t)), shape=(n, n))
+        ncomp, comp = csgraph.connected_components(graph, directed=False)
+    else:
+        ncomp, comp = n, np.arange(n)
+    out[rows, cols] = comp + 1
+    return out, int(ncomp)
+
+
+def region_zones(m, approach_dist, split_deg=20.0):
+    """One zone per connected direction region of each directional label.
+
+    Regions are 8-connected components of the label, cut where the direction field jumps by more than
+    split_deg, so a multi-direction patch (fortress hexagon ring, ridge) yields one zone per face."""
     zones = []
     res = m.resolution
     for lab in sorted(DIRECTIONAL):
-        comp, n = ndimage.label(m.terrain == lab, structure=np.ones((3, 3)))
+        comp, n = direction_components(m, lab, split_deg)
         for k in range(1, n + 1):
             rows, cols = np.nonzero(comp == k)
             codes = m.direction[rows, cols].astype(float) / 255.0 * 2 * math.pi
@@ -141,6 +188,11 @@ def region_zones(m, approach_dist):
                 'id': '%s_%d' % (LABELS[lab], k), 'type': LABELS[lab],
                 'centre': [round(ccx, 3), round(ccy, 3)], 'yaw_deg': round(math.degrees(yaw), 1),
                 'size': [round(length, 3), round(width, 3)], 'cells': int(rows.size),
+                # Traversal policy is data, not a terrain-specific branch in the Nav2 plugins.
+                # Tunnel/undulation axes are bidirectional; slopes and steps face their annotated +axis.
+                'one_way_dir': 0 if LABELS[lab] in ('tunnel', 'undulation') else 1,
+                'allow_flip': LABELS[lab] in ('tunnel', 'undulation'),
+                'recentre': LABELS[lab] == 'tunnel',
                 'entry': [round(ccx - half * math.cos(yaw), 3), round(ccy - half * math.sin(yaw), 3),
                           round(math.degrees(yaw), 1)],
                 'exit': [round(ccx + half * math.cos(yaw), 3), round(ccy + half * math.sin(yaw), 3),
@@ -180,6 +232,14 @@ def write_png(path, rgb_rows_up):
 def export(m, out, cfg):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
+    m.save(out / 'terrain.msgpack')
+    if m.elevation is not None:
+        ground = m.elevation.copy()
+        ground[m.terrain == OBSTACLE] = np.nan
+        np.savez_compressed(out / 'ground_z.npz', ground_z=ground,
+                            clearance=(m.clearance if m.clearance is not None
+                                       else np.full(ground.shape, np.inf, np.float32)),
+                            resolution=m.resolution, origin=np.asarray(m.origin))
     res = m.resolution
     obstacle = m.terrain == OBSTACLE
     cost = inflate_cost(obstacle, res, cfg.full_cost_radius, cfg.cutoff_radius, cfg.decay_rate)
@@ -201,7 +261,7 @@ def export(m, out, cfg):
     for k, c in COLORS.items():
         preview[m.terrain == k] = c
     write_png(out / 'terrain.png', preview)
-    zones = region_zones(m, cfg.approach_dist)
+    zones = region_zones(m, cfg.approach_dist, cfg.direction_split_deg)
     import yaml
     (out / 'zones.yaml').write_text('# generated by terrain_export.py from %s\n' % cfg.src
                                     + yaml.safe_dump({'zones': zones}, sort_keys=False,
@@ -249,6 +309,9 @@ def build_parser():
     ap.add_argument('--speed', action='append', metavar='LABEL=PCT',
                     help='speed limit percent on a directional label, default tunnel=35 slope=60')
     ap.add_argument('--approach-dist', type=float, default=0.6, help='entry/exit pose distance beyond a zone')
+    ap.add_argument('--direction-split-deg', type=float, default=20.0,
+                    help='cut a label region where adjacent cells point further apart (multi-direction slope: '
+                         'one zone per face). 180 disables the cut')
     return ap
 
 

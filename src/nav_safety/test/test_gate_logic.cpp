@@ -1,8 +1,34 @@
 #include <gtest/gtest.h>
+#include <limits>
 
 #include "nav_safety/gate_logic.hpp"
 
 using namespace nav_safety;
+
+TEST(Decide, RequiresFreshProcessedObstacleObservation)
+{
+  GateConfig cfg;
+  cfg.require_trusted = false;
+  cfg.require_observation = true;
+  GateInput in;
+  in.have_cmd = true;
+  std::string reason;
+  EXPECT_EQ(decide(cfg, in, reason), Decision::Hold);
+  in.have_observation = true;
+  in.observation_age = 0.1;
+  EXPECT_EQ(decide(cfg, in, reason), Decision::Pass);
+  for (double age : {0.6, -0.1, std::numeric_limits<double>::quiet_NaN()}) {
+    in.observation_age = age;
+    EXPECT_EQ(decide(cfg, in, reason), Decision::Hold);
+  }
+}
+
+TEST(Limit, RejectsNonFiniteCommands)
+{
+  const auto out = limit({std::numeric_limits<double>::quiet_NaN(), 1.0, 0.0}, {1.5, 2.0});
+  EXPECT_DOUBLE_EQ(out.vx, 0.0);
+  EXPECT_DOUBLE_EQ(out.vy, 0.0);
+}
 
 TEST(ParseTrusted, Variants)
 {

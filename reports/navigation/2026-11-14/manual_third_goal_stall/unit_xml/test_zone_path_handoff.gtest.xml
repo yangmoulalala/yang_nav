@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="4" failures="0" disabled="0" errors="0" time="0.001" timestamp="2026-11-14T14:24:21.777" name="AllTests">
+  <testsuite name="PathHandoff" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0.001" timestamp="2026-11-14T14:24:21.777">
+    <testcase name="TemporaryLargeDetourWaitsButPersistentBlockageCanReroute" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_path_handoff.cpp" line="7" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.777" classname="nav_behaviors.PathHandoff" />
+    <testcase name="NewGoalWaitsForItsOwnSuccessfulPlanAndShape" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_path_handoff.cpp" line="35" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.777" classname="nav_behaviors.PathHandoff" />
+    <testcase name="DetourHoldRespectsRemappedOutputAndNewGoals" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_path_handoff.cpp" line="66" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.778" classname="nav_behaviors.PathHandoff" />
+    <testcase name="ApproachPointStaysPendingUntilOriginalGoalCanBeFollowed" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_path_handoff.cpp" line="98" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.778" classname="nav_behaviors.PathHandoff" />
+  </testsuite>
+</testsuites>

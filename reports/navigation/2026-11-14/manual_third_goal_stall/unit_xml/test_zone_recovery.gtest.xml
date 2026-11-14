@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="10" failures="0" disabled="0" errors="0" time="1.005" timestamp="2026-11-14T14:24:22.009" name="AllTests">
+  <testsuite name="ZoneRecoveryTest" tests="10" failures="0" disabled="0" skipped="0" errors="0" time="1." timestamp="2026-11-14T14:24:22.014">
+    <testcase name="LadderEscalatesClearSpinBackUpThenGivesUp" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="223" status="run" result="completed" time="0.016" timestamp="2026-11-14T14:24:22.014" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="StopsRecoveringOnceNavigationSucceeds" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="233" status="run" result="completed" time="0.009" timestamp="2026-11-14T14:24:22.031" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="FirstSuccessNeedsNoRecovery" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="240" status="run" result="completed" time="0.008" timestamp="2026-11-14T14:24:22.041" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="FinalSuccessClearsRecoveredErrorsWhileFailureRetainsDiagnostics" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="248" status="run" result="completed" time="0.011" timestamp="2026-11-14T14:24:22.049" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="LadderResetsBetweenGoals" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="266" status="run" result="completed" time="0.009" timestamp="2026-11-14T14:24:22.061" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="NoMotionInsideAZone" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="279" status="run" result="completed" time="0.667" timestamp="2026-11-14T14:24:22.071" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="MotionAllowedOnTheApproach" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="295" status="run" result="completed" time="0.129" timestamp="2026-11-14T14:24:22.738" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="FailureKeepsNoMotionInterlockAfterPhaseExpires" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="305" status="run" result="completed" time="0.125" timestamp="2026-11-14T14:24:22.867" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="NewGoalStartsItsOwnRecoveryLadder" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="315" status="run" result="completed" time="0.009" timestamp="2026-11-14T14:24:22.992" classname="nav_behaviors.ZoneRecoveryTest" />
+    <testcase name="PhysicalOccupancyAndMissingTransformPreventMotionWithoutPhase" file="/home/yang/yang_nav/src/nav_behaviors/test/test_zone_recovery.cpp" line="328" status="run" result="completed" time="0.012" timestamp="2026-11-14T14:24:23.002" classname="nav_behaviors.ZoneRecoveryTest" />
+  </testsuite>
+</testsuites>

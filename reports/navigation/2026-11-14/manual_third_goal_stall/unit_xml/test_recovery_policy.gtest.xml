@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="8" failures="0" disabled="0" errors="0" time="0." timestamp="2026-11-14T14:24:21.951" name="AllTests">
+  <testsuite name="RecoveryPolicy" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-11-14T14:24:21.951">
+    <testcase name="FirstAttemptOnlyClears" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="17" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+    <testcase name="EscalatesSpinThenBackUp" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="23" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+    <testcase name="GivesUpAfterTheRetries" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="31" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+    <testcase name="ZeroRetriesFailsImmediately" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="39" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+    <testcase name="NoMotionInsideAZone" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="46" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+    <testcase name="MotionCanBeDisabledPerAction" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="58" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+    <testcase name="NegativeRetriesBehaveLikeZero" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="74" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+    <testcase name="NamesCoverEveryAction" file="/home/yang/yang_nav/src/nav_behaviors/test/test_recovery_policy.cpp" line="81" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.951" classname="nav_behaviors.RecoveryPolicy" />
+  </testsuite>
+</testsuites>

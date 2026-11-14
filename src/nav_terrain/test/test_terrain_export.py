@@ -93,6 +93,47 @@ def test_export_package_and_zones(tmp_path):
     assert yaml_load(tmp_path / 'pkg' / 'nav_map.yaml')['origin'][:2] == [-2.0, -1.5]
 
 
+def test_multi_direction_patch_splits_into_faces():
+    # a 4x4 ring of SLOPE cells, each side facing its own uphill way: one label component, four faces
+    m = TerrainMap.blank(6, 6, 0.05, (0.0, 0.0))
+    m.terrain[1:5, 1:5] = SLOPE
+    m.terrain[2:4, 2:4] = 0                              # hollow centre, so only the ring is slope
+    m.direction[1, 1:5] = encode_angle(0.5 * math.pi)    # bottom row faces +y
+    m.direction[4, 1:5] = encode_angle(1.5 * math.pi)    # top row faces -y
+    m.direction[1:5, 1] = encode_angle(0.0)              # left column faces +x
+    m.direction[1:5, 4] = encode_angle(math.pi)          # right column faces -x
+    comp, n = tx.direction_components(m, SLOPE, 20.0)
+    assert n == 4
+    assert int((comp > 0).sum()) == 12                     # every slope cell keeps exactly one face
+    assert sorted(np.bincount(comp.ravel())[1:].tolist()) == [2, 2, 4, 4]   # corners follow the columns
+    # 180 deg disables the cut: back to a single component, no warning any more only because one face
+    comp, n = tx.direction_components(m, SLOPE, 180.0)
+    assert n == 1
+    zones = tx.region_zones(m, 0.0, 20.0)
+    assert len(zones) == 4
+    assert all('warning' not in z for z in zones)          # every face has one clean direction
+    for z in zones:                                        # the axis is one of the four faces, not a mean
+        d = min(abs((z['yaw_deg'] - a + 180.0) % 360.0 - 180.0) for a in (0.0, 90.0, 180.0, -90.0))
+        assert d < 2.0                                     # uint8 angle quantisation is 1.41 deg
+
+
+def test_direction_split_disabled_keeps_old_behaviour():
+    m = TerrainMap.blank(3, 3, 0.05, (0.0, 0.0))
+    m.terrain[0:3, 0:3] = SLOPE
+    m.direction[0, 0:3] = encode_angle(0.0)
+    m.direction[1, 0:3] = encode_angle(0.5 * math.pi)
+    m.direction[2, 0:3] = encode_angle(math.pi)
+    assert len(tx.region_zones(m, 0.0, 20.0)) == 3
+    assert len(tx.region_zones(m, 0.0, 180.0)) == 1
+
+
+def test_bad_split_angle_rejected():
+    m = TerrainMap.blank(2, 2, 0.05)
+    for bad in (0.0, -1.0, 181.0):
+        with pytest.raises(ValueError):
+            tx.direction_components(m, SLOPE, bad)
+
+
 def yaml_load(p):
     import yaml
     return yaml.safe_load(Path(p).read_text())

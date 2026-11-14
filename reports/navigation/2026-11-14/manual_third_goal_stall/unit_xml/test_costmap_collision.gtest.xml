@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="11" failures="0" disabled="0" errors="0" time="0.368" timestamp="2026-11-14T14:24:21.313" name="AllTests">
+  <testsuite name="CostmapCollision" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0.001" timestamp="2026-11-14T14:24:21.313">
+    <testcase name="ChecksInteriorUnknownAndBounds" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="24" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.313" classname="nav_behaviors.CostmapCollision" />
+    <testcase name="ChecksBetweenSparsePosesAndDuringRotation" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="36" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.314" classname="nav_behaviors.CostmapCollision" />
+    <testcase name="UsesActualHeadingForAsymmetricFootprint" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="50" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.314" classname="nav_behaviors.CostmapCollision" />
+    <testcase name="TrackerKeepsCollisionValidatedHeadingWhenApproachFacesBackwards" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="58" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.314" classname="nav_behaviors.CostmapCollision" />
+    <testcase name="ShaperFindsNarrowFreeBandWithPlanningReserve" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="80" status="run" result="completed" time="0.001" timestamp="2026-11-14T14:24:21.314" classname="nav_behaviors.CostmapCollision" />
+    <testcase name="LateralAlignmentCanClearACornerBeforeForwardAdvance" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="108" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.315" classname="nav_behaviors.CostmapCollision" />
+  </testsuite>
+  <testsuite name="OverlapEscape" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.366" timestamp="2026-11-14T14:24:21.315">
+    <testcase name="OccupiedCenterFindsFreeExitWithoutClearingTheMap" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="146" status="run" result="completed" time="0.005" timestamp="2026-11-14T14:24:21.315" classname="nav_behaviors.OverlapEscape" />
+    <testcase name="RejectsNewContactsRotationUnknownAndGrowingOverlap" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="162" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.320" classname="nav_behaviors.OverlapEscape" />
+    <testcase name="LeavingContactCannotReenterAndRollingOriginDoesNotChangeIdentity" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="176" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.321" classname="nav_behaviors.OverlapEscape" />
+    <testcase name="EmbeddedStartLeavesOriginalThickObstacle" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="191" status="run" result="completed" time="0.361" timestamp="2026-11-14T14:24:21.321" classname="nav_behaviors.OverlapEscape" />
+    <testcase name="InflationOnlyStartStillFindsACollisionFreePrefix" file="/home/yang/yang_nav/src/nav_behaviors/test/test_costmap_collision.cpp" line="205" status="run" result="completed" time="0." timestamp="2026-11-14T14:24:21.682" classname="nav_behaviors.OverlapEscape" />
+  </testsuite>
+</testsuites>

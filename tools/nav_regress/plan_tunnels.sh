@@ -4,7 +4,7 @@
 #
 #   tools/nav_regress/plan_tunnels.sh [TERRAIN_DIR] [plan_tunnels.py args]     (default maps/sim)
 WS=$(cd "$(dirname "$0")/../.." && pwd)
-TERRAIN=${1:-$WS/maps/sim}
+TERRAIN=${1:-$(python3 "$WS/tools/nav_regress/terrain_path.py")}
 OUT=${OUT:-/tmp/plan_tunnels}; mkdir -p "$OUT"
 PARAMS=${PARAMS:-$WS/src/nav_bringup/params/sim/nav2.yaml}
 source /opt/ros/jazzy/setup.bash; source "$WS/install/setup.bash" 2>/dev/null

@@ -1,0 +1,65 @@
+{
+  "targets": [
+    {
+      "target": "test_costmap_collision.gtest.xml",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_path_shaper.gtest.xml",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_recovery_policy.gtest.xml",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_slope.gtest.xml",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_timed_obstacle_layer.gtest.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_zone_drive.gtest.xml",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_zone_path_handoff.gtest.xml",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_zone_recovery.gtest.xml",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_zone_state.gtest.xml",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "target": "test_zone_tracker.gtest.xml",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "tests": 103
+}

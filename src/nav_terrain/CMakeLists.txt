@@ -12,12 +12,15 @@ install(PROGRAMS
           scripts/surface_seg.py
           scripts/surface_project.py
           scripts/surface_studio.py
+          scripts/obstacle_filter.py
+          scripts/terrain_obstacles.py
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_terrain_export test/test_terrain_export.py)
   ament_add_pytest_test(test_surface_seg test/test_surface_seg.py)
+  ament_add_pytest_test(test_obstacle_filter test/test_obstacle_filter.py)
 endif()
 
 ament_package()

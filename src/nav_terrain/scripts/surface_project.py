@@ -541,7 +541,7 @@ class Project:
         terrain[~pas | ~valid] = OBSTACLE
         direction = np.where(np.isin(terrain, list(DIRECTIONAL)), dcode, 0).astype(np.uint8)
         m = TerrainMap(terrain, direction, self.surf.resolution, tuple(self.surf.origin),
-                       elevation=self.surf.z.astype(np.float32))
+                       elevation=self.surf.z.astype(np.float32), clearance=self.surf.clearance.astype(np.float32))
         m.extra['frame'] = self.frame
         m.extra['source'] = 'surface_studio %s' % self.source
         if self.reg is not None:

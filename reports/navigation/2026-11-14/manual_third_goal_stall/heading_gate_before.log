@@ -1,0 +1,22 @@
+Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+Note: Google Test filter = ZoneTracker.NarrowApproachAlignsBeforeAdvancingWithLargeHeadingError
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ZoneTracker
+[ RUN      ] ZoneTracker.NarrowApproachAlignsBeforeAdvancingWithLargeHeadingError
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_tracker.cpp:170: Failure
+The difference between std::hypot(o.vx, o.vy) and 0. is 0.59999999999999998, which exceeds 1e-9, where
+std::hypot(o.vx, o.vy) evaluates to 0.59999999999999998,
+0. evaluates to 0, and
+1e-9 evaluates to 1.0000000000000001e-09.
+
+[  FAILED  ] ZoneTracker.NarrowApproachAlignsBeforeAdvancingWithLargeHeadingError (0 ms)
+[----------] 1 test from ZoneTracker (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 0 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] ZoneTracker.NarrowApproachAlignsBeforeAdvancingWithLargeHeadingError
+
+ 1 FAILED TEST

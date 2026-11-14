@@ -28,6 +28,8 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src/nav_terrain/scripts'))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import terrain_path as tp  # noqa: E402
 import tunnel_zones as tz  # noqa: E402
 
 R = ComputePathToPose.Result
@@ -116,7 +118,7 @@ def plan(node, cli, s, g, yaw, planner):
     rf = gh.get_result_async()
     rclpy.spin_until_future_complete(node, rf, timeout_sec=15)
     r = rf.result()
-    if r is None:
+    if r is None or r.status != 4 or r.result.error_code != 0:
         return None, None
     return [(p.pose.position.x, p.pose.position.y) for p in r.result.path.poses], r.result.error_code
 
@@ -136,7 +138,7 @@ def smooth(node, cli, pts, yaws, smoother):
     rf = gh.get_result_async()
     rclpy.spin_until_future_complete(node, rf, timeout_sec=10)
     r = rf.result()
-    if r is None:
+    if r is None or r.status != 4 or r.result.error_code != 0:
         return None
     return [(p.pose.position.x, p.pose.position.y, 2 * math.atan2(p.pose.orientation.z, p.pose.orientation.w))
             for p in r.result.path.poses]
@@ -171,7 +173,7 @@ def analyse(t, pts, start, goal):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--terrain-dir', default=str(Path.home() / 'yang_nav/maps/sim'))
+    ap.add_argument('--terrain-dir', default=str(tp.default_terrain_dir()))
     ap.add_argument('--approach', type=float, default=1.5)
     ap.add_argument('--planner', default='GridBased')
     ap.add_argument('--smoother', default='')
@@ -213,6 +215,7 @@ def main():
             if scli is not None:
                 yaws = [math.atan2(pts[min(i + 1, len(pts) - 1)][1] - pts[max(i - 1, 0)][1],
                                    pts[min(i + 1, len(pts) - 1)][0] - pts[max(i - 1, 0)][0]) for i in range(len(pts))]
+                yaws[0] = yaws[-1] = yaw  # keep the requested start/goal orientations
                 sp = smooth(node, scli, pts, yaws, a.smoother)
                 if not sp:
                     print('%-9s %-4s %5.1f SMOOTH FAILED' % (t.id, name, appr)); ok_all = False; continue

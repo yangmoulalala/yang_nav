@@ -3,21 +3,27 @@
 <package format="3">
   <name>nav_behaviors</name>
   <version>0.1.0</version>
-  <description>Zone-aware navigation plugins: tunnel path shaping and tracking (M3)</description>
+  <description>Zone-aware navigation plugins: terrain path shaping, tracking and protected recovery</description>
   <maintainer email="yang@example.com">yang</maintainer>
   <license>Proprietary</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>tf2_ros</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>nav2_core</depend>
   <depend>nav2_costmap_2d</depend>
   <depend>nav2_util</depend>
   <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2_geometry_msgs</depend>
   <depend>pluginlib</depend>
   <depend>yaml-cpp</depend>
   <depend>std_msgs</depend>
+  <depend>behaviortree_cpp</depend>
+  <depend>visualization_msgs</depend>
+  <exec_depend>nav2_smac_planner</exec_depend>
   <exec_depend>nav2_mppi_controller</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

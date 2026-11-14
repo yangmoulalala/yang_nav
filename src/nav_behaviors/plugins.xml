@@ -1,12 +1,17 @@
 <class_libraries>
+  <library path="start_aware_planner">
+    <class type="nav_behaviors::StartAwarePlanner" base_class_type="nav2_core::GlobalPlanner">
+      <description>Escapes existing footprint overlap before normal Smac2D planning</description>
+    </class>
+  </library>
   <library path="zone_path_shaper">
     <class type="nav_behaviors::ZonePathShaper" base_class_type="nav2_core::Smoother">
-      <description>Replaces the stretch of a path through a tunnel zone with lead-in, zone axis and lead-out</description>
+      <description>Shapes crossings of direction-constrained terrain zones onto their annotated axes</description>
     </class>
   </library>
   <library path="zone_aware_controller">
     <class type="nav_behaviors::ZoneAwareController" base_class_type="nav2_core::Controller">
-      <description>Inner controller (MPPI) outside tunnels, deterministic omni tracker through them, blended</description>
+      <description>Uses MPPI outside constrained zones and a shared omni path tracker inside them</description>
     </class>
   </library>
 </class_libraries>

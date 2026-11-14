@@ -1,0 +1,5 @@
+<library path="timed_obstacle_layer">
+  <class name="nav_behaviors::TimedObstacleLayer" type="nav_behaviors::TimedObstacleLayer" base_class_type="nav2_costmap_2d::Layer">
+    <description>Standard marking and ray clearing with acquisition-time expiry of dynamic evidence.</description>
+  </class>
+</library>

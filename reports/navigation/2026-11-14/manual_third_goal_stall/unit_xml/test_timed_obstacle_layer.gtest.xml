@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="5" failures="0" disabled="0" errors="0" time="0.07" timestamp="2026-11-14T14:24:21.065" name="AllTests">
+  <testsuite name="TimedLayerTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.07" timestamp="2026-11-14T14:24:21.065">
+    <testcase name="OldCloudCannotRefreshItsOwnEvidence" file="/home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp" line="45" status="run" result="completed" time="0.025" timestamp="2026-11-14T14:24:21.065" classname="nav_behaviors.TimedLayerTest" />
+    <testcase name="NewAcquisitionRefreshesAndStationaryObstacleStays" file="/home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp" line="51" status="run" result="completed" time="0.011" timestamp="2026-11-14T14:24:21.091" classname="nav_behaviors.TimedLayerTest" />
+    <testcase name="ExpiryDoesNotClearAnotherLayer" file="/home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp" line="56" status="run" result="completed" time="0.011" timestamp="2026-11-14T14:24:21.102" classname="nav_behaviors.TimedLayerTest" />
+    <testcase name="EvidenceExpiresAfterObservationDisappears" file="/home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp" line="63" status="run" result="completed" time="0.011" timestamp="2026-11-14T14:24:21.114" classname="nav_behaviors.TimedLayerTest" />
+    <testcase name="ResetAndClockRewindDoNotLeaveImmortalMarks" file="/home/yang/yang_nav/src/nav_behaviors/test/test_timed_obstacle_layer.cpp" line="67" status="run" result="completed" time="0.011" timestamp="2026-11-14T14:24:21.125" classname="nav_behaviors.TimedLayerTest" />
+  </testsuite>
+</testsuites>

@@ -22,6 +22,9 @@ from rclpy.node import Node
 from rclpy.time import Time
 from tf2_ros import Buffer, TransformException, TransformListener
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import terrain_path as tp  # noqa: E402
+
 
 def world_to_map(x, y, yaw, reg):
     tx, ty, _ = reg['t_world_map']
@@ -43,7 +46,7 @@ def main():
     ap.add_argument('yaw', type=float, nargs='?', default=0.0)
     ap.add_argument('--frame', choices=['world', 'map'], default='world')
     ap.add_argument('--timeout', type=float, default=180.0)
-    ap.add_argument('--nav-dir', default=os.path.expanduser('~/yang_nav/maps/sim'))
+    ap.add_argument('--nav-dir', default=str(tp.default_terrain_dir()))
     args = ap.parse_args()
     reg = json.load(open(os.path.join(args.nav_dir, 'terrain.json')))['registration']
     yaw = math.radians(args.yaw)

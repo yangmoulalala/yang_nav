@@ -10,7 +10,11 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>nav_safety</exec_depend>
+  <exec_depend>nav_behaviors</exec_depend>
+  <exec_depend>nav_terrain</exec_depend>
+  <exec_depend>nav2_collision_monitor</exec_depend>
   <exec_depend>navigation2</exec_depend>
+  <exec_depend>nav2_common</exec_depend>
   <exec_depend>nav2_map_server</exec_depend>
   <exec_depend>nav2_lifecycle_manager</exec_depend>
   <exec_depend>nav2_mppi_controller</exec_depend>

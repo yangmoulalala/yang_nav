@@ -1,8 +1,14 @@
 Panels:
   - Class: rviz_common/Displays
     Name: Displays
+    Help Height: 0
+    Tree Height: 520
   - Class: rviz_common/Tool Properties
     Name: Tool Properties
+  - Class: rviz_common/Views
+    Name: Views
+  - Class: nav2_rviz_plugins/Navigation 2
+    Name: Navigation 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -27,7 +33,7 @@ Visualization Manager:
         History Policy: Keep Last
     - Class: rviz_default_plugins/Map
       Name: Global costmap
-      Enabled: true
+      Enabled: false
       Alpha: 0.4
       Color Scheme: costmap
       Topic:
@@ -39,7 +45,7 @@ Visualization Manager:
     - Class: rviz_default_plugins/Map
       Name: Local costmap
       Enabled: true
-      Alpha: 0.6
+      Alpha: 0.5
       Color Scheme: costmap
       Topic:
         Value: /local_costmap/costmap
@@ -47,10 +53,19 @@ Visualization Manager:
         Durability Policy: Volatile
         Reliability Policy: Reliable
         History Policy: Keep Last
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Tunnel zones (body / axis / id)
+      Enabled: true
+      Topic:
+        Value: /nav_zones/markers
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
     - Class: rviz_default_plugins/RobotModel
       Name: Robot
-      Enabled: false
-      Alpha: 1
+      Enabled: true
+      Alpha: 0.6
       Description Source: Topic
       Description Topic:
         Value: /robot_description
@@ -58,11 +73,8 @@ Visualization Manager:
         Durability Policy: Transient Local
         Reliability Policy: Reliable
         History Policy: Keep Last
-    - Class: rviz_default_plugins/TF
-      Name: TF
-      Enabled: false
     - Class: rviz_default_plugins/Polygon
-      Name: Footprint
+      Name: Footprint (padded, costmap)
       Enabled: true
       Color: 255; 255; 0
       Topic:
@@ -72,44 +84,67 @@ Visualization Manager:
         Reliability Policy: Reliable
         History Policy: Keep Last
     - Class: rviz_default_plugins/Path
-      Name: Global plan
+      Name: Shaped path (FollowPath input)
       Enabled: true
       Color: 0; 255; 0
-      Line Style: Billboards
-      Line Width: 0.04
+      Line Style: Lines
+      Line Width: 0.03
+      Pose Style: Arrows
+      Head Length: 0.04
+      Head Diameter: 0.04
+      Shaft Length: 0.08
+      Shaft Diameter: 0.015
+      Topic:
+        Value: /plan_smoothed
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/Path
+      Name: Planner path (Smac, before shaping)
+      Enabled: false
+      Color: 120; 120; 255
+      Line Style: Lines
+      Line Width: 0.02
       Topic:
         Value: /plan
         Depth: 5
         Durability Policy: Volatile
         Reliability Policy: Reliable
         History Policy: Keep Last
-    - Class: rviz_default_plugins/PointCloud2
-      Name: Terrain obstacles
-      Enabled: true
-      Color Transformer: FlatColor
-      Color: 255; 0; 0
-      Size (m): 0.05
-      Style: Flat Squares
-      Decay Time: 0
-      Topic:
-        Value: /terrain_analysis/obstacles
-        Depth: 5
-        Durability Policy: Volatile
-        Reliability Policy: Best Effort
-        History Policy: Keep Last
-    - Class: rviz_default_plugins/PointCloud2
-      Name: Terrain clearing (ground + known roofs)
+    - Class: rviz_default_plugins/Path
+      Name: MPPI path window (transformed_global_plan)
       Enabled: false
-      Color Transformer: FlatColor
-      Color: 0; 200; 255
-      Size (m): 0.02
-      Style: Flat Squares
+      Color: 255; 0; 255
+      Line Style: Lines
+      Line Width: 0.02
       Topic:
-        Value: /terrain_analysis/clearing
+        Value: /transformed_global_plan
         Depth: 5
         Durability Policy: Volatile
-        Reliability Policy: Best Effort
+        Reliability Policy: Reliable
         History Policy: Keep Last
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Tracker state (phase / errors / heading ref)
+      Enabled: true
+      Topic:
+        Value: /nav_zones/tracker
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: false
+      Show Names: true
+      Frames:
+        All Enabled: false
+        map:
+          Value: true
+        lio_odom:
+          Value: true
+        base_link:
+          Value: true
     - Class: rviz_default_plugins/PointCloud2
       Name: Live cloud (map)
       Enabled: false
@@ -117,6 +152,7 @@ Visualization Manager:
       Axis: Z
       Size (m): 0.02
       Style: Flat Squares
+      Decay Time: 0
       Topic:
         Value: /localization/lio_world_cloud
         Depth: 5
@@ -128,6 +164,7 @@ Visualization Manager:
       Enabled: true
       Color: 255; 0; 255
       Shape: Arrow
+      Shaft Length: 0.4
       Topic:
         Value: /goal_pose
         Depth: 5
@@ -143,9 +180,11 @@ Visualization Manager:
   Tools:
     - Class: rviz_default_plugins/Interact
     - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Measure
     - Class: rviz_default_plugins/SetGoal
       Topic:
         Value: /goal_pose
+    - Class: nav2_rviz_plugins/GoalTool
     - Class: rviz_default_plugins/PublishPoint
       Single click: true
       Topic:

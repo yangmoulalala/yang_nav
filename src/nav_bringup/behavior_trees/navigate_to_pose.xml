@@ -1,0 +1,73 @@
+<!--
+  Single-goal navigation with zone shaping and protected recovery.
+  New or expired/invalid paths are planned and passed through zone_shaper.
+  ALIGN/TRAVERSE/EXIT retain the shaped path while the stamped phase is fresh;
+  a new target interrupts that hold and starts a fresh navigation attempt.
+  ZoneRecovery checks physical occupancy/TF and recent phase, latching no-motion
+  protection for the failure chain. Phase expiry cannot enable spin or back-up.
+  __NAV_ZONES_FILE__ is replaced by navigation.launch.py before loading the tree.
+-->
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <ZoneRecovery retries="5" state_topic="/nav_zone_state" zone_timeout="4.0" zones_file="__NAV_ZONES_FILE__"
+                  spin_after="1" backup_after="2" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <ControllerSelector selected_controller="{selected_controller}" default_controller="FollowPath" topic_name="controller_selector"/>
+        <PlannerSelector selected_planner="{selected_planner}" default_planner="GridBased" topic_name="planner_selector"/>
+        <RateController hz="1.0">
+          <Fallback name="ReplanUnlessInZone">
+            <ReactiveSequence name="KeepZonePathUnlessGoalChanges">
+              <PathForGoal signature="{path_goal_signature}"/>
+                  <PathReachesGoal path="{path}"/>
+                  <Inverter><ZonePathBlocked state_topic="/nav_zone_state" timeout="1.5"/></Inverter>
+              <Inverter><GlobalUpdatedGoal/></Inverter>
+              <ZoneReplanPaused state_topic="/nav_zone_state" timeout="1.5"/>
+            </ReactiveSequence>
+            <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+              <Fallback>
+                <ReactiveSequence>
+                  <PathForGoal signature="{path_goal_signature}"/>
+                  <PathReachesGoal path="{path}"/>
+                  <Inverter><ZonePathBlocked state_topic="/nav_zone_state" timeout="1.5"/></Inverter>
+                  <Inverter>
+                    <PathExpiringTimer seconds="10" path="{path}"/>
+                  </Inverter>
+                  <Inverter>
+                    <GlobalUpdatedGoal/>
+                  </Inverter>
+                  <IsPathValid path="{path}"/>
+                </ReactiveSequence>
+                <Sequence name="PlanAndShape">
+                  <CapturePathGoal signature="{planning_goal_signature}"/>
+                  <ComputePathToPose goal="{goal}" path="{raw_path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+                  <SmoothPath unsmoothed_path="{raw_path}" smoothed_path="{shaped_path}" smoother_id="zone_shaper" check_for_collisions="false" error_code_id="{smoother_error_code}"/>
+                  <CommitZonePath planned_signature="{planning_goal_signature}" input_path="{shaped_path}" path="{path}" signature="{path_goal_signature}"/>
+                </Sequence>
+              </Fallback>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+            </RecoveryNode>
+          </Fallback>
+        </RateController>
+        <ReactiveSequence name="FollowCommittedGoalPath">
+          <AwaitGoalPath signature="{path_goal_signature}"/>
+          <KeepOccupiedGoalPending path="{path}">
+          <RecoveryNode number_of_retries="1" name="FollowPath">
+          <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
+          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+          </RecoveryNode>
+          </KeepOccupiedGoalPending>
+        </ReactiveSequence>
+      </PipelineSequence>
+
+      <!-- recovery ladder, one child per nav_behaviors::RecoveryAction -->
+      <Sequence name="Recover-ClearCostmaps">
+        <ClearEntireCostmap name="ClearLocalCostmap-Recovery" service_name="local_costmap/clear_entirely_local_costmap"/>
+        <ClearEntireCostmap name="ClearGlobalCostmap-Recovery" service_name="global_costmap/clear_entirely_global_costmap"/>
+        <Wait wait_duration="1.0"/>
+      </Sequence>
+      <Spin name="Recover-Spin" spin_dist="1.57" time_allowance="10"/>
+      <BackUp name="Recover-BackUp" backup_dist="0.20" backup_speed="0.15" time_allowance="10"/>
+      <AlwaysFailure name="Recover-GiveUp"/>
+    </ZoneRecovery>
+  </BehaviorTree>
+</root>

@@ -10,7 +10,7 @@
 namespace nav_safety
 {
 
-// Navigation mode published by the behaviour tree on /nav_mode.
+// Navigation mode published by ZoneAwareController on /nav_mode. Recovery is a reserved fallback.
 enum class Mode { Normal = 0, Tunnel = 1, Ramp = 2, Recovery = 3 };
 constexpr std::size_t kModeCount = 4;
 
@@ -66,10 +66,12 @@ struct GateConfig
   double input_timeout = 0.25;
   double state_timeout = 1.0;
   bool require_trusted = true;
+  bool require_observation = false;
+  double observation_timeout = 0.5;
   std::array<Limits, kModeCount> limits{{
     {1.6, 2.5},   // normal
-    {0.6, 1.0},   // tunnel
-    {2.0, 2.5},   // ramp: the climb action owns the speed
+    {0.8, 1.0},   // tunnel: backstop above zone.tunnel_speed + lateral correction
+    {2.0, 2.5},   // ramp: the zone tracker supplies the motion profile
     {0.6, 1.5},   // recovery
   }};
 };
@@ -81,6 +83,8 @@ struct GateInput
   bool have_state = false;
   double state_age = 0.0;
   bool trusted = false;
+  bool have_observation = false;
+  double observation_age = 0.0;
 };
 
 enum class Decision
@@ -92,14 +96,22 @@ enum class Decision
 
 inline Decision decide(const GateConfig & c, const GateInput & in, std::string & reason)
 {
-  if (!in.have_cmd || in.cmd_age > c.input_timeout) {
+  if (!in.have_cmd || !std::isfinite(in.cmd_age) || in.cmd_age < 0.0 || in.cmd_age > c.input_timeout) {
     reason = "no input";
     return Decision::Idle;
   }
   if (c.require_trusted) {
     if (!in.have_state) {reason = "no localization state"; return Decision::Hold;}
-    if (in.state_age > c.state_timeout) {reason = "localization state stale"; return Decision::Hold;}
+    if (!std::isfinite(in.state_age) || in.state_age < 0.0 || in.state_age > c.state_timeout) {
+      reason = "localization state stale"; return Decision::Hold;
+    }
     if (!in.trusted) {reason = "localization not trusted"; return Decision::Hold;}
+  }
+  if (c.require_observation && (!in.have_observation || !std::isfinite(in.observation_age) ||
+    in.observation_age < 0.0 || in.observation_age > c.observation_timeout))
+  {
+    reason = "obstacle observation stale";
+    return Decision::Hold;
   }
   reason.clear();
   return Decision::Pass;
@@ -113,6 +125,9 @@ struct Cmd
 // Scale (vx, vy) together so the direction is kept; clamp wz.
 inline Cmd limit(Cmd c, const Limits & l)
 {
+  if (!std::isfinite(c.vx) || !std::isfinite(c.vy) || !std::isfinite(c.wz)) {
+    return {};
+  }
   const double v = std::hypot(c.vx, c.vy);
   if (v > l.max_linear && v > 0.0) {
     const double s = l.max_linear / v;

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "nav_behaviors/path_shaper.hpp"
+#include "nav_behaviors/math_utils.hpp"
 
 using nav_behaviors::CollisionFree;
 using nav_behaviors::normAngle;
@@ -12,7 +13,7 @@ using nav_behaviors::Pose2;
 using nav_behaviors::shapePath;
 using nav_behaviors::ShapeEvent;
 using nav_behaviors::ShaperParams;
-using nav_behaviors::Tunnel;
+using nav_behaviors::Zone;
 using nav_behaviors::TurnMode;
 
 namespace
@@ -34,9 +35,9 @@ std::vector<Pose2> polyline(const std::vector<std::pair<double, double>> & pts, 
   return out;
 }
 
-Tunnel tunnel(double cx, double cy, double yaw_deg, const char * id = "t")
+Zone tunnel(double cx, double cy, double yaw_deg, const char * id = "t")
 {
-  Tunnel t;
+  Zone t;
   t.id = id;
   t.cx = cx;
   t.cy = cy;
@@ -76,7 +77,7 @@ CollisionFree walls(const std::vector<Box> & boxes)
 }
 
 // every pose within the straight axis is on the zone axis with the locked heading
-void expectOnAxis(const std::vector<Pose2> & p, const Tunnel & t, double heading, double margin = 0.5)
+void expectOnAxis(const std::vector<Pose2> & p, const Zone & t, double heading, double margin = 0.5)
 {
   int n = 0;
   for (const auto & q : p) {
@@ -193,7 +194,7 @@ TEST(PathShaper, TwoTunnelsOnOnePath)
   std::vector<ShapeEvent> ev;
   const auto out = shapePath(in, {b, a}, ShaperParams{}, kFree, &ev);
   ASSERT_EQ(ev.size(), 2u);
-  EXPECT_EQ(ev[0].tunnel_id, "a");   // in path order, not list order
+  EXPECT_EQ(ev[0].zone_id, "a");   // in path order, not list order
   EXPECT_TRUE(ev[0].shaped) << ev[0].reason;
   EXPECT_TRUE(ev[1].shaped) << ev[1].reason;
   expectOnAxis(out, a, 0.0);
@@ -228,24 +229,46 @@ TEST(PathShaper, NoCrossingUnchanged)
   EXPECT_EQ(out.size(), in.size());
 }
 
-TEST(PathShaper, GoalInsideTunnelKeepsPath)
+TEST(PathShaper, GoalInsideTunnelShapesUpToTheGoal)
 {
-  const auto in = polyline({{-2.5, 0.0}, {0.0, 0.0}});
+  // a chained stretch (tunnel_5 + slope_19 in maps/sim) is longer than the tunnel it contains, and the
+  // goal on the ramp lands inside the body.  Shape onto the axis and stop there: refusing left the
+  // planner path unshaped and the robot turned inside the tunnel.
+  Zone t = tunnel(0, 0, 0);
+  t.depth = 1.8;   // tunnel_5 + slope_19
+  auto in = polyline({{-2.225, 0.06}, {0.775, 0.0}});
+  in.back().yaw = 0.0;
+  std::vector<ShapeEvent> ev;
+  const auto out = shapePath(in, {t}, ShaperParams{}, kFree, &ev);
+  ASSERT_EQ(ev.size(), 1u);
+  EXPECT_TRUE(ev[0].shaped) << ev[0].reason;
+  expectOnAxis(out, t, 0.0);
+  double u, v;
+  t.toLocal(out.back().x, out.back().y, u, v);
+  EXPECT_NEAR(u, 0.775, 1e-6);   // the goal is kept
+  EXPECT_NEAR(v, 0.0, 1e-9);
+}
+
+TEST(PathShaper, GoalJustInsideNearMouthIsShaped)
+{
+  const auto in = polyline({{-2.5, 0.0}, {-0.17, 0.0}});   // ends a few cm inside the body
   std::vector<ShapeEvent> ev;
   const auto out = shapePath(in, {tunnel(0, 0, 0)}, ShaperParams{}, kFree, &ev);
   ASSERT_EQ(ev.size(), 1u);
-  EXPECT_FALSE(ev[0].shaped);
-  EXPECT_EQ(out.size(), in.size());
+  EXPECT_TRUE(ev[0].shaped) << ev[0].reason;
+  EXPECT_NEAR(out.back().x, in.back().x, 1e-9);
+  EXPECT_NEAR(out.back().y, in.back().y, 1e-9);
 }
 
-TEST(PathShaper, GoalJustAfterExitKeepsPath)
+TEST(PathShaper, GoalJustAfterExitIsShaped)
 {
   const auto in = polyline({{-2.5, 0.0}, {0.4, 0.0}});   // ends before the axis margin
   std::vector<ShapeEvent> ev;
   const auto out = shapePath(in, {tunnel(0, 0, 0)}, ShaperParams{}, kFree, &ev);
   ASSERT_EQ(ev.size(), 1u);
-  EXPECT_FALSE(ev[0].shaped);
-  EXPECT_EQ(out.size(), in.size());
+  EXPECT_TRUE(ev[0].shaped) << ev[0].reason;
+  EXPECT_NEAR(out.back().x, in.back().x, 1e-9);
+  EXPECT_NEAR(out.back().y, in.back().y, 1e-9);
 }
 
 TEST(PathShaper, OneSidedNarrowingShiftsLaterally)
@@ -273,6 +296,66 @@ TEST(PathShaper, OneSidedNarrowingShiftsLaterally)
   EXPECT_LT(maxTurn(out), 0.05);
 }
 
+TEST(PathShaper, LeadInTurnsFromTheRobotHeading)
+{
+  // Gazebo tunnel_1: robot aligned 1.4 m before the mouth in a 0.8 m channel, the Smac path leaves it
+  // diagonally; a lead-in turning from that tangent (-36 deg) swept the footprint into the channel wall
+  const auto t = tunnel(0, 0, 0);
+  const CollisionFree channel = [](const Pose2 & q) {
+      return !(q.x > -1.6 && q.x < -0.175) || (std::abs(q.yaw) < 3.0 * M_PI / 180.0 && std::abs(q.y) < 0.12);
+    };
+  const auto in = polyline({{-1.42, 0.10}, {-1.2, -0.06}, {-0.9, 0.0}, {2.5, 0.0}});
+  const double robot_yaw = 0.0;
+  std::vector<ShapeEvent> ev;
+  const auto out = shapePath(in, {t}, ShaperParams{}, channel, &ev, &robot_yaw);
+  ASSERT_EQ(ev.size(), 1u);
+  ASSERT_TRUE(ev[0].shaped) << ev[0].reason;
+  EXPECT_NEAR(out.front().yaw, robot_yaw, 1e-9);
+  for (const auto & q : out) {
+    EXPECT_TRUE(channel(q)) << q.x << " " << q.y << " " << q.yaw * 180.0 / M_PI;
+  }
+}
+
+TEST(PathShaper, NearlyAlignedRobotTurnsEarly)
+{
+  // Gazebo tunnel_1: robot at -8 deg at the channel entrance; the heading must be on the axis within
+  // early_turn, not 2.5 m later where the 0.7 m channel leaves 5 cm per side
+  const auto t = tunnel(0, 0, 0);
+  const auto in = polyline({{-1.9, 0.02}, {2.5, 0.0}});   // closer than lead: the lead-in starts at the robot
+  const double robot_yaw = -8.0 * M_PI / 180.0;
+  std::vector<ShapeEvent> ev;
+  const auto out = shapePath(in, {t}, ShaperParams{}, kFree, &ev, &robot_yaw);
+  ASSERT_EQ(ev.size(), 1u);
+  ASSERT_TRUE(ev[0].shaped) << ev[0].reason;
+  double s = 0.0;
+  for (size_t i = 1; i < out.size(); ++i) {
+    s += std::hypot(out[i].x - out[i - 1].x, out[i].y - out[i - 1].y);
+    if (s > ShaperParams{}.early_turn + 0.05 && out[i].x < 0.675) {   // up to the end of the exit margin
+      EXPECT_NEAR(out[i].yaw, 0.0, 1e-6) << "s " << s;
+    }
+  }
+}
+
+TEST(PathShaper, ResumeInsideTheBody)
+{
+  // replan after a stop half way through: the path starts in the body, the axis continues from the robot
+  const auto t = tunnel(0, 0, 0);
+  const auto in = polyline({{0.05, 0.01}, {2.5, 0.0}});
+  const double robot_yaw = M_PI;   // passing backwards
+  std::vector<ShapeEvent> ev;
+  const auto out = shapePath(in, {t}, ShaperParams{}, kFree, &ev, &robot_yaw);
+  ASSERT_EQ(ev.size(), 1u);
+  ASSERT_TRUE(ev[0].shaped) << ev[0].reason;
+  for (const auto & q : out) {
+    double u, v;
+    t.toLocal(q.x, q.y, u, v);
+    if (u < 0.175 + 0.5) {
+      EXPECT_LE(std::abs(v), 0.01 + 1e-9);
+      EXPECT_NEAR(std::abs(normAngle(q.yaw)), M_PI, 1e-9);
+    }
+  }
+}
+
 TEST(PathShaper, NarrowApproachTurnsEarly)
 {
   // tunnel_7 in maps/sim: a 0.8 m corridor before the mouth only fits an aligned robot
@@ -290,4 +373,91 @@ TEST(PathShaper, NarrowApproachTurnsEarly)
     EXPECT_TRUE(free(q)) << q.x << " " << q.y << " " << q.yaw;
   }
   expectOnAxis(out, t, 0.0);
+}
+
+TEST(PathShaper, NeverMovesGoalToMakeItFit)
+{
+  for (const auto goal : {Pose2{0.0, 0.10, 0.0}, Pose2{0.0, 0.0, M_PI / 2}}) {
+    auto in = polyline({{-2.5, 0.0}, {goal.x, goal.y}});
+    in.back().yaw = goal.yaw;
+    std::vector<ShapeEvent> events;
+    const auto out = shapePath(in, {tunnel(0, 0, 0)}, ShaperParams{}, kFree, &events);
+    ASSERT_EQ(events.size(), 1u);
+    EXPECT_FALSE(events[0].shaped);
+    EXPECT_NEAR(out.back().x, goal.x, 1e-9);
+    EXPECT_NEAR(out.back().y, goal.y, 1e-9);
+    EXPECT_NEAR(out.back().yaw, goal.yaw, 1e-9);
+  }
+}
+
+TEST(PathShaper, KeepsStartAndGoalInsideBody)
+{
+  Zone t = tunnel(0, 0, 0);
+  t.depth = 2.0;
+  const auto in = polyline({{-0.5, 0.01}, {0.5, 0.0}});
+  std::vector<ShapeEvent> events;
+  const auto out = shapePath(in, {t}, ShaperParams{}, kFree, &events);
+  ASSERT_EQ(events.size(), 1u);
+  ASSERT_TRUE(events[0].shaped) << events[0].reason;
+  EXPECT_NEAR(out.front().x, in.front().x, 1e-9);
+  EXPECT_NEAR(out.front().y, in.front().y, 1e-9);
+  EXPECT_NEAR(out.back().x, in.back().x, 1e-9);
+  EXPECT_NEAR(out.back().y, in.back().y, 1e-9);
+}
+
+TEST(PathShaper, RobotStartCannotBypassCollisionChecks)
+{
+  const auto t = tunnel(0, 0, 0);
+  const auto in = polyline({{-1.9, 0.0}, {2.5, 0.0}});
+  const double robot_yaw = 0.0;
+  const CollisionFree occupied_start = [&](const Pose2 & q) {
+      return std::hypot(q.x - in.front().x, q.y - in.front().y) > 0.02;
+    };
+  std::vector<ShapeEvent> events;
+  shapePath(in, {t}, ShaperParams{}, occupied_start, &events, &robot_yaw);
+  ASSERT_EQ(events.size(), 1u);
+  EXPECT_FALSE(events.front().shaped);
+}
+
+TEST(PathShaper, LeadOutJoinsNextDirectionAfterFullChassisClears)
+{
+  const auto zone=tunnel(0,0,0);
+  auto input=polyline({{-3,0},{1,0},{3,2}});
+  std::vector<ShapeEvent> events;
+  const auto output=shapePath(input,{zone},ShaperParams{},kFree,&events);
+  ASSERT_FALSE(events.empty());ASSERT_TRUE(events.front().shaped);
+  expectOnAxis(output,zone,0.0);
+  bool turned=false;
+  for(const auto & p:output) {
+    if(p.x>.8 && std::abs(p.yaw)>.2) {turned=true;}
+  }
+  EXPECT_TRUE(turned);
+  double largest=0;
+  for(size_t i=1;i<output.size();++i) {
+    largest=std::max(largest,std::abs(normAngle(output[i].yaw-output[i-1].yaw)));
+  }
+  EXPECT_LT(largest,.25);  // no untrackable heading step at the next terrain approach
+}
+
+TEST(PathShaper, ExitSuffixIsReshapedAndChecksLateralVariants)
+{
+  const auto zone = tunnel(0., 0., 0.);
+  const auto input = polyline({{.23, -.05}, {.7, 0.}, {2., .5}, {3., 1.}});
+  const double yaw = 0.;
+  const CollisionFree free = [](const Pose2 & q) {
+      return !(q.x > .5 && q.x < 1. && q.y < .01);
+    };
+  std::vector<ShapeEvent> events;
+  const auto output = shapePath(input, {zone}, ShaperParams{}, free, &events, &yaw);
+  ASSERT_EQ(events.size(), 1u);
+  ASSERT_TRUE(events[0].shaped) << events[0].reason;
+  EXPECT_NE(events[0].zone_id.find("exit"), std::string::npos);
+  EXPECT_NEAR(output.front().x, input.front().x, 1e-9);
+  EXPECT_NEAR(output.front().y, input.front().y, 1e-9);
+  EXPECT_NEAR(output.back().x, input.back().x, 1e-9);
+  EXPECT_NEAR(output.back().y, input.back().y, 1e-9);
+  for (const auto & q : output) {
+    EXPECT_TRUE(free(q));
+    if (q.x < .175 + .44 + .5) {EXPECT_NEAR(q.yaw, 0., 1e-6);}
+  }
 }
