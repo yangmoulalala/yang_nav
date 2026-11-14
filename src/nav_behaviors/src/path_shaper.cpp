@@ -265,7 +265,9 @@ bool shapeCrossing(
   const size_t n = p.size();
   const int dir = c.dir;
   const bool open = t.profile == ZoneProfile::OpenDirectional;
-  const double margin = open ? prm.slope_axis_margin : prm.axis_margin;
+  const bool recentre = t.recentre || t.seam_constrained;
+  const double margin = t.seam_constrained ? std::max(prm.slope_axis_margin, prm.exit_clearance) :
+    (open ? prm.slope_axis_margin : prm.axis_margin);
   const double max_body = open ? prm.slope_max_body_offset : prm.max_body_offset;
   const double hd = 0.5 * t.depth, ext = hd + margin;
   const auto s = arcLength(p);
@@ -326,7 +328,7 @@ bool shapeCrossing(
   double goal_v = 0.0, goal_u = 0.0;
   if (short_exit) {
     t.toLocal(p.back().x, p.back().y, goal_u, goal_v);
-    if (t.recentre && std::abs(goal_v) > max_body + 1e-6) {
+    if (recentre && std::abs(goal_v) > max_body + 1e-6) {
       reason = "goal inside the constrained stretch is too far from its axis";
       return false;
     }
@@ -336,10 +338,11 @@ bool shapeCrossing(
     }
   }
 
-  // a slope is not re-centred: the robot charges up the line it was already going to take, and only the
-  // heading is locked.  v0 = the path's lateral offset where it reaches the near mouth.
+  // Isolated open terrain keeps the planner's line unless its annotation asks
+  // for centring. Touching faces with different axes also require centring:
+  // their shared seam is not a usable driving line for the complete chassis.
   double v0 = 0.0, v1 = 0.0;
-  if (!t.recentre) {
+  if (!recentre) {
     const double vc = lateralAt(p, t, dir, -hd, short_entry ? 0 : k0, c.last);
     double entry_u, entry_v;
     t.toLocal(p[c.first].x, p[c.first].y, entry_u, entry_v);
@@ -375,7 +378,7 @@ bool shapeCrossing(
 
   const auto body_offsets = short_exit ? std::vector<double>{goal_v} : offsetsAround(v0, max_body, prm.offset_step);
   for (double vb : body_offsets) {
-    const double ve = (!t.recentre && !short_exit) ? vb + v1 - v0 : vb;
+    const double ve = (!recentre && !short_exit) ? vb + v1 - v0 : vb;
     const double b0 = short_entry ? std::max(-hd, du0) : -hd;
     auto body = headed(ramp(t, dir, b0, b1, vb, ve, prm.spacing), heading, heading, 1.0);
     double start_u, start_v;
@@ -625,6 +628,35 @@ std::vector<Zone> groupZones(const std::vector<Zone> & zones, const ChainParams 
     g.profile = any_tunnel ? ZoneProfile::NarrowPassage : ZoneProfile::OpenDirectional;
     g.recentre = any_tunnel;
     out.push_back(g);
+  }
+  // Exported face rectangles bound trapezoids and overlap at their seams. A
+  // centre-point plan near that overlap can put the wheels on two different
+  // slopes even when the occupancy footprint is entirely free. Keep distinct
+  // faces, but use their central corridor and clear the rear before turning.
+  // The separating-axis test also avoids imposing this policy on distant ramps.
+  auto touching = [](const Zone & a, const Zone & b) {
+      for (double axis : {a.yaw, a.yaw + M_PI / 2., b.yaw, b.yaw + M_PI / 2.}) {
+        const double distance = std::abs((b.cx - a.cx) * std::cos(axis) +
+          (b.cy - a.cy) * std::sin(axis));
+        auto radius = [&](const Zone & z) {
+            return .5 * (z.depth * std::abs(std::cos(z.yaw - axis)) +
+              z.width * std::abs(std::sin(z.yaw - axis)));
+          };
+        if (distance > radius(a) + radius(b) + .05) {return false;}
+      }
+      return true;
+    };
+  for (size_t i = 0; i < out.size(); ++i) {
+    for (size_t j = i + 1; j < out.size(); ++j) {
+      auto & a = out[i];
+      auto & b = out[j];
+      if (a.profile != ZoneProfile::OpenDirectional || b.profile != ZoneProfile::OpenDirectional ||
+        !a.axis_reliable || !b.axis_reliable || !a.one_way() || !b.one_way()) {continue;}
+      const double angle = std::abs(normAngle(a.yaw - b.yaw));
+      if (angle > chain.angle && angle < M_PI - chain.angle && touching(a, b)) {
+        a.seam_constrained = b.seam_constrained = true;
+      }
+    }
   }
   return out;
 }

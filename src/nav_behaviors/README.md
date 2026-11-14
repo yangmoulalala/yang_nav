@@ -57,6 +57,8 @@ and resets its recovery ladder. Both single-goal and through-poses trees use thi
 
 Defaults are exported explicitly: tunnels and undulations are bidirectional; slopes and steps select their annotated positive direction for the zone tracker; tunnels are centered while open terrain retains the planner's lateral line. Old zone files without policy fields receive the same defaults in the loader.
 
+Touching open directional faces with different axes additionally require a centred uphill crossing, even when `recentre` is false. Their bounding rectangles can overlap along a physical seam (for example, a hexagonal fortress); keeping the grid path's lateral line there can put the wheels on two slopes. `groupZones` derives `seam_constrained` using a separating-axis test with a 5 cm boundary allowance and excludes parallel/opposing, distant and ambiguous faces. Faces stay separate. Shaping uses their central corridor and holds the exit heading until the full chassis clears the face. This policy does not change the terrain annotations or delegate downhill differently.
+
 The semantic type selects tuning: `tunnel` uses the narrow-passage speed and footprint margins; other configured directional terrain uses the open-terrain (ramp) profile. Both use the same shaping and tracking algorithms. Add a new terrain label by exporting its policy and selecting it in the plugin `types` parameter; do not add another controller state machine.
 
 ## Nav2 parameters

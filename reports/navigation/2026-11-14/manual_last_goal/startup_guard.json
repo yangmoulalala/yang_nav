@@ -1,0 +1,5 @@
+{
+  "returncode": 3,
+  "stdout": "ABORT: a navigation/simulation stack is already running; kill it first:\n    2652 python3 /home/yang/yang_nav/install/nav_terrain/lib/nav_terrain/terrain_obstacles.py --ros-args\n  Stop the conflicting run through its owning terminal or recorded process group.\n",
+  "stderr": ""
+}

@@ -1,0 +1,27 @@
+{
+  "goals": [
+    "result status 4 (SUCCEEDED) error_code 0, 7.8 s",
+    "result status 4 (SUCCEEDED) error_code 0, 17.1 s",
+    "result status 4 (SUCCEEDED) error_code 0, 37.7 s",
+    "result status 4 (SUCCEEDED) error_code 0, 14.6 s"
+  ],
+  "last_goal_state_counts": {
+    "status=NORMAL": 174
+  },
+  "epochs": [
+    "epoch=0"
+  ],
+  "start_sim": 136.26000000000002,
+  "final_map_pose": [
+    151.096,
+    16.76966461752304,
+    0.590977530522695,
+    -0.1090175679723279,
+    15.07847741977226
+  ],
+  "truth_start_z": 0.19420678517610135,
+  "truth_end_z": 0.4919996995433554,
+  "tracker_body_lateral_max_m": 0.033,
+  "tracker_body_yaw_max_deg": 0.68,
+  "tracker_body_min_speed_mps": 0.9
+}

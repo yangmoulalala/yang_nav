@@ -45,6 +45,7 @@ velocity_smoother → cmd_vel_smoothed → collision_monitor
 - ALIGN/TRAVERSE/EXIT 期间 BT 保留当前整形路径，APPROACH 允许重规划；新目标可以打断旧路径和恢复。
 - `/nav_zone_state` 采用 `traverse tunnel_3 @123.4` 形式，时间戳与控制器时钟一致；`/nav_mode` 由控制器唯一发布，值为 normal/tunnel/ramp。
 - `one_way_dir` 目前选择需要整形和跟踪的方向。独立坡道反向下坡交普通规划/MPPI，不能把这个字段理解为全局规划器禁止下坡。
+- 相接且方向不同的独立坡面（如堡垒六面坡）保留各自区域，但上坡整形改走所选坡面的中轴；仅锁定航向、保留贴边路径会让车轮跨在两个坡面上。邻接使用区域有向矩形的分离轴检查，容许 5 cm 栅格边界间隙；平行、反向、远离或方向不可靠的区域不触发此约束。出口直线段至少覆盖完整车体清空距离，然后再接回目标路径。孤立宽坡仍按原 `recentre` 策略通行。
 
 碰撞检查使用完整 padded convex footprint，包含足迹内部占用格。路径段和制动轨迹采用半栅格步长的运动插值检查，未知和越界视为碰撞。`collision_tolerance` 必须为零，整形核心不存在跳过起点碰撞检查的开关。必须整形的路径失败会返回 Nav2 错误，不能静默把原路径交给区域跟踪器。
 

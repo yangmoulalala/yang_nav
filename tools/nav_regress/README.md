@@ -5,6 +5,8 @@
 
 同日手动第三目标洞口停车、朝向二次翻转及退出重规划修复见 [本次报告](../../reports/navigation/2026-11-14/manual_third_goal_stall/README.md)。`PLAN_REC=path` 仍输出原路径文本，并额外写入 `path.jsonl`，保存话题和每个路径点的完整四元数（含 `/plan_smoothed`），用于对照整形器与控制器的物理朝向。
 
+较晚最后目标 `(16.90,0.34)` 的通道占用/往返改道仍未解决，见 [最新诊断](../../reports/navigation/2026-11-14/manual_last_goal/README.md)。`run_nav.sh` 现在也拒绝在残留 `terrain_obstacles.py` 上启动，并在退出时清理本次记录的进程组，避免旧障碍发布者污染下一轮。
+
 在 WSL 项目根目录执行，先加载 ROS 和工作区环境：
 
 ```bash

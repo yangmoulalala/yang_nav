@@ -1,0 +1,38 @@
+{
+  "last_goal_map": [
+    16.79,
+    0.61
+  ],
+  "last_goal_sim_start": 174.268,
+  "duration_until_user_stop": 36.888000000000005,
+  "last_map_pose": [
+    16.27975228913575,
+    -0.994630510871479,
+    -0.28650219657041975,
+    31.116859256958936
+  ],
+  "last_15s_xy_range": [
+    0.21254288061563642,
+    0.09758296749697393
+  ],
+  "states": {
+    "status=NORMAL": 430
+  },
+  "epochs": [
+    "epoch=0"
+  ],
+  "commands_last_15s_mean": [
+    0.4948376553451851,
+    0.4821460413464578,
+    -0.0012358076776128213
+  ],
+  "original_shaped_body_offset_m": -0.45,
+  "replan_body_offsets_m": [
+    -0.54,
+    -0.55,
+    -0.57
+  ],
+  "face_width_m": 1.096,
+  "padded_half_width_m": 0.31,
+  "nominal_side_overhang_m": 0.21199999999999997
+}

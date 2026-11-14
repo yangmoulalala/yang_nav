@@ -303,3 +303,50 @@ TEST(TunnelDrive, DiagonalApproachStaysInsideTheOpening)
   EXPECT_LT(r.max_lat_body, 0.03);
   EXPECT_LT(r.max_yaw_body, 3.0 * M_PI / 180.0);
 }
+
+TEST(Fortress, SeamApproachUsesOneFaceCentre)
+{
+  const auto zones = loadZones(SIM_ZONES_FILE, 50, 50).zones;
+  const auto groups = groupZones(zones, ChainParams{});
+  const auto face = byId(groups, "slope_8");
+  EXPECT_TRUE(face.seam_constrained);
+  // The reported run kept -0.45 m on this 1.096 m face. The padded
+  // half-width is 0.31 m, so its wheels cannot stay on a single slope.
+  const auto a = face.toMap(-4., -.45, 0.);
+  const auto b = face.toMap(1.3, -.19, 0.);
+  const auto path = polyline({{a.x, a.y}, {b.x, b.y}});
+  std::vector<ShapeEvent> events;
+  const auto shaped = shapePath(path, zones, ShaperParams{},
+    [](const Pose2 &) {return true;}, &events);
+  const auto event = std::find_if(events.begin(), events.end(),
+    [](const auto & e) {return e.zone_id == "slope_8";});
+  ASSERT_NE(event, events.end());
+  ASSERT_TRUE(event->shaped) << event->reason;
+  EXPECT_NEAR(event->v_body, 0., .001);
+  for (const auto & q : shaped) {
+    double u, v; face.toLocal(q.x, q.y, u, v);
+    if (std::abs(u) <= .5 * face.depth) {
+      EXPECT_NEAR(v, 0., .001);
+      EXPECT_NEAR(normAngle(q.yaw - face.yaw), 0., .001);
+    }
+  }
+  ZoneTracker tracker; tracker.setZones(groups); tracker.setPath(shaped);
+  const auto state = tracker.compute(face.toMap(0., 0., 0.));
+  EXPECT_EQ(state.zone_id, "slope_8");
+  EXPECT_NEAR(normAngle(state.lock - face.yaw), 0., .001);
+}
+
+TEST(Fortress, BothHexagonsHaveSixIndependentCentredFaces)
+{
+  const auto groups = groupZones(loadZones(SIM_ZONES_FILE, 50, 50).zones, ChainParams{});
+  size_t constrained = 0;
+  for (const auto & z : groups) {
+    if (z.seam_constrained) {
+      ++constrained;
+      EXPECT_EQ(z.chain, 1);
+      EXPECT_FALSE(z.allow_flip);
+    }
+  }
+  EXPECT_EQ(constrained, 12u);
+  EXPECT_FALSE(byId(groups, "slope_2").seam_constrained);
+}

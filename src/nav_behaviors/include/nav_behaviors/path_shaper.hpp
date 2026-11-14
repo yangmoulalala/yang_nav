@@ -24,6 +24,7 @@
 // Traversal policy comes from each Zone: signed-direction zones leave opposite-direction descent
 // to the planner/MPPI; allow_flip selects the
 // permitted body heading, and recentre chooses axis-centering versus preserving the planner's lateral line.
+// Touching open faces with different axes additionally require a centred crossing to avoid their seam.
 //
 // Lateral offsets (zone frame, m): the body may sit up to `max_body_offset` off the axis, each margin
 // end up to `max_side_offset`, joined by smoothstep ramps.  The search takes the smallest offsets and the
@@ -66,6 +67,7 @@ struct Zone
   bool allow_flip{true};      // tunnel: yaw or yaw + pi, whichever is closer; slope: uphill only
   bool recentre{true};        // tunnel: shape onto the axis; slope: keep the path's lateral offset
   bool axis_reliable{true};   // false when the export saw several uphill directions in one patch
+  bool seam_constrained{false};  // derived: touching open faces with different axes require a centred crossing
 
   bool one_way() const {return one_way_dir != 0;}
   void toLocal(double x, double y, double & u, double & v) const;

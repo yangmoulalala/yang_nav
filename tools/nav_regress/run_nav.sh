@@ -30,7 +30,7 @@ set -u   # after sourcing: ROS setup scripts read unset variables
 # topics look exactly like a navigation bug (robot wandering, goals "no valid path found",
 # obstacle marks that the current configuration cannot produce).  One run at a time.
 stale=$(ps -eo pid,cmd \
-  | grep -E 'nav2_(controller|planner|bt_navigator|collision_monitor|lifecycle)|cmd_gate|gz sim' \
+  | grep -E 'nav2_(controller|planner|bt_navigator|collision_monitor|lifecycle)|cmd_gate|terrain_obstacles.py|gz sim' \
   | grep -v grep || true)
 if [ -n "$stale" ]; then
   echo 'ABORT: a navigation/simulation stack is already running; kill it first:'
@@ -60,6 +60,10 @@ cleanup() {
   for g in "${PGIDS[@]}"; do kill -INT -- -"$g" 2>/dev/null || true; done
   sleep 3
   for g in "${PGIDS[@]}"; do kill -TERM -- -"$g" 2>/dev/null || true; done
+  # Some rclpy helpers remain blocked after both signals. Do not leave an
+  # obstacle publisher alive to contaminate the next run in the same domain.
+  sleep 2
+  for g in "${PGIDS[@]}"; do kill -KILL -- -"$g" 2>/dev/null || true; done
 }
 TRUTH=; NAV=; LOC=; SIM=
 trap cleanup EXIT

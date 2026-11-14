@@ -1,0 +1,163 @@
+Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+Note: Google Test filter = Fortress.*
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from Fortress
+[ RUN      ] Fortress.SeamApproachUsesOneFaceCentre
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:312: Failure
+Value of: face.seam_constrained
+  Actual: false
+Expected: true
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:325: Failure
+The difference between event->v_body and 0. is 0.2666018867924525, which exceeds .001, where
+event->v_body evaluates to -0.2666018867924525,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.2664328928576517, which exceeds .001, where
+v evaluates to -0.2664328928576517,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.26594807419224048, which exceeds .001, where
+v evaluates to -0.26594807419224048,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.2651806755047032, which exceeds .001, where
+v evaluates to -0.2651806755047032,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.26416394150352462, which exceeds .001, where
+v evaluates to -0.26416394150352462,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.26293111689719245, which exceeds .001, where
+v evaluates to -0.26293111689719245,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.26151544639418955, which exceeds .001, where
+v evaluates to -0.26151544639418955,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.25995017470300391, which exceeds .001, where
+v evaluates to -0.25995017470300391,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.25826854653211817, which exceeds .001, where
+v evaluates to -0.25826854653211817,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.25650380659002048, which exceeds .001, where
+v evaluates to -0.25650380659002048,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.25468919958519337, which exceeds .001, where
+v evaluates to -0.25468919958519337,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.25285797022612488, which exceeds .001, where
+v evaluates to -0.25285797022612488,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.25104336322129778, which exceeds .001, where
+v evaluates to -0.25104336322129778,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24927862327920003, which exceeds .001, where
+v evaluates to -0.24927862327920003,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24759699510831612, which exceeds .001, where
+v evaluates to -0.24759699510831612,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.2460317234171287, which exceeds .001, where
+v evaluates to -0.2460317234171287,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24461605291412764, which exceeds .001, where
+v evaluates to -0.24461605291412764,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24338322830779552, which exceeds .001, where
+v evaluates to -0.24338322830779552,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24236649430661683, which exceeds .001, where
+v evaluates to -0.24236649430661683,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24159909561907966, which exceeds .001, where
+v evaluates to -0.24159909561907966,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24111427695366663, which exceeds .001, where
+v evaluates to -0.24111427695366663,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:329: Failure
+The difference between v and 0. is 0.24094528301886581, which exceeds .001, where
+v evaluates to -0.24094528301886581,
+0. evaluates to 0, and
+.001 evaluates to 0.001.
+
+[  FAILED  ] Fortress.SeamApproachUsesOneFaceCentre (2 ms)
+[ RUN      ] Fortress.BothHexagonsHaveSixIndependentCentredFaces
+/home/yang/yang_nav/src/nav_behaviors/test/test_zone_drive.cpp:350: Failure
+Expected equality of these values:
+  constrained
+    Which is: 0
+  12u
+    Which is: 12
+
+[  FAILED  ] Fortress.BothHexagonsHaveSixIndependentCentredFaces (1 ms)
+[----------] 2 tests from Fortress (3 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (3 ms total)
+[  PASSED  ] 0 tests.
+[  FAILED  ] 2 tests, listed below:
+[  FAILED  ] Fortress.SeamApproachUsesOneFaceCentre
+[  FAILED  ] Fortress.BothHexagonsHaveSixIndependentCentredFaces
+
+ 2 FAILED TESTS
