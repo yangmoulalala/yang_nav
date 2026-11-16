@@ -6,6 +6,8 @@
 | --- | --- | --- |
 | `start_navigation.sh` | 在已有定位与传感器的环境中启动导航；支持 `--help`、`--dry-run` | [导航使用指南](../docs/navigation_usage.md) |
 | `record_real_mapping.sh` / `record_real_mapping.py` | 真车建图录包；参数、话题与存储要求见操作文档 | [真车建图与录包](../docs/real_mapping.md) |
+| `optimize_map.sh` / `optimize_map.py` | 离线位姿优化、动态去除及定位地图包重建 | [点云离线优化](../docs/offline_mapping.md) |
+| `install_offline_optimizer_deps.sh` | 项目内安装固定版本 gtsam_points，复用 GTSAM 4.2 | [依赖与构建](../docs/offline_mapping.md#安装与构建) |
 | `check_bringup_params.py` | 核对完整参数文件、平台差异白名单及组合定位的 TF 发布归属；有问题返回非零 | [定位参数规则](../src/z-localization/README.md#参数规则) |
 | `nav_regress/` | 导航静态接线、fixture 冒烟与闭环、Gazebo 目标执行、日志记录和诊断 | [导航回归工具索引](nav_regress/README.md) |
 | `sim_tests/` | 定位建图、先验定位、绑架、原地旋转和双雷达标定回归 | [定位仿真测试索引](sim_tests/README.md) |

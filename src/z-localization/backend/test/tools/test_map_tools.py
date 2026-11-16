@@ -10,7 +10,7 @@ import pytest
 
 BINARY_DIR = Path(os.environ['BACKEND_BINARY_DIR'])
 TOOLS = ('build_pcd_map_bundle', 'filter_map_bundle', 'transform_map_bundle',
-         'rebuild_scan_context_descriptors', 'clean_map_bundle')
+         'rebuild_scan_context_descriptors', 'clean_map_bundle', 'offline_optimizer_bundle')
 
 
 def run(tool, *arguments, expected_returncode=0):
@@ -137,6 +137,39 @@ def keyframe_rows(directory):
     return [list(map(float, line.split()))
             for line in (directory / 'keyframes.txt').read_text().splitlines()
             if line and not line.startswith('#')]
+
+
+def test_optimizer_bridge_regenerates_both_descriptors_and_rejects_bad_masks(
+        generated_bundle, tmp_path):
+    """优化导入必须重建两类描述子，保留时间戳、强度及输入，并可被后端重载。"""
+    before = fingerprint(generated_bundle)
+    snapshot = tmp_path / 'snapshot'
+    run('offline_optimizer_bundle', '--in', generated_bundle, '--out', snapshot)
+    assert (snapshot / 'frame_0.pcd').samefile(snapshot / 'clouds/000000.pcd')
+    results = tmp_path / 'results'
+    results.mkdir()
+    (results / 'optimized_poses.txt').write_text(
+        'se3(0,0,0,0,0,0,1)\nse3(1.2,0,0,0,0,0,1)\n')
+    (results / 'optimized_map.pcd').write_bytes((generated_bundle / 'map.pcd').read_bytes())
+    (results / 'optimizer_params.yaml').write_text('fixture: true\n')
+    for i in range(2):
+        (results / f'retained_{i}.txt').write_text('0\n1\n2\n')
+    output = tmp_path / 'optimized'
+    run('offline_optimizer_bundle', '--in', snapshot, '--results', results, '--out', output)
+    rows = keyframe_rows(output)
+    assert rows[1][2] == pytest.approx(1.2)
+    assert [row[1] for row in rows] == [row[1] for row in keyframe_rows(generated_bundle)]
+    for name in ('sc_descriptors.bin', 'gprobe_descriptors.bin'):
+        assert (output / name).is_file()
+        assert (output / name).read_bytes() != (generated_bundle / name).read_bytes()
+    # Loading and exporting exercises native geometry validation and descriptor configs.
+    run('offline_optimizer_bundle', '--in', output, '--out', tmp_path / 'reload')
+    assert fingerprint(generated_bundle) == before
+    (results / 'retained_1.txt').write_text('0\n9999999\n')
+    invalid = tmp_path / 'invalid_import'
+    run('offline_optimizer_bundle', '--in', snapshot, '--results', results, '--out', invalid,
+        expected_returncode=1)
+    assert not invalid.exists()
 
 
 def test_build_transform_filter_and_descriptor_rebuild_form_consistent_workflow(

@@ -74,6 +74,8 @@ ros2 service call /save_map std_srvs/srv/Trigger '{}'
 
 确认服务返回保存成功后，再在录包终端 Ctrl-C，等待打印 bag 信息及 `Saved session`，最后停止建图。录包不代替后端地图保存。
 
+保存后可使用 `tools/optimize_map.sh` 对关键帧执行离线位姿优化、动态点去除并重建定位描述子，输出到新的地图包。真车单 MID-360 要传入 IMU 系下的雷达原点，双雷达融合云应关闭单原点 raycasting，命令见[点云离线优化](offline_mapping.md)。
+
 ## 录制内容与排错
 
 默认记录原始 MID-360/L2 点云、IMU、融合云、frontend frame/odom/session、后端 odom/状态/位姿、TF/static TF、URDF、关节角、命令、诊断、ROS 日志与参数事件。默认话题在 `tools/record_real_mapping.py` 的 `TOPICS` 中。若驱动/底盘话题改名，追加 `--topic /actual/lidar --topic /actual/imu --topic /chassis/status`；`--all` 会包含所有发现的话题和隐藏话题，适合有更多外部硬件数据的排错记录。

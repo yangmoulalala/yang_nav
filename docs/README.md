@@ -19,6 +19,7 @@
 
 定位相关文档：
 
+- [点云离线优化](offline_mapping.md)
 - [前端指南](frontend_guide.md)
 - [后端指南](backend_guide.md)
 - [话题和使用方式](topics_and_usage.md)

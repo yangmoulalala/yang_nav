@@ -184,6 +184,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `body_calibration_node` | 标定传感器到车体的旋转及水平偏移 |
 
 先验地图须使用关键帧地图包，包含 `keyframes.txt`、`clouds/` 和所选描述子的数据文件。
+工作区另提供 `tools/optimize_map.sh`，通过本包 `offline_optimizer_bundle` 导出快照、调用两阶段 VGICP 优化并导入完整的新地图包，见[离线优化](../../../docs/offline_mapping.md)。
 `map.pcd` 是可选的全局显示点云。各工具选项见[参数文档](docs/parameters.md#离线工具参数)。
 
 ## 致谢

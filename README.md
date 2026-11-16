@@ -12,6 +12,7 @@ ROS 2 Jazzy 哨兵机器人工作区：机器人描述与 Gazebo 仿真、单/�
 | 导航实现及当前完成边界 | [导航框架](docs/navigation.md)、[导航进度](docs/nav_plan.md) |
 | 建图、定位、硬件依赖及传感器配置 | [定位系统](src/z-localization/README.md) |
 | 真车建图与录包 | [真车操作](docs/real_mapping.md) |
+| 点云离线优化与动态物体去除 | [离线优化](docs/offline_mapping.md) |
 | 仿真场地、机器人和遥控 | [Gazebo](src/sentry_gazebo/README.md)、[机器人描述](src/sentry_description/README.md) |
 | 地形标注与导出 | [地形制作](src/nav_terrain/terrain_studio.md) |
 | 检查、回归和诊断脚本 | [工具目录](tools/README.md) |
@@ -25,6 +26,7 @@ src/
   nav_bringup/         导航 launch、行为树、Nav2 参数与 RViz
   nav_safety/          最终速度命令门与安全判定
   nav_terrain/         地形标注、导出、地面投影与障碍过滤
+  offline_mapping_optimizer/  两阶段 VGICP 离线优化与动态点去除
   sentry_description/  URDF 与机器人网格，传感器外参唯一来源
   sentry_gazebo/       Gazebo 场地生成、传感器桥接、遥控及 UWB 仿真
   z-localization/      定位相关 ROS 包集合；本目录本身不是 ROS 包
@@ -44,7 +46,8 @@ build/ install/ log/   colcon 生成物，Git 忽略
 ## 构建与检查
 
 先按[定位依赖](src/z-localization/README.md)及[导航准备](docs/navigation_usage.md#1-进入项目与准备环境)准备 ROS、Nav2、Gazebo、Livox-SDK2 等依赖。
-从当前工作区构建全部 13 个包，限制并行以控制内存使用：
+离线优化器另需先执行 `bash tools/install_offline_optimizer_deps.sh`，将固定版本的 gtsam_points 安装到项目 `.deps`，详见[离线优化](docs/offline_mapping.md)。
+从当前工作区构建全部 14 个包，限制并行以控制内存使用：
 
 ```bash
 cd /home/yang/yang_nav
