@@ -1,5 +1,18 @@
 # 导航回归与诊断工具
 
+完整仿真入口 `run_nav.sh`、`run_tunnel_accept.sh` 和 `sim_rviz.sh` 支持 `LIDAR=single|dual`（默认 dual）。
+单雷达会在启动 Nav2 前运行 `zt_driver.py ready ... earlyspin`，以慢转补足侧装 MID-360 初始化视野；
+需要与先验地图匹配的出生点和航向。示例：
+
+```bash
+ROS_DOMAIN_ID=122 LIDAR=single OUT=/tmp/nav_single \
+  bash tools/nav_regress/run_nav.sh '1.0 1.0 0'
+```
+
+坐标为格式示例，运行前选取当前地图上的可通行目标。`ready` 只初始化并停车，不跑圈、保存地图或绑架。
+自动回归可用 `LOC_WAIT_ATTEMPTS`（默认 90）限制目标间等待可信定位的查询次数，
+`MAX_LOC_RESTARTS`（默认 2，设 0 禁止自动重启）限制目标间定位重启。等待失败的目标记录为 skipped 并使运行失败。
+
 日常使用、启动脚本及目标操作见 [导航使用指南](../../docs/navigation_usage.md)。已有定位时可使用 `bash tools/start_navigation.sh rviz:=true` 仅启动导航。
 2026-11-14 隧道/动态障碍/Gazebo 三目标结果、真车边界及录包说明见 [后续报告](../../reports/navigation/2026-11-14/navigation_followup/README.md)。
 

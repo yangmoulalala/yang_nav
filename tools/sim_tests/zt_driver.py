@@ -3,6 +3,7 @@
     zt_driver.py mapping  OUT.json [laps]
     zt_driver.py localize OUT.json [laps]   (drives laps, then kidnaps 1.5 m / 45 deg and watches recovery)
     zt_driver.py spin     OUT.json 0        (spins in place at the spawn point, slow then fast)
+    zt_driver.py ready    OUT.json 0 earlyspin (initialize only, then release cmd_vel for Nav2)
     zt_driver.py calib    OUT.json 0        (parks at structured spots with varied headings for dual-LiDAR calibration)
     optional 4th argument (zt_run.sh 6th): comma-separated flags
       spin       turn one full circle at every waypoint
@@ -360,7 +361,7 @@ def main():
     mode, out = sys.argv[1], sys.argv[2]
     laps = int(sys.argv[3]) if len(sys.argv) > 3 else 2
     extras = set(sys.argv[4].split(',')) if len(sys.argv) > 4 else set()
-    if mode in ('spin', 'calib'):
+    if mode in ('spin', 'calib', 'ready'):
         laps = 0
     rclpy.init()
     d = Driver()
@@ -393,7 +394,9 @@ def main():
             else:
                 d.drive(LAP, f'lap{lap}')
             d.hold(2, f'lap{lap}_end')
-        if mode == 'mapping':
+        if mode == 'ready':
+            pass  # Initialization and the stationary start hold are the entire task.
+        elif mode == 'mapping':
             result['services'].append(d.call('/backend_node/save_map'))
         elif mode == 'calib':
             for x, y, heading in CALIB_SPOTS:
@@ -453,7 +456,8 @@ def main():
         json.dump(result, f)
     print('WROTE', out, len(d.samples), flush=True)
     rclpy.shutdown()
+    return 0 if ready else 1
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

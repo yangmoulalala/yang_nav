@@ -39,3 +39,4 @@ __pycache__/
 # ---- local recordings and accidental Windows paths -------------------------
 /bags/
 /NUL/
+reports/

@@ -33,4 +33,6 @@ if [ "$MODE" = mapping ]; then DMODE=mapping; else DMODE=localize; fi
 [ "${CALIB:-0}" = 1 ] && DMODE=calib
 DMODE=${5:-$DMODE}
 timeout 600 python3 "$HERE/zt_driver.py" $DMODE "$OUT/result.json" "$LAPS" ${6:-} > "$OUT/driver.log" 2>&1
-echo "driver exit=$?"
+rc=$?
+echo "driver exit=$rc"
+exit "$rc"

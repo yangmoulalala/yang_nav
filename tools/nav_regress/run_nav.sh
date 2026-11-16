@@ -1,11 +1,14 @@
 #!/bin/bash
-# Full-stack navigation run in the RMUC sim: gz + localization (dual, prior map) + navigation,
+# Full-stack navigation run in the RMUC sim: gz + localization (single/dual, prior map) + navigation,
 # then one or more goals in world coordinates.  Logs and a gz ground-truth trace go to $OUT.
 #
 #   tools/nav_regress/run_nav.sh "X Y YAW" ["X Y YAW" ...]
 #
-# env: OUT (default /tmp/nav_run_<timestamp>), MAP (default maps/sim), GUI=true
+# env: OUT (default /tmp/nav_run_<timestamp>), MAP (default maps/sim), GUI=true,
+#      LIDAR=single|dual (default dual); single runs earlyspin before starting Nav2.
 WS=$(cd "$(dirname "$0")/../.." && pwd)
+LIDAR=${LIDAR:-dual}
+case "$LIDAR" in single|dual) ;; *) echo "invalid LIDAR=$LIDAR (single|dual)"; exit 2 ;; esac
 OUT=${OUT:-/tmp/nav_run_$(date +%Y%m%d_%H%M%S)}; MAP=${MAP:-$WS/maps/sim}; GUI=${GUI:-false}
 # TERRAIN: nav_terrain package (terrain_export.py output) used as terrain_dir and for goal registration.
 # It lives beside the prior map (maps/sim) or in its own export folder (maps/sim/terrain).
@@ -21,6 +24,10 @@ RVIZ=${RVIZ:-false}; HOLD=${HOLD:-0}
 # position prior for SUSPECT/LOST recovery (uwb.enabled in bringup/config/sim/backend*.yaml);
 # without it the backend waits in SUSPECT/LOST instead of recovering
 UWB=${UWB:-true}
+# Bounds may be shortened by regression runners after the first localization
+# failure. Defaults retain the interactive recovery window and restart policy.
+LOC_WAIT_ATTEMPTS=${LOC_WAIT_ATTEMPTS:-90}
+MAX_LOC_RESTARTS=${MAX_LOC_RESTARTS:-2}
 export DISPLAY=${DISPLAY:-:0}
 source /opt/ros/jazzy/setup.bash; source "$WS/install/setup.bash"
 set -u   # after sourcing: ROS setup scripts read unset variables
@@ -82,7 +89,16 @@ if [ "${LOC_REC:-false}" = true ]; then
   start LOC_TRACE localization_trace.log python3 "$WS/tools/nav_regress/record_localization.py" "$OUT"
 fi
 
-start LOC loc.log ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP"
+start_localization() {
+  start LOC loc.log ros2 launch bringup sim.launch.py lidar:="$LIDAR" mode:=localization prior_map:="$MAP"
+  if [ "$LIDAR" = single ]; then
+    # A side-mounted MID-360 needs motion to initialize. This helper stops and
+    # exits before Nav2 is launched, so only one owner publishes cmd_vel.
+    ARENA=rmuc timeout 190 python3 "$WS/tools/sim_tests/zt_driver.py" ready \
+      "$OUT/startup_${LOC}.json" 0 earlyspin >> "$OUT/startup.log" 2>&1
+  fi
+}
+start_localization
 # Do not start navigation on top of a localization that never came up: without
 # lio_odom the local costmap times out and lifecycle_manager aborts the whole bringup.
 LOC_OK=false
@@ -97,7 +113,7 @@ if [ "$LOC_OK" != true ]; then
   # localization fault (see docs/localization_issues.md L5), not a navigation result: restart it once
   echo '=== localization not trusted at startup, restarting localization once'
   stop_group "$LOC"
-  start LOC loc.log ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP"
+  start_localization
   for i in $(seq 1 90); do
     if timeout 3 ros2 topic echo --once /backend_node/localization_state std_msgs/msg/String 2>/dev/null \
         | grep -q 'pose_trusted=true'; then LOC_OK=true; break; fi
@@ -153,7 +169,7 @@ fi
 # ZLIO resets when it misses >0.1 s of IMU (seen while many processes start under WSL);
 # wait until localization is trusted again before every goal
 wait_trusted() {
-  for i in $(seq 1 90); do
+  for i in $(seq 1 "$LOC_WAIT_ATTEMPTS"); do
     timeout 3 ros2 topic echo --once /backend_node/localization_state std_msgs/msg/String 2>/dev/null \
       | grep -q 'pose_trusted=true' && return 0; sleep 1
   done; return 1
@@ -161,24 +177,26 @@ wait_trusted() {
 rc=0; CONSEC=0
 for g in "$@"; do
   sleep 3
-  if ! wait_trusted && [ "${LOC_RESTARTS:-0}" -lt 2 ]; then
+  if ! wait_trusted && [ "${LOC_RESTARTS:-0}" -lt "$MAX_LOC_RESTARTS" ]; then
     # The backend can stay LOST (tf_frozen) for good after a ZLIO IMU-gap reset, e.g. under the
     # CPU spike of the Nav2 bringup. That is a localization issue, not navigation: restart the
     # localization stack once more so the navigation test can still run.
     LOC_RESTARTS=$((${LOC_RESTARTS:-0}+1))
     echo "=== restarting localization ($LOC_RESTARTS): backend not trusted"
     stop_group "$LOC"
-    start LOC loc.log ros2 launch bringup sim.launch.py lidar:=dual mode:=localization prior_map:="$MAP"
+    # Nav2 and its safety gate are already publishing cmd_vel here. Do not run
+    # the initialization motion helper against an active navigation stack.
+    start LOC loc.log ros2 launch bringup sim.launch.py lidar:="$LIDAR" mode:=localization prior_map:="$MAP"
   fi
   if ! wait_trusted; then
     # not a navigation failure: the backend is LOST (tf frozen), so the robot cannot move
-    echo "=== goal (world) $g   SKIPPED: localization not trusted (resets so far: $(grep -c 'IMU input interrupted' "$OUT/loc.log"))"
+    echo "=== goal (${GOAL_FRAME:-world}) $g   SKIPPED: localization not trusted (resets so far: $(grep -c 'IMU input interrupted' "$OUT/loc.log"))"
     echo "goal skipped $g: localization not trusted" >> "$OUT/goals.log"
     rc=1; LOCFAIL=$((${LOCFAIL:-0}+1))
     if [ "$LOCFAIL" -ge 2 ]; then echo 'ABORT: localization lost, not a navigation result'; break; fi
     continue
   fi
-  echo "=== goal (world) $g   resets so far: $(grep -c 'IMU input interrupted' "$OUT/loc.log")"
+  echo "=== goal (${GOAL_FRAME:-world}) $g   resets so far: $(grep -c 'IMU input interrupted' "$OUT/loc.log")"
   python3 "$WS/tools/nav_regress/goal.py" $g --frame ${GOAL_FRAME:-world} --nav-dir "$TERRAIN" --timeout "${GOAL_TIMEOUT:-180}" | tee -a "$OUT/goals.log"
   if [ "${PIPESTATUS[0]}" = 0 ]; then CONSEC=0; else rc=1; CONSEC=$((CONSEC+1)); fi
   echo "truth: $(tail -1 "$OUT/truth.log")"

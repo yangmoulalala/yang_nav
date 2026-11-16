@@ -39,6 +39,8 @@ python3 tools/sim_tests/zt_eval.py /tmp/zt/loc/result.json
 ```
 
 输出目录里有 `sim.log`、`bringup.log`、`driver.log` 和 `result.json`；标定场景另有 `calib.log` 与 `extrinsic.yaml`。
+`zt_run.sh` 传递驱动的退出码（包括超时）；初始化失败时驱动返回非零。
+退出码 0 仍需结合 `zt_eval.py` 的误差、可信状态及绑架恢复结果判断验收，不能等同于定位精度通过。
 
 改动参数后先运行 `python3 tools/check_bringup_params.py`，确认 bringup 配置与各模块 example 的键一致。
 
