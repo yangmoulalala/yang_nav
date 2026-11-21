@@ -66,7 +66,7 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 
 | 参数 | 默认 | 说明 |
 | --- | --- | --- |
-| `lidar` | `dual`（真车 `single`） | `single` / `dual` |
+| `lidar` | `single` | `single` / `dual` |
 | `mode` | `mapping` | `mapping` / `localization` |
 | `prior_map` | 空 | 先验地图目录；`localization` 时留空则用 `map_dir` |
 | `map_dir` | `<工作空间>/maps/sim`（真车 `maps/real`） | `~/save_map` 的保存目录，已加入 `.gitignore` |
