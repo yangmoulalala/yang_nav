@@ -9,6 +9,7 @@
 | [导航使用指南](navigation_usage.md) | 构建、启动脚本、目标操作、排查及常用命令 |
 | [导航框架](navigation.md) | 当前架构、接口、安全约束及启动方式 |
 | [导航进度](nav_plan.md) | 已验证结果、待办和完成边界 |
+| [底盘协议与通信](chassis_protocol.md) | 真车 17 字节帧、串口发送、yaw 角度边界与过洞触发 |
 | [回归工具](../tools/nav_regress/README.md) | 复现命令、输入、输出及各检查能证明的范围 |
 | [区域插件](../src/nav_behaviors/README.md) | 模块职责、区域策略和插件参数 |
 | [地形制作](../src/nav_terrain/terrain_studio.md) | 手工标注与地形导出流程 |

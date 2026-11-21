@@ -35,6 +35,7 @@ source install/setup.bash
 | `verify_nav_system.sh` | 已安装四包 → 终端结果 | 库、插件注册、两个 BT 与配置的静态接线检查；不启动运行验证 |
 | `framework_smoke.py` | 自动生成 fixture → `result.json` / `navigation.log` | 生命周期、两个 BT 接线、障碍过滤、速度限制、collision_monitor 减速、障碍清除及观测断流停车 |
 | `framework_accept.py` | 自动生成 fixture → `result.json` / `navigation.log` / `trace.jsonl` | 真实 Nav2 节点及最终 cmd_vel 的全向运动学闭环，包括单/多目标、区域通行、取消/抢占与安全门 |
+| `control_rate.py` | 自动生成 fixture + PTY → `result.json` / 两个进程日志 | 核对安装后的 100 Hz 参数并测量控制器、平滑、碰撞监控、命令门与串口实际频率；确定性底盘，无硬件 |
 | `dynamic_accept.py` | 自动生成 fixture → `result.json` / `navigation.log` / `trace.jsonl` | 横穿、挡路、占用目标接近等待、观测断流、障碍移除与新目标抢占；真实 Nav2 + 运动学底盘，不含 Gazebo 接触物理 |
 | `recovery_ladder.py` | 两个不可达目标与测试 phase → `result.json` / `navigation.log` | 区域外恢复升级、区域 phase 内禁止运动恢复 |
 | `plan_tunnels.sh` + `plan_tunnels.py` | 地形目录 → 终端统计与 planner/smoother 日志 | 当前地图各隧道双向规划；设置 SMOOTHER 才检查整形，action 失败计失败 |
@@ -44,6 +45,7 @@ python3 tools/nav_regress/terrain_check.py maps/sim/terrain
 bash tools/nav_regress/verify_nav_system.sh
 ROS_DOMAIN_ID=85 python3 tools/nav_regress/framework_smoke.py --out /tmp/nav_framework_smoke
 ROS_DOMAIN_ID=86 python3 tools/nav_regress/framework_accept.py --out /tmp/nav_framework_accept
+ROS_DOMAIN_ID=198 python3 tools/nav_regress/control_rate.py --out /tmp/nav_control_rate
 ROS_DOMAIN_ID=87 python3 tools/nav_regress/recovery_ladder.py --out /tmp/nav_recovery_ladder
 ROS_DOMAIN_ID=77 SMOOTHER=zone_shaper OUT=/tmp/nav_plans tools/nav_regress/plan_tunnels.sh maps/sim/terrain
 ```

@@ -5,6 +5,7 @@
 
 | 目录 | 内容 |
 | --- | --- |
+| [navigation/2026-11-21/control_100hz](navigation/2026-11-21/control_100hz/README.md) | 默认 yaw 前视时长、100 Hz 控制链实测与导航闭环回归 |
 | [maintenance/2026-11-14](maintenance/2026-11-14/README.md) | 仓库结构、配置、源码入口与文档一致性维护；修正 TF 发布归属和 YAML 格式，删除重复 Git 钩子 |
 | [navigation/2026-11-13](navigation/2026-11-13/README.md) | 导航文档及代码清理；同日其他子目录保存后续故障诊断与修复证据，分别阅读其 README |
 | [navigation/2026-11-12](navigation/2026-11-12/README.md) | 导航框架、地形、单元测试及路径检查的历史结果 |

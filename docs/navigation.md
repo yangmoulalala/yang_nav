@@ -21,6 +21,10 @@ velocity_smoother → cmd_vel_smoothed → collision_monitor
 
 导航直接使用定位结果，不修改定位数据；`cmd_gate` 按已有可信状态、命令/观测新鲜度和速度上限决定最终输出。
 
+控制链默认 100 Hz（10 ms）：ZoneAwareController/MPPI、恢复行为、速度平滑和最终命令门均按 100 Hz 运行；collision_monitor 随平滑后的 100 Hz 输入处理。真车 `chassis_comm` 默认以 100 Hz 发送 `/cmd_vel`，使用 `yaw_mode=twist`、`yaw_horizon=0.1 s` 将角速度换成当前机体系的期望相对转角，见[底盘通信](chassis_protocol.md)。
+
+BT 周期为 10 ms，局部代价图更新为 100 Hz。局部代价图的 RViz 发布保持 20 Hz，全局代价图、全局重规划与传感器/定位数据使用各自独立频率。MPPI 保留 `model_dt=0.05 s`、40 步的 2 s 预测范围；Jazzy 支持控制周期小于模型时间步，此时不启用控制序列平移。预测时间步和 yaw 前视时长均独立于 10 ms 的控制周期。
+
 障碍点云已经位于固定 map 坐标系。碰撞监控使用最新 map→base TF（`base_shift_correction=false`），避免每条命令等待估计器尚未发布的“当前时刻”变换；观测过期、变换失败停车和完整车体 approach 检查继续启用。
 
 ## 地形输入

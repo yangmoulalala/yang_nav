@@ -31,7 +31,7 @@ public:
   CmdGate()
   : Node("cmd_gate")
   {
-    const double rate = declare_parameter<double>("rate", 30.0);
+    const double rate = declare_parameter<double>("rate", 100.0);
     cfg_.input_timeout = declare_parameter<double>("input_timeout", cfg_.input_timeout);
     cfg_.state_timeout = declare_parameter<double>("state_timeout", cfg_.state_timeout);
     cfg_.require_trusted = declare_parameter<bool>("require_trusted", cfg_.require_trusted);

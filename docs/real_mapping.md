@@ -8,7 +8,7 @@
 
 仿真和真车的组合定位入口均由后端在同一个 TFMessage 内发布 `map→lio_odom`、`lio_odom→base_link`，两条边来自同一代、同一时间戳的状态投影，避免前端重置原点时短暂拼出错误车体位置。对应 `frontend.yaml` 的 `output.publish_tf=false` 与后端 `common.publish_odom_tf=true` 必须配套；`tools/check_bringup_params.py` 已检查这一约束。独立运行前端时仍可使用其自带 TF 发布。
 
-仓库没有真车底盘通信驱动，不能仅凭仿真认为底盘已接通。实机需要外部驱动把最终 Twist 转为轮速，确认指令是车体系，x 向前、y 向左、z 角速度逆时针，单位 m/s 与 rad/s，并验证底盘自身通信超时停车。当前没有硬件运动验收。
+仓库现有 `chassis_comm`，按固定 17 字节协议发送 vx/vy、当前机体系下的期望相对 yaw 转角（rad）和过洞动作。默认 `yaw_mode=twist`、`yaw_horizon=0.1 s`、100 Hz 发送，将最终 Twist 的角速度按前视时长转换为相对角目标；`yaw_mode=relative_angle` 可使用独立的 `/chassis/yaw_target`。实际角速度跟踪需按下位机角度环调试。启动、超时、无效输入与正常退出均发送 `vx=vy=yaw=action_flag=0`。过洞自动触发时机仍待确定，不能仅凭仿真或发送节点认为底盘已经接通。启动参数、CRC 向量和验证边界见[底盘协议与通信](chassis_protocol.md)；下位机通信超时停车和实际运动尚未硬件验收。
 
 另有定位能力边界：当前后端在局中 `SUSPECT/LOST` 恢复时要求新鲜 UWB 位置先验，而 real 配置关闭 UWB。因而“真车可以启动建图”不代表“无 UWB 的真车丢定位后能自动恢复”；这一兜底尚未适配验收，见 `docs/localization_issues.md` 的 L8。手动建图使用 mapping 模式，不依赖 prior-map 局中重定位；真车自主导航前仍需处理这项能力及硬件实测。
 

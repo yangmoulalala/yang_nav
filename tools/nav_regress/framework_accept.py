@@ -40,7 +40,7 @@ def angle(v):
 
 
 class Plant(Node):
-    def __init__(self, out):
+    def __init__(self, out, step_period=.02):
         super().__init__('nav_acceptance_plant')
         self.pose = np.array([-3., -2., 0.])
         self.command = Twist()
@@ -65,7 +65,7 @@ class Plant(Node):
                                  QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.single = ActionClient(self, NavigateToPose, '/navigate_to_pose')
         self.multi = ActionClient(self, NavigateThroughPoses, '/navigate_through_poses')
-        self.create_timer(.02, self.step)
+        self.create_timer(step_period, self.step)
         self.trace = (out / 'trace.jsonl').open('w')
         self.frame_tick = 0
 
