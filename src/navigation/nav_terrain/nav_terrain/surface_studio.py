@@ -16,6 +16,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from importlib.util import find_spec
 from pathlib import Path
 
 import numpy as np
@@ -33,6 +34,7 @@ except ImportError:  # pragma: no cover - the core modules work without Qt
     W = None
 
 _APP = None
+_OPEN3D_REQUIRED = '三维预览需要 Open3D；请按 nav_terrain/README.md 安装依赖，并用 ros2 run nav_terrain surface_studio.py 启动。'
 
 
 def make_app(argv):
@@ -627,6 +629,9 @@ if W is not None:
         def view3d(self):
             if self.p is None:
                 return
+            if find_spec('open3d') is None:
+                self.warn(_OPEN3D_REQUIRED)
+                return
             p = self.p
             rr, cc = np.nonzero(np.isfinite(p.surf.z))
             res = p.surf.resolution
@@ -639,6 +644,12 @@ if W is not None:
             self.log('三维预览已在新窗口打开（与当前标注着色一致）')
 
 def view3d_main(path):
+    if find_spec('open3d') is None:
+        raise SystemExit(_OPEN3D_REQUIRED)
+    # GLFW can stall on Wayland; use XWayland when an X display is available.
+    if sys.platform.startswith('linux') and os.environ.get('DISPLAY'):
+        os.environ['WAYLAND_DISPLAY'] = ''
+        os.environ['XDG_SESSION_TYPE'] = 'x11'
     import open3d as o3d
     d = np.load(path)
     pc = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(d['xyz'].astype(np.float64)))
