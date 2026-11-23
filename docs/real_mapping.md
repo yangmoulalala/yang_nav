@@ -4,7 +4,7 @@
 
 ## 当前适配结论
 
-定位已有真车入口 `bringup/real.launch.py`：MID-360 驱动、单/双雷达融合、URDF 关节 TF、ZLIO、后端建图/定位。导航使用相同规划器、控制器、车体轮廓和安全链，最终输出 `geometry_msgs/msg/Twist`，默认 `/cmd_vel`，可用 `cmd_vel_topic:=/your/chassis/topic` 重映射。
+真车入口 `bringup/real.launch.py` 启动 MID-360 驱动、单/双雷达融合、URDF 关节 TF、ZLIO、后端建图/定位，并默认启动底盘通信。底盘默认串口 `/dev/ttyACM1`、波特率 `115200`，可通过 `chassis_port`、`chassis_baud_rate` 覆盖。导航使用相同规划器、控制器、车体轮廓和安全链，最终输出 `geometry_msgs/msg/Twist`，默认 `/cmd_vel`，可用 `cmd_vel_topic:=/your/chassis/topic` 重映射。
 
 仿真和真车的组合定位入口均由后端在同一个 TFMessage 内发布 `map→lio_odom`、`lio_odom→base_link`，两条边来自同一代、同一时间戳的状态投影，避免前端重置原点时短暂拼出错误车体位置。对应 `frontend.yaml` 的 `output.publish_tf=false` 与后端 `common.publish_odom_tf=true` 必须配套；`tools/check_bringup_params.py` 已检查这一约束。独立运行前端时仍可使用其自带 TF 发布。
 

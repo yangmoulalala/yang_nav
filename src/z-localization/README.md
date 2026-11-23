@@ -23,7 +23,7 @@ MID-360 内置 IMU ────────────────────�
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
 | `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
 | `lidar_calibration` | 新增，核心移植自 navi_minco_bit | L2 → MID-360 外参标定（PCL GICP） |
-| `bringup` | 重写 | `localization.launch.py`（共用管线：融合 + 前端 + 后端）、`sim.launch.py` / `real.launch.py`（只管数据源）与 `config/{sim,real}/` |
+| `bringup` | 重写 | `localization.launch.py`（共用管线：融合 + 前端 + 后端）、`sim.launch.py` / `real.launch.py`（数据源、真车底盘通信）与 `config/{sim,real}/` |
 
 对上游代码的改动：
 
@@ -138,6 +138,8 @@ ros2 launch bringup real.launch.py lidar:=dual driver_l2:=true l2_launch:=/abs/p
 ros2 launch bringup real.launch.py mode:=localization                 # 加载 ~/yang_nav/maps/real
 ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 ```
+
+真车入口默认启动 `chassis_comm`。默认串口 `/dev/ttyACM1`、波特率 `115200`，可用 `chassis_port`、`chassis_baud_rate` 覆盖。底盘默认 100 Hz、`yaw_mode=twist`、`yaw_horizon=0.1 s`，参数详见[底盘协议与通信](../../docs/chassis_protocol.md)。
 
 - MID-360：`livox_ros_driver2`，参数在 `bringup/config/real/livox_driver.yaml`（`xfer_format=0` PointCloud2，`frame_id: mid360_link`，无需别名 TF）。
   **雷达与主机 IP 改 `bringup/config/real/MID360_config.json`**，不要改驱动包里的那份。

@@ -67,7 +67,7 @@ colcon test --base-paths src --packages-select chassis_comm --return-code-on-tes
 colcon test-result --test-result-base build/chassis_comm --verbose
 ```
 
-串口设备和波特率不属于已提供的帧协议，启动时必须显式提供。当前串口格式为 8N1、无流控，需与下位机设置一致。100 Hz × 17 字节 × 10 bit/字节 = 17000 bit/s，波特率不足时启动报错。下面两项环境变量应先设为实机约定值：
+单独启动通信节点时，串口设备和波特率必须显式提供；真车入口已默认配置 `/dev/ttyACM1`、`115200`。当前串口格式为 8N1、无流控，需与下位机设置一致。100 Hz × 17 字节 × 10 bit/字节 = 17000 bit/s，波特率不足时启动报错。下面两项环境变量应先设为实机约定值：
 
 ```bash
 ros2 launch chassis_comm chassis.launch.py \
@@ -82,7 +82,15 @@ ros2 launch chassis_comm chassis.launch.py \
   yaw_mode:=relative_angle
 ```
 
-该入口独立于仿真和定位 launch，使用真实单调时钟检查输入新鲜度，禁止 `use_sim_time=true`。可以用 launch 参数 `cmd_vel_topic`、`yaw_topic`、`action_topic` 更换输入；twist 模式的速度源应为最终安全门输出，默认 `/cmd_vel`。
+真车入口 `real.launch.py` 同时启动此节点，默认串口 `/dev/ttyACM1`、波特率 `115200`：
+
+```bash
+ros2 launch bringup real.launch.py mode:=localization
+```
+
+默认 `chassis_rate:=100.0`、`chassis_yaw_mode:=twist`、`chassis_yaw_horizon:=0.1`；还可配置 `chassis_cmd_vel_topic`、`chassis_yaw_topic`、`chassis_action_topic`。需要更换串口或波特率时，使用 `chassis_port`、`chassis_baud_rate` 覆盖。通过 real 入口启动后无需另开独立发送节点。
+
+独立入口仍可单独启动；两种入口均使用真实单调时钟检查输入新鲜度，禁止 `use_sim_time=true`。可以用 launch 参数 `cmd_vel_topic`、`yaw_topic`、`action_topic` 更换输入；twist 模式的速度源应为最终安全门输出，默认 `/cmd_vel`。
 
 节点参数可通过 `ros2 run chassis_comm chassis_serial --ros-args -p ...` 设置：
 
