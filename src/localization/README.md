@@ -64,7 +64,7 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 
 ### 单雷达操作
 
-MID-360 侧装（`mid360_joint` 俯仰约 90°），静止时只看到一侧，单雷达要转车补视野（仅仿真验证）：
+MID-360 的数据坐标系与 CAD 网格坐标系分别定义；`yaw_joint=0` 时数据系相对车体名义 roll 为 −15°，不能单看 `mid360_joint` 的欧拉俯仰角判断侧装。单雷达转车补视野的仿真操作：
 
 1. **启动**：`zlio_node` 开始收数据后先静止约 2 s，再以约 0.3 rad/s 原地慢转，直到后端进入 NORMAL。静止时 ZLIO 初始化最弱方向支撑只有 2–4.8（门槛 5），会反复重来甚至几分钟不完成；转动后 3 s 内完成。
 2. **建图**：先在出生点慢转一圈再正常跑图，其余路段不要原地转（全程转圈会把建图误差拉到约 27 cm）。地图在出生点缺少其他航向的关键帧时，启动慢转会让重定位锁到对称位置。
@@ -113,7 +113,7 @@ ros2 launch bringup real.launch.py mode:=localization                 # 加载 ~
 ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 ```
 
-真车入口默认启动 `chassis_comm`。默认串口 `/dev/ttyACM1`、波特率 `115200`，可用 `chassis_port`、`chassis_baud_rate` 覆盖。底盘默认 100 Hz、`yaw_mode=twist`、`yaw_horizon=0.1 s`，参数详见[底盘接口](../platform/chassis_comm/README.md)。
+真车入口默认启动 `chassis_comm`。默认使用固定串口 `/dev/nav`、波特率 `115200`，启动命令无需传入串口参数；需要临时调整时可用 `chassis_port`、`chassis_baud_rate` 覆盖。底盘默认 100 Hz、`yaw_mode=twist`、`yaw_horizon=0.1 s`，参数详见[底盘接口](../platform/chassis_comm/README.md)。
 
 - MID-360：`livox_ros_driver2`，参数在 `bringup/config/real/livox_driver.yaml`（`xfer_format=0` PointCloud2，`frame_id: mid360_link`，无需别名 TF）。
   **雷达与主机 IP 改 `bringup/config/real/MID360_config.json`**，不要改驱动包里的那份。

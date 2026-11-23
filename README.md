@@ -2,7 +2,7 @@
 
 Ubuntu 24.04 / ROS 2 Jazzy 机器人导航工作区。单雷达或双雷达与 IMU 提供定位，人工标注的地形提供静态通行约束，Nav2 根据实时障碍规划和控制，最终速度送往 Gazebo 或真车底盘。
 
-[使用手册：仿真与真车启动、建图、录包、地图优化和地形标注](docs/user-guide.md)
+[使用手册：真车与仿真启动、发送目标、启动后自动导航、建图、录包和地形标注](docs/user-guide.md)
 
 ## 目录与入口
 
@@ -18,7 +18,7 @@ Ubuntu 24.04 / ROS 2 Jazzy 机器人导航工作区。单雷达或双雷达与 I
 
 ## 构建与检查
 
-在 WSL `ubuntu24` 的 `/home/yang/yang_nav` 执行。首次准备环境需要 ROS 2 Jazzy、Nav2、Gazebo Harmonic、Livox-SDK2 和地图优化依赖。离线优化器使用 GTSAM 4.2 与项目内固定版本的 gtsam_points。[定位依赖](src/localization/README.md)、[优化器依赖](src/mapping/offline_mapping_optimizer/README.md)
+在 Ubuntu 工作区根目录执行，车上为 `/home/potential/yang_nav`。首次准备环境需要 ROS 2 Jazzy、Nav2、Gazebo Harmonic、Livox-SDK2 和地图优化依赖。离线优化器使用 GTSAM 4.2 与项目内固定版本的 gtsam_points。[定位依赖](src/localization/README.md)、[优化器依赖](src/mapping/offline_mapping_optimizer/README.md)
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -38,7 +38,7 @@ colcon test-result --verbose
 
 ## 运行导航
 
-仿真使用三个已加载 ROS 和工作区环境的终端，设相同的 `ROS_DOMAIN_ID`。下面的例子使用 RMUC 场地，要求 `maps/sim` 下有与出生位置、传感器配置匹配的先验地图及地形导出。
+仿真使用三个已加载 ROS 和工作区环境的终端。下面的例子使用 RMUC 场地，要求 `maps/sim` 下有与出生位置、传感器配置匹配的先验地图及地形导出。
 
 ```bash
 ros2 launch sentry_gazebo sim.launch.py arena:=rmuc uwb:=true               # 终端 1
@@ -47,5 +47,14 @@ bash tools/start_navigation.sh terrain_dir:=maps/sim/terrain rviz:=true    # 终
 ```
 
 真车数据源由 `bringup real.launch.py` 启动，包含底盘串口节点。准备好车上驱动、外参、串口和对应的先验地图后使用 `profile:=real` 启动导航。只检查参数时用 `ros2 launch bringup real.launch.py --show-args` 或 `bash tools/start_navigation.sh --dry-run profile:=real`。
+
+定位已启动后，下面的命令会启动导航，等待就绪并自动前往地图坐标 `(1, 1.5)`，到达朝向为 0 弧度：
+
+```bash
+bash tools/start_navigation.sh profile:=real terrain_dir:=maps/real/site_a_001 \
+  goal_x:=1.0 goal_y:=1.5 goal_yaw:=0.0
+```
+
+地图路径按场地修改。已有导航时，用 `ros2 run nav_bringup send_goal.py 1.0 1.5 --yaw 0.0` 发送目标。[目标坐标、Action 调用与取消](docs/user-guide.md#3-发送导航目标)
 
 回归使用独立 ROS domain 和输出目录。软件闭环、场地物理与真车验收各有对应的输入和判定条件。[导航回归](tools/nav_regress/README.md)、[定位仿真](tools/sim_tests/README.md)

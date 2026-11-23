@@ -15,6 +15,16 @@ ros2 run nav_terrain surface_studio.py [文件]
 `[文件]` 可省略，也可以是模型、点云 / 建图目录或 `.surf.npz` 工程。依赖：numpy、scipy、PyQt5、opencv、pyyaml；
 STEP 需要 `cadquery-ocp`，三维预览需要 `open3d`。使用带这些依赖的虚拟环境时可执行 `python -m nav_terrain.surface_studio [文件]`。
 
+Ubuntu 24.04 / x86_64 的三维预览依赖可安装到专用虚拟环境，复用系统的 ROS、Qt 和 numpy，避免修改系统 Python 包：
+
+```bash
+sudo apt-get install python3-venv
+python3 -m venv --system-site-packages ~/.venvs/nav-terrain
+~/.venvs/nav-terrain/bin/python -m pip install open3d-cpu==0.20.0
+```
+
+`ros2 run nav_terrain surface_studio.py` 在系统 Python 下启动时会自动使用 `~/.venvs/nav-terrain`（若存在），三维预览子进程沿用同一解释器。已激活其他虚拟环境时沿用当前环境。只运行二维标注时不需要 Open3D；未安装时点击三维预览会提示安装方法。Linux 已提供 `DISPLAY` 时，三维预览使用 X11 / XWayland，避免 GLFW 的 Wayland 事件处理卡住。
+
 ## 2. 输入
 
 | 输入 | 格式 | 坐标系 | 说明 |
@@ -62,14 +72,15 @@ STEP 需要 `cadquery-ocp`，三维预览需要 `open3d`。使用带这些依赖
 | 文件 | 内容 |
 |---|---|
 | `terrain.msgpack` | 合成后的标注地图（terrain / direction / elevation / clearance），可用 `terrain_export.py` 换参数重新导出 |
-| `nav_map.pgm` / `.yaml` | Nav2 静态地图（scale 模式）。障碍致命；障碍旁膨胀带上限 `max_band_cost`；方向地形本体代价 `terrain_cost` |
+| `nav_map.pgm` / `.yaml` | Nav2 静态地图（raw 模式）：像素 0 = 空闲，1–99 = 代价，100 = 障碍，255 = 未知（ROS 占用值 -1）。障碍旁膨胀带上限 `max_band_cost`；方向地形本体代价 `terrain_cost` |
 | `speed_mask.pgm` / `.yaml` | 限速百分比（raw 模式）：隧道 35、坡道 60、起伏路段 50，其余 0 = 不限速 |
 | `direction_map.png` | 三通道：方向角编码 / 强度 / 标签（HWSentryNav26 格式） |
 | `terrain.png` | 标签颜色预览 |
 | `zones.yaml` | 每个连通方向区域：类型、中心、轴线、尺寸、入口 / 出口、高度范围，以及通行方向、是否可反向、是否贴合中轴等策略。同一标签的连通域还会在**方向突变 > `--direction-split-deg`（默认 20°）**处断开，所以多向坡（堡垒六边形坡、山脊）每个坡面各出一条记录，而不是一个盖住整个环的框 |
 | `terrain.json` | 栅格元数据、各标签格数、膨胀参数、限速、`frame`、`registration`，以及 `unannotated_cells`、`blocked_cells`、`no_data_cells` |
 
-**导出规则**：标注类型照写；**禁止通过、无数据、未标注的格子一律为障碍**（默认不可通行，只需标出能走的地方）。
+**导出规则**：有观测的格子按标注类型写入；有观测但禁止通过或未标注的格子为障碍。**无高程观测的格子为 UNKNOWN（terrain 标签 255）**，导出后 `/nav_map` 中为 -1，不作为静态障碍膨胀源。未知区域的方向强度为 0，地面高度为 NaN。
+全局和局部代价地图均启用 `track_unknown_space`，保留未知区域；实时点云清除射线可将实际观测到的空闲区域更新为空闲。规划器默认 `allow_unknown: false`，只通过已知可通行区域。旧地形包可以从 `.surf.npz` 工程重新导出；直接重新导出带高程的旧 `terrain.msgpack` 时，高程为 NaN 的格子也会转换为 UNKNOWN。
 方向：坡道 = 上坡方向，台阶 = 由低到高，隧道 / 起伏 = 通行方向（长轴）；多向坡按各坡面分别写入（方向栅格与 `zones.yaml` 都是每个坡面独立一条）。
 Nav2 将这些方向区域统一作为有方向约束的通行区处理。当前默认策略为：隧道和起伏双向沿轴通过；坡面和台阶沿标注的正方向通行并朝向该方向；隧道贴中轴，开放地形保留规划器选定的横向位置。导出到 `zones.yaml` 的策略字段可供 Nav2 直接读取。
 
