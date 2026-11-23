@@ -43,6 +43,14 @@ src/localization/frontend/
 
 ## 快速开始
 
+未显式指定构建类型时默认使用 `Release`。实机运行需要优化构建；未优化的 Eigen 计算可能使初始化长时间阻塞，随后触发 `input event queue capacity exceeded`。旧工作区可运行以下命令重编译，再重新启动前端：
+
+```bash
+colcon build --packages-select frontend --symlink-install --parallel-workers 1 \
+    --cmake-args -DCMAKE_BUILD_TYPE=Release
+source install/setup.bash
+```
+
 启动前必须有外部节点发布 `frames.imu ← frames.lidar` 的 TF（雷达在 IMU 系中的位姿），节点在构造时查询一次，
 未就绪时持续等待并告警。示例（MID-360 出厂外参）：
 
