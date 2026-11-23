@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 #include "nav_behaviors/zone_recovery.hpp"
 
@@ -39,6 +40,10 @@ void ZoneRecovery::readPorts()
 {
   std::string topic = "/nav_zone_state";
   getInput("retries", cfg_.retries);
+  getInput("retry_delay", retry_delay_);
+  if (!std::isfinite(retry_delay_) || retry_delay_ < 0.0) {
+    throw BT::BehaviorTreeException("ZoneRecovery retry_delay must be finite and nonnegative");
+  }
   getInput("state_topic", topic);
   getInput("zone_timeout", zone_timeout_);
   getInput("spin_after", cfg_.spin_after);
@@ -113,6 +118,15 @@ bool ZoneRecovery::goalChanged()
   return changed;
 }
 
+void ZoneRecovery::recoveryFinished()
+{
+  recovering_ = false;
+  ++attempt_;
+  retry_ready_ = std::chrono::steady_clock::now() +
+    std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+    std::chrono::duration<double>(retry_delay_));
+}
+
 BT::NodeStatus ZoneRecovery::tick()
 {
   if (childrenCount() != static_cast<std::size_t>(kChildren)) {
@@ -126,16 +140,20 @@ BT::NodeStatus ZoneRecovery::tick()
     attempt_ = 0;
     recovering_ = false;
     zone_hold_ = false;
+    retry_ready_ = {};
   }
   setStatus(BT::NodeStatus::RUNNING);
+  // Remain tickable so cancellation and goal replacement interrupt this wait immediately.
+  if (std::chrono::steady_clock::now() < retry_ready_) {
+    return BT::NodeStatus::RUNNING;
+  }
 
   if (recovering_) {
     const int idx = childOf(action_);
     if ((action_ == RecoveryAction::Spin || action_ == RecoveryAction::BackUp) && motionBlocked()) {
       haltChild(static_cast<std::size_t>(idx));
-      recovering_ = false;
       zone_hold_ = true;
-      ++attempt_;
+      recoveryFinished();
       return BT::NodeStatus::RUNNING;
     }
     const BT::NodeStatus s = children_nodes_[idx]->executeTick();
@@ -143,8 +161,7 @@ BT::NodeStatus ZoneRecovery::tick()
       return BT::NodeStatus::RUNNING;
     }
     haltChild(static_cast<std::size_t>(idx));
-    recovering_ = false;
-    ++attempt_;
+    recoveryFinished();
     // one recovery action per tick cycle: give the next plan / follow attempt a fresh BT tick
     return BT::NodeStatus::RUNNING;
   }
@@ -169,12 +186,14 @@ BT::NodeStatus ZoneRecovery::tick()
   const bool in_zone = zone_hold_;
   action_ = recoveryAction(cfg_, attempt_, in_zone);
   if (action_ == RecoveryAction::GiveUp) {
-    RCLCPP_WARN(logger_, "ZoneRecovery: navigation failed %d times%s, giving up",
-      attempt_, in_zone ? " (in a zone)" : "");
+    RCLCPP_WARN(logger_, "ZoneRecovery: navigation failed %llu times%s, giving up",
+      static_cast<unsigned long long>(attempt_), in_zone ? " (in a zone)" : "");
     halt();
     return BT::NodeStatus::FAILURE;
   }
-  RCLCPP_WARN(logger_, "ZoneRecovery: attempt %d/%d -> %s%s", attempt_ + 1, cfg_.retries,
+  const auto budget = cfg_.retries == -1 ? std::string("unlimited") : std::to_string(cfg_.retries);
+  RCLCPP_WARN(logger_, "ZoneRecovery: attempt %llu/%s -> %s%s",
+    static_cast<unsigned long long>(attempt_ + 1), budget.c_str(),
     recoveryActionName(action_), in_zone ? " (in a zone, no motion)" : "");
   const int idx = childOf(action_);
   const BT::NodeStatus rec = children_nodes_[idx]->executeTick();
@@ -184,7 +203,7 @@ BT::NodeStatus ZoneRecovery::tick()
   }
   // finished synchronously (costmap clear): one cycle is over, retry navigation on the next tick
   haltChild(static_cast<std::size_t>(idx));
-  ++attempt_;
+  recoveryFinished();
   return BT::NodeStatus::RUNNING;
 }
 
@@ -194,6 +213,7 @@ void ZoneRecovery::halt()
   attempt_ = 0;
   recovering_ = false;
   zone_hold_ = false;
+  retry_ready_ = {};
   goal_signature_.clear();
   action_ = RecoveryAction::ClearCostmaps;
 }

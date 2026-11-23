@@ -11,7 +11,8 @@
 // with nav_behaviors::recoveryAction (pure policy, unit-tested) and ticks only that one, so retries
 // escalate instead of repeating the same action.  After the recovery child finishes, child 0 is
 // ticked again.  When the policy returns GiveUp the whole node returns FAILURE and the navigation
-// task ends - the caller re-tasks, which is the only safe move inside a zone.
+// task ends. With retries=-1, recovery repeats until success, cancellation or a new goal;
+// protected zones retain their no-motion interlock throughout this failure chain.
 //
 // `attempt` counts recovery cycles of the current navigation task and is reset by halt(), which the
 // action server sends between goals and whenever child 0 succeeds.
@@ -19,6 +20,8 @@
 
 #include <memory>
 #include <string>
+#include <chrono>
+#include <cstdint>
 
 #include "behaviortree_cpp/control_node.h"
 #include "nav_behaviors/recovery_policy.hpp"
@@ -47,7 +50,8 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<int>("retries", 5, "recovery cycles before giving up"),
+      BT::InputPort<int>("retries", -1, "recovery cycles before giving up; -1 retries indefinitely"),
+      BT::InputPort<double>("retry_delay", 1.0, "seconds to wait after each recovery, including failures"),
       BT::InputPort<std::string>("state_topic", "/nav_zone_state", "zone phase topic"),
       BT::InputPort<std::string>("zones_file", "", "physical regions checked before motion recovery"),
       BT::InputPort<std::string>("global_frame", "map", "zone geometry frame"),
@@ -66,11 +70,14 @@ private:
   void readPorts();
   bool motionBlocked();
   bool goalChanged();
+  void recoveryFinished();
 
   ZonePhaseMonitor monitor_;
   RecoveryConfig cfg_;
   double zone_timeout_{4.0};
-  int attempt_{0};
+  std::uint64_t attempt_{0};
+  double retry_delay_{1.0};
+  std::chrono::steady_clock::time_point retry_ready_{};
   bool recovering_{false};
   bool zone_hold_{false};
   std::string goal_signature_;

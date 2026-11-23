@@ -12,7 +12,11 @@
 // the alignment the shaped path was built for.  Inside a zone the ladder therefore only clears the
 // costmaps and waits; if that does not help, GiveUp lets the caller re-task (the controller has
 // already replanned from the robot's position, see test_zone_drive ResumeFromInsideTheBody).
+// With retries=-1 the ladder repeats clear -> spin -> back-up indefinitely outside a zone,
+// and only clear/wait inside one. The caller can still cancel or replace the goal.
 #pragma once
+
+#include <cstdint>
 
 namespace nav_behaviors
 {
@@ -33,7 +37,7 @@ inline const char * recoveryActionName(RecoveryAction a)
 
 struct RecoveryConfig
 {
-  int retries = 6;        // recovery cycles before GiveUp; 0 fails on the first failure
+  int retries = 6;        // -1 repeats indefinitely; 0 fails on the first failure
   int spin_after = 1;     // first attempt that spins
   int backup_after = 2;   // first attempt that backs up
   bool spin = true;
@@ -42,6 +46,6 @@ struct RecoveryConfig
 
 // `attempt` is 0 on the first failure of the current navigation task, `in_zone` is true while the
 // controller reported ALIGN / TRAVERSE / EXIT recently (phaseBlocksRecovery).
-RecoveryAction recoveryAction(const RecoveryConfig & c, int attempt, bool in_zone);
+RecoveryAction recoveryAction(const RecoveryConfig & c, std::uint64_t attempt, bool in_zone);
 
 }  // namespace nav_behaviors

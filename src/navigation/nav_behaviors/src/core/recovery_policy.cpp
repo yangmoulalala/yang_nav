@@ -1,12 +1,14 @@
 #include "nav_behaviors/recovery_policy.hpp"
 
+#include <algorithm>
+
 namespace nav_behaviors
 {
 
-RecoveryAction recoveryAction(const RecoveryConfig & c, int attempt, bool in_zone)
+RecoveryAction recoveryAction(const RecoveryConfig & c, std::uint64_t attempt, bool in_zone)
 {
   const int retries = c.retries < 0 ? 0 : c.retries;
-  if (attempt >= retries) {
+  if (c.retries != -1 && attempt >= static_cast<std::uint64_t>(retries)) {
     return RecoveryAction::GiveUp;
   }
   // inside a zone stretch the body has centimetre margins and the heading is locked: no spin, no
@@ -14,10 +16,15 @@ RecoveryAction recoveryAction(const RecoveryConfig & c, int attempt, bool in_zon
   if (in_zone) {
     return RecoveryAction::ClearCostmaps;
   }
-  if (c.spin && attempt >= c.spin_after && attempt < c.backup_after) {
+  // Unlimited recovery must revisit clearing and observing instead of backing up forever.
+  const auto cycle = static_cast<std::uint64_t>(std::max({1, c.spin_after, c.backup_after})) + 1;
+  const auto stage = c.retries == -1 ? attempt % cycle : attempt;
+  const auto spin_after = static_cast<std::uint64_t>(std::max(0, c.spin_after));
+  const auto backup_after = static_cast<std::uint64_t>(std::max(0, c.backup_after));
+  if (c.spin && stage >= spin_after && stage < backup_after) {
     return RecoveryAction::Spin;
   }
-  if (c.backup && attempt >= c.backup_after) {
+  if (c.backup && stage >= backup_after) {
     return RecoveryAction::BackUp;
   }
   return RecoveryAction::ClearCostmaps;

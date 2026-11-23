@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <limits>
 
 #include "nav_behaviors/recovery_policy.hpp"
 
@@ -76,6 +77,37 @@ TEST(RecoveryPolicy, NegativeRetriesBehaveLikeZero)
   auto c = ladder();
   c.retries = -3;
   EXPECT_EQ(recoveryAction(c, 0, false), RecoveryAction::GiveUp);
+}
+
+TEST(RecoveryPolicy, UnlimitedRetriesRepeatTheWholeLadder)
+{
+  auto c = ladder();
+  c.retries = -1;
+  const RecoveryAction expected[] = {
+    RecoveryAction::ClearCostmaps, RecoveryAction::Spin, RecoveryAction::BackUp};
+  for (std::uint64_t attempt = 0; attempt < 1000; ++attempt) {
+    EXPECT_EQ(recoveryAction(c, attempt, false), expected[attempt % 3]);
+    EXPECT_EQ(recoveryAction(c, attempt, true), RecoveryAction::ClearCostmaps);
+  }
+  EXPECT_NE(recoveryAction(c, std::numeric_limits<std::uint64_t>::max(), false),
+    RecoveryAction::GiveUp);
+}
+
+TEST(RecoveryPolicy, UnlimitedRetriesRespectDisabledMotionAndThresholds)
+{
+  auto c = ladder();
+  c.retries = -1;
+  c.spin = false;
+  c.backup = false;
+  for (std::uint64_t attempt = 0; attempt < 50; ++attempt) {
+    EXPECT_EQ(recoveryAction(c, attempt, false), RecoveryAction::ClearCostmaps);
+  }
+  c.spin = c.backup = true;
+  c.spin_after = 3;
+  c.backup_after = 4;
+  EXPECT_EQ(recoveryAction(c, 8, false), RecoveryAction::Spin);
+  EXPECT_EQ(recoveryAction(c, 9, false), RecoveryAction::BackUp);
+  EXPECT_EQ(recoveryAction(c, 10, false), RecoveryAction::ClearCostmaps);
 }
 
 TEST(RecoveryPolicy, NamesCoverEveryAction)

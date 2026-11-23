@@ -8,7 +8,7 @@ Nav2 plugins for following paths through annotated, direction-constrained terrai
 ZoneRecovery (BT root)
   ├─ navigation: plan → ZonePathShaper → ZoneAwareController (MPPI + ZoneTracker)
   │               ZoneReplanPaused retains the shaped path during ALIGN/TRAVERSE/EXIT
-  └─ recovery: clear → spin → back up → give up, with physical/phase no-motion protection
+  └─ recovery: clear → spin → back up → repeat, with physical/phase no-motion protection
 ```
 
 The pure geometry and tracking code has no ROS dependencies. Nav2-specific lifecycle, costmap, TF, topic, and Behavior Tree integration stays in thin plugin adapters.
@@ -27,24 +27,34 @@ The pure geometry and tracking code has no ROS dependencies. Nav2-specific lifec
 | `zone_path_handoff` | Bind a committed shaped path to its goal, preventing raw-path leakage and stale-goal execution. |
 | `zone_tracker` | Track the shaped path, manage the shared approach/align/traverse/exit phases, and calculate velocity commands. |
 | `zone_state` | Shared phase definitions, parsing and the stamped phase memory (`PhaseMemory`) used by the BT nodes. |
-| `recovery_policy` | Pure recovery ladder: clear costmaps -> spin -> back up -> give up, no motion inside a zone. |
+| `recovery_policy` | Pure recovery ladder: clear costmaps -> spin -> back up -> repeat, with optional finite retries and no motion inside a zone. |
 | `zone_path_shaper` | Nav2 smoother adapter: TF start heading, costmap collision checks, and path conversion. |
 | `zone_aware_controller` | Nav2 controller adapter: MPPI handoff, tracker commands, dynamic obstacle stop, mode/state and RViz output. |
 | `zone_replan_paused` | BT condition that blocks path replacement while the tracker owns the crossing. |
-| `zone_recovery` | BT control node that ticks one recovery child per failure and fails the goal when the ladder is exhausted. |
+| `zone_recovery` | BT control node that retains the goal through recovery failures, waits between attempts, and supports cancellation and replacement. |
 
 ## Recovery
 
 The root of both `navigate_to_pose.xml` and `navigate_through_poses.xml` is `ZoneRecovery` with five children: the navigation subtree, clear
 costmaps, spin, back up, give up. `recovery_policy` picks one child per navigation failure, so
 retries escalate instead of repeating the same action; `attempt` resets in `halt()`, i.e. per goal.
+Both shipped trees use `retries="-1"`: a valid navigation goal stays active until it succeeds,
+is cancelled, or is replaced. Outside protected zones the clear/spin/back-up ladder repeats,
+so a long blockage does not cause endless back-up commands. A nonnegative `retries` value
+retains the bounded policy (`0` gives up immediately). Values below `-1` also fail immediately.
+`retry_delay="1.0"` adds a nonblocking one-second pause after every recovery attempt, including
+failed or safety-interrupted recoveries; the clear subtree also waits one second for sensor refresh.
+Cancellation and new goals interrupt the pause immediately. Invalid goals rejected before the
+behavior tree starts (for example, a goal-frame transform error) still need corrected goal input.
 
 Before motion recovery, the tree checks robot TF against the configured zones with a 0.55 m
 margin. Physical occupancy, missing/stale TF, or a recent ALIGN / TRAVERSE / EXIT phase inhibits
 spin and back-up. The inhibition latches for the failure sequence, so phase expiry while stopped
 cannot enable motion. A running motion recovery is interrupted if protection becomes active.
-The tree clears costmaps and eventually reports failure; a new goal interrupts the old subtree
-and resets its recovery ladder. Both single-goal and through-poses trees use this protection.
+The tree keeps clearing, waiting and retrying navigation while motion recovery is inhibited;
+a new goal interrupts the old subtree and resets its recovery ladder. Costmap/TF/localization
+and collision-monitor checks remain in force: retaining the goal does not require nonzero velocity
+while the route is unsafe. Both single-goal and through-poses trees use this protection.
 
 ## Zone policy
 

@@ -58,6 +58,7 @@ struct Log
   std::vector<std::string> actions;   // recovery children, in tick order
   int nav_failures{0};
   int nav_ticks{0};
+  int recovery_halts{0};
 };
 
 using LogPtr = std::shared_ptr<Log>;
@@ -92,10 +93,25 @@ BT::SimpleActionNode::TickFunctor record(const std::string & name)
          };
 }
 
+class RunningSpinStub : public BT::StatefulActionNode
+{
+public:
+  RunningSpinStub(const std::string & name, const BT::NodeConfiguration & config)
+  : BT::StatefulActionNode(name, config) {}
+  static BT::PortsList providedPorts() {return {};}
+  BT::NodeStatus onStart() override
+  {
+    logOf()->actions.push_back("running_spin");
+    return BT::NodeStatus::RUNNING;
+  }
+  BT::NodeStatus onRunning() override {return BT::NodeStatus::RUNNING;}
+  void onHalted() override {++logOf()->recovery_halts;}
+};
+
 const char * kTree = R"(
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <ZoneRecovery retries="4" state_topic="/nav_zone_state" zone_timeout="{zone_timeout}" zones_file="{zones_file}"
+    <ZoneRecovery retries="{retries}" retry_delay="{retry_delay}" state_topic="/nav_zone_state" zone_timeout="{zone_timeout}" zones_file="{zones_file}"
                   spin_after="1" backup_after="2">
       <NavStub/>
       <ClearStub/>
@@ -136,13 +152,15 @@ protected:
   }
 
   BT::Tree tree(int nav_fails, const std::string & zones_file = "",
-    std::shared_ptr<tf2_ros::Buffer> tf = nullptr)
+    std::shared_ptr<tf2_ros::Buffer> tf = nullptr, int retries = 4, double retry_delay = 0.0)
   {
     log_ = std::make_shared<Log>();
     auto bb = BT::Blackboard::create();
     bb->set<rclcpp::Node::SharedPtr>("node", node_);
     bb->set<LogPtr>("log", log_);
     bb->set("nav_fails", nav_fails);
+    bb->set("retries", retries);
+    bb->set("retry_delay", retry_delay);
     bb->set("zone_timeout", 4.0);
     bb->set("zones_file", zones_file);
     bb->set("tf_buffer", tf);
@@ -357,4 +375,108 @@ TEST_F(ZoneRecoveryTest, PhysicalOccupancyAndMissingTransformPreventMotionWithou
     EXPECT_NE(std::find(log_->actions.begin(), log_->actions.end(), "spin"), log_->actions.end());
   }
   std::filesystem::remove(path);
+}
+
+TEST_F(ZoneRecoveryTest, UnlimitedRecoveryEventuallySucceedsBeyondOldRetryBudget)
+{
+  auto t = tree(60, "", nullptr, -1);
+  EXPECT_EQ(run(t, 300), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(log_->actions.size(), 60u);
+  const std::vector<std::string> cycle{"clear", "spin", "backup"};
+  for (std::size_t i = 0; i < log_->actions.size(); ++i) {
+    EXPECT_EQ(log_->actions[i], cycle[i % cycle.size()]);
+  }
+}
+
+TEST_F(ZoneRecoveryTest, UnlimitedPermanentFailureStaysRunningAndCanBeHalted)
+{
+  auto t = tree(10000, "", nullptr, -1);
+  EXPECT_EQ(run(t, 300), BT::NodeStatus::RUNNING);
+  EXPECT_GT(log_->nav_failures, 100);
+  const auto actions = log_->actions.size();
+  t.haltTree();
+  EXPECT_EQ(t.rootNode()->status(), BT::NodeStatus::IDLE);
+  EXPECT_EQ(log_->actions.size(), actions);
+  g_bb->set("nav_fails", 0);
+  EXPECT_EQ(run(t), BT::NodeStatus::SUCCESS);
+}
+
+TEST_F(ZoneRecoveryTest, UnlimitedZoneRecoveryKeepsProtectionAfterPhaseExpires)
+{
+  auto t = tree(10000, "", nullptr, -1);
+  deliverPhase(t, "traverse");
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);
+  g_bb->set("zone_timeout", 0.0);
+  EXPECT_EQ(run(t, 100), BT::NodeStatus::RUNNING);
+  ASSERT_GT(log_->actions.size(), 20u);
+  for (const auto & action : log_->actions) {EXPECT_EQ(action, "clear");}
+  g_bb->set("nav_fails", 0);
+  EXPECT_EQ(run(t), BT::NodeStatus::SUCCESS);
+}
+
+TEST_F(ZoneRecoveryTest, RetryDelayYieldsAndResumesAfterTheDeadline)
+{
+  auto t = tree(1, "", nullptr, -1, 0.05);
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(log_->nav_ticks, 1);
+  for (int i = 0; i < 20; ++i) {EXPECT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);}
+  EXPECT_EQ(log_->nav_ticks, 1);
+  std::this_thread::sleep_for(std::chrono::milliseconds(70));
+  EXPECT_EQ(t.tickOnce(), BT::NodeStatus::SUCCESS);
+}
+
+TEST_F(ZoneRecoveryTest, GoalReplacementAndHaltInterruptRetryDelay)
+{
+  auto t = tree(100, "", nullptr, -1, 60.0);
+  geometry_msgs::msg::PoseStamped goal;
+  goal.pose.orientation.w = 1.0;
+  g_bb->set("goal", goal);
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);
+  for (int i = 0; i < 10; ++i) {ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);}
+  EXPECT_EQ(log_->nav_ticks, 1);
+  goal.pose.position.x = 2.0;
+  g_bb->set("goal", goal);
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);
+  EXPECT_EQ(log_->actions, (std::vector<std::string>{"clear", "clear"}));
+  t.haltTree();
+  EXPECT_EQ(t.rootNode()->status(), BT::NodeStatus::IDLE);
+  g_bb->set("nav_fails", 0);
+  EXPECT_EQ(t.tickOnce(), BT::NodeStatus::SUCCESS);
+}
+
+TEST_F(ZoneRecoveryTest, FailedRecoveryAlsoWaitsBeforeRetrying)
+{
+  factory_.registerSimpleAction("FailClearStub", [](BT::TreeNode &) {
+      logOf()->actions.push_back("failed_clear");
+      return BT::NodeStatus::FAILURE;
+    });
+  auto unused = tree(100, "", nullptr, -1, 60.0);
+  std::string xml(kTree);
+  xml.replace(xml.find("<ClearStub/>"), std::string("<ClearStub/>").size(), "<FailClearStub/>");
+  auto t = factory_.createTreeFromText(xml, g_bb);
+  for (int i = 0; i < 100; ++i) {EXPECT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);}
+  EXPECT_EQ(log_->nav_ticks, 1);
+  EXPECT_EQ(log_->actions, (std::vector<std::string>{"failed_clear"}));
+}
+
+TEST_F(ZoneRecoveryTest, NewGoalAndCancellationHaltRunningMotionRecovery)
+{
+  factory_.registerNodeType<RunningSpinStub>("RunningSpinStub");
+  auto unused = tree(100, "", nullptr, -1);
+  std::string xml(kTree);
+  xml.replace(xml.find("<SpinStub/>"), std::string("<SpinStub/>").size(), "<RunningSpinStub/>");
+  auto t = factory_.createTreeFromText(xml, g_bb);
+  geometry_msgs::msg::PoseStamped goal;
+  goal.pose.orientation.w = 1.0;
+  g_bb->set("goal", goal);
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);  // clear
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);  // spin remains running
+  goal.pose.position.x = 3.0;
+  g_bb->set("goal", goal);
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);  // stop spin, clear for new goal
+  EXPECT_EQ(log_->recovery_halts, 1);
+  ASSERT_EQ(t.tickOnce(), BT::NodeStatus::RUNNING);  // new spin remains running
+  t.haltTree();
+  EXPECT_EQ(log_->recovery_halts, 2);
+  EXPECT_EQ(t.rootNode()->status(), BT::NodeStatus::IDLE);
 }

@@ -9,7 +9,7 @@
 -->
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <ZoneRecovery retries="5" state_topic="/nav_zone_state" zone_timeout="4.0" zones_file="__NAV_ZONES_FILE__"
+    <ZoneRecovery retries="-1" retry_delay="1.0" state_topic="/nav_zone_state" zone_timeout="4.0" zones_file="__NAV_ZONES_FILE__"
                   spin_after="1" backup_after="2" name="NavigateRecovery">
       <PipelineSequence name="NavigateWithReplanning">
         <ControllerSelector selected_controller="{selected_controller}" default_controller="FollowPath" topic_name="controller_selector"/>
