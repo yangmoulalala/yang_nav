@@ -66,10 +66,10 @@ ros2 launch bringup real.launch.py lidar:=dual mode:=mapping \
   map_dir:="$PWD/maps/real/session_001" rviz:=true
 ```
 
-用现有遥控/人手操控底盘完成建图。先保留一段静止数据，等待前端完成初始化，再开始移动。建图结束后，保持建图进程运行，调用地图保存服务（当前默认 `/save_map`，可用 `ros2 service list -t` 核实）：
+用现有遥控/人手操控底盘完成建图。先保留一段静止数据，等待前端完成初始化，再开始移动。建图结束后，保持建图进程运行，调用地图保存服务（当前默认 `/backend_node/save_map`，可用 `ros2 service list -t` 核实）：
 
 ```bash
-ros2 service call /save_map std_srvs/srv/Trigger '{}'
+ros2 service call /backend_node/save_map std_srvs/srv/Trigger '{}'
 ```
 
 确认服务返回保存成功后，再在录包终端 Ctrl-C，等待打印 bag 信息及 `Saved session`，最后停止建图。录包不代替后端地图保存。

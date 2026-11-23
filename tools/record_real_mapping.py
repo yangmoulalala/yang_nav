@@ -68,6 +68,8 @@ def main():
         ap.error(f'{args.storage} writer unavailable; installed writers: {rosbag2_py.get_registered_writers()}')
     out=(args.output or WS/'bags/real_mapping'/datetime.now().strftime('%Y%m%d_%H%M%S_%f')).expanduser().resolve()
     out.mkdir(parents=True,exist_ok=False)
+    # colcon would otherwise discover the snapshotted packages inside config/
+    (out/'COLCON_IGNORE').write_text('recording snapshot of src/, not a colcon source tree\n')
     config=out/'config';config.mkdir()
     sources=['src/z-localization/bringup/config/real','src/z-localization/bringup/launch',
              'src/sentry_description/urdf','src/nav_bringup','src/nav_behaviors','src/nav_safety','src/nav_terrain']
