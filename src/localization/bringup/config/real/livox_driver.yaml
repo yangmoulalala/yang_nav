@@ -14,8 +14,10 @@ livox_lidar_publisher:
     publish_freq: 10.0
     # 输出目标：0 = ROS 话题。
     output_data_type: 0
-    # 点云与 IMU 的 frame_id；直接用 URDF link 名，无需别名静态 TF。
+    # 点云的 frame_id；使用 Livox 数据坐标系，网格坐标单独在 URDF visual 中修正。
     frame_id: mid360_link
+    # 内置 IMU 与雷达同轴但原点不同，必须标为 URDF 中的 IMU 帧。
+    imu_frame_id: mid360_imu_link
     # 广播码（仅命令行连接模式使用，上游默认值）。
     cmdline_input_bd_code: "000000000000001"
     # lvx 回放文件（data_src 为文件时使用，上游默认值）。

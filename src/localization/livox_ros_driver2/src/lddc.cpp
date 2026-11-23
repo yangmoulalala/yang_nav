@@ -41,13 +41,14 @@ namespace livox_ros {
 
 /** Lidar Data Distribute Control--------------------------------------------*/
 Lddc::Lddc(int format, int multi_topic, int data_src, int output_type,
-           double frq, std::string &frame_id)
+           double frq, std::string &frame_id, const std::string &imu_frame_id)
     : transfer_format_(format),
       use_multi_topic_(multi_topic),
       data_src_(data_src),
       output_type_(output_type),
       publish_frq_(frq),
-      frame_id_(frame_id) {
+      frame_id_(frame_id),
+      imu_frame_id_(imu_frame_id) {
   publish_period_ns_ = kNsPerSecond / publish_frq_;
   lds_ = nullptr;
 }
@@ -330,7 +331,7 @@ void Lddc::PublishPclData(const uint8_t index, const uint64_t timestamp, const P
 }
 
 void Lddc::InitImuMsg(const ImuData& imu_data, ImuMsg& imu_msg, uint64_t& timestamp) {
-  imu_msg.header.frame_id = "livox_frame";
+  imu_msg.header.frame_id = imu_frame_id_;
 
   timestamp = imu_data.time_stamp;
   imu_msg.header.stamp = rclcpp::Time(timestamp);  // to ros time stamp
