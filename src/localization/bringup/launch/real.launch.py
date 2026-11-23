@@ -1,12 +1,13 @@
 """真车入口：雷达驱动 + URDF TF + config/real + 底盘通信，管线见 localization.launch.py。
 
-    ros2 launch bringup real.launch.py                                    # 底盘 /dev/ttyACM1, 115200
+    ros2 launch bringup real.launch.py                                    # 底盘 /dev/nav, 115200
     ros2 launch bringup real.launch.py lidar:=single                       # 仅 MID-360
     ros2 launch bringup real.launch.py lidar:=dual driver_l2:=true l2_launch:=/abs/xxx.launch.py
     ros2 launch bringup real.launch.py mode:=localization                  # 用 map_dir 里的地图
     ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 
-定位/传感器参数来自 bringup/config/real/；底盘参数通过 chassis_* 启动参数传入：
+定位/传感器参数来自 bringup/config/real/；底盘默认使用固定串口 /dev/nav，无需传入 chassis_port。
+需要临时调整底盘参数时可用 chassis_* 启动参数覆盖：
   livox_driver.yaml   MID-360 驱动（frame_id 直接是 mid360_link）；IP 在 MID360_config.json
   robot_state.yaml    joint_state_publisher：云台 yaw_joint 取自 /chassis/joint_states，没收到就发 0
   lidar_fusion.yaml / frontend.yaml / backend.yaml   定位管线
@@ -19,10 +20,10 @@ from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
-from launch.conditions import IfCondition, LaunchConfigurationEquals
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import (Command, LaunchConfiguration, PathJoinSubstitution,
-                                  PythonExpression)
+from launch.substitutions import (Command, EqualsSubstitution, LaunchConfiguration,
+                                  PathJoinSubstitution, PythonExpression)
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
@@ -50,7 +51,7 @@ SOURCE_ARGS = {
 }
 
 CHASSIS_ARGS = {
-    'chassis_port': ('/dev/ttyACM1', '底盘串口设备路径'),
+    'chassis_port': ('/dev/nav', '底盘固定串口设备路径，通常无需覆盖'),
     'chassis_baud_rate': ('115200', '下位机约定波特率'),
     'chassis_rate': ('100.0', '底盘控制帧发送频率（Hz）'),
     'chassis_yaw_mode': ('twist', 'twist 前视适配或 relative_angle 显式相对角度'),
@@ -101,7 +102,7 @@ def generate_launch_description():
              name='joint_state_publisher',
              parameters=[PathJoinSubstitution([config, 'robot_state.yaml']), description]),
         Node(package='tf2_ros', executable='static_transform_publisher', name='alias_l2',
-             condition=LaunchConfigurationEquals('lidar', 'dual'),
+             condition=IfCondition(EqualsSubstitution(arg['lidar'], 'dual')),
              arguments=['--frame-id', 'l2_link', '--child-frame-id', arg['l2_frame']]),
 
         # ---- shared pipeline --------------------------------------------

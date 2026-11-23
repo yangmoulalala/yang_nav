@@ -1,6 +1,6 @@
 # chassis_comm
 
-`chassis_serial` 把速度门输出的 `geometry_msgs/Twist` 写入底盘串口。单独启动需指定 `port` 和 `baud_rate`。整车入口 `bringup real.launch.py` 默认使用 `/dev/ttyACM1`、115200 波特、100 Hz，支持 `chassis_*` 启动参数。只查看配置可运行 `ros2 launch chassis_comm chassis.launch.py --show-args`。
+`chassis_serial` 把速度门输出的 `geometry_msgs/Twist` 写入底盘串口。单独启动需指定 `port` 和 `baud_rate`。整车入口 `bringup real.launch.py` 默认使用固定串口 `/dev/nav`、115200 波特、100 Hz，无需在启动命令中指定串口；需要临时调整时可用 `chassis_*` 启动参数覆盖。只查看配置可运行 `ros2 launch chassis_comm chassis.launch.py --show-args`。
 
 | 模块 | 接口与职责 |
 | --- | --- |
