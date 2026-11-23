@@ -1,0 +1,694 @@
+{
+  "configById": {
+    "3D!navigation": {
+      "foxglovePanelTitle": "导航 · 全局地图",
+      "cameraState": {
+        "perspective": false,
+        "distance": 30,
+        "phi": 0,
+        "thetaOffset": 0,
+        "targetOffset": [
+          0.7,
+          -1.05,
+          0
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "fovy": 45,
+        "near": 0.01,
+        "far": 5000
+      },
+      "followTf": "map",
+      "followMode": "follow-pose",
+      "scene": {
+        "backgroundColor": "#101820",
+        "labelScaleFactor": 0.9,
+        "transforms": {
+          "showLabel": false,
+          "axisScale": 0.45,
+          "lineWidth": 1,
+          "lineColor": "#60758a66"
+        }
+      },
+      "transforms": {
+        "map": {
+          "visible": true
+        },
+        "lio_odom": {
+          "visible": false
+        },
+        "base_link": {
+          "visible": true
+        },
+        "mid360_link": {
+          "visible": false
+        },
+        "mid360_imu_link": {
+          "visible": false
+        },
+        "l2_link": {
+          "visible": false
+        }
+      },
+      "topics": {
+        "/nav_map": {
+          "visible": true,
+          "colorMode": "map",
+          "alpha": 0.82,
+          "frameLocked": false
+        },
+        "/global_costmap/costmap": {
+          "visible": false,
+          "colorMode": "costmap",
+          "alpha": 0.5
+        },
+        "/local_costmap/costmap": {
+          "visible": false,
+          "colorMode": "costmap",
+          "alpha": 0.65
+        },
+        "/plan_smoothed": {
+          "visible": true,
+          "type": "line",
+          "lineWidth": 0.06,
+          "gradient": [
+            "#6ee7a0ff",
+            "#6ee7a0ff"
+          ]
+        },
+        "/plan": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.025,
+          "gradient": [
+            "#38bdf8bb",
+            "#38bdf8bb"
+          ]
+        },
+        "/transformed_global_plan": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.045,
+          "gradient": [
+            "#c4b5fdff",
+            "#c4b5fdff"
+          ]
+        },
+        "/nav_zones/markers": {
+          "visible": true
+        },
+        "/nav_zones/tracker": {
+          "visible": true
+        },
+        "/local_costmap/published_footprint": {
+          "visible": true,
+          "color": "#fbbf24ff",
+          "lineWidth": 0.025
+        },
+        "/global_costmap/published_footprint": {
+          "visible": false,
+          "color": "#fbbf2480",
+          "lineWidth": 0.02
+        },
+        "/goal_pose": {
+          "visible": false,
+          "type": "arrow",
+          "arrowScale": [
+            0.8,
+            0.14,
+            0.18
+          ],
+          "color": "#f472b6ff",
+          "showCovariance": false,
+          "covarianceColor": "#fbbf2440"
+        },
+        "/backend_node/localization_pose": {
+          "visible": true,
+          "type": "arrow",
+          "arrowScale": [
+            0.8,
+            0.14,
+            0.18
+          ],
+          "color": "#fbbf24ff",
+          "showCovariance": false,
+          "covarianceColor": "#fbbf2440"
+        },
+        "/nav/obstacles": {
+          "visible": false,
+          "pointSize": 3,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#fb7185ff"
+        },
+        "/nav/clearing": {
+          "visible": false,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#5eead466"
+        },
+        "/localization/lio_world_cloud": {
+          "visible": false,
+          "pointSize": 1.5,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#9fb3c866"
+        },
+        "/backend_node/prior_map": {
+          "visible": false,
+          "pointSize": 1,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#8096aa66"
+        },
+        "/backend_node/runtime_map": {
+          "visible": false,
+          "pointSize": 1,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#688fa666"
+        },
+        "/backend_node/optimized_path": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.025,
+          "gradient": [
+            "#94a3b866",
+            "#94a3b866"
+          ]
+        },
+        "/robot_description": {
+          "visible": true
+        },
+        "/livox/lidar": {
+          "visible": false
+        },
+        "/lidar/points": {
+          "visible": false
+        },
+        "/navigation/goal_marker": {
+          "visible": true
+        }
+      },
+      "layers": {
+        "ed845206-7811-4efc-a4ac-7e7e98f2172c": {
+          "visible": true,
+          "frameLocked": true,
+          "label": "1 m grid",
+          "instanceId": "ed845206-7811-4efc-a4ac-7e7e98f2172c",
+          "layerId": "foxglove.Grid",
+          "size": 60,
+          "divisions": 60,
+          "lineWidth": 1,
+          "color": "#60758a38",
+          "position": [
+            0,
+            0,
+            -0.03
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "order": 1
+        }
+      },
+      "publish": {
+        "type": "point",
+        "pointTopic": "/clicked_point",
+        "poseTopic": "/goal_pose",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {}
+    },
+    "3D!localavoidance": {
+      "foxglovePanelTitle": "导航 · 车旁避障",
+      "cameraState": {
+        "perspective": false,
+        "distance": 11,
+        "phi": 0,
+        "thetaOffset": 0,
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "fovy": 45,
+        "near": 0.01,
+        "far": 5000
+      },
+      "followTf": "base_link",
+      "followMode": "follow-position",
+      "scene": {
+        "backgroundColor": "#101820",
+        "labelScaleFactor": 0.9,
+        "transforms": {
+          "showLabel": false,
+          "axisScale": 0.45,
+          "lineWidth": 1,
+          "lineColor": "#60758a66"
+        }
+      },
+      "transforms": {
+        "map": {
+          "visible": false
+        },
+        "lio_odom": {
+          "visible": false
+        },
+        "base_link": {
+          "visible": true
+        },
+        "mid360_link": {
+          "visible": false
+        },
+        "mid360_imu_link": {
+          "visible": false
+        },
+        "l2_link": {
+          "visible": false
+        }
+      },
+      "topics": {
+        "/nav_map": {
+          "visible": false,
+          "colorMode": "map",
+          "alpha": 0.82,
+          "frameLocked": false
+        },
+        "/global_costmap/costmap": {
+          "visible": false,
+          "colorMode": "costmap",
+          "alpha": 0.5
+        },
+        "/local_costmap/costmap": {
+          "visible": true,
+          "colorMode": "costmap",
+          "alpha": 0.65
+        },
+        "/plan_smoothed": {
+          "visible": true,
+          "type": "line",
+          "lineWidth": 0.06,
+          "gradient": [
+            "#6ee7a0ff",
+            "#6ee7a0ff"
+          ]
+        },
+        "/plan": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.025,
+          "gradient": [
+            "#38bdf8bb",
+            "#38bdf8bb"
+          ]
+        },
+        "/transformed_global_plan": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.045,
+          "gradient": [
+            "#c4b5fdff",
+            "#c4b5fdff"
+          ]
+        },
+        "/nav_zones/markers": {
+          "visible": false
+        },
+        "/nav_zones/tracker": {
+          "visible": true
+        },
+        "/local_costmap/published_footprint": {
+          "visible": true,
+          "color": "#fbbf24ff",
+          "lineWidth": 0.025
+        },
+        "/global_costmap/published_footprint": {
+          "visible": false,
+          "color": "#fbbf2480",
+          "lineWidth": 0.02
+        },
+        "/goal_pose": {
+          "visible": false,
+          "type": "arrow",
+          "arrowScale": [
+            0.8,
+            0.14,
+            0.18
+          ],
+          "color": "#f472b6ff",
+          "showCovariance": false,
+          "covarianceColor": "#fbbf2440"
+        },
+        "/backend_node/localization_pose": {
+          "visible": true,
+          "type": "arrow",
+          "arrowScale": [
+            0.8,
+            0.14,
+            0.18
+          ],
+          "color": "#fbbf24ff",
+          "showCovariance": false,
+          "covarianceColor": "#fbbf2440"
+        },
+        "/nav/obstacles": {
+          "visible": true,
+          "pointSize": 3,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#fb7185ff"
+        },
+        "/nav/clearing": {
+          "visible": false,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#5eead466"
+        },
+        "/localization/lio_world_cloud": {
+          "visible": false,
+          "pointSize": 1.5,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#9fb3c866"
+        },
+        "/backend_node/prior_map": {
+          "visible": false,
+          "pointSize": 1,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#8096aa66"
+        },
+        "/backend_node/runtime_map": {
+          "visible": false,
+          "pointSize": 1,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#688fa666"
+        },
+        "/backend_node/optimized_path": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.025,
+          "gradient": [
+            "#94a3b866",
+            "#94a3b866"
+          ]
+        },
+        "/robot_description": {
+          "visible": true
+        },
+        "/livox/lidar": {
+          "visible": false
+        },
+        "/lidar/points": {
+          "visible": false
+        },
+        "/navigation/goal_marker": {
+          "visible": true
+        }
+      },
+      "layers": {
+        "ed845206-7811-4efc-a4ac-7e7e98f2172c": {
+          "visible": true,
+          "frameLocked": true,
+          "label": "1 m grid",
+          "instanceId": "ed845206-7811-4efc-a4ac-7e7e98f2172c",
+          "layerId": "foxglove.Grid",
+          "size": 20,
+          "divisions": 20,
+          "lineWidth": 1,
+          "color": "#60758a38",
+          "position": [
+            0,
+            0,
+            -0.03
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "order": 1
+        }
+      },
+      "publish": {
+        "type": "point",
+        "pointTopic": "/clicked_point",
+        "poseTopic": "/goal_pose",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {}
+    },
+    "Plot!navlinear": {
+      "foxglovePanelTitle": "线速度 · 指令 / 估计 · 最近 30 秒",
+      "paths": [
+        {
+          "value": "/cmd_vel.linear.x",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "指令 vx",
+          "color": "#6ee7a0",
+          "showLine": true
+        },
+        {
+          "value": "/localization/odometry.twist.twist.linear.x",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "估计 vx",
+          "color": "#38bdf8",
+          "showLine": true
+        },
+        {
+          "value": "/cmd_vel.linear.y",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "指令 vy",
+          "color": "#ffb454",
+          "showLine": true
+        },
+        {
+          "value": "/localization/odometry.twist.twist.linear.y",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "估计 vy",
+          "color": "#c4b5fd",
+          "showLine": true
+        },
+        {
+          "value": "/cmd_vel_nav.linear.x",
+          "enabled": false,
+          "timestampMethod": "receiveTime",
+          "label": "门控前 vx",
+          "color": "#f472b6",
+          "showLine": true
+        }
+      ],
+      "showLegend": true,
+      "legendDisplay": "top",
+      "showPlotValuesInLegend": true,
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "yAxisLabel": "m/s",
+      "followingViewWidth": 30,
+      "sidebarDimension": 140
+    },
+    "Plot!navangular": {
+      "foxglovePanelTitle": "角速度 · 指令 / 估计 · 最近 30 秒",
+      "paths": [
+        {
+          "value": "/cmd_vel.angular.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "指令 wz",
+          "color": "#6ee7a0",
+          "showLine": true
+        },
+        {
+          "value": "/localization/odometry.twist.twist.angular.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "估计 wz",
+          "color": "#38bdf8",
+          "showLine": true
+        },
+        {
+          "value": "/cmd_vel_nav.angular.z",
+          "enabled": false,
+          "timestampMethod": "receiveTime",
+          "label": "门控前 wz",
+          "color": "#f472b6",
+          "showLine": true
+        }
+      ],
+      "showLegend": true,
+      "legendDisplay": "top",
+      "showPlotValuesInLegend": true,
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "yAxisLabel": "rad/s",
+      "followingViewWidth": 30,
+      "sidebarDimension": 140
+    },
+    "RawMessages!navlocalization": {
+      "foxglovePanelTitle": "定位状态 / 可信性",
+      "topicPath": "/backend_node/localization_state.data",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false
+    },
+    "RawMessages!navmode": {
+      "foxglovePanelTitle": "导航模式",
+      "topicPath": "/nav_mode.data",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false
+    },
+    "RawMessages!navphase": {
+      "foxglovePanelTitle": "区域跟踪阶段",
+      "topicPath": "/nav_zone_state.data",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false
+    },
+    "RawMessages!collision": {
+      "foxglovePanelTitle": "碰撞监控",
+      "topicPath": "/collision_monitor_state",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false
+    },
+    "RawMessages!speedlimit": {
+      "foxglovePanelTitle": "限速",
+      "topicPath": "/speed_limit",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false
+    },
+    "RawMessages!navodometry": {
+      "foxglovePanelTitle": "全局里程计",
+      "topicPath": "/localization/odometry",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false
+    },
+    "RosOut!navwarnings": {
+      "foxglovePanelTitle": "导航告警 / 门控原因",
+      "topicToRender": "/rosout",
+      "minLogLevel": 3,
+      "searchTerms": [],
+      "nameFilter": {}
+    },
+    "Tab!navdetails": {
+      "activeTabIdx": 0,
+      "tabs": [
+        {
+          "title": "模式 / 阶段",
+          "layout": {
+            "direction": "column",
+            "first": "RawMessages!navmode",
+            "second": "RawMessages!navphase",
+            "splitPercentage": 40
+          }
+        },
+        {
+          "title": "避障",
+          "layout": "RawMessages!collision"
+        },
+        {
+          "title": "限速",
+          "layout": "RawMessages!speedlimit"
+        },
+        {
+          "title": "里程计",
+          "layout": "RawMessages!navodometry"
+        },
+        {
+          "title": "告警",
+          "layout": "RosOut!navwarnings"
+        }
+      ]
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "direction": "row",
+    "first": {
+      "direction": "column",
+      "first": "3D!navigation",
+      "second": {
+        "direction": "row",
+        "first": "Plot!navlinear",
+        "second": "Plot!navangular",
+        "splitPercentage": 60
+      },
+      "splitPercentage": 73
+    },
+    "second": {
+      "direction": "column",
+      "first": "3D!localavoidance",
+      "second": {
+        "direction": "column",
+        "first": "RawMessages!navlocalization",
+        "second": "Tab!navdetails",
+        "splitPercentage": 40
+      },
+      "splitPercentage": 51
+    },
+    "splitPercentage": 70
+  }
+}
