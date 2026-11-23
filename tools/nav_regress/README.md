@@ -103,7 +103,7 @@ ROS_DOMAIN_ID=78 python3 tools/nav_regress/reset_tf_accept.py \
 ROS_DOMAIN_ID=87 python3 tools/nav_regress/dynamic_accept.py --out /tmp/nav_dynamic
 ```
 
-重置工具等待静止、可信状态，调用 `/localization_reset` 并检查代次改变、恢复和组合 TF 连续性；只用于测试 domain，不用于正在驾驶的真车。原始雷达和 IMU 录包可用 `tools/record_real_mapping.sh`。[录包入口](../README.md)
+重置工具等待静止、可信状态，调用 `/localization_reset` 并检查代次改变、恢复和组合 TF 连续性；只用于测试 domain，不用于正在驾驶的真车。建图、定位、导航及原始传感器录包可用 `tools/record_bag.sh`。[录包入口](../README.md)
 
 ## 占用起点回归
 
