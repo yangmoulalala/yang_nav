@@ -9,6 +9,14 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>action_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>lifecycle_msgs</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tf2_ros_py</exec_depend>
   <exec_depend>nav_safety</exec_depend>
   <exec_depend>nav_behaviors</exec_depend>
   <exec_depend>nav_terrain</exec_depend>
@@ -20,6 +28,8 @@
   <exec_depend>nav2_mppi_controller</exec_depend>
   <exec_depend>nav2_smac_planner</exec_depend>
   <exec_depend>rviz2</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

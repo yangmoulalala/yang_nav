@@ -14,6 +14,7 @@ Simulation additionally requires an active /clock publisher.
 Examples:
   bash tools/start_navigation.sh rviz:=true
   bash tools/start_navigation.sh profile:=real rviz:=true
+  bash tools/start_navigation.sh profile:=real terrain_dir:=maps/real/site_a_001 goal_x:=1.0 goal_y:=1.5
   bash tools/start_navigation.sh --dry-run profile:=real
   ROS_DOMAIN_ID=78 bash tools/start_navigation.sh terrain_dir:=maps/sim/terrain
 
@@ -29,6 +30,9 @@ Launch arguments are forwarded to nav_bringup/navigation.launch.py:
   cmd_vel_topic:=TOPIC Default: /cmd_vel (geometry_msgs/Twist)
   require_trusted:=BOOL Default: true
   rviz:=BOOL           Default: false
+  goal_x:=X goal_y:=Y  Optional: send one goal in map (metres) after navigation is ready
+  goal_yaw:=RADIANS   Default: 0.0 (faces map +X)
+  goal_wait_timeout:=SECONDS Default: 120.0; no goal is sent if readiness times out
 
 Relative paths are resolved from the workspace root. ROS_DOMAIN_ID and ROS_LOG_DIR
 are inherited. Ctrl-C stops this launch; it does not stop external localization/sensors.

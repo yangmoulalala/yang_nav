@@ -20,6 +20,7 @@ terrain_dir is a nav_terrain package, written by surface_studio (src/navigation/
 nav_map.yaml feeds the costmaps; zones.yaml feeds shaping, tracking and recovery protection.
 Both NavigateToPose and NavigateThroughPoses use the custom zone-aware behavior trees.
 """
+import math
 import os
 from pathlib import Path
 
@@ -47,6 +48,17 @@ def _terrain_dir(raw):
 
 def build(context):
     share = Path(get_package_share_directory('nav_bringup'))
+    goal_x, goal_y = _get(context, 'goal_x'), _get(context, 'goal_y')
+    if bool(goal_x) != bool(goal_y):
+        raise RuntimeError('set both goal_x and goal_y to send a startup goal')
+    if goal_x:
+        values = [goal_x, goal_y, _get(context, 'goal_yaw'), _get(context, 'goal_wait_timeout')]
+        try:
+            numbers = [float(value) for value in values]
+        except ValueError as exc:
+            raise RuntimeError('startup goal coordinates, yaw and wait timeout must be numbers') from exc
+        if not all(math.isfinite(value) for value in numbers) or numbers[3] <= 0:
+            raise RuntimeError('startup goal values must be finite and goal_wait_timeout must be positive')
     clock_arg = _get(context, 'use_sim_time').lower()
     profile = _get(context, 'profile') or ('real' if clock_arg in ('0', 'false', 'no') else 'sim')
     if profile not in ('sim', 'real'):
@@ -73,6 +85,8 @@ def build(context):
                     parameters=[params, dict(common, **(extra or {}))], remappings=remap or [])
 
     actions = [
+        Node(package='nav_bringup', executable='goal_visualizer.py',
+             name='navigation_goal_visualizer', output='screen', parameters=[common]),
         nav2('nav2_map_server', 'map_server', 'nav_map_server',
              extra={'yaml_filename': str(terrain_dir / 'nav_map.yaml')}),
         nav2('nav2_map_server', 'map_server', 'speed_mask_server',
@@ -105,6 +119,14 @@ def build(context):
         actions.append(Node(package='rviz2', executable='rviz2', name='nav_rviz', output='screen',
                             arguments=['-d', str(rviz)] if rviz.is_file() else [],
                             parameters=[common]))
+    if goal_x:
+        actions.append(Node(
+            package='nav_bringup', executable='send_goal.py', name='startup_navigation_goal',
+            output='screen',
+            arguments=[goal_x, goal_y, '--yaw', _get(context, 'goal_yaw'),
+                       '--wait-timeout', _get(context, 'goal_wait_timeout')],
+            parameters=[dict(common, require_trusted=(
+                _get(context, 'require_trusted').lower() != 'false'))]))
     return actions
 
 
@@ -120,5 +142,9 @@ def generate_launch_description():
         DeclareLaunchArgument('require_trusted', default_value='true',
                               description='stop unless localization reports pose_trusted=true'),
         DeclareLaunchArgument('rviz', default_value='false'),
+        DeclareLaunchArgument('goal_x', default_value='', description='optional startup goal x in map, metres; set with goal_y'),
+        DeclareLaunchArgument('goal_y', default_value='', description='optional startup goal y in map, metres; set with goal_x'),
+        DeclareLaunchArgument('goal_yaw', default_value='0.0', description='startup goal heading in radians, 0 faces map +X'),
+        DeclareLaunchArgument('goal_wait_timeout', default_value='120.0', description='seconds to wait for navigation readiness before giving up'),
         OpaqueFunction(function=build),
     ])
