@@ -4,19 +4,16 @@
 #   tools/sim_tests/run_all.sh [OUT_ROOT]      # 默认 /tmp/zt_all
 # 各场景串行运行（同一时刻只有一个 Gazebo），结束后打印汇总。
 HERE=$(cd "$(dirname "$0")" && pwd)
-ROOT=${1:-/tmp/zt_all}
-rm -rf "$ROOT"; mkdir -p "$ROOT"
-
-clean() {  # 清掉上一场可能残留的仿真/定位进程，避免 /clock 冲突
-  for p in $(pgrep -f 'gz sim -r|parameter_bridge|zlio_node|backend_node|merge_node|lidar_calibration/calibrate|uwb_sim'); do
-    kill "$p" 2>/dev/null
-  done
-  sleep 3
-}
+ROOT=$(realpath -m "${1:-/tmp/zt_all}")
+mkdir -p "$ROOT" || exit 2
+if [[ -n $(find "$ROOT" -mindepth 1 -maxdepth 1 -print -quit) ]]; then
+  echo "Output directory already contains results: $ROOT. Choose an empty directory." >&2
+  exit 2
+fi
+export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-87} GZ_PARTITION=${GZ_PARTITION:-zt_all_$$}
 
 run() {  # run NAME LIDAR MODE MAP LAPS [driver_mode] [CALIB] [flags]
   local name=$1 lidar=$2 mode=$3 map=$4 laps=$5 dmode=${6:-} calib=${7:-0} flags=${8:-}
-  clean
   # 场地由调用处的 ARENA 变量给出（默认 rmul）
   local arena=${ARENA:-rmul}
   echo "=== $name (arena=$arena lidar=$lidar mode=$mode${flags:+ flags=$flags})"
@@ -45,7 +42,6 @@ for L in single dual; do
   run "rmuc_${L}_localization" $L localization "$ROOT/map_rmuc_$L" 1 "" 0 "$F"
 done
 ARENA=rmul
-clean
 
 echo
 echo '################ SUMMARY ################'

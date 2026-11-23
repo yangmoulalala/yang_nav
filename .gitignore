@@ -17,7 +17,6 @@ __pycache__/
 /.deps/
 
 # ---- local snapshots (not source) ------------------------------------------
-# pre-refactor tarball of src/sentry_gazebo
 /backup/
 # upstream checkouts used as reading material (they carry their own .git)
 /reference/

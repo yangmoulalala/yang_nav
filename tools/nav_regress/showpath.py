@@ -10,11 +10,9 @@ import sys
 from pathlib import Path
 
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'tools/nav_regress'))
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src/nav_terrain/scripts'))
-import terrain_path as tp  # noqa: E402
-import tunnel_accept as ta  # noqa: E402
-import tunnel_zones as tz  # noqa: E402
+import terrain_path as tp
+import tunnel_accept as ta
+from nav_terrain import tunnel_zones as tz
 
 CHARS = {0: '#', 255: '.', 254: ',', 253: ':', 251: ';', 241: '-', 230: '+', 209: '*', 205: 'o', 199: 'x',
          102: '~'}

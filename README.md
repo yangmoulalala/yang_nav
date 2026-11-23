@@ -1,78 +1,49 @@
 # yang_nav
 
-ROS 2 Jazzy 哨兵机器人工作区：机器人描述与 Gazebo 仿真、单/双雷达定位、地形制作和 Nav2 导航。
-环境为 Ubuntu 24.04；本机 WSL 路径为 `/home/yang/yang_nav`，Windows 入口为 `\\wsl.localhost\ubuntu24\home\yang\yang_nav`。
-本文命令在 WSL 项目根目录执行。
+Ubuntu 24.04 / ROS 2 Jazzy 机器人导航工作区。单雷达或双雷达与 IMU 提供定位，人工标注的地形提供静态通行约束，Nav2 根据实时障碍规划和控制，最终速度送往 Gazebo 或真车底盘。
 
-## 从哪里开始
+## 目录与入口
 
-| 任务 | 入口 |
-| --- | --- |
-| 日常导航、发送目标、排查 | [导航使用指南](docs/navigation_usage.md) |
-| 导航实现及当前完成边界 | [导航框架](docs/navigation.md)、[导航进度](docs/nav_plan.md) |
-| 建图、定位、硬件依赖及传感器配置 | [定位系统](src/z-localization/README.md) |
-| 真车建图与录包 | [真车操作](docs/real_mapping.md) |
-| 真车底盘通信与 17 字节协议 | [底盘协议与通信](docs/chassis_protocol.md) |
-| 点云离线优化与动态物体去除 | [离线优化](docs/offline_mapping.md) |
-| 仿真场地、机器人和遥控 | [Gazebo](src/sentry_gazebo/README.md)、[机器人描述](src/sentry_description/README.md) |
-| 地形标注与导出 | [地形制作](src/nav_terrain/terrain_studio.md) |
-| 检查、回归和诊断脚本 | [工具目录](tools/README.md) |
-| 全部文档和验证记录 | [文档索引](docs/README.md)、[报告索引](reports/README.md) |
+| 目录 | 职责 | 阅读入口 |
+| --- | --- | --- |
+| `src/platform/` | 机器人 URDF、Gazebo 数据源、真车底盘通信 | [机器人描述](src/platform/sentry_description/README.md)、[仿真](src/platform/sentry_gazebo/README.md)、[底盘接口](src/platform/chassis_comm/README.md) |
+| `src/localization/` | 雷达驱动与融合、外参标定、激光惯性前端、定位或建图后端、组合启动 | [定位入口](src/localization/README.md) |
+| `src/navigation/` | 地形制作与观测、Nav2 插件、行为树、速度安全门 | [地形](src/navigation/nav_terrain/README.md)、[插件](src/navigation/nav_behaviors/README.md)、[导航启动](src/navigation/nav_bringup/launch/navigation.launch.py) |
+| `src/mapping/` | 离线优化关键帧位姿、过滤动态点、重建地图包 | [离线优化器](src/mapping/offline_mapping_optimizer/README.md) |
+| `tools/` | 跨包启动、录包、诊断、仿真及导航回归 | [工具索引](tools/README.md) |
 
-## 目录职责
-
-```text
-src/
-  chassis_comm/       真车底盘 17 字节协议、串口发送与显式过洞动作输入
-  nav_behaviors/       区域规划、路径整形、控制器、BT 与代价图插件
-  nav_bringup/         导航 launch、行为树、Nav2 参数与 RViz
-  nav_safety/          最终速度命令门与安全判定
-  nav_terrain/         地形标注、导出、地面投影与障碍过滤
-  offline_mapping_optimizer/  两阶段 VGICP 离线优化与动态点去除
-  sentry_description/  URDF 与机器人网格，传感器外参唯一来源
-  sentry_gazebo/       Gazebo 场地生成、传感器桥接、遥控及 UWB 仿真
-  z-localization/      定位相关 ROS 包集合；本目录本身不是 ROS 包
-docs/                 系统级操作与原理；history/ 保存历史审查
-tools/                工作区级启动、地图转换、检查和回归入口
-reports/              有日期的验证证据；COLCON_IGNORE 隔离构建发现
-maps/                 本机地图及地形数据，Git 忽略
-backup/               本机恢复快照，Git 忽略
-build/ install/ log/   colcon 生成物，Git 忽略
-```
-
-`z-localization/` 下共有七个包：`frontend`、`backend`、`bringup`、`localization_interfaces`、
-`lidar_fusion`、`lidar_calibration`、`livox_ros_driver2`。驱动中的第三方源码、许可及供应商说明属于依赖，
-使用情况应按其构建入口判断。包内 `include/` 放公开 C++ 接口、`src/` 放实现、`apps/` 放 ROS 适配层、
-`test/` 放测试；`launch/` 和 `config/` 或 `params/` 随包安装。运行入口读取安装目录中的配置，改源配置后须重建对应包。
+跨包调用链、话题和数据格式见[系统架构](docs/architecture.md)。`maps/` 和 `bags/` 存放本机地图与录包，`.deps/` 存放工作区依赖，`build/`、`install/`、`log/` 由 colcon 生成。
 
 ## 构建与检查
 
-先按[定位依赖](src/z-localization/README.md)及[导航准备](docs/navigation_usage.md#1-进入项目与准备环境)准备 ROS、Nav2、Gazebo、Livox-SDK2 等依赖。
-离线优化器另需先执行 `bash tools/install_offline_optimizer_deps.sh`，将固定版本的 gtsam_points 安装到项目 `.deps`，详见[离线优化](docs/offline_mapping.md)。
-从当前工作区构建全部 15 个包，限制并行以控制内存使用：
+在 WSL `ubuntu24` 的 `/home/yang/yang_nav` 执行。首次准备环境需要 ROS 2 Jazzy、Nav2、Gazebo Harmonic、Livox-SDK2 和地图优化依赖。离线优化器使用 GTSAM 4.2 与项目内固定版本的 gtsam_points。[定位依赖](src/localization/README.md)、[优化器依赖](src/mapping/offline_mapping_optimizer/README.md)
 
 ```bash
-cd /home/yang/yang_nav
 source /opt/ros/jazzy/setup.bash
-MAKEFLAGS=-j4 colcon build --base-paths src --symlink-install --parallel-workers 1 \
+bash tools/install_offline_optimizer_deps.sh  # 首次安装 gtsam_points
+colcon list --base-paths src
+MAKEFLAGS=-j4 CMAKE_BUILD_PARALLEL_LEVEL=4 colcon build --base-paths src \
+  --symlink-install --parallel-workers 1 \
   --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 source install/setup.bash
 python3 tools/check_bringup_params.py
-```
-
-需要运行测试时：
-
-```bash
-colcon test --base-paths src --return-code-on-test-failure
+ROS_DOMAIN_ID=157 QT_QPA_PLATFORM=offscreen colcon test --base-paths src \
+  --executor sequential --return-code-on-test-failure
 colcon test-result --verbose
 ```
 
-colcon 结果目录可能保留已删除测试的旧 XML；统计当前测试数量时应对照当前 CMake 测试目标。
-运动回归应使用独立 ROS domain，命令及验证范围见[导航回归](tools/nav_regress/README.md)和[定位仿真测试](tools/sim_tests/README.md)。
+从旧目录布局迁移时先移开旧 `build/` 和 `install/` 再构建。CMake 缓存和 symlink 安装都记录了源码路径。构建发现范围固定为 `src/`，其他目录可能带有快照或同名上游包。
 
-## 配置和状态约束
+## 运行导航
 
-- 组合定位使用 `src/z-localization/bringup/config/{sim,real}/` 的完整参数文件；模块 `config/example.yaml` 用于独立运行。
-- 组合启动关闭前端 `output.publish_tf`，开启后端 `common.publish_odom_tf`，由后端在同一消息中发布 `map → lio_odom → base_link`；不要重复发布同一条 TF 边。
-- 导航需要有效地图、地形、观测、TF 和定位可信状态。已通过的单元测试或 fixture 回归不能代替真实地图、Gazebo 物理或真车验收，完成边界以[导航进度](docs/nav_plan.md)为准。
-- 地图、构建产物和仍在采集的日志按各自入口维护；历史证据按日期归档到 `reports/`，有恢复用途的快照放 `backup/`。
+仿真使用三个已加载 ROS 和工作区环境的终端，设相同的 `ROS_DOMAIN_ID`。下面的例子使用 RMUC 场地，要求 `maps/sim` 下有与出生位置、传感器配置匹配的先验地图及地形导出。
+
+```bash
+ros2 launch sentry_gazebo sim.launch.py arena:=rmuc uwb:=true               # 终端 1
+ros2 launch bringup sim.launch.py lidar:=dual mode:=localization           # 终端 2
+bash tools/start_navigation.sh terrain_dir:=maps/sim/terrain rviz:=true    # 终端 3
+```
+
+真车数据源由 `bringup real.launch.py` 启动，包含底盘串口节点。准备好车上驱动、外参、串口和对应的先验地图后使用 `profile:=real` 启动导航。只检查参数时用 `ros2 launch bringup real.launch.py --show-args` 或 `bash tools/start_navigation.sh --dry-run profile:=real`。
+
+回归使用独立 ROS domain 和输出目录。软件闭环、场地物理与真车验收各有对应的输入和判定条件。[导航回归](tools/nav_regress/README.md)、[定位仿真](tools/sim_tests/README.md)

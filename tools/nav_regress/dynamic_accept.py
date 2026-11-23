@@ -4,17 +4,16 @@
 This is a software closed-loop test. It does not model wheel slip or real sensors.
 """
 import argparse
-import json
 import math
 import os
 from pathlib import Path
-import signal
-import subprocess
 import time
 import numpy as np
 import rclpy
 from action_msgs.msg import GoalStatus
-from framework_accept import Plant, fixture
+from support.plant import Plant
+from support.runtime import finish, navigation
+from support.terrain import fixture
 
 
 def polygon_clearance(a, b):
@@ -60,15 +59,12 @@ def main():
     out = Path(args.out).resolve();out.mkdir(parents=True, exist_ok=True)
     terrain = fixture(out)
     rclpy.init();plant = Plant(out)
-    checks=[];metrics={};process=None
+    checks=[];metrics={}
     def passed(name):
         checks.append(name);print('PASS '+name,flush=True)
     try:
         plant.pose=np.array([-5.,-3.,0.])
-        with (out/'navigation.log').open('w') as log:
-            process=subprocess.Popen(['ros2','launch','nav_bringup','navigation.launch.py',
-                'terrain_dir:='+str(terrain),'use_sim_time:=false'],stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
-            plant.wait(lambda:'Managed nodes are active' in (out/'navigation.log').read_text(),50.)
+        with navigation(out, terrain, plant):
             target=(-2.,-3.,0.)
             handle,future=plant.start(target)
             moving=[]
@@ -118,20 +114,12 @@ def main():
             assert future.result().status==GoalStatus.STATUS_ABORTED
             passed('static wall target remains an error rather than an unsafe approach target')
         result=dict(passed=True,checks=checks,metrics=metrics,model='real Nav2; deterministic final-command omni fixture')
-        code=0
     except Exception as exc:
-        result=dict(passed=False,checks=checks,metrics=metrics,error=str(exc));code=1
+        result=dict(passed=False,checks=checks,metrics=metrics,error=str(exc))
         print('FAIL '+str(exc),flush=True)
     finally:
-        if process:
-            for sig,timeout in ((signal.SIGINT,8),(signal.SIGTERM,5),(signal.SIGKILL,3)):
-                try:os.killpg(process.pid,sig);process.wait(timeout=timeout);break
-                except ProcessLookupError:break
-                except subprocess.TimeoutExpired:continue
         plant.trace.close();plant.destroy_node();rclpy.shutdown()
-    (out/'result.json').write_text(json.dumps(result,indent=2)+'\n')
-    print(json.dumps(result,indent=2),flush=True)
-    return code
+    return finish(out, result)
 
 if __name__=='__main__':
     raise SystemExit(main())

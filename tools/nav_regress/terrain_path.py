@@ -17,7 +17,7 @@ def resolve_terrain_dir(map_dir):
 
 
 def default_map_dir():
-    return Path.home() / 'yang_nav/maps/sim'
+    return Path(__file__).resolve().parents[2] / 'maps/sim'
 
 
 def default_terrain_dir():

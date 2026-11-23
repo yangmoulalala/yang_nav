@@ -13,16 +13,12 @@ on /nav_zone_state while a path is being followed, and planning fails here.
 The ladder is read back from the bt_navigator log lines of nav_behaviors::ZoneRecovery.
 """
 import argparse
-import json
 import os
 from pathlib import Path
 import re
-import signal
-import subprocess
 import sys
 import time
 
-import numpy as np
 import rclpy
 from geometry_msgs.msg import TransformStamped
 from localization_interfaces.msg import FrontendFrame
@@ -35,11 +31,9 @@ from sensor_msgs_py import point_cloud2
 from std_msgs.msg import Header, String
 from tf2_ros import StaticTransformBroadcaster
 
-WS = Path(__file__).resolve().parents[2]
 os.environ.setdefault('ROS_DOMAIN_ID', '87')
-sys.path.insert(0, str(WS / 'src/nav_terrain/scripts'))
-from terrain_map import TerrainMap
-from terrain_export import build_parser, export
+from support.runtime import finish, navigation
+from support.terrain import flat_fixture
 
 LADDER = re.compile(r'ZoneRecovery: attempt \d+/\d+ -> (\w+)')
 GIVE_UP = re.compile(r'ZoneRecovery: navigation failed')
@@ -115,32 +109,14 @@ def main():
     args = ap.parse_args()
     out = Path(args.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    terrain = out / 'terrain'
-    m = TerrainMap.blank(200, 200, .05, (-5., -5.))
-    m.elevation = np.zeros(m.terrain.shape, np.float32)
-    m.clearance = np.full(m.terrain.shape, .25, np.float32)
-    cfg = build_parser().parse_args(['fixture', '--out', str(terrain)])
-    cfg.src, cfg.speed_limits = 'recovery ladder fixture', {'flat': 100}
-    export(m, terrain, cfg)
+    terrain = flat_fixture(out, 'recovery ladder fixture', 100)
 
     log_path = out / 'navigation.log'
     checks = []
     rclpy.init()
     probe = Probe()
-    proc = None
     try:
-        with log_path.open('w') as log:
-            proc = subprocess.Popen([
-                'ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
-                'terrain_dir:=' + str(terrain), 'use_sim_time:=false', 'require_trusted:=false'],
-                stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-            end = time.monotonic() + 60
-            while time.monotonic() < end:
-                rclpy.spin_once(probe, timeout_sec=.05)
-                if 'Managed nodes are active' in log_path.read_text(errors='replace'):
-                    break
-            else:
-                raise AssertionError('navigation stack never activated')
+        with navigation(out, terrain, probe, require_trusted=False, timeout=60):
             if not probe.client.wait_for_server(timeout_sec=15.):
                 raise AssertionError('no navigate_to_pose action server')
 
@@ -164,26 +140,12 @@ def main():
             checks.append('inside a zone only clears the costmaps: ' + ' '.join(second))
             probe.zone = None
         result = {'passed': True, 'checks': checks}
-        (out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
-        print(json.dumps(result, indent=2), flush=True)
-        return 0
     except Exception as exc:
         result = {'passed': False, 'checks': checks, 'error': str(exc)}
-        (out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
-        print(json.dumps(result, indent=2), flush=True)
-        return 1
     finally:
-        if proc is not None:
-            try:
-                os.killpg(proc.pid, signal.SIGINT)
-                proc.wait(timeout=10)
-            except (ProcessLookupError, subprocess.TimeoutExpired):
-                try:
-                    os.killpg(proc.pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
         probe.destroy_node()
         rclpy.shutdown()
+    return finish(out, result)
 
 
 if __name__ == '__main__':

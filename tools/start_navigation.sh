@@ -22,8 +22,8 @@ Options:
   --dry-run    Load the environment and print the command without launching nodes.
 
 Launch arguments are forwarded to nav_bringup/navigation.launch.py:
-  terrain_dir:=PATH    Default: this workspace's maps/<profile>/terrain
-  params_file:=PATH    Default: installed nav_bringup/params/sim/nav2.yaml
+  terrain_dir:=PATH    Default: maps/<profile> (terrain/ when present)
+  params_file:=PATH    Default: installed nav_bringup/params/nav2.yaml
   profile:=sim|real    Default: sim (use_sim_time:=false also selects real)
   use_sim_time:=BOOL   Default: true for sim, false for real
   cmd_vel_topic:=TOPIC Default: /cmd_vel (geometry_msgs/Twist)
@@ -36,15 +36,11 @@ HELP
 }
 
 nav_dry_run=false
-nav_have_terrain=false
-nav_profile=sim
 nav_args=()
 for nav_arg in "$@"; do
   case "$nav_arg" in
     --help|-h) usage; exit 0 ;;
     --dry-run) nav_dry_run=true ;;
-    profile:=real|use_sim_time:=false) nav_profile=real; nav_args+=("$nav_arg") ;;
-    terrain_dir:=*) nav_have_terrain=true; nav_args+=("$nav_arg") ;;
     *) nav_args+=("$nav_arg") ;;
   esac
 done
@@ -60,9 +56,6 @@ for nav_setup in /opt/ros/jazzy/setup.bash "$NAV_WORKSPACE/install/setup.bash"; 
 done
 set -u
 cd -- "$NAV_WORKSPACE"
-if [[ "$nav_have_terrain" == false ]]; then
-  nav_args=("terrain_dir:=$NAV_WORKSPACE/maps/$nav_profile/terrain" "${nav_args[@]}")
-fi
 nav_command=(ros2 launch nav_bringup navigation.launch.py "${nav_args[@]}")
 printf 'Workspace: %s\nROS_DOMAIN_ID: %s\nCommand:' "$NAV_WORKSPACE" "${ROS_DOMAIN_ID:-0}"
 printf ' %q' "${nav_command[@]}"

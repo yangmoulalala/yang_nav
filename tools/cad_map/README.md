@@ -7,6 +7,7 @@ STEP 须先由其他工具三角化；本脚本不直接读取 STEP，也不生�
 在 WSL 项目根目录运行：
 
 ```bash
+source install/setup.bash
 python3 tools/cad_map/cad_to_cloud.py --help
 python3 tools/cad_map/cad_to_cloud.py \
   --mesh /absolute/path/field_mesh.npz \
@@ -21,4 +22,4 @@ python3 tools/cad_map/cad_to_cloud.py \
 
 `--compare` 只打印与 SLAM 点云的近邻距离和 ICP 对齐统计；只有同时指定 `--refine-out /tmp/cad/refined.pcd`
 才额外写出经 ICP 细调的 CAD 点云，原始 `--out` 文件保留。输出文件应使用独立路径，避免覆盖已有地图。
-它不会修改地形标注或现有后端地图包。地图的正式保存与加载见[定位系统](../../src/z-localization/README.md)。
+它不会修改地形标注或现有后端地图包。地图的正式保存与加载见[定位系统](../../src/localization/README.md)。

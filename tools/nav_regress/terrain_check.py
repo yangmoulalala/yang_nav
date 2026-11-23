@@ -11,9 +11,7 @@ import sys
 
 import numpy as np
 
-WS = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(WS / 'src/nav_terrain/scripts'))
-from terrain_map import TerrainMap, OBSTACLE, TUNNEL
+from nav_terrain.terrain_map import TerrainMap, OBSTACLE, TUNNEL
 
 
 def check(directory, robot_height=.245):

@@ -1,18 +1,15 @@
 # 工作区工具
 
-以下路径从项目根目录解析，命令在 WSL 中运行。功能包自己的 launch、配置与安装脚本位于 `src/<包>/`。
+在 WSL 工作区根目录执行。ROS、Python 地形模块和 ROS 可执行文件由 `/opt/ros/jazzy/setup.bash` 与 `install/setup.bash` 加载。
 
-| 入口 | 用途 | 使用说明 |
-| --- | --- | --- |
-| `start_navigation.sh` | 在已有定位与传感器的环境中启动导航；支持 `--help`、`--dry-run` | [导航使用指南](../docs/navigation_usage.md) |
-| `record_real_mapping.sh` / `record_real_mapping.py` | 真车建图录包；参数、话题与存储要求见操作文档 | [真车建图与录包](../docs/real_mapping.md) |
-| `optimize_map.sh` / `optimize_map.py` | 离线位姿优化、动态去除及定位地图包重建 | [点云离线优化](../docs/offline_mapping.md) |
-| `install_offline_optimizer_deps.sh` | 项目内安装固定版本 gtsam_points，复用 GTSAM 4.2 | [依赖与构建](../docs/offline_mapping.md#安装与构建) |
-| `check_bringup_params.py` | 核对完整参数文件、平台差异白名单及组合定位的 TF 发布归属；有问题返回非零 | [定位参数规则](../src/z-localization/README.md#参数规则) |
-| `nav_regress/` | 导航静态接线、fixture 冒烟与闭环、Gazebo 目标执行、日志记录和诊断 | [导航回归工具索引](nav_regress/README.md) |
-| `sim_tests/` | 定位建图、先验定位、绑架、原地旋转和双雷达标定回归 | [定位仿真测试索引](sim_tests/README.md) |
-| `cad_map/cad_to_cloud.py` | 从 CAD 网格生成 PCD，并可与 SLAM 点云比较；不生成后端地图包 | [CAD 点云工具](cad_map/README.md) |
+| 入口 | 用途 |
+| --- | --- |
+| `bash tools/start_navigation.sh --dry-run` | 展示导航启动命令。去掉 `--dry-run` 后连接当前 domain 已运行的定位与传感器 |
+| `bash tools/record_real_mapping.sh --dry-run` | 列出待录话题。录包可指定 `--output`、`--topic`、`--duration`，默认写到 `bags/real_mapping/<时间>` |
+| `bash tools/optimize_map.sh --help` | 调用已安装的优化器。源码入口 `python3 tools/optimize_map.py` 使用同一实现。新地图输出目录须与输入分开。[参数和安装](../src/mapping/offline_mapping_optimizer/README.md) |
+| `python3 tools/check_bringup_params.py` | 比对定位配置的键、仿真与真车差异以及 TF 所属节点 |
+| [nav_regress/](nav_regress/README.md) | 导航接线检查、运动学闭环、Gazebo 场地验证及观测记录 |
+| [sim_tests/](sim_tests/README.md) | 定位建图、先验定位、绑架恢复、旋转与双雷达标定 |
+| [cad_map/](cad_map/README.md) | CAD 网格采样和点云配准比较 |
 
-普通 Python/ROS 工具需先加载 `/opt/ros/jazzy/setup.bash` 与 `install/setup.bash`。
-导航仿真与定位回归会启动进程并写入地图或日志，先阅读对应索引并设置独立 `ROS_DOMAIN_ID` 和输出目录。
-长期保留的证据放入 [reports/](../reports/README.md)，重复运行的临时输出使用显式 `OUT` 或工具的输出参数。
+录包工具记录已有节点，保存 ROS graph、话题 QoS、源码配置和 Git 版本。用 `--topic` 增加实际被重映射的硬件输入，Ctrl-C 后等待 `rosbag2` 写完元数据。回归工具使用独立 `ROS_DOMAIN_ID`、`--out` 或 `OUT`，场景日志与 `result.json` 同目录。

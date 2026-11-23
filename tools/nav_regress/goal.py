@@ -22,8 +22,7 @@ from rclpy.node import Node
 from rclpy.time import Time
 from tf2_ros import Buffer, TransformException, TransformListener
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import terrain_path as tp  # noqa: E402
+import terrain_path as tp
 
 
 def world_to_map(x, y, yaw, reg):

@@ -91,7 +91,7 @@ done
 
 # Check 5: Validate nav2 parameters
 echo "[5/5] Checking Nav2 parameters..."
-NAV2_YAML="$WS/install/nav_bringup/share/nav_bringup/params/sim/nav2.yaml"
+NAV2_YAML="$(ros2 pkg prefix --share nav_bringup)/params/nav2.yaml"
 if [ -f "$NAV2_YAML" ]; then
     if grep -q "plugin: nav_behaviors::ZoneAwareController" "$NAV2_YAML"; then
         echo "  ✓ ZoneAwareController configured in nav2.yaml"

@@ -13,12 +13,9 @@ ROS_DOMAIN_ID=122 LIDAR=single OUT=/tmp/nav_single \
 自动回归可用 `LOC_WAIT_ATTEMPTS`（默认 90）限制目标间等待可信定位的查询次数，
 `MAX_LOC_RESTARTS`（默认 2，设 0 禁止自动重启）限制目标间定位重启。等待失败的目标记录为 skipped 并使运行失败。
 
-日常使用、启动脚本及目标操作见 [导航使用指南](../../docs/navigation_usage.md)。已有定位时可使用 `bash tools/start_navigation.sh rviz:=true` 仅启动导航。
-2026-11-14 隧道/动态障碍/Gazebo 三目标结果、真车边界及录包说明见 [后续报告](../../reports/navigation/2026-11-14/navigation_followup/README.md)。
+已有定位与传感器时执行 `bash tools/start_navigation.sh rviz:=true`。位姿、观测、规划与速度之间的接线见[系统架构](../../docs/architecture.md)。
 
-同日手动第三目标洞口停车、朝向二次翻转及退出重规划修复见 [本次报告](../../reports/navigation/2026-11-14/manual_third_goal_stall/README.md)。`PLAN_REC=path` 仍输出原路径文本，并额外写入 `path.jsonl`，保存话题和每个路径点的完整四元数（含 `/plan_smoothed`），用于对照整形器与控制器的物理朝向。
-
-较晚最后目标 `(16.90,0.34)` 的通道占用/往返改道仍未解决，见 [最新诊断](../../reports/navigation/2026-11-14/manual_last_goal/README.md)。`run_nav.sh` 现在也拒绝在残留 `terrain_obstacles.py` 上启动，并在退出时清理本次记录的进程组，避免旧障碍发布者污染下一轮。
+`support/plant.py` 提供按最终 `/cmd_vel` 积分的运动学底盘。`support/terrain.py` 生成测试地形。`support/runtime.py` 管理日志、进程组和结果文件，各场景单独维护验收判据。
 
 在 WSL 项目根目录执行，先加载 ROS 和工作区环境：
 
@@ -52,7 +49,7 @@ ROS_DOMAIN_ID=77 SMOOTHER=zone_shaper OUT=/tmp/nav_plans tools/nav_regress/plan_
 
 这些工具默认使用各自的 ROS domain；已有 `ROS_DOMAIN_ID` 会覆盖默认值。避免在同一 domain 启动重复栈。运动学和冒烟工具自动生成地形并清理自己启动的进程，原始日志留在输出目录，方便失败诊断。
 
-当前真实地形检查及四条路径整形预期失败，不能忽略退出码。最新完成边界见 [导航进度](../../docs/nav_plan.md)，历史最终证据见 [结果目录](../../reports/navigation/2026-11-12/README.md)。
+场地检查使用指定地图的数据。`terrain_check.py` 会在缺少隧道净空时返回非零，`plan_tunnels.sh` 单独报告实际规划及整形结果。
 
 ## Gazebo 与路径诊断
 
@@ -106,13 +103,7 @@ ROS_DOMAIN_ID=78 python3 tools/nav_regress/reset_tf_accept.py \
 ROS_DOMAIN_ID=87 python3 tools/nav_regress/dynamic_accept.py --out /tmp/nav_dynamic
 ```
 
-重置工具等待静止、可信状态，调用 `/localization_reset` 并检查代次改变、恢复和组合 TF 连续性；只用于测试 domain，不用于正在驾驶的真车。完整 raw 雷达/IMU 排错录包见 [真车建图与录包](../../docs/real_mapping.md)。
-
-## 日志与废弃文件
-
-当前工具均有明确用途。旧 `analyze_test_results.sh` 无调用方且使用了已失效的统计参数，已移除；使用 `tunnel_stats.py --out ... --manifest ...` 或 JSON 结果。
-
-最终结果归入 `reports/navigation/<日期>/`，重复运行日志和 fixture 留在显式 OUT 目录。清理前确认相关进程已退出，并先保存最新结果及必要的失败诊断。不要把旧 colcon 测试 XML 汇总当作当前用例数量：应以当前 CMake 测试目标对应的 XML 为准。
+重置工具等待静止、可信状态，调用 `/localization_reset` 并检查代次改变、恢复和组合 TF 连续性；只用于测试 domain，不用于正在驾驶的真车。原始雷达和 IMU 录包可用 `tools/record_real_mapping.sh`。[录包入口](../README.md)
 
 ## 占用起点回归
 

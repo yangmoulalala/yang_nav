@@ -13,6 +13,8 @@
 
 ## 用法
 
+`run_all.sh` 接受新的或空的输出目录，保留已有结果。脚本默认使用 ROS domain 87 和单独的 Gazebo partition。需要与其他回归并行时，请显式设置独立的 `ROS_DOMAIN_ID` 和 `SENTRY_GAZEBO_GEN`。
+
 ```bash
 cd ~/yang_nav
 # 全量回归（约 30–40 分钟），结果在 /tmp/zt_all/<场景>/，最后打印汇总
@@ -58,59 +60,6 @@ MID-360 侧装（URDF `mid360_joint` 俯仰约 90°），静止时只看到一�
 
 单雷达后端读 `bringup/config/sim/backend_single.yaml`（launch 按 `lidar` 选择），与 `backend.yaml` 的差异写在该文件开头。
 
-## 当前实现补充（2026-11-14）
+## 结果解释
 
-组合定位由后端在同一消息内发布两条动态 TF，前端关闭 TF 发布。同代次 `SUSPECT` 且有可信位姿缓存时，UWB 恢复先尝试连续预测航向，失败再全圈搜索；`LOST` 或跨代次保持全圈搜索。跟踪切换参考失败时可在原半径内按相同门限重试上一参考。详见[后端指南](../../docs/backend_guide.md)；下方日期章节保留各次改动和历史结果，不表示这些场景在当前代码上重新通过。
-
-## 2026-11-08 变更
-
-- 后端：UWB 只在 `SUSPECT`/`LOST` 局中恢复时作位置先验：在 UWB 位置 `uwb.search_radius`（2 m）内召回关键帧、航向全圈扫描，与 UWB 偏差超过 `uwb.max_offset`（0.6 m）的解丢弃；没有新鲜 UWB 时只等待，不计失败。UWB 不参与跟踪和因子图。开机初始化不用 UWB，只在起点或 `startup_hint` 附近 `recovery.initial_search_radius`（2 m）内搜索。运动门、里程计连续性门已删除（`docs/backend_guide.md` 4.2、4.5）。
-- `bringup/config/sim/backend*.yaml` 里 `uwb.enabled: true`，没有 launch 开关。RMUL 不模拟 UWB，所以 RMUL 场景绑架后保持 `SUSPECT`/`LOST`、不会恢复；要测恢复用 RMUC。
-- 绑架改为瞬移到跑圈终点 1.5 m 外、航向 45°（见上表 `zt_driver.py`）。下面两张表是旧设定（远距离绑架、全局搜索、运动门）下的结果，只作历史对比。
-- `run_all.sh` 已去掉单独的 `*_localization_uwb` 场景：`rmuc_*_localization` 默认就启动 `uwb_sim`（`zt_run.sh` 的 `SIM_UWB` 默认 `true`），后端会用它恢复。
-- `symkidnap`：雷达画面相同、跟踪察觉不到，UWB 只在已进 `SUSPECT`/`LOST` 后才用，预期不会被发现。`uwbdrop`、`uwbdropkidnap` 暂停 `uwb_sim` 期间，后端恢复只等待。
-
-## 参考结果（2026-11-02，`single-lidar` 分支 `1357a28`，RTX 4060 Ti，RTF 1.0）
-
-主数据来自一次全量 `run_all.sh`（每个场景 1 次），括号里是 2026-11-01 单项测试的结果。误差来自 `zt_eval.py`，`trusted` 指定位自报 NORMAL/OBS_DEGRADED 的样本。`run_all.sh` 汇总用默认 SE(2) 对齐；单雷达边转边初始化，地图系与真值差约 6° 航向，对齐会吸收这部分。
-
-| 场景 | 双雷达 | 单雷达 |
-| --- | --- | --- |
-| 建图 2 圈 | 回环接受 18 / 拒绝 0；RMSE 1.0–2.2 cm，最大 4.9 cm，航向 ≤ 0.21°（11-01：最大 4.0 cm） | `earlyspin,spawnspin`：第 4.8 s 进入 NORMAL；回环接受 23；RMSE 1.7–2.5 cm，最大 4.9 cm，航向 ≤ 0.70°（11-01 只跑 1 圈：最大 9.4 cm） |
-| 前端初始化 | 第 1 次尝试成功 | `earlyspin`：3 个单雷达场景都初始化成功（11-01：6/6，开始转动后 ≤ 2.8 s） |
-| 先验定位 1 圈 | 起点 4.3 cm；跑圈 RMSE 2.9 cm，最大 5.9 cm，跑圈中无 SUSPECT（11-01 共 5 次：RMSE 2.5–3.2 cm，4 次最大 ≤ 6 cm） | 起点 2.9 cm；跑圈 RMSE 2.3 cm，trusted 最大 7.1 cm（11-01 共 2 次：最大 17–19 cm） |
-| 绑架 | 能恢复，但 `FALSE TRUST` 11.8 s（54 个样本，瞬移后约 10 s 仍报可信），最大偏 7.0 m（11-01 共 5 次：0.6–13.7 s） | `FALSE TRUST` 11.7 s，最大偏 11.1 m；恢复后行驶结束时仍偏 13 m，**未恢复**（11-01 共 2 次：12–17 s，定到航向反约 176° 的对称位置） |
-| 原地旋转（慢 + 快） | 最大 5.1 cm，航向 ≤ 0.23° | `earlyspin`：最大 4.6 cm，航向 ≤ 0.46° |
-| 双雷达标定 | 接受 4 帧 / 拒绝 19；std 1.3 cm / 0.0055 rad；本次精度未确认（见下）。2026-10-31：平移误差约 1 cm，旋转 < 1° | — |
-
-标定场景本次在第 2.35 s 因 IMU 采样中断（`front-end input discontinuity`）进入 LOST，整场没有恢复。标定节点只读前端 `/odometry`，仍输出了外参，但没有和 URDF 真值做误差对比，所以本次标定精度未确认。
-
-旧参考值（2026-10-31）里先验定位“最大 8.0 cm”用当前 `zt_eval.py` 无法复现：同一次运行重算为最大 36.8 cm，大误差都在 SUSPECT 冻结输出期间（当时 SUSPECT 仍冻结；2026-11-09 起改为里程计前推）。
-
-## 绑架修复验证（2026-11-02，`kidnap-recovery-fix` 分支 `fabbcc5`）
-
-上表的绑架行是修复前基线。修复内容见 `docs/backend_guide.md` 3.1、4.5–4.6、7.3。验证用 `/tmp/zt_all/map_*` 地图，单雷达加 `earlyspin`。
-
-```bash
-# 单场示例：绑架后慢转
-LIDAR=single tools/sim_tests/zt_run.sh localization /tmp/zt/k ~/yang_nav/maps/sim_single 1 localize earlyspin,kidnapspin
-LIDAR=dual   tools/sim_tests/zt_run.sh localization /tmp/zt/k ~/yang_nav/maps/sim_test 1 localize kidnapspin
-```
-
-| 场景 | 修复前 | `fabbcc5` |
-| --- | --- | --- |
-| 双雷达绑架 + `kidnapspin`（5 场） | `FALSE TRUST` 9.0 s；恢复后 trusted 最大 3.68 m | 5/5 恢复；`FALSE TRUST` 0–2.6 s（只在瞬移刚发生时）；恢复后 trusted 最大 0.09–0.31 m；最终 4–14 cm |
-| 单雷达绑架 + `kidnapspin`（5 场） | 锁到 180° 对称位姿，结束时偏约 12 m | 只有 1/5 干净恢复（最终 2 cm）；其余锁到约 99°/180° 错误位姿（结束时偏 5–11 m），或恢复正确后行驶中跑偏到 8.4 m |
-| 两种雷达绑架，车不动 | 同上 | 运动门不起作用：双雷达 2/3 停在不可信状态未恢复；停车兜底可能提交错误解（日志 `stationary limit`） |
-| 全量 `run_all.sh`（不带 `kidnapspin`） | 见上表 | 建图最大 3.5 / 3.6 cm，原地旋转 4.0 / 5.5 cm，先验跑圈 trusted 最大 4.4 / 8.4 cm（单 / 双），标定与 URDF 差约 9.5 mm；绑架两种雷达仍锁错 |
-
-新增日志关键字：`(severe N/2)`（严重冲突）、`during recovery probation`（试用期内升级）、`ambiguous result, deferring recovery`（歧义推迟）、`recovery candidate accepted after N consistent candidates, motion=..`（运动门通过）、`(stationary limit)`（停车兜底提交）。运动门和停车兜底已于 2026-11-08 删除：现在提交日志为 `recovery candidate accepted after N consistent candidates via <来源>`，与 UWB 不一致时为 `recovery candidate rejected: inconsistent with UWB`。
-
-## 注意
-
-- 需要 `gz.transport13`、`gz.msgs10` Python 绑定（Gazebo Harmonic 自带）。
-- 瞬移不产生 IMU 运动，前端感知不到，比真实碰撞更苛刻。
-- 必须设置 `MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA`（脚本已设置），否则雷达掉到约 3 Hz。
-- 瞬移偶尔返回失败（`TELEPORT False`），但多数情况下位姿实际已跳变（11-02 验证中 4 次都是这样）。用 `kidnap` 阶段的误差（约 7 m）判断绑架是否发生，不要只看返回值。
-- Gazebo 关闭时段错误（exit 139）、`merge_node` 关闭时 exit 1 都发生在 SIGINT 之后，不影响结果。
-- 前端 IMU 采样中断后，建图模式下后端会停在 LOST 直到结束（已出现 2 次：单雷达原地旋转、双雷达标定）。这是有意设计，原因见 [`src/z-localization/README.md`](../../src/z-localization/README.md) 已知问题；需要继续建图时，停车后调用 `/localization_reset`。
+每个场景的 `result.json` 记录驱动结果。评估时检查真值、后端可信状态、定位误差及绑架后的时间区间。RMUC 场地可提供模拟 UWB，RMUL 场地上的局中恢复会等待 UWB 观测。跨前端代次的输出、重置服务和对应参数见[定位系统](../../src/localization/README.md)。

@@ -10,8 +10,10 @@
 # spot beyond the far one - 24 goals for 12 crossings.
 # Afterwards, tools/nav_regress/tunnel_stats.py reads $OUT/truth.log (gz ground truth) and reports the
 # in-body lateral / heading error per crossing; those are the acceptance criteria (<= 3 cm, <= 3 deg).
-set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
+source /opt/ros/jazzy/setup.bash || exit 2
+source "$HERE/../../install/setup.bash" || exit 2
+set -u
 OUT=${OUT:-/tmp/nav_m3c}
 mkdir -p "$OUT"
 

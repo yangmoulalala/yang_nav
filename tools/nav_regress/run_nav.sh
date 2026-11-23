@@ -110,7 +110,7 @@ done
 echo "localization: $(timeout 3 ros2 topic echo --once /backend_node/localization_state 2>/dev/null | head -1)"
 echo "zlio resets during startup: $(grep -c 'IMU input interrupted' "$OUT/loc.log")"
 if [ "$LOC_OK" != true ]; then
-  # localization fault (see docs/localization_issues.md L5), not a navigation result: restart it once
+  # After a localization fault, restart it within the configured retry budget.
   echo '=== localization not trusted at startup, restarting localization once'
   stop_group "$LOC"
   start_localization

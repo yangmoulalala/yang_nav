@@ -11,40 +11,20 @@ This writes a PCD file, not a backend map bundle with keyframes and descriptors.
 """
 import argparse
 import json
-import math
-import struct
 from pathlib import Path
 
 import numpy as np
 from scipy.spatial import cKDTree
 
-
-def load_mesh(path):
-    """(M,3,3) triangles from a binary STL or a mesh.npz (V, F)."""
-    path = Path(path)
-    if path.suffix == '.npz':
-        d = np.load(path)
-        return d['V'].astype(np.float64)[d['F']]
-    data = path.read_bytes()
-    n = int(np.frombuffer(data, np.uint32, 1, 80)[0])
-    if 84 + 50 * n != len(data):
-        raise ValueError('only binary STL is supported: %s' % path)
-    rec = np.dtype([('n', '<f4', 3), ('v', '<f4', (3, 3)), ('a', '<u2')])
-    return np.frombuffer(data, rec, n, 84)['v'].astype(np.float64)
-
-
-def rpy_matrix(r, p, y):
-    cr, sr, cp, sp, cy, sy = math.cos(r), math.sin(r), math.cos(p), math.sin(p), math.cos(y), math.sin(y)
-    rz = np.array([[cy, -sy, 0], [sy, cy, 0], [0, 0, 1]])
-    ry = np.array([[cp, 0, sp], [0, 1, 0], [-sp, 0, cp]])
-    rx = np.array([[1, 0, 0], [0, cr, -sr], [0, sr, cr]])
-    return rz @ ry @ rx
+from nav_terrain.mesh_io import load_mesh
+from nav_terrain.point_cloud import read_pcd
+from nav_terrain.registration import align_points, matrix_rpy, reg_matrix
 
 
 def registration_from(path):
     reg = json.loads(Path(path).read_text())
     reg = reg.get('registration', reg)
-    return rpy_matrix(*[math.radians(v) for v in reg['rpy_deg']]), np.asarray(reg['t_world_map'], float)
+    return reg_matrix(reg)
 
 
 def sample_surface(tri, spacing, rng):
@@ -76,26 +56,6 @@ def write_pcd(path, p):
     arr = np.zeros((n, 4), np.float32)
     arr[:, :3] = p
     path.write_bytes(hdr.encode() + arr.tobytes())
-
-
-def read_pcd(path):
-    import sys
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src/nav_terrain/scripts'))
-    from terrain_map import read_pcd as rp
-    return rp(path)
-
-
-def icp(src, tree, R, t, iters=60):
-    for it in range(iters):
-        q = src @ R.T + t
-        d, j = tree.query(q)
-        m = d < (0.5 if it < 15 else (0.2 if it < 35 else 0.08))
-        a, b = q[m], tree.data[j[m]]
-        ca, cb = a.mean(0), b.mean(0)
-        u, _, vt = np.linalg.svd((a - ca).T @ (b - cb))
-        dr = vt.T @ np.diag([1, 1, np.sign(np.linalg.det(vt.T @ u.T))]) @ u.T
-        R, t = dr @ R, dr @ t + cb - dr @ ca
-    return R, t
 
 
 def stats(d):
@@ -132,9 +92,9 @@ def main():
         tree = cKDTree(pts)
         d, _ = tree.query(slam)
         print('SLAM -> CAD with given registration :', stats(d))
-        R2, t2 = icp(slam, tree, np.eye(3), np.zeros(3))
+        R2, t2 = align_points(slam, tree, np.eye(3), np.zeros(3))
         d2, _ = tree.query(slam @ R2.T + t2)
-        rpy = np.degrees([math.atan2(R2[2, 1], R2[2, 2]), -math.asin(R2[2, 0]), math.atan2(R2[1, 0], R2[0, 0])])
+        rpy = np.degrees(matrix_rpy(R2))
         print('SLAM -> CAD after ICP refine         :', stats(d2), '| dt', t2.round(3), 'drpy', rpy.round(3))
         dr, _ = cKDTree(slam).query(pts)
         print('CAD  -> SLAM (CAD coverage by SLAM)  :', stats(dr))

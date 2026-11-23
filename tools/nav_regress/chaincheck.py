@@ -26,11 +26,9 @@ from nav2_msgs.action import ComputePathToPose
 from rclpy.action import ActionClient
 from rclpy.node import Node
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import terrain_path as tp  # noqa: E402
-import tunnel_accept as ta  # noqa: E402
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src/nav_terrain/scripts'))
-import tunnel_zones as tz  # noqa: E402
+import terrain_path as tp
+import tunnel_accept as ta
+from nav_terrain import tunnel_zones as tz
 
 R = ComputePathToPose.Result
 NAMES = {R.NONE: 'ok', R.START_OCCUPIED: 'START_OCC', R.GOAL_OCCUPIED: 'GOAL_OCC', R.TIMEOUT: 'TIMEOUT',

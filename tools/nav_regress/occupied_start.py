@@ -5,17 +5,15 @@ The plant models kinematics and false map overlap, not real penetration/contact 
 Production observation/trust gates and collision monitor stay enabled.
 """
 import argparse
-import json
 import math
 import os
-import signal
-import subprocess
-import time
 import traceback
 from pathlib import Path
 import numpy as np
 import rclpy
-from framework_accept import Plant, fixture
+from support.plant import Plant
+from support.runtime import finish, navigation
+from support.terrain import fixture
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
@@ -25,13 +23,9 @@ def main():
     os.environ.setdefault('ROS_DOMAIN_ID', '93')
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     terrain = Path(__file__).resolve().parents[2]/'maps/sim/terrain' if args.recorded_exit else fixture(out)
-    rclpy.init(); plant = Plant(out); process = None; checks = []
+    rclpy.init(); plant = Plant(out); checks = []
     try:
-        with (out/'navigation.log').open('w') as log:
-            process = subprocess.Popen(['ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
-                'terrain_dir:='+str(terrain), 'use_sim_time:=false'], stdout=log,
-                stderr=subprocess.STDOUT, start_new_session=True)
-            plant.wait(lambda: 'Managed nodes are active' in (out/'navigation.log').read_text(), 50.)
+        with navigation(out, terrain, plant):
             cases = [('recorded goal3 pose', (4.52, -5.24, -math.pi/2)), ('recorded goal4 pose', (4.59, -5.27, -math.pi/2))] if args.recorded_exit else [('overlapping corner', (-.8, 1.1, 0.)), ('occupied centre inside wall', (-.1, 1.1, 0.))]
             for label, start in cases:
                 plant.pose = np.array(start); plant.run_for(1.2)
@@ -50,20 +44,12 @@ def main():
                 print('PASS '+checks[-1], flush=True)
             text = (out/'navigation.log').read_text()
             assert 'occupied start' in text and 'occupied footprint, escaping' in text
-            result, code = dict(passed=True, checks=checks), 0
+            result = dict(passed=True, checks=checks)
     except Exception:
-        result, code = dict(passed=False, checks=checks, error=traceback.format_exc()), 1
+        result = dict(passed=False, checks=checks, error=traceback.format_exc())
         print(result['error'], flush=True)
     finally:
-        if process:
-            for sig, delay in [(signal.SIGINT, 8), (signal.SIGTERM, 5), (signal.SIGKILL, 3)]:
-                try:
-                    os.killpg(process.pid, sig); process.wait(timeout=delay); break
-                except ProcessLookupError: break
-                except subprocess.TimeoutExpired: pass
         plant.trace.close(); plant.destroy_node(); rclpy.shutdown()
-    (out/'result.json').write_text(json.dumps(result, indent=2)+'\n')
-    print(json.dumps(result, indent=2), flush=True)
-    return code
+    return finish(out, result)
 if __name__ == '__main__':
     raise SystemExit(main())

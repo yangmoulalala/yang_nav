@@ -20,10 +20,8 @@ import math
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src/nav_terrain/scripts'))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import terrain_path as tp  # noqa: E402
-import tunnel_zones as tz  # noqa: E402
+import terrain_path as tp
+from nav_terrain import tunnel_zones as tz
 
 BODY_MARGIN = 0.3     # samples this far outside the body still count for finding the run
 

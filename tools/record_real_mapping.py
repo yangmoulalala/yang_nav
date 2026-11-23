@@ -71,8 +71,8 @@ def main():
     # colcon would otherwise discover the snapshotted packages inside config/
     (out/'COLCON_IGNORE').write_text('recording snapshot of src/, not a colcon source tree\n')
     config=out/'config';config.mkdir()
-    sources=['src/z-localization/bringup/config/real','src/z-localization/bringup/launch',
-             'src/sentry_description/urdf','src/nav_bringup','src/nav_behaviors','src/nav_safety','src/nav_terrain']
+    sources=['src/localization/bringup/config/real','src/localization/bringup/launch',
+             'src/platform/sentry_description/urdf','src/navigation/nav_bringup','src/navigation/nav_behaviors','src/navigation/nav_safety','src/navigation/nav_terrain']
     for relative in sources:
         source=WS/relative
         if source.exists():shutil.copytree(source,config/relative,ignore=shutil.ignore_patterns('__pycache__','.git'),dirs_exist_ok=True)

@@ -7,16 +7,12 @@ collision slowdown and observation-loss stopping. No localization substitution
 is made in the normal navigation launch; this process supplies test data only.
 """
 import argparse
-import json
 import math
 import os
 from pathlib import Path
-import signal
-import subprocess
 import sys
 import time
 
-import numpy as np
 import rclpy
 from geometry_msgs.msg import TransformStamped, Twist
 from localization_interfaces.msg import FrontendFrame
@@ -29,10 +25,8 @@ from sensor_msgs_py import point_cloud2
 from std_msgs.msg import Header
 from tf2_ros import StaticTransformBroadcaster
 
-WS = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(WS / 'src/nav_terrain/scripts'))
-from terrain_map import TerrainMap
-from terrain_export import build_parser, export
+from support.runtime import finish, navigation
+from support.terrain import flat_fixture
 
 
 class Probe(Node):
@@ -137,25 +131,12 @@ def main():
     os.environ.setdefault('ROS_DOMAIN_ID', '85')
     out = Path(args.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    terrain = out / 'terrain'
-    m = TerrainMap.blank(200, 200, .05, (-5., -5.))
-    m.elevation = np.zeros(m.terrain.shape, np.float32)
-    m.clearance = np.full(m.terrain.shape, .25, np.float32)
-    cfg = build_parser().parse_args(['fixture', '--out', str(terrain)])
-    cfg.src, cfg.speed_limits = 'framework smoke fixture', {'flat': 50}
-    export(m, terrain, cfg)
+    terrain = flat_fixture(out, 'framework smoke fixture', 50)
     checks = []
     rclpy.init()
     probe = Probe()
-    process = None
     try:
-        with (out / 'navigation.log').open('w') as log:
-            process = subprocess.Popen([
-                'ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
-                'terrain_dir:=' + str(terrain), 'use_sim_time:=false', 'require_trusted:=false'],
-                stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-            probe.wait_for(lambda: 'Managed nodes are active' in
-                           (out / 'navigation.log').read_text(errors='replace'), 45.)
+        with navigation(out, terrain, probe, require_trusted=False, timeout=45):
             checks.append('all navigation lifecycle nodes active')
             # bt_navigator loads the tree on activate: a missing BT node (ZoneRecovery, ...) or a bad
             # port would fail here instead
@@ -191,28 +172,13 @@ def main():
             assert samples and max(samples) < 1e-6, samples
             checks.append('lost observation stops output despite fresh velocity commands')
         result = {'passed': True, 'checks': checks}
-        print(json.dumps(result, indent=2), flush=True)
-        (out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
-        return 0
     except Exception as exc:
         result = {'passed': False, 'checks': checks, 'error': str(exc)}
-        (out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
-        print(json.dumps(result, indent=2), flush=True)
-        return 1
     finally:
         probe.send_commands = False
-        if process is not None:
-            try:
-                os.killpg(process.pid, signal.SIGINT)
-                process.wait(timeout=8)
-            except (ProcessLookupError, subprocess.TimeoutExpired):
-                try:
-                    os.killpg(process.pid, signal.SIGTERM)
-                    process.wait(timeout=5)
-                except (ProcessLookupError, subprocess.TimeoutExpired):
-                    pass
         probe.destroy_node()
         rclpy.shutdown()
+    return finish(out, result)
 
 
 if __name__ == '__main__':
