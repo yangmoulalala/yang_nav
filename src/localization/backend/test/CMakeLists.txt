@@ -5,6 +5,8 @@ find_package(launch_testing_ament_cmake REQUIRED)
 ament_add_gtest(backend_fusion_test unit/fusion_test.cpp)
 ament_add_gtest(backend_measurement_test unit/measurement_test.cpp)
 ament_add_gtest(backend_body_test unit/body_test.cpp)
+ament_add_gtest(backend_state_text_test unit/state_text_test.cpp)
+target_include_directories(backend_state_text_test PRIVATE ..)
 # 时间索引外参解析逻辑位于适配层，直接编译其源文件并链接 tf2。
 ament_add_gtest(backend_body_extrinsic_test unit/body_extrinsic_test.cpp ../apps/body_extrinsic.cpp)
 target_include_directories(backend_body_extrinsic_test PRIVATE ..)
@@ -26,7 +28,7 @@ ament_add_gtest(backend_calibration_test tools/body_calibration_test.cpp
 ament_add_gtest(backend_storage_test integration/storage_test.cpp)
 target_link_options(backend_storage_test PRIVATE "LINKER:--wrap=fsync")
 ament_add_gtest(backend_cleanup_test tools/cleanup_test.cpp)
-foreach(target backend_fusion_test backend_measurement_test backend_body_test backend_body_extrinsic_test
+foreach(target backend_fusion_test backend_measurement_test backend_body_test backend_state_text_test backend_body_extrinsic_test
                backend_lifecycle_test backend_graph_test
                backend_storage_test backend_cleanup_test backend_innovation_test
                backend_relocalization_test backend_localization_test backend_descriptor_test

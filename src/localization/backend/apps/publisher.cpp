@@ -46,6 +46,8 @@ void Publisher::configure() {
     // 状态保留最后一条，便于晚加入的消费者立即获取当前定位可信性。
     state_pub_ = node_.create_publisher<std_msgs::msg::String>("~/localization_state",
                                                                rclcpp::QoS(1).transient_local());
+    diagnostics_pub_ = node_.create_publisher<std_msgs::msg::String>(
+        "~/localization_diagnostics", rclcpp::QoS(1).transient_local());
     pose_covariance_pub_ = node_.create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "~/localization_pose", rclcpp::QoS(20).reliable());
 

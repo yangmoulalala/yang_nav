@@ -7,6 +7,7 @@
 
 #include "apps/publisher.hpp"
 #include "apps/ros.hpp"
+#include "apps/state_text.hpp"
 #include "backend/covariance.hpp"
 #include "backend/localization.hpp"
 #include "backend/math.hpp"
@@ -37,7 +38,7 @@ void writeStateField(std::ostream& output, const std::string& value) {
 }
 }  // namespace
 
-/// 发布定位状态文本及按需启用的状态标记。
+/// 发布精简定位状态，另用诊断话题保留完整输出身份和故障原因。
 void Publisher::publishLocalizationState(const LocalizationStatus status, const std::string& reason,
                                          const EstimatorFailureHistory& estimator_failures,
                                          const rclcpp::Time& stamp, const bool tf_published,
@@ -52,15 +53,33 @@ void Publisher::publishLocalizationState(const LocalizationStatus status, const 
     text << "status=" << LocalizationStateMachine::statusName(status)
          << ";pose_trusted=" << (LocalizationStateMachine::poseTrusted(status) ? "true" : "false")
          << ";tf_frozen=" << (LocalizationStateMachine::tfFrozen(status) ? "true" : "false")
-         << ";tf_published=" << (tf_published ? "true" : "false") << ";epoch=" << epoch
-         << ";generation=" << state_generation << ";pose_revision=" << pose_revision
-         << ";stamp_ns=" << stamp.nanoseconds()
-         << ";estimator_failure_count=" << estimator_failures.count << ";last_estimator_failure=";
-    writeStateField(text, estimator_failures.last_reason);
-    text << ";reason=";
-    writeStateField(text, reason);
+         << ";epoch=" << epoch << ";generation=" << state_generation
+         << ";estimator_failure_count=" << estimator_failures.count << ";reason=";
+    writeStateField(text, summarizeStateReason(reason));
     message.data = text.str();
     state_pub_->publish(message);
+
+    publishOptional("localization diagnostics", [&] {
+        if (!diagnostics_pub_)
+            return;
+        std::ostringstream diagnostics;
+        diagnostics << "status=" << LocalizationStateMachine::statusName(status)
+                    << ";pose_trusted="
+                    << (LocalizationStateMachine::poseTrusted(status) ? "true" : "false")
+                    << ";tf_frozen="
+                    << (LocalizationStateMachine::tfFrozen(status) ? "true" : "false")
+                    << ";tf_published=" << (tf_published ? "true" : "false") << ";epoch=" << epoch
+                    << ";generation=" << state_generation << ";pose_revision=" << pose_revision
+                    << ";stamp_ns=" << stamp.nanoseconds()
+                    << ";estimator_failure_count=" << estimator_failures.count
+                    << ";last_estimator_failure=";
+        writeStateField(diagnostics, estimator_failures.last_reason);
+        diagnostics << ";reason=";
+        writeStateField(diagnostics, reason);
+        std_msgs::msg::String detail;
+        detail.data = diagnostics.str();
+        diagnostics_pub_->publish(detail);
+    });
 
     publishOptional("status visualization",
                     [&] { publishStatusMarker(status, reason, estimator_failures, stamp, epoch); });

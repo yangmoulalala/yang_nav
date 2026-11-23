@@ -102,7 +102,7 @@ private:
     void publishStatusMarker(LocalizationStatus status, const std::string& reason,
                              const EstimatorFailureHistory& estimator_failures,
                              const rclcpp::Time& stamp, std::uint64_t epoch);
-    /// 将状态及其身份字段编码为诊断文本，并同步更新状态标记。
+    /// 发布精简状态和完整诊断文本，并同步更新状态标记。
     void publishLocalizationState(const LocalizationStatus status, const std::string& reason,
                                   const EstimatorFailureHistory& estimator_failures,
                                   const rclcpp::Time& stamp, const bool tf_published,
@@ -132,6 +132,7 @@ private:
     std::int64_t last_tf_stamp_ns_ = 0;
 
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr state_pub_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr diagnostics_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
         pose_covariance_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr prior_map_pub_;

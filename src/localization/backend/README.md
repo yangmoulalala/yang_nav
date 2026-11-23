@@ -114,7 +114,8 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | --- | --- | --- | --- |
 | `/localization/odometry` | `nav_msgs/msg/Odometry` | reliable，200 | `zlio` 模式的 map 系车体位姿、车体系速度及协方差；`child_frame_id` 为 `common.body_frame` |
 | `~/localization_pose` | `geometry_msgs/msg/PoseWithCovarianceStamped` | reliable，20 | map 系车体位姿及协方差 |
-| `~/localization_state` | `std_msgs/msg/String` | reliable，1，transient local | 定位状态、可信标记、代次、输出版本及故障信息 |
+| `~/localization_state` | `std_msgs/msg/String` | reliable，1，transient local | 精简定位状态、可信标记、代次、故障计数及原因摘要 |
+| `~/localization_diagnostics` | `std_msgs/msg/String` | reliable，1，transient local | 完整定位诊断，包括输出版本、时间戳、最近估计器故障和完整原因 |
 | `/localization/lio_world_cloud` | `sensor_msgs/msg/PointCloud2` | reliable，1 | map 系实时点云；由 `output.world_cloud` 控制 |
 | `~/prior_map` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 先验地图显示，由 `visualization.publish_prior_map` 控制 |
 | `~/runtime_map` | `sensor_msgs/msg/PointCloud2` | reliable，1，transient local | 运行地图显示，由 `visualization.publish_runtime_map` 控制 |
@@ -169,7 +170,17 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `SUSPECT` | 连续观测冲突、速度异常或匹配模型不再适用，正在尝试恢复 | `false` |
 | `LOST` | 定位丢失，等待或尝试重定位 | `false` |
 
-`localization_state` 使用分号分隔的 `key=value` 文本，包含定位状态、可信标记、重置代次和故障信息。
+`localization_state` 使用分号分隔的 `key=value` 文本，固定保留 `status`、`pose_trusted`、
+`tf_frozen`、`epoch`、`generation`、`estimator_failure_count` 和 `reason`。
+`reason` 只保留首个冒号、分号或换行之前的原因摘要，最多 80 个 UTF-8 字节，超长时以 `...` 结尾。
+例如：`status=SUSPECT;pose_trusted=false;tf_frozen=false;epoch=0;generation=3;estimator_failure_count=0;reason=observation model invalid`。
+
+`localization_diagnostics` 保留原完整格式，额外提供 `tf_published`、`pose_revision`、`stamp_ns`、
+`last_estimator_failure` 和未经摘要的 `reason`，用于配准质量、TF 时序和故障排查。
+两个话题沿用状态事件与同步帧的发布时机，不对精简状态去重，确保导航消费者仍能检查消息新鲜度。
+字段值中的 `%`、`;`、回车和换行分别编码为 `%25`、`%3B`、`%0D`、`%0A`。
+查看完整诊断：`ros2 topic echo --once --full-length --qos-durability transient_local /backend_node/localization_diagnostics`。
+
 进入 `SUSPECT` 后，若已有同一前端代次的可信位姿，输出沿用其 map←odom 由里程计前推，`/localization/odometry` 保留前端速度（已转到车体系）；进入 `LOST`（或 `SUSPECT` 跨越了前端重置）后，输出冻结在最后可信位姿、速度清零。两种情况位姿协方差都放大到至少 10 m / π；世界点云是否继续发布由 `output.world_cloud.publish_untrusted` 决定。
 
 ## 地图与标定工具

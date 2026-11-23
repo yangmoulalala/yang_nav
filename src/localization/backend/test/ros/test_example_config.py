@@ -6,6 +6,7 @@ from contextlib import ExitStack
 import os
 from pathlib import Path
 import tempfile
+import time
 import unittest
 
 from domain_coordinator import domain_id
@@ -17,6 +18,8 @@ import launch_testing
 import launch_testing.actions
 import launch_testing.asserts
 import rclpy
+from rclpy.qos import DurabilityPolicy, QoSProfile
+from std_msgs.msg import String
 from std_srvs.srv import Trigger
 
 _resources = ExitStack()
@@ -52,6 +55,28 @@ class TestExampleConfig(unittest.TestCase):
             client = node.create_client(Trigger, '/backend_node/save_map')
             self.assertTrue(client.wait_for_service(timeout_sec=20),
                             'backend_node did not start with config/example.yaml')
+            # 两个话题都须向晚加入的订阅者补发初始化快照；不依赖传感器输入。
+            received = {}
+            qos = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+            for name in ('localization_state', 'localization_diagnostics'):
+                node.create_subscription(String, '/backend_node/' + name,
+                                         lambda msg, key=name: received.update({key: msg.data}), qos)
+            deadline = time.monotonic() + 10
+            while len(received) < 2 and time.monotonic() < deadline:
+                rclpy.spin_once(node, timeout_sec=.1)
+            self.assertEqual(set(received), {'localization_state', 'localization_diagnostics'})
+            state = dict(part.split('=', 1) for part in received['localization_state'].split(';'))
+            detail = dict(part.split('=', 1) for part in received['localization_diagnostics'].split(';'))
+            self.assertEqual(set(state), {'status', 'pose_trusted', 'tf_frozen', 'epoch',
+                                          'generation', 'estimator_failure_count', 'reason'})
+            for key in state:
+                self.assertEqual(state[key], detail[key])
+            self.assertEqual(state['status'], 'INITIALIZING')
+            self.assertEqual(state['pose_trusted'], 'false')
+            self.assertTrue({'tf_published', 'pose_revision', 'stamp_ns',
+                             'last_estimator_failure'}.issubset(detail))
+            self.assertLess(len(received['localization_state']),
+                            len(received['localization_diagnostics']))
         finally:
             node.destroy_node()
             rclpy.shutdown()

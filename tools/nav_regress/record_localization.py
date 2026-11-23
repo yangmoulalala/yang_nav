@@ -58,7 +58,7 @@ def tfs(m,static=False):
 subs=[node.create_subscription(FrontendFrame,'/frontend/frame',frame,qos_profile_sensor_data),node.create_subscription(FrontendOdometry,'/frontend/odometry',prediction,qos_profile_sensor_data),node.create_subscription(TFMessage,'/tf',tfs,200),node.create_subscription(TFMessage,'/tf_static',lambda m:tfs(m,True),QoSProfile(depth=100,durability=DurabilityPolicy.TRANSIENT_LOCAL)),node.create_subscription(Odometry,'/localization/odometry',lambda m:emit('localization_odom',odom_data(m)),100)]
 subs.append(node.create_subscription(Imu,'/lidar_mid360/imu',lambda m:emit('imu',{'stamp':stamp(m.header.stamp),'frame':m.header.frame_id,'accel':[m.linear_acceleration.x,m.linear_acceleration.y,m.linear_acceleration.z],'gyro':[m.angular_velocity.x,m.angular_velocity.y,m.angular_velocity.z]}),qos_profile_sensor_data))
 subs.append(node.create_subscription(FrontendSession,'/frontend/session',lambda m:emit('frontend_session',{'instance_id':m.instance_id,'epoch':m.epoch,'reset_required':m.reset_required,'failed':m.failed}),QoSProfile(depth=1,durability=DurabilityPolicy.TRANSIENT_LOCAL)))
-for name in ['/backend_node/localization_state','/nav_zone_state']:
+for name in ['/backend_node/localization_state','/backend_node/localization_diagnostics','/nav_zone_state']:
  subs.append(node.create_subscription(String,name,lambda m,k=name:emit(k,m.data),100))
 for name in ['/cmd_vel_nav','/cmd_vel']:
  subs.append(node.create_subscription(Twist,name,lambda m,k=name:emit(k,[m.linear.x,m.linear.y,m.angular.z]),100))
@@ -69,7 +69,7 @@ def truth(m):
  if t-lasttruth<.02 and t>=lasttruth:return
  lasttruth=t;emit('truth',{'stamp':t,'pose':pose(m)})
 gz=GzNode();assert gz.subscribe(Pose,'/model/sentry/pose',truth)
-emit('recorder_started',{'topics':['/frontend/frame','/frontend/odometry','/tf','/tf_static','/localization/odometry','/backend_node/localization_state','Gazebo /model/sentry/pose']})
+emit('recorder_started',{'topics':['/frontend/frame','/frontend/odometry','/tf','/tf_static','/localization/odometry','/backend_node/localization_state','/backend_node/localization_diagnostics','Gazebo /model/sentry/pose']})
 try:rclpy.spin(node)
 except (KeyboardInterrupt,rclpy.executors.ExternalShutdownException):pass
 finally:
