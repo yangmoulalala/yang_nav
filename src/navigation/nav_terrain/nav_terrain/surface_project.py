@@ -14,8 +14,8 @@ A prior-cloud project (frame 'map') can be registered onto a field-model project
 p_field = R p_map + t, and then adopt the model's patches and annotations: a sparse cloud splits one
 surface into many fragments, the model's patches are exact.  The cloud keeps its own heights.
 
-Export: terrain = annotated type; not passable, no data and not annotated -> OBSTACLE (everything is
-an obstacle until the operator opens it up; not annotated cells are counted in the report), then terrain_export (Nav2 maps, direction field, zones).
+Export: observed, unannotated or not-passable cells -> OBSTACLE; cells without a surface observation
+-> UNKNOWN. Then terrain_export writes Nav2 maps, the direction field and zones.
 """
 import math
 
@@ -26,7 +26,7 @@ from nav_terrain.project_archive import FORMAT, load_project, save_project
 from nav_terrain.project_history import ProjectHistory
 from nav_terrain.registration import FieldProjection, icp, matrix_rpy
 from nav_terrain import surface_seg as ss
-from nav_terrain.terrain_map import (OBSTACLE, SLOPE, STEP_HIGH, STEP_L1, STEP_L2, TUNNEL, UNDULATION,
+from nav_terrain.terrain_map import (OBSTACLE, UNKNOWN, SLOPE, STEP_HIGH, STEP_L1, STEP_L2, TUNNEL, UNDULATION,
                          DIRECTIONAL, TerrainMap, encode_angle)
 
 UNSET = -1
@@ -447,7 +447,8 @@ class Project:
         typ, dcode, pas = self.label_grids()
         valid = self._valid()
         terrain = np.where(typ >= 0, typ, OBSTACLE).astype(np.uint8)      # not annotated = not passable
-        terrain[~pas | ~valid] = OBSTACLE
+        terrain[~pas & valid] = OBSTACLE
+        terrain[~valid] = UNKNOWN
         direction = np.where(np.isin(terrain, list(DIRECTIONAL)), dcode, 0).astype(np.uint8)
         m = TerrainMap(terrain, direction, self.surf.resolution, tuple(self.surf.origin),
                        elevation=self.surf.z.astype(np.float32), clearance=self.surf.clearance.astype(np.float32))
@@ -456,7 +457,8 @@ class Project:
         if self.reg is not None:
             m.extra['registration'] = dict(self.reg)
         return m, {'unannotated_cells': int((valid & (typ < 0)).sum()),
-                   'blocked_cells': int((valid & ~pas).sum()), 'no_data_cells': int((~valid).sum())}
+                    'blocked_cells': int((valid & ~pas).sum()), 'no_data_cells': int((~valid).sum()),
+                    'unknown_cells': int((~valid).sum())}
 
     def export(self, out, cfg=None):
         from nav_terrain import terrain_export as tx

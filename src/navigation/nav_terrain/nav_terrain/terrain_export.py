@@ -10,7 +10,8 @@ Port of HWSentryNav26 map_server/src/utils.cpp, done offline:
                     separable; overlaps resolve to the higher label id, angle = magnitude-weighted mean
 
 Output (terrain_dir for nav_bringup):
-  nav_map.pgm/.yaml         Nav2 static map, scale mode. OBSTACLE = lethal (pixel 0); the inflated band is
+  nav_map.pgm/.yaml         Nav2 static map, raw mode: free=0, OBSTACLE=100, UNKNOWN=255 (-1 in ROS).
+                            Unknown cells never seed obstacle inflation. The inflated band is
                             capped below lethal (--max-band-cost) so Nav2's own footprint check stays the
                             only hard limit next to walls and inside 0.25 m tunnels
   speed_mask.pgm/.yaml      raw-mode speed limit percent on directional terrain (0 = no limit)
@@ -26,18 +27,19 @@ Output (terrain_dir for nav_bringup):
 import argparse
 import json
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import numpy as np
 from scipy import ndimage, sparse
 from scipy.sparse import csgraph
 
-from nav_terrain.terrain_map import (DIRECTIONAL, FIRST_DIRECTIONAL, LABEL_COUNT, LABEL_IDS, LABELS, OBSTACLE,
+from nav_terrain.terrain_map import (DIRECTIONAL, FIRST_DIRECTIONAL, LABEL_COUNT, LABEL_IDS, LABELS, OBSTACLE, UNKNOWN,
                          TerrainMap, decode_angle, is_directional)
 
 COLORS = {0: (76, 175, 80), 1: (244, 67, 54), 2: (255, 152, 0), 3: (255, 235, 59), 4: (156, 39, 176),
-          5: (0, 188, 212), 6: (0, 242, 255), 7: (63, 81, 181), 8: (233, 30, 99)}
+          5: (0, 188, 212), 6: (0, 242, 255), 7: (63, 81, 181), 8: (233, 30, 99),
+          UNKNOWN: (128, 128, 128)}
 
 
 def validate_inflation(full, cutoff, decay, cap=None):
@@ -99,7 +101,7 @@ def inflate_direction(terrain, direction, resolution, full, cutoff, decay, cap):
         enc = np.clip(np.minimum(mx, cap) * 255.0, 0, 255).astype(np.uint8)
         has = enc > 0
         support[has] |= np.uint8(1 << (lab - FIRST_DIRECTIONAL))
-        take = has & (terrain != OBSTACLE) & ~np.isin(terrain, list(DIRECTIONAL)) & (lab > won)
+        take = has & (terrain != OBSTACLE) & (terrain != UNKNOWN) & ~np.isin(terrain, list(DIRECTIONAL)) & (lab > won)
         a = np.arctan2(sy, sx)
         a = np.where(a < 0, a + 2 * math.pi, a)
         angle[take] = (a[take] / (2 * math.pi) * 255.0).astype(np.uint8)
@@ -108,9 +110,9 @@ def inflate_direction(terrain, direction, resolution, full, cutoff, decay, cap):
         won[take] = lab
     body = np.isin(terrain, list(DIRECTIONAL))
     angle[body], mag[body], label[body] = direction[body], 255, terrain[body]
-    obs = terrain == OBSTACLE
-    angle[obs] = mag[obs] = 0
-    label[obs] = OBSTACLE
+    blocked = (terrain == OBSTACLE) | (terrain == UNKNOWN)
+    angle[blocked] = mag[blocked] = 0
+    label[blocked] = terrain[blocked]
     overlap = int(np.count_nonzero(support & (support - 1)))
     return angle, mag, label, overlap
 
@@ -243,12 +245,18 @@ class ExportConfig:
 def export(m, out, cfg, *, source, metadata=None):
     if not (0.0 <= cfg.max_band_cost < 100.0):
         raise ValueError('max_band_cost must be in [0, 100)')
+    m.validate()
+    if m.elevation is not None:
+        # Upgrade legacy packages where missing observations were labelled OBSTACLE.
+        terrain = m.terrain.copy()
+        terrain[~np.isfinite(m.elevation)] = UNKNOWN
+        m = replace(m, terrain=terrain)
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     m.save(out / 'terrain.msgpack')
     if m.elevation is not None:
         ground = m.elevation.copy()
-        ground[m.terrain == OBSTACLE] = np.nan
+        ground[(m.terrain == OBSTACLE) | (m.terrain == UNKNOWN)] = np.nan
         np.savez_compressed(out / 'ground_z.npz', ground_z=ground,
                             clearance=(m.clearance if m.clearance is not None
                                        else np.full(ground.shape, np.inf, np.float32)),
@@ -262,8 +270,12 @@ def export(m, out, cfg, *, source, metadata=None):
                                                cfg.cutoff_radius, cfg.decay_rate, cfg.non_body_cap)
     body = np.isin(m.terrain, list(DIRECTIONAL))
     occ = np.where(body & ~obstacle, np.maximum(occ, cfg.terrain_cost), occ)
-    write_pgm(out / 'nav_map.pgm', np.rint(255 - occ / 100.0 * 255).astype(np.uint8))
-    write_map_yaml(out / 'nav_map.yaml', 'nav_map.pgm', res, m.origin, 'scale')
+    # Raw mode preserves intermediate costs and has an unambiguous unknown value.
+    # A gray 205 pixel in scale mode is a finite cost, not unknown.
+    occupancy = np.rint(occ).astype(np.uint8)
+    occupancy[m.terrain == UNKNOWN] = 255
+    write_pgm(out / 'nav_map.pgm', occupancy)
+    write_map_yaml(out / 'nav_map.yaml', 'nav_map.pgm', res, m.origin, 'raw')
     speed = np.zeros(m.terrain.shape, np.uint8)
     for name, pct in cfg.speed_limits.items():
         speed[m.terrain == LABEL_IDS[name]] = pct
@@ -287,6 +299,8 @@ def export(m, out, cfg, *, source, metadata=None):
                       'decay_rate': cfg.decay_rate, 'non_body_cap': cfg.non_body_cap,
                       'max_band_cost': cfg.max_band_cost, 'terrain_cost': cfg.terrain_cost},
         'speed_limits': cfg.speed_limits, 'direction_overlap_cells': overlap,
+        'unknown_cells': int(np.count_nonzero(m.terrain == UNKNOWN)),
+        'nav_map_mode': 'raw',
         # map -> field registration from surface_studio (tools/nav_regress/goal.py converts world goals with it)
         'registration': m.extra.get('registration'),
     }

@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from nav_terrain.obstacle_filter import FilterConfig, GroundFilter
-from nav_terrain.terrain_map import OBSTACLE, TerrainMap
+from nav_terrain.terrain_map import OBSTACLE, UNKNOWN, TerrainMap
 
 
 def terrain():
@@ -96,6 +96,16 @@ def test_height_and_clearance_roundtrip(tmp_path):
     loaded = TerrainMap.load(path)
     np.testing.assert_equal(loaded.elevation, m.elevation)
     np.testing.assert_equal(loaded.clearance, m.clearance)
+
+
+def test_unknown_terrain_uses_ground_fallback_without_hiding_obstacles():
+    m = terrain()
+    m.terrain[35:46, 55:66] = UNKNOWN
+    m.elevation[35:46, 55:66] = .15  # A stale elevation is not observed traversable ground.
+    f = GroundFilter(m, FilterConfig(fill_radius=0))
+    points = np.array([[1., 0., .15], [2., 0., 0.]])
+    hits, _ = f.select(points, points, (0, 0, .1), 0)
+    assert hits.tolist() == [0]
 
 
 def test_missing_ground_and_bad_configuration_fail_startup():

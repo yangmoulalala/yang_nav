@@ -13,6 +13,14 @@ import math
 from pathlib import Path
 
 import numpy as np
+import yaml
+
+
+def free_map_cells(image, mode, min_free):
+    """Keep the legacy brightness threshold while excluding raw-mode unknown cells."""
+    if mode == 'raw':
+        return (image <= 100) & (image <= (255 - min_free) * 100.0 / 255.0)
+    return image >= min_free
 
 
 def main():
@@ -26,7 +34,7 @@ def main():
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--margin', type=float, default=0.6,
                     help='flat, free neighbourhood radius (m); > circumscribed radius 0.49')
-    ap.add_argument('--min-free', type=int, default=250, help='min nav_map pixel (255 = free)')
+    ap.add_argument('--min-free', type=int, default=250, help='free-space threshold on legacy 0..255 brightness scale')
     ap.add_argument('--any-height', action='store_true',
                     help='accept flat cells at any height (default: same level as the start)')
     a = ap.parse_args()
@@ -35,7 +43,11 @@ def main():
     nx, ny = meta['size']
     res = meta['resolution']
     ox, oy = meta['origin']
-    g = np.fromfile(d / 'ground_z.f32', '<f4').reshape(nx, ny).astype(float)
+    if (d / 'ground_z.npz').is_file():
+        with np.load(d / 'ground_z.npz') as ground:
+            g = ground['ground_z'].T.astype(float)  # Stored [row=y, col=x]; this tool uses [x,y].
+    else:
+        g = np.fromfile(d / 'ground_z.f32', '<f4').reshape(nx, ny).astype(float)
     sx, sy = int((a.x - ox) / res), int((a.y - oy) / res)
     z0 = np.nanmedian(g[sx - 4:sx + 5, sy - 4:sy + 5])
     if a.any_height:
@@ -44,12 +56,13 @@ def main():
         flat = np.isfinite(g) & (np.hypot(gx, gy) < 0.05)
     else:
         flat = np.isfinite(g) & (np.abs(np.nan_to_num(g, nan=1e9) - z0) < 0.03)
-    # nav_map.pgm (scale mode, negate 0): 255 = free, 0 = lethal; keep near-free cells only
+    # New exports use raw occupancy (255 unknown); older exports use scale brightness.
     raw = (d / 'nav_map.pgm').read_bytes()
     hdr = raw.split(b'\n', 3)
     w, h = map(int, hdr[1].split())
     img = np.frombuffer(raw[-w * h:], np.uint8).reshape(h, w)
-    free_img = img[::-1, :].T >= a.min_free    # -> [ix, iy]
+    mode = yaml.safe_load((d / 'nav_map.yaml').read_text()).get('mode', 'trinary')
+    free_img = free_map_cells(img[::-1, :].T, mode, a.min_free)  # -> [ix, iy]
     flat &= free_img[:nx, :ny]
     k = int(a.margin / res)
     # cell ok when every cell within k is flat: erode with a box via cumulative sums

@@ -20,14 +20,16 @@ from nav_terrain._msgpack import packb, unpackb
 
 # ----------------------------------------------------------------------------- labels
 FLAT, OBSTACLE, SLOPE, STEP_L1, STEP_L2, FLY_SLOPE, STEP_HIGH, TUNNEL, UNDULATION = range(9)
+UNKNOWN = 255  # No surface observation; distinct from an observed obstacle.
 LABELS = {
     FLAT: 'flat', OBSTACLE: 'obstacle', SLOPE: 'slope', STEP_L1: 'step_l1', STEP_L2: 'step_l2',
     FLY_SLOPE: 'fly_slope', STEP_HIGH: 'step_high', TUNNEL: 'tunnel', UNDULATION: 'undulation',
+    UNKNOWN: 'unknown',
 }
 LABEL_IDS = {v: k for k, v in LABELS.items()}
 DIRECTIONAL = {SLOPE, STEP_L1, STEP_L2, FLY_SLOPE, STEP_HIGH, TUNNEL, UNDULATION}
 FIRST_DIRECTIONAL = SLOPE
-LABEL_COUNT = len(LABELS)
+LABEL_COUNT = UNDULATION + 1  # Contiguous physical labels; UNKNOWN is a separate sentinel.
 
 
 def is_directional(label):
@@ -82,7 +84,7 @@ class TerrainMap:
             raise ValueError('terrain/direction shape mismatch')
         if not (math.isfinite(self.resolution) and self.resolution > 0):
             raise ValueError('resolution must be finite and positive')
-        bad = self.terrain >= LABEL_COUNT
+        bad = (self.terrain >= LABEL_COUNT) & (self.terrain != UNKNOWN)
         if bad.any():
             r, c = np.argwhere(bad)[0]
             raise ValueError('invalid terrain label %d at row %d col %d' % (self.terrain[r, c], r, c))

@@ -7,7 +7,7 @@ import pytest
 from nav_terrain import registration, surface_project as sp
 from nav_terrain import surface_seg as ss
 from nav_terrain.surface_seg._regions import _absorb_clutter
-from nav_terrain.terrain_map import OBSTACLE, SLOPE, TUNNEL, UNDULATION, FLAT, TerrainMap, decode_angle, encode_angle
+from nav_terrain.terrain_map import OBSTACLE, UNKNOWN, SLOPE, TUNNEL, UNDULATION, FLAT, TerrainMap, decode_angle, encode_angle
 
 
 def quad(p0, p1, p2, p3):
@@ -149,6 +149,22 @@ def test_cloud_registration_transfer():
     pm = R.T @ (np.array([0.5, 3.5, 0.0]) - t)
     a = c.a(pid_at(c, pm[0], pm[1]))
     assert a['type'] == UNDULATION and abs(a['dir'] - (30 - math.degrees(yaw))) < 0.5   # manual direction, rotated by the registration
+
+
+def test_no_surface_observation_exports_as_unknown(tmp_path):
+    p = proj()
+    floor = pid_at(p, 0.5, 3.5)
+    p.set_ann([floor], type=FLAT)
+    c, r = p.surf.cell_of(0.5, 3.5)
+    p.surf.z[r, c] = np.nan  # Even a previously annotated patch cannot invent coverage.
+    m, report = p.terrain_map()
+    assert m.terrain[r, c] == UNKNOWN
+    assert report['unknown_cells'] == report['no_data_cells']
+    assert report['unknown_cells'] == np.count_nonzero(~np.isfinite(p.surf.z))
+    observed_unannotated = np.isfinite(p.surf.z) & (p.label_grids()[0] < 0)
+    assert np.all(m.terrain[observed_unannotated] == OBSTACLE)
+    p.export(tmp_path)
+    assert TerrainMap.load(tmp_path / 'terrain.msgpack').terrain[r, c] == UNKNOWN
 
 
 def test_vertical_view_two_direction_slope():

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from nav_terrain import terrain_export as tx
-from nav_terrain.terrain_map import (OBSTACLE, SLOPE, TUNNEL, TerrainMap, decode_angle, encode_angle)
+from nav_terrain.terrain_map import (FLAT, OBSTACLE, UNKNOWN, SLOPE, TUNNEL, TerrainMap, decode_angle, encode_angle)
 from nav_terrain._msgpack import packb, unpackb
 
 
@@ -72,9 +72,9 @@ def test_export_package_and_zones(tmp_path):
         assert (tmp_path / 'pkg' / f).is_file()
     raw = (tmp_path / 'pkg' / 'nav_map.pgm').read_bytes()
     img = np.frombuffer(raw[-80 * 60:], np.uint8).reshape(60, 80)[::-1]
-    assert img[30, 0] == 0                               # obstacle lethal
-    assert 0 < img[30, 1] < 255 and img[30, 1] > 255 - 0.6 * 255 - 1   # band capped below lethal
-    assert img[30, 70] == 255                            # free
+    assert img[30, 0] == 100                             # raw-mode lethal
+    assert 0 < img[30, 1] <= cfg.max_band_cost             # band capped below lethal
+    assert img[30, 70] == 0                               # raw-mode free
     assert len(zones) == 1
     z = zones[0]
     assert z['type'] == 'tunnel' and z['yaw_deg'] == 0.0
@@ -82,6 +82,64 @@ def test_export_package_and_zones(tmp_path):
     assert z['centre'] == pytest.approx([-2.0 + 2.0, -1.5 + 1.2])
     assert z['entry'][0] < z['centre'][0] < z['exit'][0]
     assert yaml_load(tmp_path / 'pkg' / 'nav_map.yaml')['origin'][:2] == [-2.0, -1.5]
+    assert yaml_load(tmp_path / 'pkg' / 'nav_map.yaml')['mode'] == 'raw'
+
+
+def test_unknown_roundtrip_and_export_preserves_three_states(tmp_path):
+    m = TerrainMap.blank(12, 6, .1)
+    m.terrain[:, :3] = UNKNOWN
+    m.terrain[:, -1] = OBSTACLE
+    m.elevation = np.zeros(m.terrain.shape, np.float32)
+    m.elevation[:, :3] = np.nan
+    meta, _ = tx.export(m, tmp_path, tx.ExportConfig(), source='test')
+    loaded = TerrainMap.load(tmp_path / 'terrain.msgpack')
+    np.testing.assert_array_equal(loaded.terrain, m.terrain)
+    raw = (tmp_path / 'nav_map.pgm').read_bytes()
+    grid = np.frombuffer(raw[-72:], np.uint8).reshape(6, 12)[::-1]
+    assert np.all(grid[:, :3] == 255)
+    assert np.all(grid[:, -1] == 100)
+    assert np.all(grid[:, 3:7] == 0)  # No cost halo around the unknown boundary.
+    assert meta['label_cells']['unknown'] == 18
+    assert meta['unknown_cells'] == 18
+    assert meta['label_cells']['obstacle'] == 6
+    with np.load(tmp_path / 'ground_z.npz') as z:
+        assert np.isnan(z['ground_z'][:, :3]).all()
+        assert np.isnan(z['ground_z'][:, -1]).all()
+
+
+def test_unknown_does_not_acquire_direction_from_nearby_terrain():
+    terrain = np.full((11, 11), UNKNOWN, np.uint8)
+    direction = np.zeros_like(terrain)
+    terrain[5, 5] = SLOPE
+    terrain[5, 4] = FLAT
+    angle, magnitude, labels, _ = tx.inflate_direction(terrain, direction, .05, .1, .3, 24, .9)
+    unknown = terrain == UNKNOWN
+    assert np.all(labels[unknown] == UNKNOWN)
+    assert not magnitude[unknown].any()
+    assert not angle[unknown].any()
+    assert magnitude[5, 4] > 0
+
+
+def test_legacy_missing_elevation_upgrades_without_erasing_observed_obstacles(tmp_path):
+    m = TerrainMap.blank(4, 3, .1)
+    m.elevation = np.zeros(m.terrain.shape, np.float32)
+    m.terrain[0, 0] = OBSTACLE
+    m.elevation[0, 0] = np.nan
+    m.terrain[1, 1] = OBSTACLE  # An observed obstacle must survive the upgrade.
+    meta, _ = tx.export(m, tmp_path, tx.ExportConfig(), source='legacy')
+    upgraded = TerrainMap.load(tmp_path / 'terrain.msgpack')
+    assert upgraded.terrain[0, 0] == UNKNOWN
+    assert upgraded.terrain[1, 1] == OBSTACLE
+    assert m.terrain[0, 0] == OBSTACLE  # Export does not mutate the caller's object.
+    assert meta['unknown_cells'] == 1
+
+
+def test_goal_picker_excludes_unknown_raw_pixels_and_supports_legacy_maps():
+    import runpy
+    picker = Path(__file__).resolve().parents[4] / 'tools/nav_regress/pick_flat_goals.py'
+    free_cells = runpy.run_path(str(picker))['free_map_cells']
+    assert free_cells(np.array([0, 1, 2, 100, 255]), 'raw', 250).tolist() == [True, True, False, False, False]
+    assert free_cells(np.array([255, 250, 249, 0]), 'scale', 250).tolist() == [True, True, False, False]
 
 
 def test_multi_direction_patch_splits_into_faces():

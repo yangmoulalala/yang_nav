@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy import ndimage
 
-from nav_terrain.terrain_map import OBSTACLE, TerrainMap
+from nav_terrain.terrain_map import OBSTACLE, UNKNOWN, TerrainMap
 
 
 @dataclass
@@ -50,7 +50,7 @@ class GroundFilter:
         self.resolution, self.origin = terrain.resolution, np.asarray(terrain.origin)
         self.terrain = np.array(terrain.terrain, copy=True)
         self.ground = np.array(terrain.elevation, dtype=float, copy=True)
-        self.ground[terrain.terrain == OBSTACLE] = np.nan
+        self.ground[(terrain.terrain == OBSTACLE) | (terrain.terrain == UNKNOWN)] = np.nan
         known = np.isfinite(self.ground)
         if not known.any():
             raise ValueError('terrain package has no traversable ground heights')
@@ -129,7 +129,7 @@ class GroundFilter:
             rr, cc = rows[inside], cols[inside]
             labels = self.terrain[rr, cc]
             local_ground = self.ground[rr, cc]
-            traversable = labels != OBSTACLE
+            traversable = (labels != OBSTACLE) & (labels != UNKNOWN)
             x0 = self.origin[0] + cc * self.resolution
             y0 = self.origin[1] + rr * self.resolution
             local = p[ids[inside]]

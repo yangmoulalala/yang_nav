@@ -190,6 +190,7 @@ local_costmap:
       robot_base_frame: base_link
       transform_tolerance: 0.5
       rolling_window: true
+      track_unknown_space: true
       width: 8    # > 2 x MPPI reach (1.5 m/s x 2 s); off-grid rollout poses count as collisions
       height: 8
       resolution: 0.025
@@ -245,7 +246,7 @@ global_costmap:
       robot_base_frame: base_link
       transform_tolerance: 0.5
       resolution: 0.025
-      track_unknown_space: false
+      track_unknown_space: true
       footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
       footprint_padding: 0.01
       plugins: [static_layer, obstacle_layer, inflation_layer]
