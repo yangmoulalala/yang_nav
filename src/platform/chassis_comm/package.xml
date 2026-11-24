@@ -2,7 +2,7 @@
 <package format="3">
   <name>chassis_comm</name>
   <version>0.1.0</version>
-  <description>17-byte chassis command protocol and serial transmitter.</description>
+  <description>17-byte chassis commands and 8-byte measured big-yaw serial feedback.</description>
   <maintainer email="yang@todo.todo">yang</maintainer>
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>

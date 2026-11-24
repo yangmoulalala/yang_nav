@@ -29,7 +29,7 @@ TOPICS=SENSOR_TOPICS+'''
 /backend_node/odom_path /backend_node/optimized_path
 /backend_node/debug/aligned_source /backend_node/debug/target
 /cmd_vel /cmd_vel_nav /cmd_vel_smoothed /cmd_vel_collision_checked
-/chassis/yaw_target /chassis/pass_hole
+/chassis/yaw_target /chassis/pass_hole /chassis/big_yaw /chassis/big_yaw_online
 /uwb_pose /diagnostics /parameter_events /rosout /localization_start
 /initialpose /goal_pose /plan /plan_smoothed /local_plan /transformed_global_plan
 /map /nav_map /speed_filter_mask /speed_filter_info /costmap_filter_info /speed_limit
@@ -43,7 +43,7 @@ for action in ('navigate_to_pose', 'navigate_through_poses', 'follow_path',
                'compute_path_to_pose', 'compute_path_through_poses', 'smooth_path',
                'spin', 'backup', 'wait'):
     TOPICS += [f'/{action}/_action/feedback', f'/{action}/_action/status']
-LATCHED_TOPICS='''/tf_static /robot_description /frontend/session
+LATCHED_TOPICS='''/tf_static /robot_description /frontend/session /chassis/big_yaw_online
 /backend_node/localization_state /backend_node/localization_diagnostics
 /map /nav_map /speed_filter_mask /speed_filter_info /costmap_filter_info /nav_mode /nav_zone_state /nav_zones/markers'''.split()
 LATCHED_TOPICS += [topic for topic in TOPICS if topic.endswith('/_action/status')]

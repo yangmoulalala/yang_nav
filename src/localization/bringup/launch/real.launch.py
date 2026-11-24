@@ -60,6 +60,9 @@ CHASSIS_ARGS = {
     'chassis_cmd_vel_topic': ('/cmd_vel', '最终安全门输出的速度话题'),
     'chassis_yaw_topic': ('/chassis/yaw_target', '显式相对 yaw 输入话题'),
     'chassis_action_topic': ('/chassis/pass_hole', '过洞动作上升沿输入话题'),
+    'chassis_big_yaw_topic': ('/chassis/big_yaw', '大 yaw 相对底盘的实测角，Float32，rad'),
+    'chassis_big_yaw_online_topic': ('/chassis/big_yaw_online', '大 yaw 反馈在线状态，Bool'),
+    'chassis_big_yaw_timeout': ('0.1', '无有效大 yaw 反馈时的离线超时（s）'),
 }
 
 
