@@ -9,13 +9,14 @@ import time
 import rclpy
 from action_msgs.msg import GoalStatus
 from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import OccupancyGrid
 from rclpy.duration import Duration
 from lifecycle_msgs.msg import State
 from lifecycle_msgs.srv import GetState
 from nav2_msgs.action import NavigateToPose
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from rclpy.qos import DurabilityPolicy, QoSProfile
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.signals import SignalHandlerOptions
 from rclpy.time import Time
 from rclpy.utilities import remove_ros_args
@@ -33,6 +34,16 @@ class GoalSender(Node):
         self.state_sub = self.create_subscription(
             String, '/backend_node/localization_state', self.on_state,
             QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        # Wait for the static costmap source and the first integrated local costmap,
+        # so the planner does not reject the start cell as unknown/occupied right after bringup.
+        self.nav_map_received = False
+        self.costmap_received = False
+        self.nav_map_sub = self.create_subscription(
+            OccupancyGrid, '/nav_map', self.on_nav_map,
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        self.costmap_sub = self.create_subscription(
+            OccupancyGrid, '/local_costmap/costmap', self.on_costmap,
+            QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE))
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.lifecycle = self.create_client(GetState, '/bt_navigator/get_state')
@@ -48,6 +59,12 @@ class GoalSender(Node):
         self.trusted = any(key.strip() == 'pose_trusted' and value.strip().lower() == 'true'
                            for key, value in fields.items())
         self.state_received_at = time.monotonic()
+
+    def on_nav_map(self, message):
+        self.nav_map_received = True
+
+    def on_costmap(self, message):
+        self.costmap_received = True
 
     def wait_ready(self, timeout):
         deadline = time.monotonic() + timeout
@@ -69,6 +86,10 @@ class GoalSender(Node):
                 reason = 'active /bt_navigator and /navigate_to_pose'
             elif self.require_trusted and (not self.trusted or now - self.state_received_at > 2.0):
                 reason = 'fresh pose_trusted=true localization state'
+            elif not self.nav_map_received:
+                reason = '/nav_map (static costmap source not yet published)'
+            elif not self.costmap_received:
+                reason = 'first /local_costmap/costmap update (static layer not yet integrated)'
             elif self.get_clock().now().nanoseconds == 0:
                 reason = 'simulation /clock'
             elif not self.tf_buffer.can_transform('map', self.base_frame, Time()):

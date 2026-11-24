@@ -16,8 +16,12 @@ controller_server:
       vx_max: 0.25
       vx_min: -0.25
       vy_max: 0.25
-      vx_std: 0.05
-      vy_std: 0.05
+      vx_std: 0.15   # was 0.05; wider noise lets MPPI reach the 0.25 m/s target speed
+      vy_std: 0.15   # same
+      # Reduce MPPI compute for real hardware: 20 steps × 0.05 s = 1 s horizon,
+      # sufficient at 0.25 m/s. Halves rollout cost vs the sim default of 40 × 1000.
+      time_steps: 20
+      batch_size: 500
       zone:
         inner_plugin: nav_behaviors::TranslationMPPIController
         angular_control: false
