@@ -37,18 +37,18 @@ base_link
 
 ## 真车用法
 
-```bash
-ros2 run robot_state_publisher robot_state_publisher \
-    --ros-args -p robot_description:="$(cat $(ros2 pkg prefix sentry_description)/share/sentry_description/urdf/sentry_robot.urdf)"
+`bringup/launch/real.launch.py` 调用 `gimbal_description.py` 从上述同一份 URDF 提取刚性云台子树：
+
+```
+gimbal_nav -> yaw_link -> mid360_link -> mid360_imu_link
+                      -> l2_link
 ```
 
-`bringup/launch/real.launch.py` 已经这样启动了 `robot_state_publisher`，一般不用手动运行。
+`gimbal_nav` 为前/左/上参考，原点同原底盘中心（同轴云台转轴下方 5 mm）。
+下位机的 X/Y 按云台方向解释，因此关节反馈未接入时仍可使用雷达定位云台；不能把 `yaw_joint=0` 当作物理底盘朝向。
+真车不发布默认零关节状态，不包含未观测的底盘、车轮子树。仿真继续使用完整 URDF 与真实关节反馈。
+生成器直接复用传感器安装外参；名义偏角 0 时，传感器到 gimbal_nav 等于原 yaw_joint=0 时到 base_link 的变换。
 
-## 注意
-
-- URDF 里**没有 `<inertial>`**：几何来自 CAD 导出，质量/惯量由仿真侧
-  （`sentry_gazebo/arena_spec.py` 的 `CHASSIS_MASS` 等）单独给出。
-  真车上如果只用 `robot_state_publisher` 这不影响；如果要用
-  `ros2_control` 做动力学，需要补 `<inertial>`。
-- 仿真专用的东西（Gazebo `gpu_lidar` 参数、赛场、world、bridge）**不在这个包**，
-  见 `sentry_gazebo`。
+`gimbal_yaw_offset` 是 MCU +X 相对 CAD 云台零方向的实测安装偏角（rad，CCW 为正）。它不是关节角，
+不会随底盘相对云台转动而更新；默认 0，尚未进行速度轴向精标定。重力不能标定该平面偏角。
+生成器不会自动读 `/chassis/joint_states`，接入真实关节反馈后普通导航仍需保持云台速度参考。

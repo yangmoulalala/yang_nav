@@ -93,16 +93,19 @@ MID-360 的数据坐标系与 CAD 网格坐标系分别定义；`yaw_joint=0` �
 | `backend*.yaml` `registration.convergence_translation` / `convergence_rotation_deg` | 0.02 m / 0.5° | 0.005 m / 0.1°（上游值） | 仿真中 5 mm / 0.1° 使配准常判未收敛、跟踪频繁 SUSPECT；真车未验证，保持上游 |
 | `backend*.yaml` `registration.max_iterations` | 30 | 16 | 同上 |
 
-LIO 的里程计系叫 `lio_odom`。仿真与真车 TF 相同，是一棵连通的树 `map → lio_odom → base_link → URDF 树`：
-组合启动时，前端 `output.publish_tf: false`，后端 `common.publish_odom_tf: true`。后端从同一不可变位姿投影、
-同一时间戳，在一个 TFMessage 中发布 `map → lio_odom` 和 `lio_odom → base_link`，避免重置期间拼接不同代次的两条边。
-高频预测也通过此发布路径。独立运行前端时，示例配置仍可开启 `output.publish_tf`；此时后端必须关闭
-`common.publish_odom_tf`，每条 TF 边只能有一个发布者。IMU 系在 URDF 里已有父帧，里程计应接到树根 `base_link`。
-不再有手写的 `imu` 静态 TF：MID-360 内置 IMU 是 URDF 中的 `mid360_imu_link`（Livox 出厂外参），
-前端启动时从 TF 查一次 `frames.imu ← frames.lidar`（同在雷达上，固定）；后端按每条消息的时间戳查
-`common.sensor_frame ← common.body_frame`（`base_link`），超过 `common.body_extrinsic_tolerance` 时沿用上次有效值并告警，
-所以云台 `yaw_joint` 转动时车体位姿、TF 与 UWB 杆臂也跟随（启动位姿提示仍用启动时外参）。后端不发布
-直接的 `map → base_link` 边。TF 发布归属可用 `python3 tools/check_bringup_params.py` 检查。Gazebo 不发布真值 `/odom` / `odom` 帧。
+LIO 里程计系为 `lio_odom`。仿真使用 `map → lio_odom → base_link → URDF`；
+真车在没有云台/底盘关节反馈时使用 `map → lio_odom → gimbal_nav → yaw_link → 传感器`。
+`gimbal_nav` 位于同轴旋转中心，采用云台的前/左/上方向，匹配下位机普通 X/Y 参考。
+真实底盘 yaw 不可观测，真车不发布假的 `base_link` 或默认零关节状态；仿真仍使用真实关节反馈。
+组合启动时前端 `output.publish_tf=false`，后端统一发布 map→lio_odom 和 lio_odom→配置的根帧，
+同一时间戳、同一投影，保证重置时不会拼接不同代次。
+
+真车 `sensor_frame ← body_frame` 为 `mid360_imu_link ← gimbal_nav` 的固定外参。
+`gimbal_description.py` 从原 URDF 提取刚性云台子树，保留 MID-360、内置 IMU 和 L2 的安装外参；
+`yaw_link` 是 CAD 轴向，不能直接当平面导航帧。`gimbal_yaw_offset` 默认为 0，仅在实测确认 MCU +X 与 CAD
+云台零方向存在安装偏角后设置（rad，逆时针为正）；它不是云台相对底盘的关节角。
+零偏角时，新外参与旧 yaw_joint=0 的外参完全相同，因此此修复不会凭空消除原先速度方向残差。
+UWB 天线固定于底盘时，缺少关节反馈也无法用固定云台杆臂推算天线位置；当前真车 UWB 保持关闭。
 
 ## 真车
 
@@ -113,14 +116,14 @@ ros2 launch bringup real.launch.py mode:=localization                 # 加载 ~
 ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 ```
 
-真车入口默认启动 `chassis_comm`。默认使用固定串口 `/dev/nav`、波特率 `115200`，启动命令无需传入串口参数；需要临时调整时可用 `chassis_port`、`chassis_baud_rate` 覆盖。底盘默认 100 Hz、`yaw_mode=twist`、`yaw_horizon=0.1 s`，参数详见[底盘接口](../platform/chassis_comm/README.md)。
+真车入口默认启动 `chassis_comm`。默认使用固定串口 `/dev/nav`、波特率 `115200`，启动命令无需传入串口参数；需要临时调整时可用 `chassis_port`、`chassis_baud_rate` 覆盖。底盘默认 100 Hz、`yaw_mode=action_angle`：普通导航使用云台方向参考的 X/Y 速度，动作上升沿使用显式底盘机体系相对 yaw 角度，参数详见[底盘接口](../platform/chassis_comm/README.md)。
 
 - MID-360：`livox_ros_driver2`，参数在 `bringup/config/real/livox_driver.yaml`（`xfer_format=0` PointCloud2，`frame_id: mid360_link`，无需别名 TF）。
   **雷达与主机 IP 改 `bringup/config/real/MID360_config.json`**，不要改驱动包里的那份。
 - L2：宇树 `unilidar_sdk2`（需另行安装）；其 launch 不归本仓库管，故保留 `l2_frame` → `l2_link` 的恒等静态 TF。
 - IMU：MID-360 内置 IMU，`imu_acceleration_scale=9.81`，外参是 URDF 中 `mid360_imu_link` 的 Livox 出厂值。
-- TF：本文件启动 `robot_state_publisher`（URDF）和 `joint_state_publisher`（`bringup/config/real/robot_state.yaml`）。
-  云台 `yaw_joint` 取自 `/chassis/joint_states`，该反馈话题需车上单独接入。尚无反馈的关节按 `joint_state_publisher` 的默认值发布。
+- TF：启动 `robot_state_publisher`，根为 `gimbal_nav`，只发布可观测的固定云台子树；不启动默认零关节发布器。
+  接通真实关节反馈后，应另行恢复有依据的物理底盘 TF；普通 X/Y 仍应保持云台参考。
 - 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。
   真车 `uwb.enabled: false`（`uwb.zero_pose_*` 未标定），此时 SUSPECT/LOST 不会自动恢复；接入裁判系统 UWB 后在这里打开，并按
   `backend/docs/parameters.md` 的 `uwb` 小节配置。
@@ -131,7 +134,7 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 | --- | --- | --- | --- |
 | launch 参数 | `mid360_topic` / `imu_topic` | `/livox/lidar` / `/livox/imu` | `ros2 topic list` |
 | `config/real/MID360_config.json` | 雷达 / 主机 IP | 见当前 JSON | 按车上网络修改 |
-| 底盘节点 | `/chassis/joint_states` 中的 `yaw_joint` | 未接入时为 0 | `ros2 topic echo /joint_states` |
+| 云台参考 | `gimbal_yaw_offset` | 0（名义安装方向，非实测标定） | 核对 MCU +X/+Y 与雷达安装轴向；不要用关节零值替代 |
 | `config/real/lidar_fusion.yaml` | `primary.time_field` / `primary.time_scale` / `primary.time_absolute` | `timestamp` / `1.0e-9` / `true` | `ros2 topic echo --once /livox/lidar --field fields`，看 `timestamp` 是绝对时间还是帧内偏移 |
 | launch 参数 | `l2_topic` / `l2_frame` | `/unilidar/cloud` / `unilidar_lidar` | 同上 |
 | `config/real/lidar_fusion.yaml` | `secondary.time_field` / `secondary.time_scale` / `secondary.time_absolute` | `time` / `1.0` / `false` | 同上 |

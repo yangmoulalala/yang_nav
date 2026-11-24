@@ -13,9 +13,9 @@ zlio:
       imu: mid360_imu_link
       # LiDAR 坐标系，用于从 TF 查询 imu ← lidar 外参。
       lidar: mid360_link
-      # TF 输出的子坐标系：发布 world → base = (world → imu)·(imu ← base)，imu ← base 按里程计时间从 TF 查（云台转动也跟随）。
-      # 与 imu 相同时直接发布 world → imu；完整系统填 URDF 树根 base_link（IMU 系在 URDF 里已有父帧）。
-      base: base_link
+      # 可观测云台根；真实底盘朝向需关节反馈，当前不发布 base_link。
+      # publish_tf=false，由后端统一发布 map -> lio_odom -> gimbal_nav。
+      base: gimbal_nav
 
     # 传感器输入；话题固定为相对名 lidar、imu，由 launch 重映射。
     input:

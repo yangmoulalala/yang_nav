@@ -9,7 +9,7 @@
 定位/传感器参数来自 bringup/config/real/；底盘默认使用固定串口 /dev/nav，无需传入 chassis_port。
 需要临时调整底盘参数时可用 chassis_* 启动参数覆盖：
   livox_driver.yaml   MID-360 驱动（frame_id 直接是 mid360_link）；IP 在 MID360_config.json
-  robot_state.yaml    joint_state_publisher：云台 yaw_joint 取自 /chassis/joint_states，没收到就发 0
+  gimbal_nav          云台导航参考系；不伪造未接通的底盘/云台关节反馈
   lidar_fusion.yaml / frontend.yaml / backend.yaml   定位管线
 外参只在 URDF：MID-360 内置 IMU 为 mid360_imu_link（Livox 出厂值）。
 L2 驱动（unilidar_sdk2）是外部 launch，其 frame_id 不受本仓库控制，故保留 l2_frame 别名静态 TF。
@@ -35,8 +35,9 @@ PIPELINE_ARGS = {
     'lidar': ('single', 'single 或 dual'),
     'mode': ('mapping', 'mapping 或 localization'),
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
-    'map_dir': (str(WORKSPACE / 'maps' / 'real'), '地图保存目录（绝对路径）'),
+    'map_dir': (str(WORKSPACE / 'maps' / 'real'/ '001'), '地图保存目录（绝对路径）'),
     'rviz': ('false', '后端 RViz'),
+    'gimbal_yaw_offset': ('0.0', 'MCU +X 相对 CAD 云台零方向的实测 CCW 偏角(rad)，不是关节角'),
 }
 SOURCE_ARGS = {
     # MID-360（livox_ros_driver2, xfer_format=0），话题待真车确认
@@ -67,7 +68,10 @@ def generate_launch_description():
     config = PathJoinSubstitution([bringup, 'config', 'real'])
     arg = {key: LaunchConfiguration(key) for key in {**PIPELINE_ARGS, **SOURCE_ARGS, **CHASSIS_ARGS}}
     urdf = PathJoinSubstitution([FindPackageShare('sentry_description'), 'urdf', 'sentry_robot.urdf'])
-    description = {'robot_description': ParameterValue(Command(['cat ', urdf]), value_type=str)}
+    generator = str(Path(get_package_share_directory('sentry_description')).parents[1] /
+                    'lib' / 'sentry_description' / 'gimbal_description.py')
+    description = {'robot_description': ParameterValue(Command([
+        'python3 ', generator, ' ', urdf, ' --yaw-offset=', arg['gimbal_yaw_offset']]), value_type=str)}
     return LaunchDescription([
         *(DeclareLaunchArgument(k, default_value=v, description=d)
           for k, (v, d) in {**PIPELINE_ARGS, **SOURCE_ARGS, **CHASSIS_ARGS}.items()),
@@ -95,12 +99,10 @@ def generate_launch_description():
                 }.items()),
         ]),
 
-        # ---- TF: URDF + joint states + L2 frame alias -------------------
+        # Only the observable rigid turret tree. No default-zero chassis yaw.
+        # The backend publishes lio_odom -> gimbal_nav.
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              parameters=[description]),
-        Node(package='joint_state_publisher', executable='joint_state_publisher',
-             name='joint_state_publisher',
-             parameters=[PathJoinSubstitution([config, 'robot_state.yaml']), description]),
         Node(package='tf2_ros', executable='static_transform_publisher', name='alias_l2',
              condition=IfCondition(EqualsSubstitution(arg['lidar'], 'dual')),
              arguments=['--frame-id', 'l2_link', '--child-frame-id', arg['l2_frame']]),
@@ -115,6 +117,6 @@ def generate_launch_description():
                 'primary_topic': arg['mid360_topic'],
                 'secondary_topic': arg['l2_topic'],
                 'imu_topic': arg['imu_topic'],
-                **{k: arg[k] for k in PIPELINE_ARGS},
+                **{k: arg[k] for k in PIPELINE_ARGS if k != 'gimbal_yaw_offset'},
             }.items()),
     ])

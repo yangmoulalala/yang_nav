@@ -35,6 +35,7 @@ PLATFORM_ONLY = {'real': ('livox_driver.yaml', 'robot_state.yaml')}
 SIM_IMU = 'Gazebo IMU 位于 mid360_link 原点；真车为 MID-360 内置 IMU mid360_imu_link'
 SIM_CONVERGENCE = '仿真点云稀疏，真车沿用上游收敛判据'
 BACKEND_PLATFORM = {
+    'backend_node/common.body_frame': '真车以可观测云台导航，仿真以有真实关节反馈的底盘导航',
     'backend_node/common.sensor_frame': SIM_IMU,
     'backend_node/registration.max_iterations': SIM_CONVERGENCE,
     'backend_node/registration.convergence_translation': SIM_CONVERGENCE,
@@ -65,6 +66,7 @@ ALLOWED = {
     ('sim/backend.yaml', 'sim/backend_single.yaml'): {**SINGLE_LIDAR, **SIM_SINGLE_VOXEL},
     ('sim/frontend.yaml', 'real/frontend.yaml'): {
         'zlio/frames.imu': SIM_IMU,
+        'zlio/frames.base': '真车 TF 根为 gimbal_nav，仿真为 base_link',
         'zlio/filter.gyro_variance': 'Gazebo gyro stddev is 0.002 rad/s (variance 4e-6); keep hardware noise independent until measured',
         'zlio/input.imu_acceleration_scale': 'gz IMU 单位为 m/s²，MID-360 为 g',
         'zlio/sensor.minimum_range': '仿真雷达量程设置',
