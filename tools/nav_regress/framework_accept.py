@@ -58,12 +58,15 @@ def main():
             start_log = len((out / 'navigation.log').read_text())
             before = plant.pose.copy()
             handle, future = plant.start((30., 0., 0.))
-            plant.wait(future.done, 35., 'unreachable in-zone goal never aborted')
-            assert future.result().status == GoalStatus.STATUS_ABORTED
+            # Production ZoneRecovery has retries=-1: an unreachable target
+            # stays pending until canceled/preempted, while the robot stays still.
+            plant.run_for(7.)
+            assert not future.done(), 'unlimited recovery unexpectedly terminated'
             text = (out / 'navigation.log').read_text()[start_log:]
             assert '-> clear' in text and '-> spin' not in text and '-> backup' not in text, text[-6000:]
             assert np.linalg.norm(plant.pose - before) < .01
-            passed('in-zone planning failure after 5 s idle never spins or backs up')
+            plant.cancel(handle, future)
+            passed('in-zone planning failure stays pending without motion and remains cancelable')
             plant.goal((-2.5, 0., 0.))
             passed('new goal resumes from inside tunnel and exits in reverse')
             handle, future = plant.start((2.5, 0., 0.))

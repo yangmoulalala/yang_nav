@@ -38,11 +38,15 @@ public:
     const auto & path=input.value();const auto & end=path.poses.back().pose.position;
     const auto sig=targetSignature(config());
     const bool complete=pathEndsAtRequestedGoal(config(),path);
-    if (sig!=signature_ || complete!=complete_ || std::hypot(end.x-x_,end.y-y_)>.05) {
+    // A live FollowPath accepts ordinary replans without being halted. Endpoint
+    // movement matters only after reaching an occupied-goal approach point.
+    if (sig!=signature_ || (waiting_ && (complete!=complete_ ||
+      std::hypot(end.x-x_,end.y-y_) > .05 + 1e-6))) {
       resetChild();waiting_=false;signature_=sig;x_=end.x;y_=end.y;complete_=complete;
     }
     setStatus(BT::NodeStatus::RUNNING);
     if(waiting_) {return BT::NodeStatus::RUNNING;}
+    x_=end.x; y_=end.y; complete_=complete;
     auto status=child_node_->executeTick();
     if(status==BT::NodeStatus::SUCCESS && !complete) {
       resetChild();waiting_=true;return BT::NodeStatus::RUNNING;

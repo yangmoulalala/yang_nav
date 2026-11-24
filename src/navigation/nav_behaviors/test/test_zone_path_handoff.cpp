@@ -114,3 +114,62 @@ TEST(PathHandoff, ApproachPointStaysPendingUntilOriginalGoalCanBeFollowed)
   tree.haltTree();goal.pose.position.x=3.;bb->set("goal",goal);
   EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::RUNNING);
 }
+
+namespace {
+class RunningFollower : public BT::StatefulActionNode {
+public:
+  RunningFollower(const std::string & name,const BT::NodeConfiguration & config)
+  :BT::StatefulActionNode(name,config) {}
+  static BT::PortsList providedPorts() {return {};}
+  static int starts,halts;
+  BT::NodeStatus onStart() override {++starts;return BT::NodeStatus::RUNNING;}
+  BT::NodeStatus onRunning() override {return BT::NodeStatus::RUNNING;}
+  void onHalted() override {++halts;}
+};
+int RunningFollower::starts=0;
+int RunningFollower::halts=0;
+}
+
+TEST(PathHandoff, GridEndpointJitterNeverCancelsLiveFollowerButNewGoalDoes)
+{
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepOccupiedGoalPending>("KeepOccupiedGoalPending");
+  factory.registerNodeType<RunningFollower>("Follow");
+  RunningFollower::starts=RunningFollower::halts=0;
+  auto bb=BT::Blackboard::create();
+  geometry_msgs::msg::PoseStamped goal;goal.header.frame_id="map";goal.pose.position.x=2.;
+  bb->set("goal",goal);
+  nav_msgs::msg::Path path;path.header.frame_id="map";path.poses.push_back(goal);
+  bb->set("path",path);
+  auto tree=factory.createTreeFromText(R"(<root BTCPP_format="4"><BehaviorTree ID="Main"><KeepOccupiedGoalPending path="{path}"><Follow/></KeepOccupiedGoalPending></BehaviorTree></root>)",bb);
+  EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::RUNNING);
+  for (double end:{2.050000000745,1.95,2.050000000745,1.0,2.0}) {
+    path.poses.back().pose.position.x=end;bb->set("path",path);
+    EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::RUNNING);
+  }
+  EXPECT_EQ(RunningFollower::starts,1);EXPECT_EQ(RunningFollower::halts,0);
+  goal.header.stamp.sec=1;bb->set("goal",goal);
+  EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::RUNNING);
+  EXPECT_EQ(RunningFollower::starts,2);EXPECT_EQ(RunningFollower::halts,1);
+}
+
+TEST(PathHandoff, WaitingApproachIgnoresOneCellJitterButResumesForNewReachableGoal)
+{
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepOccupiedGoalPending>("KeepOccupiedGoalPending");
+  int follows=0;
+  factory.registerSimpleAction("Follow",[&](BT::TreeNode &){++follows;return BT::NodeStatus::SUCCESS;});
+  auto bb=BT::Blackboard::create();
+  geometry_msgs::msg::PoseStamped goal;goal.header.frame_id="map";goal.pose.position.x=2.;
+  bb->set("goal",goal);
+  nav_msgs::msg::Path path;path.header.frame_id="map";path.poses.push_back(goal);path.poses.back().pose.position.x=1.;
+  bb->set("path",path);
+  auto tree=factory.createTreeFromText(R"(<root BTCPP_format="4"><BehaviorTree ID="Main"><KeepOccupiedGoalPending path="{path}"><Follow/></KeepOccupiedGoalPending></BehaviorTree></root>)",bb);
+  EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::RUNNING);
+  path.poses.back().pose.position.x=1.050000000745;bb->set("path",path);
+  EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::RUNNING);EXPECT_EQ(follows,1);
+  path.poses.back().pose.position.x=1.15;bb->set("path",path);
+  EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::RUNNING);EXPECT_EQ(follows,2);
+  path.poses.back()=goal;bb->set("path",path);
+  EXPECT_EQ(tree.tickOnce(),BT::NodeStatus::SUCCESS);EXPECT_EQ(follows,3);
+}
