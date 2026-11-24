@@ -21,10 +21,13 @@ base_link
 ```
 
 - `mid360_link` 是 Livox 点云数据系，`mid360_imu_link` 与其同轴；不能直接把 CAD 网格局部轴当作数据轴。
-  `yaw_joint=0` 时 `base_link ← mid360_link` 的名义 roll 为 **−15°**。2026-11-23
+  `yaw_joint=0` 时 `base_link ← mid360_link` 为 **先 yaw 180°，再绕局部 X 轴 roll −15°**，
+  即 `Rz(π) · Rx(−π/12)`（URDF RPY 为 `[-15°, 0°, 180°]`）。2026-11-23
   实测 IMU 重力方向约 `[0.012, -0.263, 0.956] g`，前端 roll 约 −15.4°；原 CAD
-  关节链却给出 +105°，导致输出车体系额外侧翻约 −120°。关节旋转修正 −120°，
-  visual/collision 局部旋转补偿 +120°，保留网格的装配位置。平移沿用 CAD 值；该值是
+  关节链却给出 +105°，导致输出车体系额外侧翻约 −120°。2026-11-24 根据实物安装方向补全 yaw 180°：
+  `mid360_joint` 的 pitch 从 −90° 改为 +90°；visual/collision 局部 RPY 补偿为
+  `[90°, 0°, 180°]`，保留网格的装配位置。重力只能验证倾角，不能验证 yaw，
+  回归检查同时约束雷达 +X 指向车尾和车体位姿换算。平移沿用 CAD 值；该值是
   当前安装的名义轴约定修复，不是完整的六自由度外参精标定。更换安装方式须重新标定。
 - 网格路径是相对路径 `meshes/*.stl`。仿真侧由 `sentry_gazebo` 换成
   `model://sentry_description/meshes/...`；RViz 的 RobotModel 不解析相对路径，要在 RViz 里

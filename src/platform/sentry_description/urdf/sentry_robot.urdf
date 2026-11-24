@@ -79,20 +79,21 @@
   </joint>
 
   <!-- mid360_link is the Livox data frame, not the CAD mesh frame.
-       At yaw_joint=0 its roll in base_link is -15 deg (live IMU/ground normal).
-       The CAD mount previously implied +105 deg, tipping base_link by -120 deg.
-       Rotate visual/collision +120 deg locally to preserve their CAD placement. -->
+       Physical mount at yaw_joint=0: yaw 180 deg, then roll -15 deg about
+       local X; R_base_lidar = Rz(pi) * Rx(-pi/12). Gravity validates roll
+       but cannot determine yaw. The former yaw=0 mount reversed body heading.
+       Compensate visual/collision locally to preserve the CAD placement. -->
   <link name="mid360_link">
-    <visual><origin xyz="0.000000 0.000000 0.000000" rpy="2.094395102393 0 0"/>
+    <visual><origin xyz="0.000000 0.000000 0.000000" rpy="1.570796326795 0 3.141592653590"/>
       <geometry><mesh filename="meshes/mid360_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></visual>
-    <collision><origin xyz="0.000000 0.000000 0.000000" rpy="2.094395102393 0 0"/>
+    <collision><origin xyz="0.000000 0.000000 0.000000" rpy="1.570796326795 0 3.141592653590"/>
       <geometry><mesh filename="meshes/mid360_link.stl" scale="0.001000 0.001000 0.001000"/></geometry></collision>
   </link>
 
   <joint name="mid360_joint" type="fixed">
     <parent link="yaw_link"/>
     <child link="mid360_link"/>
-    <origin xyz="0.163595 -0.131644 0.055760" rpy="1.308996938996 -1.570796326795 0.000000"/>
+    <origin xyz="0.163595 -0.131644 0.055760" rpy="1.308996938996 1.570796326795 0.000000"/>
   </joint>
 
   <link name="l2_link">

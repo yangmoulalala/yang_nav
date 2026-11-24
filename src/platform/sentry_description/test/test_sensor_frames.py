@@ -31,6 +31,22 @@ class SensorFrames(unittest.TestCase):
         angle=math.degrees(math.atan2(math.hypot(g[0],g[1]),g[2]))
         self.assertLess(angle,2.0,'Livox data axes must not tip the chassis by 120 degrees')
 
+    def test_installed_heading_and_roll(self):
+        # Physical mounting: yaw 180 deg, then roll -15 deg about local X.
+        # Gravity alone cannot distinguish this from the old yaw=0 mount.
+        self.assertLess(math.dist(vec(self.R_sensor,[1,0,0]),[-1,0,0]),1e-6)
+        expected_y=[0,-math.cos(math.pi/12),-math.sin(math.pi/12)]
+        self.assertLess(math.dist(vec(self.R_sensor,[0,1,0]),expected_y),1e-6)
+
+    def test_body_heading_from_level_sensor_pose(self):
+        # A live IMU with roll=-15 deg and map yaw=0 implies a rear-facing
+        # chassis (+/-180 deg), not a chassis with yaw=0.
+        sensor_in_map=rpy(f'{-math.pi/12} 0 0')
+        sensor_from_body=[list(row) for row in zip(*self.R_sensor)]
+        body_in_map=mul(sensor_in_map,sensor_from_body)
+        self.assertLess(math.dist(vec(body_in_map,[1,0,0]),[-1,0,0]),1e-6)
+        self.assertLess(math.dist(vec(body_in_map,[0,0,1]),[0,0,1]),1e-6)
+
     def test_mesh_world_placement_is_preserved(self):
         old=mul(self.R_yaw,rpy('-2.879793 -1.570796 0'))
         for kind in ('visual','collision'):
