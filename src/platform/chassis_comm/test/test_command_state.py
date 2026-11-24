@@ -84,3 +84,39 @@ def test_invalid_inputs_stop_translation_and_rotation():
 
 def test_shutdown_frame_zeroes_relative_target_angle():
     assert active_state().stop_command() == Command(0, 0, 0, 0)
+
+
+def test_action_angle_navigation_needs_no_yaw_and_never_sends_navigation_yaw():
+    state = CommandState(0.3, 0.3, action_only_yaw=True)
+    state.update_velocity(.5, -.25, 10.)
+    assert state.command(10.) == Command(.5, -.25, 0, 0)
+    state.sent(state.command(10.))
+    # An absent action angle rejects the trigger, without rejecting X/Y.
+    state.update_action(True, 10.1)
+    assert state.command(10.1) == Command(.5, -.25, 0, 0)
+    state.update_action(False, 10.11)
+    state.update_yaw(1.25, 10.12)
+    assert state.command(10.12).yaw == 0
+    state.update_action(True, 10.13)
+    # Snapshot the explicit angle at the action edge, never convert an omega.
+    state.update_yaw(-.5, 10.14)
+    command = state.command(10.14)
+    assert command == Command(.5, -.25, 1.25, 1)
+    state.sent(command)
+    assert state.command(10.15) == Command(.5, -.25, 0, 0)
+    # Yaw expiry cannot stop ordinary navigation.
+    state.update_velocity(.2, .1, 11.)
+    assert state.command(11.) == Command(.2, .1, 0, 0)
+
+
+def test_action_angle_watchdog_drops_action_and_never_replays_it():
+    state = CommandState(.3, .3, action_only_yaw=True)
+    state.update_velocity(.5, 0, 10.)
+    state.sent(state.command(10.))
+    state.update_yaw(.7, 10.)
+    state.update_action(True, 10.1)
+    assert state.command(10.4) == Command(0, 0, 0, 0)
+    state.update_velocity(.5, 0, 10.5)
+    state.update_yaw(.7, 10.5)
+    state.update_action(True, 10.5)
+    assert state.command(10.5) == Command(.5, 0, 0, 0)

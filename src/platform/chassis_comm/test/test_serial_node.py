@@ -15,7 +15,7 @@ from chassis_comm.protocol import FrameParser
 from chassis_comm.serial_node import ChassisSerial
 
 
-@pytest.mark.parametrize('yaw_mode', ['relative_angle', 'twist'])
+@pytest.mark.parametrize('yaw_mode', ['action_angle', 'relative_angle', 'twist'])
 def test_ros_transmitter_over_pseudoterminal(monkeypatch, yaw_mode):
     master, slave = pty.openpty()
     os.set_blocking(master, False)
@@ -26,7 +26,7 @@ def test_ros_transmitter_over_pseudoterminal(monkeypatch, yaw_mode):
         'command_timeout': 0.2, 'yaw_timeout': 0.2,
         'cmd_vel_topic': prefix + '/velocity', 'yaw_topic': prefix + '/yaw',
         'action_topic': prefix + '/action',
-        **({'yaw_mode': yaw_mode} if yaw_mode == 'relative_angle' else {}),
+        'yaw_mode': yaw_mode,
     }.items():
         args.extend(['-p', f'{name}:={value}'])
     rclpy.init(args=args, domain_id=199)
@@ -71,7 +71,7 @@ def test_ros_transmitter_over_pseudoterminal(monkeypatch, yaw_mode):
 
         deadline = time.monotonic() + 5.0
         while min(velocity.get_subscription_count(), action.get_subscription_count(),
-                  yaw.get_subscription_count() if yaw_mode == 'relative_angle' else 1) < 1:
+                  yaw.get_subscription_count() if yaw_mode != 'twist' else 1) < 1:
             assert time.monotonic() < deadline, 'ROS subscriptions did not match'
             executor.spin_once(timeout_sec=0.02)
         startup = run_for(0.1, send_yaw=False, send_velocity=False)
@@ -79,15 +79,20 @@ def test_ros_transmitter_over_pseudoterminal(monkeypatch, yaw_mode):
         without_yaw = run_for(0.2, send_yaw=False)
         if yaw_mode == 'relative_angle':
             assert all(c.vx == c.vy == c.yaw == 0 for c in without_yaw)
+        elif yaw_mode == 'action_angle':
+            assert any(c.vx == 0.5 and c.vy == -0.25 and c.yaw == 0 for c in without_yaw)
         else:
             assert any(c.vx == 0.5 and c.yaw == pytest.approx(0.075) for c in without_yaw)
         active = run_for(0.25)
-        expected_yaw = 0.075 if yaw_mode == 'twist' else 1.25
+        expected_yaw = {'twist': 0.075, 'relative_angle': 1.25, 'action_angle': 0.0}[yaw_mode]
         assert any(c.vx == 0.5 and c.vy == -0.25 and c.yaw == pytest.approx(expected_yaw)
                    for c in active)
         triggered = run_for(0.25, high=True)
         assert sum(c.action_flag for c in triggered) == 1
         assert triggered[-1].action_flag == 0
+        if yaw_mode == 'action_angle':
+            assert next(c for c in triggered if c.action_flag).yaw == pytest.approx(1.25)
+            assert all(c.yaw == 0 for c in triggered if not c.action_flag)
         run_for(0.1, high=False)
         assert sum(c.action_flag for c in run_for(0.2, high=True)) == 1
 
@@ -101,6 +106,9 @@ def test_ros_transmitter_over_pseudoterminal(monkeypatch, yaw_mode):
         if yaw_mode == 'relative_angle':
             rejected = run_for(0.15, omega=0.7)
             assert all(c.vx == c.vy == c.yaw == c.action_flag == 0 for c in rejected[-3:])
+        elif yaw_mode == 'action_angle':
+            ignored = run_for(0.15, omega=.7, send_yaw=False)
+            assert all(c.vx == .5 and c.yaw == c.action_flag == 0 for c in ignored[-3:])
         else:
             clockwise = run_for(0.15, omega=-0.75)
             assert all(c.yaw == pytest.approx(-0.075) for c in clockwise[-3:])

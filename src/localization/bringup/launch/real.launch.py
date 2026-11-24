@@ -54,7 +54,7 @@ CHASSIS_ARGS = {
     'chassis_port': ('/dev/nav', '底盘固定串口设备路径，通常无需覆盖'),
     'chassis_baud_rate': ('115200', '下位机约定波特率'),
     'chassis_rate': ('100.0', '底盘控制帧发送频率（Hz）'),
-    'chassis_yaw_mode': ('twist', 'twist 前视适配或 relative_angle 显式相对角度'),
+    'chassis_yaw_mode': ('action_angle', '普通导航仅 X/Y；动作上升沿使用机体系 yaw 角度'),
     'chassis_yaw_horizon': ('0.1', 'Twist 转相对 yaw 的前视时长（s）'),
     'chassis_cmd_vel_topic': ('/cmd_vel', '最终安全门输出的速度话题'),
     'chassis_yaw_topic': ('/chassis/yaw_target', '显式相对 yaw 输入话题'),

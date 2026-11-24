@@ -26,7 +26,7 @@ class ChassisSerial(Node):
         rate = self.declare_parameter('rate', 100.0).value
         command_timeout = self.declare_parameter('command_timeout', 0.3).value
         yaw_timeout = self.declare_parameter('yaw_timeout', 0.3).value
-        self._yaw_mode = self.declare_parameter('yaw_mode', 'twist').value
+        self._yaw_mode = self.declare_parameter('yaw_mode', 'action_angle').value
         self._yaw_horizon = self.declare_parameter('yaw_horizon', 0.1).value
         write_timeout = self.declare_parameter('write_timeout', 0.005).value
         if self.get_parameter('use_sim_time').value:
@@ -38,14 +38,15 @@ class ChassisSerial(Node):
             raise ValueError('rate and timeouts must be finite and positive')
         if baud < 17 * 10 * rate:
             raise ValueError('baud_rate cannot carry 17-byte 8N1 frames at the requested rate')
-        if self._yaw_mode not in ('relative_angle', 'twist'):
-            raise ValueError('yaw_mode must be relative_angle or twist')
+        if self._yaw_mode not in ('action_angle', 'relative_angle', 'twist'):
+            raise ValueError('yaw_mode must be action_angle, relative_angle or twist')
         if self._yaw_mode == 'twist':
             twist_command(0.0, 0.0, 0.0, self._yaw_horizon)
         # 8N1, no flow control. Port/baud are not specified by the wire protocol.
         self._serial = serial.Serial(
             port, baudrate=baud, timeout=0, write_timeout=write_timeout, exclusive=True)
-        self._state = CommandState(command_timeout, yaw_timeout)
+        self._state = CommandState(command_timeout, yaw_timeout,
+                                   action_only_yaw=self._yaw_mode == 'action_angle')
         self._failed = False
         self._last_active = None
         qos = QoSProfile(depth=1)  # reliable, volatile: never replay a latched action
@@ -54,7 +55,7 @@ class ChassisSerial(Node):
             self._velocity, qos)
         yaw_topic = self.declare_parameter('yaw_topic', '/chassis/yaw_target').value
         self._yaw_sub = None
-        if self._yaw_mode == 'relative_angle':
+        if self._yaw_mode in ('action_angle', 'relative_angle'):
             self._yaw_sub = self.create_subscription(Float32, yaw_topic, self._yaw, qos)
         self._action_sub = self.create_subscription(
             Bool, self.declare_parameter('action_topic', '/chassis/pass_hole').value,
@@ -63,7 +64,8 @@ class ChassisSerial(Node):
             1.0 / rate, self._tick, clock=Clock(clock_type=ClockType.STEADY_TIME))
         yaw_info = (
             f'yaw=angular.z * {self._yaw_horizon} s; tune against MCU angle response'
-            if self._yaw_mode == 'twist' else 'yaw from explicit body-relative angle input')
+            if self._yaw_mode == 'twist' else ('yaw from explicit body-frame angle, only on action edge'
+                  if self._yaw_mode == 'action_angle' else 'yaw from explicit body-relative angle input'))
         self.get_logger().info(f'{port} at {baud} baud (8N1); {yaw_info}.')
 
     def _velocity(self, msg: Twist):
@@ -74,6 +76,14 @@ class ChassisSerial(Node):
                     msg.linear.x, msg.linear.y, msg.angular.z, self._yaw_horizon)
                 self._state.update_velocity(command.vx, command.vy, stamp)
                 self._state.update_yaw(command.yaw, stamp)
+            elif self._yaw_mode == 'action_angle':
+                if not math.isfinite(msg.angular.z):
+                    raise ValueError('angular.z must be finite')
+                self._state.update_velocity(msg.linear.x, msg.linear.y, stamp)
+                if abs(msg.angular.z) > 1e-6:
+                    self.get_logger().warning(
+                        'Ignoring navigation angular.z: MCU accepts body-frame yaw only for actions.',
+                        throttle_duration_sec=2.0)
             else:
                 # Do not mix an explicit relative target with an ignored yaw rate.
                 if not math.isfinite(msg.angular.z) or abs(msg.angular.z) > 1e-6:
