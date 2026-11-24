@@ -1,0 +1,5 @@
+<library path="translation_velocity_critic">
+  <class type="mppi::critics::TranslationVelocityCritic" base_class_type="mppi::critics::CriticFunction">
+    <description>Local path velocity feedback for imminent turret-frame XY commands</description>
+  </class>
+</library>

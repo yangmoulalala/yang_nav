@@ -1,4 +1,14 @@
 <class_libraries>
+  <library path="translation_goal_checker">
+    <class type="nav_behaviors::TranslationGoalChecker" base_class_type="nav2_core::GoalChecker">
+      <description>Requires current XY tolerance and stopped translation; ignores action yaw</description>
+    </class>
+  </library>
+  <library path="translation_mppi_controller">
+    <class type="nav_behaviors::TranslationMPPIController" base_class_type="nav2_core::Controller">
+      <description>MPPI with controlled X/Y and measured passive yaw for action-only yaw chassis</description>
+    </class>
+  </library>
   <library path="start_aware_planner">
     <class type="nav_behaviors::StartAwarePlanner" base_class_type="nav2_core::GlobalPlanner">
       <description>Escapes existing footprint overlap before normal Smac2D planning</description>

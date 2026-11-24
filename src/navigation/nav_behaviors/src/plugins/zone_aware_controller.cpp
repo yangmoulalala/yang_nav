@@ -64,6 +64,10 @@ public:
     const std::string p = name + ".zone.";
     nav2_util::declare_parameter_if_not_declared(node, p + "speed_limit_reference", rclcpp::ParameterValue(1.5));
     node->get_parameter(p + "speed_limit_reference", speed_limit_reference_);
+    declare_parameter_if_not_declared(node, p + "angular_control", ParameterValue(true));
+    node->get_parameter(p + "angular_control", angular_control_);
+    declare_parameter_if_not_declared(node, p + "body_heading_available", ParameterValue(true));
+    node->get_parameter(p + "body_heading_available", body_heading_available_);
     TrackerParams tp;
     auto dbl = [&](const std::string & k, double & v) {
         declare_parameter_if_not_declared(node, p + k, ParameterValue(v));
@@ -289,6 +293,16 @@ public:
       capSpeed(cmd.twist);
       return cmd;
     }
+    if (!body_heading_available_) {
+      publishPhase(ZonePhase::Blocked, o.zone_id);
+      throw nav2_core::NoValidControl(
+        "Directional terrain requires observed chassis heading; turret yaw is insufficient");
+    }
+    if (!angular_control_ && std::abs(normAngle(robot.yaw - o.lock)) > tracker_.params().yaw_tol) {
+      publishPhase(ZonePhase::Blocked, o.zone_id);
+      throw nav2_core::NoValidControl(
+        "Directional terrain requires body yaw alignment by an explicit chassis action");
+    }
     geometry_msgs::msg::TwistStamped cmd;
     cmd.header = pose.header;
     cmd.twist.linear.x = cmd.twist.linear.y = cmd.twist.angular.z = 0.0;
@@ -307,7 +321,7 @@ public:
     auto & t = cmd.twist;
     t.linear.x = (1.0 - w) * t.linear.x + w * o.vx;
     t.linear.y = (1.0 - w) * t.linear.y + w * o.vy;
-    t.angular.z = (1.0 - w) * t.angular.z + w * o.wz;
+    t.angular.z = angular_control_ ? (1.0 - w) * t.angular.z + w * o.wz : 0.0;
     if (trace_) {
       RCLCPP_INFO(logger_, "ZTRACE %s ph %s s %+.3f w %.2f pose (%.3f %.3f %.1f) ref %.1f e_lat %+.3f e_yaw %+.1f "
         "trk (%+.2f %+.2f %+.2f) out (%+.2f %+.2f %+.2f)%s", o.zone_id.c_str(), zonePhaseName(o.phase), o.s_rel, w,
@@ -600,6 +614,7 @@ private:
   std::vector<geometry_msgs::msg::Point> check_footprint_;
   std::optional<Pose2> plan_goal_, escape_target_;
   ContactState escape_contacts_;
+  bool angular_control_{true}, body_heading_available_{true};
   double escape_speed_{0.15}, escape_max_distance_{1.5};
   double check_margin_{0.3}, block_timeout_{5.0};
   bool trace_{false};

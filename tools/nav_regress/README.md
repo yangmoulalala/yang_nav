@@ -108,3 +108,28 @@ ROS_DOMAIN_ID=87 python3 tools/nav_regress/dynamic_accept.py --out /tmp/nav_dyna
 ## 占用起点回归
 
 `occupied_start.py --out /tmp/nav_occupied` 用真实 Nav2 和运动学底盘验证边角重叠、车心落入较厚静态障碍时的退出、到点和后续新目标；`--recorded-exit` 使用正式地图及 2026-11-13 手动日志的两个出口位姿 (4.52,-5.24)、(4.59,-5.27)。测试保持碰撞监控、定位可信门和观测门开启；只模拟代价图重叠，不模拟实体穿墙。使用独立 ROS_DOMAIN_ID，并在已加载 Jazzy/工作空间的终端运行。
+
+
+### 仅平移真车协议回归
+
+```bash
+ROS_DOMAIN_ID=158 python3 tools/nav_regress/translation_accept.py --out /tmp/nav_translation_accept
+```
+
+该测试在独立 domain 启动实际 real profile、Nav2 和仅执行最终 X/Y 的软件模型，不启动 chassis_serial、不访问硬件。检查前进/横移、忽略不可执行的目标 yaw、新目标抢占以及最终 angular.z 全程为零。`support.runtime.navigation()` 默认显式使用 sim profile，以保留既有三自由度软件模型回归的语义。
+
+### 真车短路径响应偏差回归
+
+```bash
+ROS_DOMAIN_ID=158 python3 tools/nav_regress/translation_tracking_accept.py --out /tmp/nav_translation_tracking
+# 可选：使用从录包导出的 local_costmap OccupancyGrid JSON
+ROS_DOMAIN_ID=158 python3 tools/nav_regress/translation_tracking_accept.py --costmap-json /tmp/local_snapshot.json --out /tmp/nav_translation_snapshot
+```
+
+该场景只启动隔离域中的离线 plant，不连接串口。基于 001/003 或 004 运动段观察到的响应范围，施加 X/Y 交叉耦合、侧向增益和 50 ms 延迟，重复三次短路线；检查横向误差 <0.20 m、成功时平移速度 ≤0.055 m/s、停稳后目标距离 <0.18 m，以及全过程普通 yaw 输出为零。响应矩阵仅用于测试，不能作为硬件标定写入串口。`--costmap-json` 只保留原始致命障碍和未知区域，重新生成膨胀代价。
+
+
+真车参考系回归：`translation_accept.py` 的 plant 只发布 `gimbal_nav`，覆盖前进、横移、抢占、障碍绕行，
+并在普通 yaw 命令为零时独立转动云台 0.35 rad/s，检验导航可随云台方向更新。该理想运动学测试不能替代实车轴向标定。
+`translation_tracking_accept.py` 的耦合模型仅用于有限场景的响应不确定性测试，不是硬件校准；
+使用 `--scenario site_a_004` 验证 004 拟合响应；`rotation_plus20` / `rotation_minus20` 验证两个方向的 20° 速度偏角、1.1 倍增益与 50 ms 延迟。每个场景默认三次，验收阈值相同。输出 `result.json` 保存逐次指标；失败不会放宽阈值。004 的零偏角坐标重构与旧零关节变换数值等价，响应回归通过也不能代替新实车 bag。

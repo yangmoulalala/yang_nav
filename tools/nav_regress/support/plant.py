@@ -1,4 +1,5 @@
 """Deterministic omni plant driven by the final command topic."""
+import copy
 import json
 import math
 import time
@@ -65,20 +66,22 @@ class Plant(Node):
         self.last_time = now
         cmd = self.command if now - self.command_time < .3 else Twist()
         x, y, yaw = self.pose
-        mid = yaw + cmd.angular.z * dt / 2
+        yaw_rate = cmd.angular.z + getattr(self, 'passive_yaw_rate', 0.0)
+        mid = yaw + yaw_rate * dt / 2
         self.pose += [dt * (math.cos(mid) * cmd.linear.x - math.sin(mid) * cmd.linear.y),
                       dt * (math.sin(mid) * cmd.linear.x + math.cos(mid) * cmd.linear.y),
-                      dt * cmd.angular.z]
+                      dt * yaw_rate]
         self.pose[2] = angle(self.pose[2])
         stamp = self.get_clock().now().to_msg()
-        t = TransformStamped(header=Header(stamp=stamp, frame_id='map'), child_frame_id='base_link')
+        t = TransformStamped(header=Header(stamp=stamp, frame_id='map'), child_frame_id=getattr(self, 'base_frame', 'base_link'))
         t.transform.translation.x, t.transform.translation.y = map(float, self.pose[:2])
         t.transform.rotation.z, t.transform.rotation.w = math.sin(self.pose[2] / 2), math.cos(self.pose[2] / 2)
         self.tf.sendTransform(t)
-        odom = Odometry(header=t.header, child_frame_id='base_link')
+        odom = Odometry(header=t.header, child_frame_id=getattr(self, 'base_frame', 'base_link'))
         odom.pose.pose.position.x, odom.pose.pose.position.y = map(float, self.pose[:2])
         odom.pose.pose.orientation = t.transform.rotation
-        odom.twist.twist = cmd
+        odom.twist.twist = copy.deepcopy(cmd)
+        odom.twist.twist.angular.z = yaw_rate
         self.odometry.publish(odom)
         self.state.publish(String(data='state=NORMAL;pose_trusted=' + str(self.trusted).lower()))
         self.frame_tick += 1
@@ -97,7 +100,7 @@ class Plant(Node):
             frame = FrontendFrame()
             frame.odometry = odom
             frame.lidar_updated = True
-            frame.cloud = point_cloud2.create_cloud_xyz32(Header(stamp=stamp, frame_id='base_link'), points)
+            frame.cloud = point_cloud2.create_cloud_xyz32(Header(stamp=stamp, frame_id=getattr(self, 'base_frame', 'base_link')), points)
             self.frames.publish(frame)
         sample = dict(time=now, pose=self.pose.tolist(),
                       cmd=[cmd.linear.x, cmd.linear.y, cmd.angular.z], phase=self.phase,

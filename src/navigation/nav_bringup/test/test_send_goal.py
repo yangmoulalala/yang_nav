@@ -42,6 +42,7 @@ class FakeNav(Node):
         self.active = False
         self.trusted = False
         self.publish_tf = False
+        self.base_frame = 'base_link'
         self.reject = False
         self.abort = False
         self.hold = False
@@ -74,7 +75,7 @@ class FakeNav(Node):
         if self.publish_tf:
             transform = TransformStamped()
             transform.header.frame_id = 'map'
-            transform.child_frame_id = 'base_link'
+            transform.child_frame_id = self.base_frame
             transform.header.stamp = self.get_clock().now().to_msg()
             transform.transform.rotation.w = 1.0
             self.tf.sendTransform(transform)
@@ -174,6 +175,15 @@ def test_waits_then_sends_exactly_one_map_goal(nav):
     assert (pose.pose.position.x, pose.pose.position.y) == (1.0, 1.5)
     assert pose.pose.orientation.z == pytest.approx(math.sin(math.pi / 4))
     assert pose.pose.orientation.w == pytest.approx(math.cos(math.pi / 4))
+
+
+def test_real_goal_sender_uses_gimbal_reference_without_chassis_tf(nav):
+    node, client = nav
+    node.base_frame = 'gimbal_nav'
+    node.active = node.trusted = node.publish_tf = True
+    output = finish(client('--ros-args', '-p', 'robot_base_frame:=gimbal_nav'), 0)
+    assert 'Navigation goal succeeded' in output
+    assert len(node.goals) == 1
 
 
 @pytest.mark.parametrize('missing', ['active', 'trusted', 'publish_tf', 'clock'])

@@ -26,6 +26,7 @@ from tf2_ros import Buffer, TransformListener
 class GoalSender(Node):
     def __init__(self):
         super().__init__('send_navigation_goal')
+        self.base_frame = self.declare_parameter('robot_base_frame', 'base_link').value
         self.require_trusted = self.declare_parameter('require_trusted', True).value
         self.trusted = False
         self.state_received_at = -math.inf
@@ -54,7 +55,7 @@ class GoalSender(Node):
         active = False
         next_query = 0.0
         reason = 'Nav2 lifecycle service'
-        self.get_logger().info('Waiting for active Nav2, localization and map -> base_link TF')
+        self.get_logger().info(f'Waiting for active Nav2, localization and map -> {self.base_frame} TF')
         while rclpy.ok() and time.monotonic() < deadline:
             rclpy.spin_once(self, timeout_sec=0.1)
             now = time.monotonic()
@@ -70,8 +71,8 @@ class GoalSender(Node):
                 reason = 'fresh pose_trusted=true localization state'
             elif self.get_clock().now().nanoseconds == 0:
                 reason = 'simulation /clock'
-            elif not self.tf_buffer.can_transform('map', 'base_link', Time()):
-                reason = 'map -> base_link TF'
+            elif not self.tf_buffer.can_transform('map', self.base_frame, Time()):
+                reason = f'map -> {self.base_frame} TF'
             else:
                 return True
         self.get_logger().error(f'Readiness timed out after {timeout:g}s; waiting for {reason}; no goal sent')

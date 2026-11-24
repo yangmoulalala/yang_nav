@@ -56,7 +56,7 @@ bash tools/start_navigation.sh profile:=sim terrain_dir:=maps/sim/terrain rviz:=
 
 ## 3. 发送导航目标
 
-**坐标说明**：下面的 `(1.0, 1.5)` 表示 `map` 地图坐标系中的 `x=1.0 米、y=1.5 米`，是地图上的绝对位置。`goal_yaw` / `--yaw` 单位为弧度，默认 `0`，到达时朝向地图 `+X`；`1.5708` 表示朝向 `+Y`。目标应落在本次地图标注的可通行区域。
+**坐标说明**：下面的 `(1.0, 1.5)` 表示 `map` 地图坐标系中的 `x=1.0 米、y=1.5 米`，是地图上的绝对位置。`goal_yaw` / `--yaw` 单位为弧度，默认 `0`；仿真中到达时朝向地图 `+X`，`1.5708` 表示朝向 `+Y`。真车普通导航不执行目标朝向，转向由独立动作接口处理。目标应落在本次地图标注的可通行区域。
 
 车上当前 `maps/real/site_a_001/nav_map.pgm` 中，`(1, 1.5)` 所在栅格为障碍。以下保留这个坐标演示写法；实际导航请先核对并修正通行标注，或改为地图中的可通行坐标。
 
@@ -69,7 +69,7 @@ bash tools/start_navigation.sh profile:=real terrain_dir:=maps/real/site_a_001 \
   goal_x:=1.0 goal_y:=1.5 goal_yaw:=0.0
 ```
 
-程序会等待 Nav2 激活、定位报告 `pose_trusted=true`，并且 `map → base_link` 变换可用后，自动向 `/navigate_to_pose` 发送**一次**目标。发送器会输出目标是否接受、是否成功到达；失败不会自动重复发送。默认最多等待就绪 120 秒，可加 `goal_wait_timeout:=180` 调整。未就绪超时就不发送目标，导航本身仍保持运行。
+程序会等待 Nav2 激活、定位报告 `pose_trusted=true`，并且导航参考变换可用后（真车 `map → gimbal_nav`，仿真 `map → base_link`），自动向 `/navigate_to_pose` 发送**一次**目标。发送器会输出目标是否接受、是否成功到达；失败不会自动重复发送。默认最多等待就绪 120 秒，可加 `goal_wait_timeout:=180` 调整。未就绪超时就不发送目标，导航本身仍保持运行。
 
 仿真时使用相同的目标参数，换成仿真配置：
 
@@ -235,9 +235,39 @@ ros2 run nav_terrain terrain_export.py maps/real/site_a_002_optimized/terrain/te
 | --- | --- |
 | `Package ... not found` | 按第 1 节加载当前工作区；尚未构建时先编译 |
 | 启动报缺少地形文件 | `terrain_dir` 必须包含 `nav_map.yaml`、`speed_mask.yaml`、`zones.yaml` 和 `terrain.msgpack` |
-| 自动目标一直等待 | 查 `ros2 lifecycle get /bt_navigator` 是否为 `active`；用 `ros2 topic echo --once --qos-durability transient_local /backend_node/localization_state` 查 `pose_trusted`；用 `ros2 run tf2_ros tf2_echo map base_link` 查变换 |
+| 自动目标一直等待 | 查 `ros2 lifecycle get /bt_navigator` 是否为 `active`；用 `ros2 topic echo --once --qos-durability transient_local /backend_node/localization_state` 查 `pose_trusted`；用 `ros2 run tf2_ros tf2_echo map gimbal_nav` 查真车变换（仿真用 base_link） |
 | 目标被拒绝或导航失败 | 看发送器和 Nav2 输出；确认目标在当前地图可通行区域且有足够空间 |
 | 目标已接受但车不动 | 查定位状态、`ros2 topic hz /nav/observation`、底盘串口，以及导航进程日志中的停车原因 |
 | 录包数据不齐 | 查 `bag_info.txt` 的逐话题计数和 `recorder.log` |
 
 结束建图时先停车、保存地图、等待录包收尾，再关闭建图和驱动。
+
+
+## 真车普通导航与动作角度
+
+当前下位机普通模式执行云台方向参考的 X/Y 速度。`profile:=real` 使用仅控制平移的 MPPI，要求当前位置距路径终点不超过 0.15 m 且实测 X/Y 合速度不超过 0.03 m/s 才判定到达，普通目标的 yaw 不触发底盘转向；自动恢复不使用 Spin。控制器预测采用实测航向和被动角速度，不把 angular.z 当作可执行的普通控制通道。`profile:=sim` 保留三自由度控制，即使用墙钟进行离线回归也不加载真车覆盖参数。
+
+真车底盘默认 `chassis_yaw_mode:=action_angle`。动作所需 yaw 由 `/chassis/yaw_target` 提供 Float32 机体系角度（rad），随后 `/chassis/pass_hole` Bool 上升沿触发；不会从导航 angular.z 自动换算。动作 yaw 默认须在触发前 0.3 秒内更新。普通 X/Y 不依赖 yaw 输入。当前没有 MCU 动作完成反馈，因此导航不自动发起动作；缺少底盘朝向反馈时方向受限地形会停止，云台对齐不能证明底盘对齐。详情见底盘接口 README。
+
+录包已包含动作角度与触发话题，以便区分导航输出和动作请求。修改控制与接口配置后需重启相关 ROS 进程，已有进程不会自动采用新配置。
+
+
+真车定位与导航参考为 `gimbal_nav`，原点在底盘与云台的同轴旋转中心，轴向随云台。
+雷达上的 LIO 可观测云台朝向，不需要猜测 yaw_joint。当前真车不发布默认零关节构造的底盘 TF。
+代价地图、地形障碍过滤、BT 恢复与碰撞监视器均使用同一参考；未知底盘角度的碰撞范围用外切 16 边形覆盖，
+内切圆半径 0.50 m，另加原有碰撞/规划留量（0.01/0.0225 m），因此部分窄通道会被拒绝。
+该范围覆盖原配置矩形在任意平面转角下的轮廓；新增突出部件仍需重新测量。
+启动参数 `gimbal_yaw_offset` 仅供实测 MCU 轴向安装偏角，不是 yaw_joint，也不填 bag 拟合的响应角。
+单独使用 `send_goal.py` 时，真车需传 `--ros-args -p robot_base_frame:=gimbal_nav`；navigation.launch.py 的启动目标已自动设置。
+
+004 的速度响应残差尚不能仅由缺少关节反馈解释。零安装偏角的新坐标变换与旧零关节变换等价，
+不能把完成坐标重构当作已经修复实车偏航；还需核对 MCU 实际速度轴向、速度跟踪和时间延迟。
+
+真车调试阶段使用 20 Hz 控制（与 0.05 s 模型步长一致），X/Y 每轴限速 ±0.25 m/s。
+局部路径速度评分直接约束近期预测的横向纠偏，并保留 MPPI 碰撞预测。
+这些参数通过隔离 ROS 域的响应不确定性模型验证；不能据此判定 MCU 实际轴向已标定。
+再次实车验证前应先停止车辆并取消旧目标，重启真车定位、导航以加载新参考系和插件，再发送新目标。
+
+真车还启用有界的速度响应观察器：仅从稳定的最终速度命令与定位反馈更新当前进程内的运动预测。
+它不保存硬件标定，也不写 yaw_joint；底盘输出关闭时不会用零速度反推轴向。
+命令和响应都在运动参考系下使用，动作 yaw 仍是独立的机体相对角度。

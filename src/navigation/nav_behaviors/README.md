@@ -115,3 +115,24 @@ Core tests cover path shaping, direction policies, tracking, state transitions, 
 closed-loop zone traversals, and recovery inside a real behaviour tree (`test_zone_recovery`).
 The integration tools in `tools/nav_regress` run real Nav2 nodes with deterministic test inputs.
 The kinematic checks use a fixed geometry sample in `test/fixtures/rmuc_zones.yaml`. Field regressions read the operator's selected terrain directory. See the [regression tools](../../../tools/nav_regress/README.md).
+
+
+### 真车仅平移控制
+
+`profile:=real` 为 ZoneAwareController 选择 `TranslationMPPIController`：采样和优化 X/Y，禁止优化主动旋转，预测时所有候选采用同一个实测角速度，以保留被动航向变化对轨迹与轮廓的影响。普通控制输出 angular.z 恒为 0。使用闭环里程计，不支持 open_loop=true。
+
+真车使用 `TranslationGoalChecker`，要求当前 XY 距离 ≤0.15 m 且实测平移合速度 ≤0.03 m/s，不锁存经过容差区的状态，不依赖目标 yaw；自动恢复关闭 Spin。方向约束地形在 body_heading_available=false 时停止并报告底盘航向不可观测；即使云台刚好对齐也不能放行，不会把普通角速度伪装成动作角度。自动触发和完成动作需要另行实现 MCU 动作反馈，当前不自动发送动作。仿真保留原有三自由度 MPPI 和方向跟踪。
+
+`KeepOccupiedGoalPending` 只在目标变更，或已到替代终点等待时收到有效的新终点/可达路径，才重启子节点。正在执行的正常重规划交由 FollowPath 更新，5 cm 栅格抖动不会取消跟踪。
+
+真车控制频率 20 Hz，与 MPPI 的 0.05 s 模型步长匹配，使优化序列每周期前移。调试速度暂限每轴 ±0.25 m/s（合速度最多约 0.354 m/s），X/Y 采样标准差 0.05 m/s。`TranslationVelocityCritic` 根据当前位置投影到路径后的 0.25 m 前瞻点产生局部平移参考，评分最前面的两个预测速度，抑制将横向纠偏推迟到预测远端的候选；权重 200、比例增益 1、参考合速度上限 0.25 m/s。该项不包含 bag 拟合矩阵或固定航向补偿，不能替代实物轴向标定。
+
+MPPI 保留整段预测中的碰撞与约束评分，ZoneAwareController 和最终碰撞监视器继续检查制动轨迹。PathAlign 从第 1 个路径点启用、逐点评估、权重 40；PathFollow 前瞻 3 点、权重 10，在距终点 0.25 m 内退出；GoalCritic 在 0.30 m 内接管。上述参数仅覆盖真车，仿真仍使用原有三自由度控制。
+
+
+真车 X/Y 在 `gimbal_nav` 云台参考系内。代价地图、障碍云、BT、恢复与控制器共用该帧；
+不能直接使用 CAD `yaw_link` 的轴向。未知底盘 yaw 时 footprint 覆盖原矩形的全部相对转角。
+`body_heading_available` 默认 true（仿真），真车覆盖为 false；接入反馈前不允许以云台角度判定底盘定向通过。
+
+
+真车启用 `FollowPath.response_feedback`：对比最终 `/cmd_vel` 与定位里程计，按世界系对齐近期稳定命令窗口（0.1～0.4 s），仅在速度至少 0.08 m/s、命令变化不超过 0.035 m/s 时更新平面增益/旋转模型。只接受 0.7～1.3 倍增益和 ±30° 以内的观测，滤波时间常数 0.35 s；停机、断开底盘、急变命令和异常响应均不参与辨识。模型仅保留当前进程内，控制器 reset 清除，不写入安装偏角或关节值。预测时对所有候选 XY 速度应用当前模型，使路径评分与 MPPI 轮廓碰撞评分看到相同响应；不会在优化器输出之后附加未经评分的速度旋转。该模型只覆盖有限范围的近似平面增益/旋转，不能识别全部 MCU 动力学，实物轴向与反馈仍需确认。

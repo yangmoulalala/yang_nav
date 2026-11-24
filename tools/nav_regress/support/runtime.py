@@ -32,10 +32,10 @@ def logged_process(command, log_path):
 
 
 @contextmanager
-def navigation(out, terrain, probe, *, require_trusted=True, timeout=50):
+def navigation(out, terrain, probe, *, require_trusted=True, timeout=50, profile="sim"):
     log_path = out / 'navigation.log'
     command = ['ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
-               f'terrain_dir:={terrain}', 'use_sim_time:=false',
+               f'terrain_dir:={terrain}', 'use_sim_time:=false', f'profile:={profile}',
                f'require_trusted:={str(require_trusted).lower()}']
     with logged_process(command, log_path) as process:
         deadline = time.monotonic() + timeout
