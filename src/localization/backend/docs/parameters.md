@@ -28,7 +28,7 @@
 ### YAML 参数
 
 每个参数只有一个来源：ROS 参数文件（`backend_node: ros__parameters:`）。单独启动 backend 使用
-[config/example.yaml](../config/example.yaml)，完整系统使用 `bringup/config/<platform>/backend.yaml`。
+[config/example.yaml](../config/example.yaml)，完整系统使用 `bringup/config/common/backend.yaml`。
 完整参数名为“小节名.键名”，如 `common.frontend`。下表“默认值”列为 `config/example.yaml` 中的取值；
 代码中没有默认值，参数文件不支持继承或合并，缺失参数与未知参数都会使启动失败。
 标为“仅 launch”的键由 `backend.launch.py` 传入，不得写入参数文件；标为“仅 legacy”的键只在
@@ -387,7 +387,7 @@ UWB 只在 `SUSPECT`/`LOST` 恢复时作位置先验，不参与跟踪和因子�
 | `save_dir` | 路径 | `""` | `~/save_map` 与退出保存的目标目录，写入 `trajectory.save_directory`；留空则不可保存 |
 | `rviz` | 布尔 | `false` | 是否启动 RViz；可视化话题开关只由参数文件的 `visualization.*` 决定 |
 
-bringup 的 `localization.launch.py` 包含本文件，并传入 `bringup/config/<platform>/backend.yaml` 与话题 remap。
+bringup 的 `localization.launch.py` 包含本文件，并传入 `bringup/config/common/backend.yaml` 与话题 remap。
 
 #### `body_calibration.launch.py`
 

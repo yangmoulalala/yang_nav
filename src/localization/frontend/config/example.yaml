@@ -1,5 +1,5 @@
 # ZLIO 前端独立运行的示例参数文件（Livox MID-360），供 frontend.launch.py 单独调试使用。
-# 完整系统由 bringup 启动，使用 bringup/config/<platform>/frontend.yaml，不读取本文件。
+# 完整系统由 bringup 启动，使用 bringup/config/common/frontend.yaml，不读取本文件。
 # 全部参数均为必填：缺失、类型错误或未知（拼写错误）的参数都会使节点启动失败。
 # 雷达外参不在此配置：启动时从 TF 查询 frames.imu ← frames.lidar，该变换须由外部发布。
 

@@ -4,13 +4,18 @@
     ros2 launch bringup calibration.launch.py platform:=real    # 真车（需已运行 real.launch.py lidar:=dual）
     ros2 launch bringup calibration.launch.py platform:=real primary_topic:=/livox/lidar output_file:=/abs/out.yaml
 
-节点参数只来自 bringup/config/<platform>/lidar_calibration.yaml。
+节点参数来自 config/common/lidar_calibration.yaml 与平台差异。
 本文件不启动驱动、URDF 或前端：TF（URDF）与 /odometry（ZLIO）必须已在运行。
 话题参数留空时取平台默认值（见 TOPICS）。
 """
 
 from launch import LaunchDescription
-from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction)
+from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction,
+                            RegisterEventHandler)
+from launch.event_handlers import OnShutdown
+from ament_index_python.packages import get_package_share_directory
+from pathlib import Path
+from bringup.configuration import parameter_files
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
@@ -33,13 +38,14 @@ def _include(context):
         raise RuntimeError(f"platform must be 'sim' or 'real', got '{platform}'")
     defaults = PLATFORMS[platform]
     topics = {k: LaunchConfiguration(k).perform(context) or defaults[k] for k in TOPICS}
-    bringup = FindPackageShare('bringup')
-    return [IncludeLaunchDescription(
+    files = parameter_files(Path(get_package_share_directory('bringup')) / 'config' / platform,
+                            modules=('lidar_calibration',))
+    return [RegisterEventHandler(OnShutdown(on_shutdown=[
+        OpaqueFunction(function=lambda _context: files.cleanup())])), IncludeLaunchDescription(
         PythonLaunchDescriptionSource(PathJoinSubstitution(
             [FindPackageShare('lidar_calibration'), 'launch', 'calibrate.launch.py'])),
         launch_arguments={
-            'params_file': PathJoinSubstitution(
-                [bringup, 'config', platform, 'lidar_calibration.yaml']),
+            'params_file': files.name + '/lidar_calibration.yaml',
             'use_sim_time': defaults['use_sim_time'],
             'output_file': LaunchConfiguration('output_file'),
             **topics,

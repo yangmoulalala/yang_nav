@@ -1,5 +1,5 @@
 # lidar_calibration 示例参数（单独启动本模块时使用，取值为仿真值）。
-# 完整系统使用 bringup/config/<platform>/lidar_calibration.yaml，本文件不参与。
+# 完整系统使用 bringup/config/common/lidar_calibration.yaml，本文件不参与。
 # 所有参数必填、节点内无默认值，未知参数会使启动失败。
 # output_file 与 use_sim_time 由 launch 给出，话题由 launch 重映射，都不写在这里。
 

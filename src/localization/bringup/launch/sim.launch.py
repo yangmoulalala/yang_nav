@@ -5,9 +5,9 @@
     ros2 launch bringup sim.launch.py lidar:=dual rviz:=true   # MID-360 + L2
     ros2 launch bringup sim.launch.py mode:=localization       # 用 map_dir 里保存的地图定位
 
-节点参数只来自 bringup/config/sim/*.yaml。
-仿真 IMU 位于 mid360_link 原点，前端 frames.imu = frames.lidar = mid360_link（外参为单位阵）。
-URDF 与 robot_state_publisher 由 sentry_gazebo 启动。
+节点参数来自 config/common 与 config/sim 的必要差异。
+IMU 使用真车同一 mid360_imu_link 外参；Gazebo 输出单位为 m/s²。
+刚性云台 URDF 与 robot_state_publisher 由 sentry_gazebo 启动。
 """
 
 from pathlib import Path

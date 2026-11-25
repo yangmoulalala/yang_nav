@@ -1,3 +1,4 @@
+# 真车和仿真共用的完整参数；平台差异见 ../sim/overrides.yaml，单雷达差异见 ../single_lidar.yaml。
 # 真车 lidar_calibration 参数（bringup calibration.launch.py platform:=real 使用）。算法取值同仿真。
 # 全部参数必填；键集合须与模块 config/example.yaml 完全一致（tools/check_bringup_params.py 检查）。
 # output_file、use_sim_time 与话题由 launch 给出，不写在这里。

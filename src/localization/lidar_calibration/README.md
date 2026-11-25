@@ -125,4 +125,4 @@ ros2 launch lidar_calibration calibrate.launch.py params_file:=/abs/lidar_calibr
 launch 参数：`params_file`、`use_sim_time`（默认 false）、`output_file`（默认 `/tmp/lidar_extrinsic.yaml`）、
 `primary_topic` / `secondary_topic` / `imu_topic` / `odometry_topic`（默认为仿真话题）。
 完整系统用 `ros2 launch bringup calibration.launch.py platform:=sim|real`，它传入
-`bringup/config/<platform>/lidar_calibration.yaml` 与平台话题，见 `src/localization/README.md`。
+`bringup/config/common/lidar_calibration.yaml` 与平台话题，见 `src/localization/README.md`。

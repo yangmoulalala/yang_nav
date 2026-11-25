@@ -59,20 +59,16 @@ ros2 run sentry_gazebo teleop                        # 终端 3，键盘开车
 | `map_dir` | `<工作空间>/maps/sim`（真车 `maps/real`） | `~/save_map` 的保存目录，已加入 `.gitignore` |
 | `rviz` | `false` | 后端 RViz |
 
-配置：`bringup/config/sim/{lidar_fusion,frontend,backend}.yaml`（真车为 `bringup/config/real/`），各为完整参数文件，
-见下文[参数规则](#参数规则)。`lidar:=single` 时后端改读同目录的 `backend_single.yaml`。
+配置在 `bringup/config/common/` 共用；`config/sim/overrides.yaml` 仅保存 Gazebo 差异，`config/single_lidar.yaml` 保存单雷达差异。启动时合成为完整参数，详见[参数规则](#参数规则)。
 
 ### 单雷达操作
 
 MID-360 的数据坐标系与 CAD 网格坐标系分别定义；`yaw_joint=0` 时数据系相对车体先 yaw 180°、再绕局部 X 轴 roll −15°（`Rz(π) · Rx(−π/12)`），不能单看 `mid360_joint` 的欧拉俯仰角判断侧装。单雷达转车补视野的仿真操作：
 
-1. **启动**：`zlio_node` 开始收数据后先静止约 2 s，再以约 0.3 rad/s 原地慢转，直到后端进入 NORMAL。静止时 ZLIO 初始化最弱方向支撑只有 2–4.8（门槛 5），会反复重来甚至几分钟不完成；转动后 3 s 内完成。
-2. **建图**：先在出生点慢转一圈再正常跑图，其余路段不要原地转（全程转圈会把建图误差拉到约 27 cm）。地图在出生点缺少其他航向的关键帧时，启动慢转会让重定位锁到对称位置。
-3. 真车可考虑转云台 `yaw_joint` 代替转底盘（未验证）。
+先保持静止等待初始化。视野结构不足时可通过仿真专用 `/sim/turret_yaw` 转动云台补充视野；普通 `/cmd_vel.angular.z` 与真车一样不驱动底盘旋转。
+传感器专项回归 `tools/sim_tests` 显式关闭 MCU 接口并直接控制物理底盘，其原地旋转只用于定位算法测试。
 
-`tools/sim_tests` 的 `earlyspin` / `spawnspin` 标志按上述流程驾驶。
-
-单雷达与双雷达后端配置差异（`backend_single.yaml` 开头也有记录）：
+单雷达与双雷达后端配置差异（共用 `config/single_lidar.yaml`）：
 
 | 键 | 双雷达 | 单雷达 | 原因 |
 | --- | --- | --- | --- |
@@ -84,8 +80,6 @@ MID-360 的数据坐标系与 CAD 网格坐标系分别定义；`yaw_joint=0` �
 
 | 文件 / 键 | 仿真 | 真车 | 原因 |
 | --- | --- | --- | --- |
-| `frontend.yaml` `frames.imu` / `frames.lidar` | `mid360_link` / `mid360_link` | `mid360_imu_link` / `mid360_link` | 仿真 IMU 与雷达同原点（外参为单位阵）；真车为 Livox 内置 IMU |
-| `backend.yaml` `common.sensor_frame` | `mid360_link` | `mid360_imu_link` | 与前端 `frames.imu` 一致 |
 | `frontend.yaml` `imu_acceleration_scale` | 1.0 | 9.81 | gz IMU 单位 m/s²（Livox 为 g） |
 | `frontend.yaml` `initialization.minimum_directional_support` | 5 | 15 | 出生点补给区静止视野几何单一，15 时初始化报最弱方向支撑不足 |
 | `frontend.yaml` `minimum_range` / `maximum_range` | 0.3 / 40 m | 0.5 / 100 m | 仿真场地小、无近距离噪声 |
@@ -93,10 +87,9 @@ MID-360 的数据坐标系与 CAD 网格坐标系分别定义；`yaw_joint=0` �
 | `backend*.yaml` `registration.convergence_translation` / `convergence_rotation_deg` | 0.02 m / 0.5° | 0.005 m / 0.1°（上游值） | 仿真中 5 mm / 0.1° 使配准常判未收敛、跟踪频繁 SUSPECT；真车未验证，保持上游 |
 | `backend*.yaml` `registration.max_iterations` | 30 | 16 | 同上 |
 
-LIO 里程计系为 `lio_odom`。仿真使用 `map → lio_odom → base_link → URDF`；
-真车在没有云台/底盘关节反馈时使用 `map → lio_odom → gimbal_nav → yaw_link → 传感器`。
+LIO 里程计系为 `lio_odom`。真车与仿真统一使用 `map → lio_odom → gimbal_nav → yaw_link → 传感器`。
 `gimbal_nav` 位于同轴旋转中心，采用云台的前/左/上方向，匹配下位机普通 X/Y 参考。
-真实底盘 yaw 不可观测，真车不发布假的 `base_link` 或默认零关节状态；仿真仍使用真实关节反馈。
+真实底盘 yaw 不可观测，真车不发布假的 `base_link` 或默认零关节状态；仿真的物理关节反馈也只供模拟器接口使用。
 组合启动时前端 `output.publish_tf=false`，后端统一发布 map→lio_odom 和 lio_odom→配置的根帧，
 同一时间戳、同一投影，保证重置时不会拼接不同代次。
 
@@ -124,7 +117,7 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 - IMU：MID-360 内置 IMU，`imu_acceleration_scale=9.81`，外参是 URDF 中 `mid360_imu_link` 的 Livox 出厂值。
 - TF：启动 `robot_state_publisher`，根为 `gimbal_nav`，只发布可观测的固定云台子树；不启动默认零关节发布器。
   接通真实关节反馈后，应另行恢复有依据的物理底盘 TF；普通 X/Y 仍应保持云台参考。
-- 后端：`bringup/config/real/backend.yaml`（`lidar:=single` 时为 `backend_single.yaml`，共用参数两份都要改）。
+- 后端：`bringup/config/common/backend.yaml`；单雷达仅叠加 `config/single_lidar.yaml`。
   真车 `uwb.enabled: false`（`uwb.zero_pose_*` 未标定），此时 SUSPECT/LOST 不会自动恢复；接入裁判系统 UWB 后在这里打开，并按
   `backend/docs/parameters.md` 的 `uwb` 小节配置。
 
@@ -135,25 +128,20 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 | launch 参数 | `mid360_topic` / `imu_topic` | `/livox/lidar` / `/livox/imu` | `ros2 topic list` |
 | `config/real/MID360_config.json` | 雷达 / 主机 IP | 见当前 JSON | 按车上网络修改 |
 | 云台参考 | `gimbal_yaw_offset` | 0（名义安装方向，非实测标定） | 核对 MCU +X/+Y 与雷达安装轴向；不要用关节零值替代 |
-| `config/real/lidar_fusion.yaml` | `primary.time_field` / `primary.time_scale` / `primary.time_absolute` | `timestamp` / `1.0e-9` / `true` | `ros2 topic echo --once /livox/lidar --field fields`，看 `timestamp` 是绝对时间还是帧内偏移 |
+| `config/common/lidar_fusion.yaml` | `primary.time_field` / `primary.time_scale` / `primary.time_absolute` | `timestamp` / `1.0e-9` / `true` | `ros2 topic echo --once /livox/lidar --field fields`，看 `timestamp` 是绝对时间还是帧内偏移 |
 | launch 参数 | `l2_topic` / `l2_frame` | `/unilidar/cloud` / `unilidar_lidar` | 同上 |
-| `config/real/lidar_fusion.yaml` | `secondary.time_field` / `secondary.time_scale` / `secondary.time_absolute` | `time` / `1.0` / `false` | 同上 |
+| `config/common/lidar_fusion.yaml` | `secondary.time_field` / `secondary.time_scale` / `secondary.time_absolute` | `time` / `1.0` / `false` | 同上 |
 
 逐点时间写错会让 ZLIO 去畸变出错甚至发散，务必确认。
 
 ## 参数规则
 
-- **参数只有一个来源**：每个节点参数都来自 ROS 参数文件，代码中没有默认值；缺失参数或未知参数都会使启动失败。
-  参数文件不支持继承或合并。外参不是参数，只在 URDF 中维护。
-- **模块 example 与 bringup 配置**：`lidar_fusion`、`frontend`、`backend`、`lidar_calibration` 各有 `config/example.yaml`，只用于单独启动该模块和测试；
-  完整系统只读 `bringup/config/<platform>/{lidar_fusion,frontend,backend,lidar_calibration}.yaml`（`<platform>` 为 `sim` 或 `real`；单雷达后端为 `backend_single.yaml`），
-  它们是完整副本，不引用 example。
-- **键集合检查**：增删或改名参数后，在工作空间根目录运行 `python3 tools/check_bringup_params.py`，
-  检查 bringup 各配置的键集合与对应模块 example 完全一致。
-- **launch 参数与 yaml 的分工**：launch 只提供 `params_file`、`use_sim_time`、话题 remap 和运行时选择
-  （`lidar`、`mode`、`prior_map`、`map_dir`、`rviz`，真车另有驱动与话题/frame 参数），这些不在 yaml 中出现；
-  其余调参项只写 yaml。后端的 `prior_map.enabled`、`prior_map.directory`、`trajectory.save_directory`
-  属于 launch 侧。
+- `bringup/config/common/` 是完整系统调参的唯一完整来源；模块 `config/example.yaml` 只供独立运行与接口检查。
+- `config/sim/overrides.yaml` 仅保留数据单位、逐点时间、采样与 UWB 场地差异；`config/real/` 保留硬件驱动配置，可用 `overrides.yaml` 添加明确的硬件差异。
+- 单雷达共用 `config/single_lidar.yaml`，仿真额外使用同文件 `sim` 节的体素设置，不再维护成套 backend_single 副本。
+- 启动按“common → 平台 → 单雷达共用 → 单雷达平台”合成临时完整 YAML，退出后删除临时文件。覆盖中的未知键直接报错。
+- 运行 `python3 tools/check_bringup_params.py`，检查每种平台/雷达组合与模块 example 的键集合、允许差异、TF 归属，以及覆盖中没有重复的共用值。
+- launch 仅负责时间、输入话题、地图目录和运行选择；传感器安装外参只在 URDF 维护。
 
 ## 双雷达外参标定
 
@@ -166,7 +154,7 @@ ros2 launch bringup calibration.launch.py platform:=real output_file:=/abs/lidar
 
 | launch 参数 | 默认 | 说明 |
 | --- | --- | --- |
-| `platform` | `sim` | `sim` / `real`；选择 `bringup/config/<platform>/lidar_calibration.yaml`，仿真时 `use_sim_time=true` |
+| `platform` | `sim` | `sim` / `real`；选择 common 参数与平台标定差异，仿真时 `use_sim_time=true` |
 | `output_file` | `/tmp/lidar_extrinsic.yaml` | 结果文件 |
 | `primary_topic` / `secondary_topic` / `imu_topic` / `odometry_topic` | 空（取平台默认） | 仿真 `/lidar_mid360/points`、`/lidar_l2/points`、`/lidar_mid360/imu`、`/odometry`；真车 `/livox/lidar`、`/unilidar/cloud`、`/livox/imu`、`/odometry` |
 

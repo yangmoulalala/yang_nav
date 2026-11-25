@@ -1,0 +1,16 @@
+# 单雷达侧装视野差异；Gazebo 额外需要较小的配准体素。
+common:
+  backend_node:
+    ros__parameters:
+      common:
+        scan_context:
+          similarity_normalization: union
+      tracking:
+        source:
+          max_frames: 15
+          max_time: 1.5
+sim:
+  backend_node:
+    ros__parameters:
+      registration:
+        voxel_resolution: 0.25

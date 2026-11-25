@@ -1,8 +1,5 @@
-# 单雷达（lidar:=single）真车后端参数：由 localization.launch.py 按 lidar 选择。
-# 与同目录 backend.yaml（双雷达）只差单雷达专用取值，改共用参数时两份都要改；
-# 当前差异：common.scan_context.similarity_normalization = union（双雷达为 overlap）；
-# tracking.source 累积 15 帧 / 1.5 s（双雷达 5 帧 / 0.5 s，侧装单雷达单帧点数不足）。
-# 真车后端参数（bringup real.launch.py 使用）。sensor_frame 与前端 frames.imu 一致；
+# 真车和仿真共用的完整参数；平台差异见 ../sim/overrides.yaml，单雷达差异见 ../single_lidar.yaml。
+# 真车后端参数（bringup real/sim.launch.py 共用）。sensor_frame 与前端 frames.imu 一致；
 # sensor_frame <- gimbal_nav 外参由 URDF 经 TF 读取。
 # 全部参数必填；键集合须与 backend/config/example.yaml 完全一致（tools/check_bringup_params.py 检查）。
 # 地图模式与目录由 bringup launch 的 mode/prior_map/map_dir 给出，不在本文件。
@@ -60,7 +57,7 @@ backend_node:
         level_with_odom_roll_pitch: true
         # 列相似度平均方式：overlap 只按两帧都有点的扇区平均（上游行为）；union 按任一帧有点的扇区平均，
         # 单侧视野（侧装单雷达）用 union，否则所有候选距离退化为 0。不影响已保存的地图。 [按车调整]
-        similarity_normalization: union
+        similarity_normalization: overlap
       # 全局地图坐标系名称。
       map_frame: map
       # 后端维护调度周期，单位为秒。
@@ -132,9 +129,9 @@ backend_node:
       nearest_reference_radius: 7.0
       source:
         # 一次观测最多累计的因果点云帧数。 [按车调整]
-        max_frames: 15
+        max_frames: 5
         # 累计窗口允许的最大时间跨度，单位为秒；0 表示不限制。 [按车调整]
-        max_time: 1.5
+        max_time: 0.5
         # 累计窗口允许的最大相对旋转，单位为度；0 表示不限制。
         max_rotation_deg: 0.0
         # 一次观测成立所需的最少因果点云帧数。

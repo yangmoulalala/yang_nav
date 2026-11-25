@@ -1,0 +1,43 @@
+# Gazebo 数据单位、采样与场地差异；完整参数在 ../common/。
+frontend:
+  zlio:
+    ros__parameters:
+      input:
+        imu_acceleration_scale: 1.0
+        maximum_imu_interval: 0.3
+      sensor:
+        minimum_range: 0.3
+        maximum_range: 40.0
+      initialization:
+        minimum_directional_support: 5.0
+      filter:
+        gyro_variance: 4.0e-06
+backend:
+  backend_node:
+    ros__parameters:
+      registration:
+        max_iterations: 30
+        convergence_translation: 0.02
+        convergence_rotation_deg: 0.5
+      uwb:
+        enabled: true
+        time_offset_seconds: -0.2
+        zero_pose_red:
+          x: 23.42
+          y: 8.27
+          yaw_deg: 180.15
+        zero_pose_blue:
+          x: 23.42
+          y: 8.27
+          yaw_deg: 180.15
+lidar_fusion:
+  lidar_merge:
+    ros__parameters:
+      primary.time_field: ''
+      primary.time_absolute: false
+      secondary.time_field: ''
+      secondary.time_scale: 1.0e-09
+lidar_calibration:
+  calibrate:
+    ros__parameters:
+      frames: 4

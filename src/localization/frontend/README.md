@@ -28,7 +28,7 @@ src/localization/frontend/
 ```
 
 全部节点参数来自标准 ROS 参数文件，且均为必填：缺失、类型错误或未知参数都会使节点启动失败。
-[config/example.yaml](config/example.yaml) 仅用于独立运行；完整系统使用 `bringup/config/<platform>/frontend.yaml`。
+[config/example.yaml](config/example.yaml) 仅用于独立运行；完整系统使用 `bringup/config/common/frontend.yaml`。
 
 ## 环境与依赖
 

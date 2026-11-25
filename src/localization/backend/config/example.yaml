@@ -1,5 +1,5 @@
 # backend 独立运行示例配置（ROS 参数文件格式）。
-# 完整系统使用 bringup/config/<platform>/backend.yaml；本文件仅供单独启动 backend 与测试。
+# 完整系统使用 bringup/config/common/backend.yaml；本文件仅供单独启动 backend 与测试。
 # 节点消费的每个参数均须在此给出：缺失参数与未知参数都会使启动失败。
 # prior_map.enabled、prior_map.directory、trajectory.save_directory 由 backend.launch.py
 # 的 mode/prior_map/save_dir 参数提供，不在 YAML 中配置。

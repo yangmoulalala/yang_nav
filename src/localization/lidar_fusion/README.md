@@ -46,4 +46,4 @@ ros2 launch lidar_fusion merge.launch.py dual:=true use_sim_time:=true \
 ```
 
 `merge.launch.py` 接受 `params_file:=/abs/path.yaml`，默认用本包的 `config/example.yaml`。
-完整系统由 `bringup` include 该 launch，并传入 `bringup/config/<platform>/lidar_fusion.yaml`。
+完整系统由 `bringup` include 该 launch，并传入 `bringup/config/common/lidar_fusion.yaml`。

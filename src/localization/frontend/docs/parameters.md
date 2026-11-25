@@ -14,7 +14,7 @@ launch 也不覆盖任何参数（`use_sim_time` 除外）。规则：
   `start_type_description_service` 与 `qos_overrides.*` 除外。
 - **类型严格**：类型不符时报错；浮点参数可写整数（如 `1000`），浮点数组可写整数数组。
 - 示例文件 [config/example.yaml](../config/example.yaml) 含 `zlio` 与 `frontend_visualization` 两节，仅用于独立运行；
-  完整系统使用 `bringup/config/<platform>/frontend.yaml`。下表“示例值”均取自该文件。
+  完整系统使用 `bringup/config/common/frontend.yaml`。下表“示例值”均取自该文件。
 - 参数仅在启动时读取，修改后需重启。
 
 ### 算法参数（节点 `/zlio`）
