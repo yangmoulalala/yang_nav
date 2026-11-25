@@ -15,10 +15,10 @@ bringup/{sim,real}.launch.py → localization.launch.py
   │    zlio_node                       → /frontend/frame、/frontend/odometry、/frontend/session
   └─ backend/backend.launch.py         ← 上述消息、运行模式、先验地图
        backend_node                    → /localization/odometry、/backend_node/localization_state
-                                       → map → lio_odom → base_link
+                                       → map → lio_odom → gimbal_nav
 ```
 
-`localization_interfaces` 定义前后端消息及重置服务。组合启动时前端关闭 TF 发布，后端用同一时间戳、同一消息发布两条动态边。`base_link` 到各传感器的外参由机器人描述和关节状态提供。前端与后端的 C++ 核心在各自 `src/` 下，`apps/` 负责 ROS 消息、参数和发布。[组合入口](../src/localization/bringup/launch/localization.launch.py)、[接口](../src/localization/localization_interfaces/README.md)、[前端](../src/localization/frontend/README.md)、[后端](../src/localization/backend/README.md)
+`localization_interfaces` 定义前后端消息及重置服务。组合启动时前端关闭 TF 发布，后端用同一时间戳、同一消息发布两条动态边。`gimbal_nav` 到各传感器的刚性外参由共用 URDF 提供。前端与后端的 C++ 核心在各自 `src/` 下，`apps/` 负责 ROS 消息、参数和发布。[组合入口](../src/localization/bringup/launch/localization.launch.py)、[接口](../src/localization/localization_interfaces/README.md)、[前端](../src/localization/frontend/README.md)、[后端](../src/localization/backend/README.md)
 
 `mode:=mapping` 建图，保存关键帧位姿和点云。离线优化入口调用 `backend/offline_optimizer_bundle` 导出快照，再调用 `offline_mapping_optimizer_node` 优化，最后由同一个后端工具重建可加载的先验地图。`mode:=localization` 用 `prior_map` 或 `map_dir` 载入该地图。[离线优化器](../src/mapping/offline_mapping_optimizer/README.md)
 
@@ -36,7 +36,7 @@ NavigateToPose / NavigateThroughPoses → bt_navigator
   → planner_server → smoother_server → controller_server / behavior_server
   → /cmd_vel_nav → velocity_smoother → /cmd_vel_smoothed
   → collision_monitor → /cmd_vel_collision_checked → cmd_gate → /cmd_vel
-  → 仿真 MecanumDrive 或真车 chassis_serial
+  → 仿真 chassis_sim → MecanumDrive，或真车 chassis_serial
 ```
 
 `nav_bringup` 组合地图服务、Nav2 生命周期节点、地形节点和速度门。两个行为树共用插件，`StartAwarePlanner` 委托内部规划器，`ZonePathShaper` 整形路径，`ZoneAwareController` 使用区域跟踪器和内部 MPPI 控制器。`nav_behaviors/src/core` 负责算法，`src/plugins` 对接 Nav2，`src/bt` 实现行为树节点。[导航入口](../src/navigation/nav_bringup/launch/navigation.launch.py)、[行为树](../src/navigation/nav_bringup/behavior_trees)、[插件接口](../src/navigation/nav_behaviors/README.md)
@@ -47,7 +47,7 @@ NavigateToPose / NavigateThroughPoses → bt_navigator
 
 | 变更 | 配置来源 | 对应检查 |
 | --- | --- | --- |
-| 雷达选择、定位参数、TF 归属 | `src/localization/bringup/config/{sim,real}`，模块示例供单独运行 | `python3 tools/check_bringup_params.py`、前后端各包的 `test/` |
+| 雷达选择、定位参数、TF 归属 | `src/localization/bringup/config/common` 与平台/单雷达差异，模块示例供单独运行 | `python3 tools/check_bringup_params.py`、前后端各包的 `test/` |
 | 传感器安装位姿 | `sentry_description/urdf/sentry_robot.urdf` | 场地生成、[定位仿真](../tools/sim_tests/README.md) |
 | 地形格式、导出、障碍过滤 | `nav_terrain/nav_terrain` 和导出的地形目录 | `nav_terrain/test/`，`tools/nav_regress/terrain_check.py` |
 | Nav2 控制、速度门、行为树 | `nav_bringup/params/nav2.yaml`、`nav_bringup/behavior_trees` | `nav_behaviors/test/`、`nav_safety/test/`、[闭环回归](../tools/nav_regress/README.md) |
