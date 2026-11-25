@@ -80,8 +80,8 @@ def main():
     os.set_blocking(master, False)
     rclpy.init()
     plant = RatePlant(out, master)
-    result = dict(passed=False, target_hz=100.0,
-                  model='real Nav2 + deterministic omni plant + PTY, no hardware')
+    result = dict(passed=False, controller_target_hz=20.0,
+                  model='real Nav2 + deterministic XY plant + PTY, no hardware')
     try:
         chassis = ['ros2', 'run', 'chassis_comm', 'chassis_serial', '--ros-args',
                    '-p', f'port:={os.ttyname(slave)}', '-p', 'baud_rate:=115200']
@@ -91,15 +91,18 @@ def main():
                 '/behavior_server': ['cycle_frequency'],
                 '/velocity_smoother': ['smoothing_frequency'],
                 '/cmd_gate': ['rate'],
-                '/chassis_serial': ['rate', 'yaw_horizon'],
+                '/chassis_serial': ['rate'],
                 '/local_costmap/local_costmap': ['update_frequency'],
             }
             result['parameters'] = {node: plant.parameters(node, names)
                                     for node, names in checks.items()}
             for node, values in result['parameters'].items():
                 for name, value in values.items():
-                    expected = .1 if name == 'yaw_horizon' else 100.
+                    expected = 20. if name == 'controller_frequency' else 100.
                     assert abs(value - expected) < 1e-9, (node, name, value, expected)
+            # Lifecycle activation precedes the terrain frame window / first
+            # obstacle cloud. Warm it up before measuring the active chain.
+            plant.run_for(2.)
             _, future = plant.start((-3., 4.5, 0.))
             plant.run_for(.7)
             assert not future.done(), 'goal finished before the measurement window'
@@ -111,7 +114,8 @@ def main():
             print(json.dumps(result['rates'], indent=2), flush=True)
             assert not future.done(), 'measurement window included an inactive controller'
             for topic, values in result['rates'].items():
-                assert 90. <= values['hz'] <= 110., f'{topic}: {values}'
+                low, high = (18., 22.) if topic == '/cmd_vel_nav' else (90., 110.)
+                assert low <= values['hz'] <= high, f'{topic}: {values}'
             plant.finish(future, (-3., 4.5, 0.))
             result['passed'] = True
     except Exception as exc:

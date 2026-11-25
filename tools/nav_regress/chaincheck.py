@@ -3,7 +3,7 @@
 
     chaincheck.py [--terrain-dir maps/sim] [--order chain|pair] [--no-staging] [--spawn X Y]
 
-Needs planner_server and a map -> base_link TF (chaincheck.sh provides both).  The legs are the goals
+Needs planner_server and a map -> gimbal_nav TF (chaincheck.sh provides both).  The legs are the goals
 of tools/nav_regress/tunnel_accept.py, in the same order.  With staging (default) a crossing is two
 goals - the stage pose just beyond the near mouth, then the goal pose beyond the far one - so the leg
 that has to cross is stage -> goal.

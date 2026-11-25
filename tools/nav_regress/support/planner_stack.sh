@@ -34,7 +34,7 @@ if pgrep -f "__node:=$manager" >/dev/null; then
   exit 2
 fi
 trap cleanup EXIT
-start tf.log ros2 run tf2_ros static_transform_publisher --frame-id map --child-frame-id base_link
+start tf.log ros2 run tf2_ros static_transform_publisher --frame-id map --child-frame-id gimbal_nav
 start map.log ros2 run nav2_map_server map_server --ros-args -r __node:=nav_map_server \
   --params-file "$params" -p "yaml_filename:=$terrain/nav_map.yaml" -p use_sim_time:=false
 start planner.log ros2 run nav2_planner planner_server --ros-args --params-file "$params" -p use_sim_time:=false

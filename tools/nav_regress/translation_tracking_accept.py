@@ -21,14 +21,13 @@ from nav_terrain.terrain_export import ExportConfig, export
 from nav_terrain.terrain_map import OBSTACLE, TerrainMap
 from support.runtime import finish, navigation
 from support.terrain import flat_fixture
-from translation_accept import TranslationPlant
+from support.plant import Plant
 
 
-class UncertainTranslationPlant(TranslationPlant):
+class UncertainTranslationPlant(Plant):
     def __init__(self, out, scenario='site_a_003'):
         self.scenario = scenario
         self.pending = []
-        self.unexecutable_yaw = []
         super().__init__(out)
 
     def on_command(self, cmd):
@@ -88,7 +87,6 @@ def main():
     terrain = (snapshot_fixture(out, args.costmap_json) if args.costmap_json else
                flat_fixture(out, 'XY response uncertainty', 100))
     rclpy.init(); plant = UncertainTranslationPlant(out, args.scenario)
-    plant.base_frame = 'gimbal_nav'
     trials = []
     try:
         with navigation(out, terrain, plant, profile='real'):

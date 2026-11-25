@@ -52,7 +52,7 @@ def tfs(m,static=False):
  global tf_batch
  tf_batch+=1
  for a in m.transforms:
-  if static or (a.header.frame_id,a.child_frame_id) in [('map','lio_odom'),('lio_odom','base_link')]:
+  if static or (a.header.frame_id,a.child_frame_id) in [('map','lio_odom'),('lio_odom','gimbal_nav')]:
    p=a.transform.translation;q=a.transform.rotation
    emit('tf_static' if static else 'tf',{'batch':tf_batch,'stamp':stamp(a.header.stamp),'parent':a.header.frame_id,'child':a.child_frame_id,'pose':[p.x,p.y,p.z,q.x,q.y,q.z,q.w]})
 subs=[node.create_subscription(FrontendFrame,'/frontend/frame',frame,qos_profile_sensor_data),node.create_subscription(FrontendOdometry,'/frontend/odometry',prediction,qos_profile_sensor_data),node.create_subscription(TFMessage,'/tf',tfs,200),node.create_subscription(TFMessage,'/tf_static',lambda m:tfs(m,True),QoSProfile(depth=100,durability=DurabilityPolicy.TRANSIENT_LOCAL)),node.create_subscription(Odometry,'/localization/odometry',lambda m:emit('localization_odom',odom_data(m)),100)]

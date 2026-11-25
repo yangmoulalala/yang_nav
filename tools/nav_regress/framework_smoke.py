@@ -36,7 +36,7 @@ class Probe(Node):
         transform = TransformStamped()
         transform.header.stamp = self.get_clock().now().to_msg()
         transform.header.frame_id = 'map'
-        transform.child_frame_id = 'base_link'
+        transform.child_frame_id = 'gimbal_nav'
         transform.transform.rotation.w = 1.
         self.broadcaster.sendTransform(transform)
         self.frame_pub = self.create_publisher(FrontendFrame, '/frontend/frame', qos_profile_sensor_data)
@@ -92,7 +92,7 @@ class Probe(Node):
 
     def publish(self):
         stamp = self.get_clock().now().to_msg()
-        odom = Odometry(header=Header(stamp=stamp, frame_id='map'), child_frame_id='base_link')
+        odom = Odometry(header=Header(stamp=stamp, frame_id='map'), child_frame_id='gimbal_nav')
         odom.pose.pose.orientation.w = 1.
         self.odom_pub.publish(odom)
         if self.send_observations:
@@ -103,7 +103,7 @@ class Probe(Node):
             frame.odometry = odom
             frame.lidar_updated = True
             frame.cloud = point_cloud2.create_cloud_xyz32(
-                Header(stamp=stamp, frame_id='base_link'), points)
+                Header(stamp=stamp, frame_id='gimbal_nav'), points)
             self.frame_pub.publish(frame)
         if self.send_commands:
             cmd = Twist()

@@ -34,8 +34,8 @@ def analyze(directory):
     paired = 0
     max_composed_step = 0.0
     def compose():
-        if ('map', 'lio_odom') in edges and ('lio_odom', 'base_link') in edges:
-            return edges['map', 'lio_odom'] @ edges['lio_odom', 'base_link']
+        if ('map', 'lio_odom') in edges and ('lio_odom', 'gimbal_nav') in edges:
+            return edges['map', 'lio_odom'] @ edges['lio_odom', 'gimbal_nav']
         return None
     def finish_batch(sim):
         nonlocal previous, max_composed_step

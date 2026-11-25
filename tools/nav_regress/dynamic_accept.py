@@ -4,12 +4,15 @@
 This is a software closed-loop test. It does not model wheel slip or real sensors.
 """
 import argparse
+import ast
 import math
 import os
 from pathlib import Path
 import time
 import numpy as np
 import rclpy
+import yaml
+from ament_index_python.packages import get_package_share_directory
 from action_msgs.msg import GoalStatus
 from support.plant import Plant
 from support.runtime import finish, navigation
@@ -39,13 +42,17 @@ def polygon_clearance(a, b):
 
 
 def clearance(samples, obstacle):
+    params = yaml.safe_load((Path(get_package_share_directory('nav_bringup')) /
+                             'params/nav2.yaml').read_text())['local_costmap']['local_costmap']['ros__parameters']
+    padding = params['footprint_padding']
+    polygon = [(x+math.copysign(padding,x), y+math.copysign(padding,y))
+               for x,y in ast.literal_eval(params['footprint'])]
     minimum = float('inf')
     bx, by = obstacle
     square = [(bx+u, by+v) for u, v in [(-.05,-.05),(.05,-.05),(.05,.05),(-.05,.05)]]
     for s in samples:
         x, y, yaw = s['pose']; c, t = math.cos(yaw), math.sin(yaw)
-        footprint = [(x+c*u-t*v, y+t*u+c*v) for u, v in
-                     [(-.31,-.31),(.39,-.31),(.39,.31),(-.31,.31)]]
+        footprint = [(x+c*u-t*v, y+t*u+c*v) for u, v in polygon]
         minimum = min(minimum, polygon_clearance(footprint, square))
     assert minimum >= -1e-6, f'padded footprint collision: clearance={minimum}'
     return minimum
@@ -110,9 +117,16 @@ def main():
             assert old_future.result().status in (GoalStatus.STATUS_ABORTED,GoalStatus.STATUS_CANCELED)
             plant.blocker=None
             passed('fresh target preempts an occupied pending target')
-            handle,future=plant.start((0.,-2.,0.));plant.wait(future.done,40.)
-            assert future.result().status==GoalStatus.STATUS_ABORTED
-            passed('static wall target remains an error rather than an unsafe approach target')
+            log_begin = len((out/'navigation.log').read_text())
+            begin = len(plant.samples)
+            handle,future=plant.start((0.,-2.,0.));plant.run_for(8.)
+            assert not future.done(), 'unreachable static target must remain retryable'
+            text = (out/'navigation.log').read_text()[log_begin:]
+            assert 'no valid path found' in text, 'static target was not rejected by the planner'
+            assert 'Occupied goal: approach' not in text, 'static wall became a dynamic approach target'
+            assert all(s['pose'][0] < -1.1 for s in plant.samples[begin:]), 'entered the static wall envelope'
+            plant.cancel(handle,future)
+            passed('static wall reports planning errors, retries without approaching the wall, and cancels safely')
         result=dict(passed=True,checks=checks,metrics=metrics,model='real Nav2; deterministic final-command omni fixture')
     except Exception as exc:
         result=dict(passed=False,checks=checks,metrics=metrics,error=str(exc))

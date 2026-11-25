@@ -32,7 +32,7 @@ def main():
         state.update(dict(s.split('=', 1) for s in m.data.split(';') if '=' in s))
     def tf(m):
         edges = {(t.header.frame_id, t.child_frame_id): t for t in m.transforms}
-        a, b = edges.get(('map', 'lio_odom')), edges.get(('lio_odom', 'base_link'))
+        a, b = edges.get(('map', 'lio_odom')), edges.get(('lio_odom', 'gimbal_nav'))
         if a is None and b is None:
             return
         if a is None or b is None:

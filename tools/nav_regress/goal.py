@@ -4,7 +4,7 @@
     goal.py X Y [YAW_DEG] [--frame world|map] [--timeout S] [--nav-dir DIR]
 
 World coordinates are the Gazebo field frame; they are converted with the registration
-stored in <nav_dir>/terrain.json.  Prints the robot pose (map -> base_link) every second
+stored in <nav_dir>/terrain.json.  Prints the robot pose (map -> gimbal_nav) every second
 and the final result; exit code 0 on success.
 """
 import argparse
@@ -78,7 +78,7 @@ def main():
         if el - last >= 1.0:
             last = el
             try:
-                t = tf.lookup_transform('map', 'base_link', Time())
+                t = tf.lookup_transform('map', 'gimbal_nav', Time())
                 p = t.transform.translation
                 wx, wy = map_to_world(p.x, p.y, reg)
                 print('t=%5.1f map (%6.2f, %6.2f, z %5.2f)  world (%6.2f, %6.2f)  dist %.2f'

@@ -1,4 +1,4 @@
-"""Deterministic omni plant driven by the final command topic."""
+"""Deterministic turret-frame XY plant driven by the final command topic."""
 import copy
 import json
 import math
@@ -27,6 +27,8 @@ class Plant(Node):
     def __init__(self, out, step_period=.02):
         super().__init__('nav_acceptance_plant')
         self.pose = np.array([-3., -2., 0.])
+        self.base_frame = 'gimbal_nav'
+        self.unexecutable_yaw = []
         self.command = Twist()
         self.command_time = 0.
         self.last_time = time.monotonic()
@@ -54,6 +56,10 @@ class Plant(Node):
         self.frame_tick = 0
 
     def on_command(self, cmd):
+        if abs(cmd.angular.z) > 1e-9:
+            self.unexecutable_yaw.append(cmd.angular.z)
+        cmd = copy.deepcopy(cmd)
+        cmd.angular.z = 0.0
         self.command, self.command_time = cmd, time.monotonic()
 
     def on_phase(self, msg):
@@ -73,11 +79,11 @@ class Plant(Node):
                       dt * yaw_rate]
         self.pose[2] = angle(self.pose[2])
         stamp = self.get_clock().now().to_msg()
-        t = TransformStamped(header=Header(stamp=stamp, frame_id='map'), child_frame_id=getattr(self, 'base_frame', 'base_link'))
+        t = TransformStamped(header=Header(stamp=stamp, frame_id='map'), child_frame_id=self.base_frame)
         t.transform.translation.x, t.transform.translation.y = map(float, self.pose[:2])
         t.transform.rotation.z, t.transform.rotation.w = math.sin(self.pose[2] / 2), math.cos(self.pose[2] / 2)
         self.tf.sendTransform(t)
-        odom = Odometry(header=t.header, child_frame_id=getattr(self, 'base_frame', 'base_link'))
+        odom = Odometry(header=t.header, child_frame_id=self.base_frame)
         odom.pose.pose.position.x, odom.pose.pose.position.y = map(float, self.pose[:2])
         odom.pose.pose.orientation = t.transform.rotation
         odom.twist.twist = copy.deepcopy(cmd)
@@ -100,7 +106,7 @@ class Plant(Node):
             frame = FrontendFrame()
             frame.odometry = odom
             frame.lidar_updated = True
-            frame.cloud = point_cloud2.create_cloud_xyz32(Header(stamp=stamp, frame_id=getattr(self, 'base_frame', 'base_link')), points)
+            frame.cloud = point_cloud2.create_cloud_xyz32(Header(stamp=stamp, frame_id=self.base_frame), points)
             self.frames.publish(frame)
         sample = dict(time=now, pose=self.pose.tolist(),
                       cmd=[cmd.linear.x, cmd.linear.y, cmd.angular.z], phase=self.phase,
@@ -146,7 +152,7 @@ class Plant(Node):
         result = future.result()
         assert result.status == GoalStatus.STATUS_SUCCEEDED, str(result)
         assert np.linalg.norm(self.pose[:2] - goal[:2]) <= .18, (self.pose, goal)
-        assert abs(angle(self.pose[2] - goal[2])) <= .32, (self.pose, goal)
+        assert not self.unexecutable_yaw, self.unexecutable_yaw
 
     def goal(self, target, timeout=45.):
         handle, future = self.start(target)

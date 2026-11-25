@@ -6,7 +6,7 @@
 With --smoother the plan goes through smooth_path first; max|v| and the heading error (hdg, worst
 |yaw - locked axis heading| on the axis segment) are then those of the shaped path.
 
-Needs planner_server (global costmap on /nav_map) and a map -> base_link TF (plan_tunnels.sh provides
+Needs planner_server (global costmap on /nav_map) and a map -> gimbal_nav TF (plan_tunnels.sh provides
 both without the simulator).  Start and goal sit on the zone axis `approach` m before / after the
 centre; when one lands in a wall the distance steps down (1.2, 1.0, 0.8 m).  Per tunnel and direction:
   through    the path crosses the tunnel mouth-to-mouth inside the opening (|v| < width/2)

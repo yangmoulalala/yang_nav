@@ -5,7 +5,7 @@
 #   tools/nav_regress/run_nav.sh "X Y YAW" ["X Y YAW" ...]
 #
 # env: OUT (default /tmp/nav_run_<timestamp>), MAP (default maps/sim), GUI=true,
-#      LIDAR=single|dual (default dual); single runs earlyspin before starting Nav2.
+#      LIDAR=single|dual (default dual).
 WS=$(cd "$(dirname "$0")/../.." && pwd)
 LIDAR=${LIDAR:-dual}
 case "$LIDAR" in single|dual) ;; *) echo "invalid LIDAR=$LIDAR (single|dual)"; exit 2 ;; esac
@@ -21,7 +21,7 @@ export MESA_D3D12_DEFAULT_ADAPTER_NAME=${MESA_D3D12_DEFAULT_ADAPTER_NAME:-NVIDIA
 # RVIZ=true opens the navigation RViz (WSLg); HOLD=S keeps everything running S seconds after the goals
 RVIZ=${RVIZ:-false}; HOLD=${HOLD:-0}
 # UWB=true (default): start the referee UWB sim (uwb_sim). The backend uses UWB only as the
-# position prior for SUSPECT/LOST recovery (uwb.enabled in bringup/config/sim/backend*.yaml);
+# position prior for SUSPECT/LOST recovery (uwb.enabled in bringup/config/sim/overrides.yaml);
 # without it the backend waits in SUSPECT/LOST instead of recovering
 UWB=${UWB:-true}
 # Bounds may be shortened by regression runners after the first localization
@@ -91,12 +91,7 @@ fi
 
 start_localization() {
   start LOC loc.log ros2 launch bringup sim.launch.py lidar:="$LIDAR" mode:=localization prior_map:="$MAP"
-  if [ "$LIDAR" = single ]; then
-    # A side-mounted MID-360 needs motion to initialize. This helper stops and
-    # exits before Nav2 is launched, so only one owner publishes cmd_vel.
-    ARENA=rmuc timeout 190 python3 "$WS/tools/sim_tests/zt_driver.py" ready \
-      "$OUT/startup_${LOC}.json" 0 earlyspin >> "$OUT/startup.log" 2>&1
-  fi
+
 }
 start_localization
 # Do not start navigation on top of a localization that never came up: without
@@ -127,12 +122,12 @@ if [ "$LOC_OK" != true ]; then echo 'ABORT: localization never reported pose_tru
 # nothing at all.  Capture to a file and grep that.
 TF_OK=false
 for i in $(seq 1 20); do
-  PYTHONUNBUFFERED=1 timeout 8 ros2 run tf2_ros tf2_echo map base_link > "$OUT/tf_probe.log" 2>/dev/null || true
+  PYTHONUNBUFFERED=1 timeout 8 ros2 run tf2_ros tf2_echo map gimbal_nav > "$OUT/tf_probe.log" 2>/dev/null || true
   if grep -q 'Translation' "$OUT/tf_probe.log"; then TF_OK=true; break; fi
   sleep 1
 done
-if [ "$TF_OK" != true ]; then echo 'ABORT: TF map -> lio_odom -> base_link not available'; exit 2; fi
-echo 'TF map -> base_link ok'
+if [ "$TF_OK" != true ]; then echo 'ABORT: TF map -> lio_odom -> gimbal_nav not available'; exit 2; fi
+echo 'TF map -> gimbal_nav ok'
 
 start NAV nav.log ros2 launch nav_bringup navigation.launch.py terrain_dir:="$TERRAIN" rviz:=false
 for i in $(seq 1 60); do grep -q 'Managed nodes are active' "$OUT/nav.log" && break; sleep 1; done
