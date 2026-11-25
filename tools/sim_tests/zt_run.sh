@@ -27,7 +27,7 @@ export ARENA=${ARENA:-rmul}
 export TEAM=${TEAM:-} ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-87} GZ_PARTITION=${GZ_PARTITION:-zt_$$}
 setsid bash -c '
   out=$1
-  ros2 launch sentry_gazebo sim.launch.py "arena:=$ARENA" ${TEAM:+"team:=$TEAM"} "uwb:=${SIM_UWB:-true}" > "$out/sim.log" 2>&1 &
+  ros2 launch sentry_gazebo sim.launch.py chassis:=false "arena:=$ARENA" ${TEAM:+"team:=$TEAM"} "uwb:=${SIM_UWB:-true}" > "$out/sim.log" 2>&1 &
   sleep 12
   if [[ ${CALIB:-0} == 1 ]]; then
     (sleep 15; ros2 launch bringup calibration.launch.py platform:=sim "output_file:=$out/extrinsic.yaml" > "$out/calib.log" 2>&1) &

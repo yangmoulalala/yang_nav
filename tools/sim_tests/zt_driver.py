@@ -1,4 +1,4 @@
-"""Drive the simulated sentry with ground-truth feedback, record GT vs map->base_link, optional kidnap.
+"""Drive the simulated sentry with ground-truth feedback, record GT vs map->gimbal_nav, optional kidnap.
 
     zt_driver.py mapping  OUT.json [laps]
     zt_driver.py localize OUT.json [laps]   (drives laps, then kidnaps 1.5 m / 45 deg and watches recovery)
@@ -114,7 +114,7 @@ def uwb_sim_signal(sig):
 class Driver(Node):
     def __init__(self):
         super().__init__('zt_driver', parameter_overrides=[Parameter('use_sim_time', value=True)])
-        self.cmd = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.cmd = self.create_publisher(Twist, '/sim/chassis_cmd_vel', 10)
         self.tf = Buffer(cache_time=Duration(seconds=900))
         self.listener = TransformListener(self.tf, self)
         qos = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
@@ -350,7 +350,7 @@ class Driver(Node):
     def attach_estimates(self):
         for s in self.samples:
             try:
-                tr = self.tf.lookup_transform('map', 'base_link', Time(seconds=s['t']))
+                tr = self.tf.lookup_transform('map', 'gimbal_nav', Time(seconds=s['t']))
                 s['est'] = (tr.transform.translation.x, tr.transform.translation.y,
                             yaw_of(tr.transform.rotation))
             except Exception:

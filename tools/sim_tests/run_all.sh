@@ -11,6 +11,8 @@ if [[ -n $(find "$ROOT" -mindepth 1 -maxdepth 1 -print -quit) ]]; then
   exit 2
 fi
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-87} GZ_PARTITION=${GZ_PARTITION:-zt_all_$$}
+failures=0
+printf 'scenario\texit_code\n' > "$ROOT/run_status.tsv"
 
 run() {  # run NAME LIDAR MODE MAP LAPS [driver_mode] [CALIB] [flags]
   local name=$1 lidar=$2 mode=$3 map=$4 laps=$5 dmode=${6:-} calib=${7:-0} flags=${8:-}
@@ -23,6 +25,9 @@ run() {  # run NAME LIDAR MODE MAP LAPS [driver_mode] [CALIB] [flags]
   else
     LIDAR=$lidar CALIB=$calib ARENA=$arena "$HERE/zt_run.sh" "$mode" "$ROOT/$name" "$map" "$laps" $dmode
   fi
+  local rc=$?
+  printf '%s\t%s\n' "$name" "$rc" >> "$ROOT/run_status.tsv"
+  if (( rc != 0 )); then failures=$((failures + 1)); fi
 }
 
 # 单雷达（侧装 MID-360）：初始化期间慢转；建图另在出生点慢转一圈（见 README“单雷达”）
@@ -60,3 +65,5 @@ for d in "$ROOT"/*/; do
     [ -f "$d/extrinsic.yaml" ] && cat "$d/extrinsic.yaml"
   fi
 done
+echo "Scenario process failures: $failures (see $ROOT/run_status.tsv; accuracy still requires evaluation)"
+exit "$((failures > 0))"

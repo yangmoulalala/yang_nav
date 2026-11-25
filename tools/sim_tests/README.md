@@ -1,6 +1,8 @@
 # 定位仿真回归测试
 
-在 Gazebo 仿真中用真值闭环驱动小车，记录 Gazebo 真值与 TF `map → base_link`，评估建图、回环、先验定位、绑架重定位、
+这是传感器专项测试：显式使用 `chassis:=false`，直接向私有 `/sim/chassis_cmd_vel` 驱动物理底盘，其旋转不代表真车普通导航能力。
+
+在 Gazebo 仿真中用真值闭环驱动小车，记录 Gazebo 真值与 TF `map → gimbal_nav`，评估建图、回环、先验定位、绑架重定位、
 原地旋转和双雷达标定，单雷达与双雷达均可测。
 
 | 文件 | 作用 |
@@ -58,7 +60,7 @@ MID-360 侧装（URDF `mid360_joint` 俯仰约 90°），静止时只看到一�
 | `spin` | 每个路点原地转一圈 | 单雷达建图不要用：建图最大误差升到约 27 cm |
 | `kidnapspin` | 绑架后后端处于 SUSPECT/LOST 时以 0.3 rad/s 原地慢转（单双雷达都可用） | 原用于给运动门提供视角变化（运动门已于 2026-11-08 删除）；现在只给恢复增加视野 |
 
-单雷达后端读 `bringup/config/sim/backend_single.yaml`（launch 按 `lidar` 选择），与 `backend.yaml` 的差异写在该文件开头。
+单雷达后端使用 `bringup/config/common/backend.yaml`，叠加 `config/sim/overrides.yaml` 和 `config/single_lidar.yaml`，不再维护完整副本。
 
 ## 结果解释
 
