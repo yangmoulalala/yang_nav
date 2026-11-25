@@ -3,16 +3,14 @@
     ros2 run sentry_gazebo teleop
     ros2 run sentry_gazebo teleop --ros-args -p linear_speed:=1.0 -p angular_speed:=2.0
 
-Publishes ``geometry_msgs/Twist`` on ``/cmd_vel``; ``ros_gz_bridge`` forwards it
-to Gazebo's stock ``MecanumDrive`` system on the four omni wheels.
-The chassis is a four-wheel omni base, so ``w``/``a``/``s``/``d`` translate
-forward/left/backward/right and ``q``/``e`` turn -- MecanumDrive turns all
-three body-frame components into wheel speeds.
+Publishes turret-frame XY on ``/cmd_vel`` through the ordinary MCU simulator.
+``q``/``e`` use the simulation-only turret position interface; navigation
+angular.z is always zero.
 
 Keys
     w / s    forward / backward
     a / d    strafe left / right
-    q / e    turn left / right
+    q / e    turn turret left / right
     space    stop
     + / -    faster / slower
     x        quit
@@ -36,11 +34,12 @@ import tty
 
 import rclpy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32, Float64
 from rclpy.node import Node
 
 from sentry_gazebo import arena_spec as A
 
-# key -> (forward, left, turn-left) unit multipliers, in the body frame
+# key -> (turret forward, turret left, turret rotation) unit multipliers
 MOTION = {
     'w': (1.0, 0.0, 0.0),
     's': (-1.0, 0.0, 0.0),
@@ -54,7 +53,7 @@ HELP = """\
 sentry teleop
     w / s    forward / backward
     a / d    strafe left / right
-    q / e    turn left / right
+    q / e    turn turret left / right
     space    stop
     + / -    faster / slower
     x        quit
@@ -62,21 +61,20 @@ sentry teleop
 
 
 class Teleop(Node):
-    """Holds one body-frame velocity and republishes it at ``rate`` Hz.
-
-    MecanumDrive has no command timeout and keeps executing the last
-    command, so the node itself must send zeros once a key is released.
-    """
+    """Publish XY while held; use a separate target for independent turret yaw."""
 
     def __init__(self):
         super().__init__('sentry_teleop')
         self.topic = self.declare_parameter('cmd_vel_topic', '/cmd_vel').value
-        self.linear = float(self.declare_parameter('linear_speed', 2.0).value)
-        self.angular = float(self.declare_parameter('angular_speed', 2.0).value)
+        self.linear = float(self.declare_parameter('linear_speed', 0.25).value)
+        self.angular = float(self.declare_parameter('angular_speed', 0.5).value)
         self.hold = float(self.declare_parameter('hold', 1.0).value)
         self.press_timeout = float(self.declare_parameter('press_timeout', 0.1).value)
         self.repeat_timeout = float(self.declare_parameter('repeat_timeout', 0.1).value)
         rate = float(self.declare_parameter('rate', 20.0).value)
+        self.rate = rate
+        self.turret_angle = 0.0
+        self.turret = self.create_publisher(Float64, '/sim/turret_yaw', 1)
 
         # limits come from arena_spec so the node cannot ask for more than the
         # rules allow
@@ -85,21 +83,28 @@ class Teleop(Node):
 
         self._pub = self.create_publisher(Twist, self.topic, 10)
         self._motion = (0.0, 0.0, 0.0)
+        self.create_subscription(Float32, '/chassis/big_yaw', self.feedback, 1)
         self._cmd = Twist()
         self.create_timer(1.0 / rate, self._publish)
 
     # -- velocity -----------------------------------------------------------
     def _set_motion(self, motion):
         self._motion = motion
-        fwd, left, turn = motion
+        fwd, left, _ = motion
         cmd = Twist()
         cmd.linear.x = fwd * self.linear
         cmd.linear.y = left * self.linear
-        cmd.angular.z = turn * self.angular
         self._cmd = cmd
+
+    def feedback(self, msg):
+        if not self._motion[2]:
+            self.turret_angle = msg.data
 
     def _publish(self):
         self._pub.publish(self._cmd)
+        if self._motion[2]:
+            self.turret_angle += self._motion[2] * self.angular / self.rate
+            self.turret.publish(Float64(data=self.turret_angle))
 
     def stop(self):
         """Zero the command and publish it once, right away."""

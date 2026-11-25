@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+from sentry_gazebo.chassis_sim import main
+
+main()

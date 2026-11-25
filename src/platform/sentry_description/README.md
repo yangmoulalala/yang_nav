@@ -46,7 +46,7 @@ gimbal_nav -> yaw_link -> mid360_link -> mid360_imu_link
 
 `gimbal_nav` 为前/左/上参考，原点同原底盘中心（同轴云台转轴下方 5 mm）。
 下位机的 X/Y 按云台方向解释，因此关节反馈未接入时仍可使用雷达定位云台；不能把 `yaw_joint=0` 当作物理底盘朝向。
-真车不发布默认零关节状态，不包含未观测的底盘、车轮子树。仿真继续使用完整 URDF 与真实关节反馈。
+真车和仿真均不发布默认零关节状态或未观测的底盘 TF。Gazebo 物理模型仍使用完整 URDF 几何，关节反馈仅供模拟器接口。
 生成器直接复用传感器安装外参；名义偏角 0 时，传感器到 gimbal_nav 等于原 yaw_joint=0 时到 base_link 的变换。
 
 `gimbal_yaw_offset` 是 MCU +X 相对 CAD 云台零方向的实测安装偏角（rad，CCW 为正）。它不是关节角，

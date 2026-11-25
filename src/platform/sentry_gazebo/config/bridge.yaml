@@ -5,22 +5,35 @@
 # gz -> ros
 #   /clock           sim time
 #   (no ground-truth /odom: the real robot has none; the localization stack
-#    owns map -> lio_odom -> base_link)
+#    owns map -> lio_odom -> gimbal_nav)
 #   /lidar_*/points  the two gpu_lidar sensors (sensor topics set in the SDF)
-#   /lidar_*/imu     the built-in IMU of each LiDAR (gz imu sensor, same origin)
+#   /lidar_*/imu     the built-in IMU of each LiDAR (MID-360 uses the URDF factory IMU mount)
 #
 # ros -> gz
-#   /cmd_vel         consumed by gz::sim::systems::MecanumDrive
+#   /sim/chassis_cmd_vel   MCU simulator output -> MecanumDrive
 - ros_topic_name: "/clock"
   gz_topic_name: "/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
   gz_type_name: "gz.msgs.Clock"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/cmd_vel"
-  gz_topic_name: "/cmd_vel"
+- ros_topic_name: "/sim/chassis_cmd_vel"
+  gz_topic_name: "/sim/chassis_cmd_vel"
   ros_type_name: "geometry_msgs/msg/Twist"
   gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+# Private physical state is consumed only by chassis_sim, never localization TF.
+- ros_topic_name: "/sim/joint_states"
+  gz_topic_name: "/sim/joint_states"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/sim/yaw_joint_target"
+  gz_topic_name: "/sim/yaw_joint_target"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
   direction: ROS_TO_GZ
 
 - ros_topic_name: "/lidar_mid360/points"

@@ -8,8 +8,8 @@
     geometry as model://rmul_2027), the sentry robot built from
     sentry_description, MID-360 / Unitree L2 gpu_lidar sensors and the ROS 2
     bridge.  Drive and TF are stock (gz MecanumDrive, robot_state_publisher,
-    ros_gz_bridge); no ground-truth pose is published.  The only custom
-    code is the URDF->SDF generator and a small keyboard teleop node.
+    ros_gz_bridge); no ground-truth pose is supplied to localization.
+    chassis_sim implements the same turret-frame XY interface as the MCU.
   </description>
   <maintainer email="yang@example.com">yang</maintainer>
   <license>Apache-2.0</license>
@@ -24,7 +24,7 @@
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
-  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>chassis_comm</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>
   <!-- uwb_sim reads the gz-only ground-truth pose (python bindings) -->
   <exec_depend>gz_transport_vendor</exec_depend>

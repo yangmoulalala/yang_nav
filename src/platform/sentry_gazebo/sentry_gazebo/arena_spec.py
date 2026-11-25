@@ -23,13 +23,8 @@ The sensor mount poses are copied verbatim from
 ``sentry_description/urdf/sentry_robot.urdf`` -- nothing here overrides the
 URDF:
 
-* the MID-360 origin is at base_link (0.056, -0.164, 0.137), rolled 105 deg,
-  i.e. 0.20 m above the floor,
-* the Unitree L2 origin is at base_link (-0.043, 0.176, 0.163), i.e. 0.22 m
-  above the floor.
-
-Both were confirmed by forward kinematics of the URDF and by ray casting
-against the 1.3 M-triangle chassis meshes.
+Sensor data axes, mesh compensation and factory IMU lever arms are read
+from that shared URDF; no installation angles are duplicated here.
 
 LiDAR
 -----
@@ -144,9 +139,8 @@ def lidar(name, n_h, n_v, v_min_deg, v_max_deg, r_min, r_max,
         'name': name,
         'update_rate': rate,
         'topic': topic or '/%s/points' % name,
-        # built-in IMU of the device (both MID-360 and L2 have one), mounted at
-        # the LiDAR origin, so the frontend uses mid360_link as both frames.imu and
-        # frames.lidar (identity extrinsic from TF)
+        # MID-360 IMU uses the factory mount in the URDF; L2 stays at its
+        # own sensor origin. Gazebo emits specific force in m/s^2.
         'imu_name': name.replace('_lidar', '_imu'),
         'imu_topic': '/%s/imu' % base,
         'imu_rate': 200.0,
@@ -187,7 +181,7 @@ ROBOT_MOUNTS = (
 )
 
 # ROS topics (bridged from Gazebo)
-TOPIC_CMD_VEL = '/cmd_vel'
+TOPIC_CMD_VEL = '/sim/chassis_cmd_vel'
 
 
 # ---------------------------------------------------------------------------
@@ -252,8 +246,9 @@ GZ_TOPIC_L2_CLOUD = '/' + L2_LIDAR['topic'] + '/points'
 # gz sensor name -> link frame; the launch file publishes an identity
 # static transform from the link to the scoped frame gz stamps on the cloud
 # ("sentry/mid360_link/mid360_lidar"), which SDFormat 1.9 cannot rename.
-SENSOR_FRAMES = {**{m[2]['name']: m[0] for m in ROBOT_MOUNTS},
-                 **{m[2]['imu_name']: m[0] for m in ROBOT_MOUNTS}}
+SENSOR_FRAMES = {**{m[2]['name']: (m[0], m[0]) for m in ROBOT_MOUNTS},
+                 **{m[2]['imu_name']: (m[0], 'mid360_imu_link' if m[0] == 'mid360_link' else m[0])
+                    for m in ROBOT_MOUNTS}}
 
 
 # ---------------------------------------------------------------------------

@@ -56,6 +56,7 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import String
+from sensor_msgs.msg import JointState
 
 from sentry_gazebo import arena_spec as A
 
@@ -218,6 +219,9 @@ class UwbSim(Node):
         if self.rate <= 0:
             raise ValueError('rate_hz must be > 0')
         self.truth = TruthBuffer(horizon=max(3.0, 3.0 * (self.latency + 4 * self.latency_jitter)))
+        self.turret_truth = TruthBuffer(horizon=self.truth.horizon)
+        self.gimbal_offset = float(p('gimbal_yaw_offset', 0.0))
+        self.create_subscription(JointState, '/sim/joint_states', self._joint_state, 10)
         self._last_t = None
         self._published = 0
         self._dropped = 0
@@ -251,6 +255,16 @@ class UwbSim(Node):
                 'field frame is actually right-handed.')
 
     # -- ground truth ---------------------------------------------------------
+    def _joint_state(self, msg):
+        if 'yaw_joint' not in msg.name:
+            return
+        index = msg.name.index('yaw_joint')
+        if index >= len(msg.position) or not math.isfinite(msg.position[index]):
+            return
+        yaw = -msg.position[index] + self.gimbal_offset
+        t = msg.header.stamp.sec + 1e-9 * msg.header.stamp.nanosec
+        self.turret_truth.add(t, (0., 0., 0.), (math.cos(yaw / 2), 0., 0., math.sin(yaw / 2)))
+
     def _subscribe_truth(self):
         try:
             from gz.msgs10.pose_pb2 import Pose
@@ -303,8 +317,13 @@ class UwbSim(Node):
             self._dropped += 1
             return
 
+        turret = self.turret_truth.sample(t_now - latency, max_extrapolation=0.1)
+        if turret is None:
+            return
         pos, q = state
-        lever = _quat_rotate(q, self.antenna)
+        # antenna_position_body now uses the common gimbal_nav reference, so
+        # independent turret rotation must rotate its lever arm as well.
+        lever = _quat_rotate(q, _quat_rotate(turret[1], self.antenna))
         xr, yr = self.ref.from_world(pos[0] + lever[0], pos[1] + lever[1])
         if not self._team_checked and self.field_length > 0:
             # the referee origin is on the red side: x_ref < L/2 is the red half
