@@ -1,4 +1,4 @@
-"""Monotonic watchdog and non-repeating hole-passage requests."""
+"""Legacy edge command state retained for simulation; hardware uses NavigationState."""
 
 from .protocol import Command, encode_frame
 

@@ -1,15 +1,16 @@
-"""8-byte measured big-yaw feedback, independent of ROS and serial I/O.
+"""Legacy 8-byte big-yaw decoder; not used by the A1/A2/A3/A4 hardware node.
 
-A5 5A | float32 LE (rad, turret relative to chassis) | CRC16/MODBUS LE.
+AA 55 | float32 LE (rad, turret relative to chassis) | CRC16/MODBUS LE.
 CRC covers only the four payload bytes. The MCU sends at 200 Hz while online.
 """
 
 import math
 import struct
 
-from .protocol import SOF, crc16_modbus
+from .protocol import crc16_modbus
 
 
+SOF = b'\xaa\x55'
 FRAME_SIZE = 8
 # -pi rounds slightly below mathematical -pi when encoded as float32.
 MIN_ANGLE = struct.unpack('<f', struct.pack('<f', -math.pi))[0]
@@ -17,7 +18,7 @@ MIN_ANGLE = struct.unpack('<f', struct.pack('<f', -math.pi))[0]
 
 def decode_frame(frame: bytes) -> float:
     if len(frame) != FRAME_SIZE or frame[:2] != SOF:
-        raise ValueError('expected an 8-byte big-yaw frame beginning A5 5A')
+        raise ValueError('expected an 8-byte big-yaw frame beginning AA 55')
     payload = frame[2:6]
     if crc16_modbus(payload) != struct.unpack('<H', frame[6:8])[0]:
         raise ValueError('big-yaw CRC-16/MODBUS mismatch')
@@ -42,7 +43,7 @@ class BigYawParser:
         while True:
             start = self._buffer.find(SOF)
             if start < 0:
-                self._buffer[:] = b'\xa5' if self._buffer[-1:] == b'\xa5' else b''
+                self._buffer[:] = SOF[:1] if self._buffer[-1:] == SOF[:1] else b''
                 break
             del self._buffer[:start]
             if len(self._buffer) < FRAME_SIZE:

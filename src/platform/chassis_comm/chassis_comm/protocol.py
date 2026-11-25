@@ -1,7 +1,6 @@
-"""Fixed 17-byte, little-endian chassis control frames.
+"""MiniPC A1/A2/A3/A4 frames; CRC16/MODBUS covers SOF + payload.
 
-CRC-16/MODBUS covers bytes [2:15], excluding SOF and the CRC itself.
-This module has no ROS or serial dependency and can also test an MCU receiver.
+No ROS or serial dependencies. The navigation bridge sends A3 and receives A4.
 """
 
 from dataclasses import dataclass
@@ -9,17 +8,58 @@ import math
 import struct
 
 
-SOF = b'\xa5\x5a'
-PAYLOAD = struct.Struct('<fffB')
-FRAME_SIZE = 17
+@dataclass(frozen=True)
+class Command:
+    """A3: radar-frame velocity, relative radar turn (rad), world position (m)."""
+
+    vx: float
+    vy: float
+    yaw: float  # Desired turn relative to current radar +X; CCW positive, rad.
+    is_through_hole: int = 0  # Level: 1 follows the gun, 0 enables chassis spin.
+    x: float = 0.0
+    y: float = 0.0
+
+    @property
+    def action_flag(self):
+        """Compatibility for the existing simulation-only edge command state."""
+        return self.is_through_hole
 
 
 @dataclass(frozen=True)
-class Command:
-    vx: float
-    vy: float
-    yaw: float  # Target rotation relative to the current body heading (rad).
-    action_flag: int = 0  # Rising edge requests the hole-passage action.
+class AimTarget:
+    is_detect: int
+    is_fire: int
+    yaw: float  # Absolute gun yaw, degrees, CCW positive.
+    pitch: float  # Absolute gun pitch, degrees, down positive.
+    distance: float
+
+
+@dataclass(frozen=True)
+class AimState:
+    is_red: int
+    bullet_speed: float
+    qx: float
+    qy: float
+    qz: float
+    qw: float
+
+
+@dataclass(frozen=True)
+class NavigationTarget:
+    yaw: float  # Measured chassis +X -> radar +X angle; CCW positive, rad.
+    x: float
+    y: float
+
+
+# The navigation API keeps vx/vy/yaw first for callers; the wire puts the flag first.
+FORMATS = {
+    0xA1: (struct.Struct('<BBfff'), AimTarget),
+    0xA2: (struct.Struct('<Bfffff'), AimState),
+    0xA3: (struct.Struct('<Bfffff'), Command),
+    0xA4: (struct.Struct('<fff'), NavigationTarget),
+}
+FRAME_SIZES = {header: layout.size + 3 for header, (layout, _) in FORMATS.items()}
+FRAME_SIZE = FRAME_SIZES[0xA3]
 
 
 def crc16_modbus(data: bytes) -> int:
@@ -31,54 +71,87 @@ def crc16_modbus(data: bytes) -> int:
     return crc
 
 
-def encode_frame(command: Command) -> bytes:
-    if not all(math.isfinite(v) for v in (command.vx, command.vy, command.yaw)):
-        raise ValueError('vx, vy and yaw must be finite')
-    if command.action_flag not in (0, 1):
-        raise ValueError('action_flag must be 0 or 1')
+def encode_frame(message) -> bytes:
+    if isinstance(message, Command):
+        header = 0xA3
+        flags = (message.is_through_hole,)
+        floats = (message.vx, message.vy, message.yaw, message.x, message.y)
+    elif isinstance(message, AimTarget):
+        header = 0xA1
+        flags = (message.is_detect, message.is_fire)
+        floats = (message.yaw, message.pitch, message.distance)
+        if not message.is_detect and message.is_fire:
+            raise ValueError('is_fire must be 0 when is_detect is 0')
+    elif isinstance(message, AimState):
+        header = 0xA2
+        flags = (message.is_red,)
+        floats = (message.bullet_speed, message.qx, message.qy, message.qz, message.qw)
+    elif isinstance(message, NavigationTarget):
+        header = 0xA4
+        flags = ()
+        floats = (message.yaw, message.x, message.y)
+    else:
+        raise ValueError('unsupported MiniPC message type')
+    if any(flag not in (0, 1) for flag in flags):
+        raise ValueError('protocol flags must be 0 or 1')
+    if not all(math.isfinite(value) for value in floats):
+        raise ValueError('protocol floats must be finite')
     try:
-        payload = PAYLOAD.pack(command.vx, command.vy, command.yaw, command.action_flag)
+        data = bytes([header]) + FORMATS[header][0].pack(*flags, *floats)
     except (OverflowError, struct.error) as exc:
-        raise ValueError('command cannot be represented as float32/uint8') from exc
-    return SOF + payload + struct.pack('<H', crc16_modbus(payload))
+        raise ValueError('message cannot be represented as float32/uint8') from exc
+    return data + struct.pack('<H', crc16_modbus(data))
 
 
-def decode_frame(frame: bytes) -> Command:
-    if len(frame) != FRAME_SIZE or frame[:2] != SOF:
-        raise ValueError('expected a 17-byte frame beginning A5 5A')
-    payload = frame[2:15]
-    if crc16_modbus(payload) != struct.unpack('<H', frame[15:17])[0]:
+def decode_frame(frame: bytes):
+    if not frame or frame[0] not in FORMATS or len(frame) != FRAME_SIZES[frame[0]]:
+        raise ValueError('expected a complete A1/A2/A3/A4 MiniPC frame')
+    if crc16_modbus(frame[:-2]) != struct.unpack('<H', frame[-2:])[0]:
         raise ValueError('CRC-16/MODBUS mismatch')
-    command = Command(*PAYLOAD.unpack(payload))
-    # CRC correctness alone must not admit NaN, infinity or an undefined action.
-    encode_frame(command)
-    return command
+    layout, cls = FORMATS[frame[0]]
+    values = layout.unpack(frame[1:-2])
+    if cls is Command:
+        flag, vx, vy, yaw, x, y = values
+        message = Command(vx, vy, yaw, flag, x, y)
+    else:
+        message = cls(*values)
+    encode_frame(message)  # Reject CRC-valid NaN/Inf and undefined flags too.
+    return message
 
 
 class FrameParser:
-    """Yield only validated commands; recover after noise, drops or bad CRCs."""
+    """Drop one byte per unknown SOF or bad CRC and consume valid frames whole.
 
-    def __init__(self):
+    All four types are consumed atomically even when filtered by direction, so
+    header-valued payload bytes cannot be interpreted as another valid frame.
+    """
+
+    def __init__(self, headers=None):
+        self._headers = set(FORMATS if headers is None else headers)
+        if not self._headers <= FORMATS.keys():
+            raise ValueError('unknown frame header')
         self._buffer = bytearray()
 
-    def feed(self, data: bytes) -> list[Command]:
+    def reset(self):
+        self._buffer.clear()
+
+    def feed(self, data: bytes) -> list:
         self._buffer.extend(data)
-        commands = []
-        while True:
-            start = self._buffer.find(SOF)
-            if start < 0:
-                # Preserve a split SOF, but never retain arbitrary noise.
-                self._buffer[:] = b'\xa5' if self._buffer[-1:] == b'\xa5' else b''
-                break
-            del self._buffer[:start]
-            if len(self._buffer) < FRAME_SIZE:
-                break
-            try:
-                command = decode_frame(bytes(self._buffer[:FRAME_SIZE]))
-            except ValueError:
-                # A valid SOF may occur inside the rejected candidate.
+        messages = []
+        while self._buffer:
+            header = self._buffer[0]
+            size = FRAME_SIZES.get(header)
+            if size is None:
                 del self._buffer[0]
                 continue
-            commands.append(command)
-            del self._buffer[:FRAME_SIZE]
-        return commands
+            if len(self._buffer) < size:
+                break
+            try:
+                message = decode_frame(bytes(self._buffer[:size]))
+            except ValueError:
+                del self._buffer[0]
+                continue
+            if header in self._headers:
+                messages.append(message)
+            del self._buffer[:size]
+        return messages

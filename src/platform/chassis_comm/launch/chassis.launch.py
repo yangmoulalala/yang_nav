@@ -1,4 +1,4 @@
-"""Full-duplex hardware serial node; both port and baud_rate are required."""
+"""MiniPC navigation serial bridge, default /dev/nav at 115200 baud."""
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -7,36 +7,34 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
 
+ARGUMENTS = {
+    'port': ('/dev/nav', str, 'navigation serial device path'),
+    'baud_rate': ('115200', int, 'baud rate agreed with MCU'),
+    'rate': ('100.0', float, 'A3 serial frame rate (Hz)'),
+    'command_timeout': ('0.3', float, 'velocity input timeout (s)'),
+    'pose_timeout': ('0.3', float, 'localization TF timeout (s)'),
+    'yaw_timeout': ('0.3', float, 'relative turn input timeout (s); stale means hold heading'),
+    'write_timeout': ('0.005', float, 'serial write timeout (s)'),
+    'feedback_timeout': ('0.1', float, 'A4 online and incomplete RX frame timeout (s)'),
+    'world_frame': ('map', str, 'shared A3 current pose / A4 target coordinate frame'),
+    'base_frame': ('gimbal_nav', str, 'radar / big-yaw navigation frame'),
+    'cmd_vel_topic': ('/cmd_vel', str, 'final gated radar-frame XY velocity'),
+    'yaw_topic': ('/chassis/yaw_target', str, 'desired turn from current radar heading, Float32 rad'),
+    'action_topic': ('/chassis/pass_hole', str, 'Bool hole mode level (not a rising edge)'),
+    'target_topic': ('/chassis/nav_target', str, 'A4 target output, PointStamped'),
+    'big_yaw_topic': ('/chassis/big_yaw', str, 'A4 measured chassis-to-radar angle, Float32 rad'),
+    'big_yaw_online_topic': ('/chassis/big_yaw_online', str, 'A4 feedback online, retained Bool'),
+}
+
+
 def generate_launch_description():
+    declarations = [DeclareLaunchArgument(
+        name, description=description, **({} if default is None else {'default_value': default}))
+        for name, (default, _, description) in ARGUMENTS.items()]
+    parameters = {name: ParameterValue(LaunchConfiguration(name), value_type=value_type)
+                  for name, (_, value_type, _) in ARGUMENTS.items()}
     return LaunchDescription([
-        DeclareLaunchArgument('port', description='actual serial device path'),
-        DeclareLaunchArgument('baud_rate', description='baud rate agreed with MCU'),
-        DeclareLaunchArgument('cmd_vel_topic', default_value='/cmd_vel'),
-        DeclareLaunchArgument('yaw_topic', default_value='/chassis/yaw_target'),
-        DeclareLaunchArgument('rate', default_value='100.0', description='serial frame rate (Hz)'),
-        DeclareLaunchArgument('yaw_mode', default_value='action_angle',
-                              description='action_angle: XY navigation, explicit body yaw only on action; legacy relative_angle/twist'),
-        DeclareLaunchArgument('yaw_horizon', default_value='0.1',
-                              description='relative yaw lookahead time (s), independent of frame rate'),
-        DeclareLaunchArgument('action_topic', default_value='/chassis/pass_hole'),
-        DeclareLaunchArgument('big_yaw_topic', default_value='/chassis/big_yaw'),
-        DeclareLaunchArgument('big_yaw_online_topic', default_value='/chassis/big_yaw_online'),
-        DeclareLaunchArgument('big_yaw_timeout', default_value='0.1',
-                              description='seconds without a valid big-yaw frame before offline'),
-        Node(
-            package='chassis_comm', executable='chassis_serial', output='screen',
-            parameters=[{
-                'port': ParameterValue(LaunchConfiguration('port'), value_type=str),
-                'baud_rate': ParameterValue(LaunchConfiguration('baud_rate'), value_type=int),
-                'rate': ParameterValue(LaunchConfiguration('rate'), value_type=float),
-                'cmd_vel_topic': LaunchConfiguration('cmd_vel_topic'),
-                'yaw_topic': LaunchConfiguration('yaw_topic'),
-                'yaw_mode': LaunchConfiguration('yaw_mode'),
-                'yaw_horizon': ParameterValue(LaunchConfiguration('yaw_horizon'), value_type=float),
-                'action_topic': LaunchConfiguration('action_topic'),
-                'big_yaw_topic': LaunchConfiguration('big_yaw_topic'),
-                'big_yaw_online_topic': LaunchConfiguration('big_yaw_online_topic'),
-                'big_yaw_timeout': ParameterValue(LaunchConfiguration('big_yaw_timeout'), value_type=float),
-                'use_sim_time': False,
-            }]),
+        *declarations,
+        Node(package='chassis_comm', executable='chassis_serial', output='screen',
+             parameters=[parameters, {'use_sim_time': False}]),
     ])

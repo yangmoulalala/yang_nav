@@ -2,7 +2,7 @@
 <package format="3">
   <name>chassis_comm</name>
   <version>0.1.0</version>
-  <description>17-byte chassis commands and 8-byte measured big-yaw serial feedback.</description>
+  <description>MiniPC A3 navigation commands and A4 big-yaw encoder/target feedback.</description>
   <maintainer email="yang@todo.todo">yang</maintainer>
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -10,6 +10,7 @@
   <exec_depend>rclpy</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tf2_ros_py</exec_depend>
   <exec_depend>python3-serial</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>

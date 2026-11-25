@@ -11,20 +11,20 @@ from chassis_comm.protocol import crc16_modbus
 
 def frame(angle):
     payload = struct.pack('<f', angle)
-    return b'\xa5\x5a' + payload + struct.pack('<H', crc16_modbus(payload))
+    return b'\xaa\x55' + payload + struct.pack('<H', crc16_modbus(payload))
 
 
 def test_fixed_vectors_payload_crc_and_endianness():
     assert FRAME_SIZE == 8
-    assert decode_frame(bytes.fromhex('a5 5a 00 00 00 00 00 24')) == 0.0
-    assert decode_frame(bytes.fromhex('a5 5a 00 00 80 3f 21 f4')) == 1.0
-    assert decode_frame(bytes.fromhex('a5 5a 00 00 80 bf 20 54')) == -1.0
+    assert decode_frame(bytes.fromhex('aa 55 00 00 00 00 00 24')) == 0.0
+    assert decode_frame(bytes.fromhex('aa 55 00 00 80 3f 21 f4')) == 1.0
+    assert decode_frame(bytes.fromhex('aa 55 00 00 80 bf 20 54')) == -1.0
     payload = struct.pack('<f', 0.5)
     with pytest.raises(ValueError, match='CRC'):
-        decode_frame(b'\xa5\x5a' + payload
-                     + struct.pack('<H', crc16_modbus(b'\xa5\x5a' + payload)))
+        decode_frame(b'\xaa\x55' + payload
+                     + struct.pack('<H', crc16_modbus(b'\xaa\x55' + payload)))
     with pytest.raises(ValueError, match='CRC'):
-        decode_frame(bytes.fromhex('a5 5a 00 00 80 3f f4 21'))
+        decode_frame(bytes.fromhex('aa 55 00 00 80 3f f4 21'))
 
 
 @pytest.mark.parametrize('angle', [float('nan'), float('inf'), -float('inf'),
@@ -57,8 +57,8 @@ def test_all_single_bit_errors_and_wrong_lengths_are_rejected():
 def test_stream_resync_and_partial_header(chunk_size):
     bad = bytearray(frame(0.5))
     bad[3] ^= 0x80
-    stream = (b'noise\xa5' + frame(2.0)[:5] + bytes(bad) + frame(float('nan'))
-              + b'\xa5' + frame(1.0) + frame(-2.0) + b'end\xa5')
+    stream = (b'noise\xaa' + frame(2.0)[:5] + bytes(bad) + frame(float('nan'))
+              + b'\xaa' + frame(1.0) + frame(-2.0) + b'end\xaa')
     parser = BigYawParser()
     received = []
     for offset in range(0, len(stream), chunk_size):

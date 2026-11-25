@@ -1,55 +1,61 @@
 # chassis_comm
 
-真车串口使用 17 字节小端帧（A5 5A、三个 float32、动作字节、载荷 CRC-16/MODBUS）。默认模式 `action_angle` 与下位机约定一致：
+真车导航通信使用 `/dev/nav`，默认 115200 波特、8N1、100 Hz 下行。协议以 [最新版 MiniPC 协议](docs/minipc_protocol.md) 的导航部分为准：单字节帧头、小端 float32、CRC16/MODBUS（初值 `0xFFFF`，多项式 `0xA001`，覆盖帧头和载荷，CRC 低字节先发）。导航节点只发送 A3、接收 A4，同一串口出现自瞄帧时消费整帧后忽略，不发布自瞄话题。
 
-- 普通导航：`/cmd_vel.linear.x/y` 是**云台方向参考系** X/Y 速度（`gimbal_nav`，+X 前、+Y 左；沿用现有 ROS FLU 轴约定，实物轴向须标定）（m/s），无需 yaw 输入；发送 yaw=0、action_flag=0。`angular.z` 不会转换为角度。
-- 动作：先发布 `/chassis/yaw_target`（Float32，机体系目标角度，rad），再发送 `/chassis/pass_hole`（Bool）的上升沿。yaw 必须新鲜（默认 0.3 s），采用触发时的角度快照；一个上升沿只发送一帧 action_flag=1，其余帧 yaw=0、action_flag=0。连续动作需先发 false，且串口成功发过低标志帧。
-- 速度超时停止发送有效运动，过期或缺失的动作 yaw 不影响普通 X/Y。动作不会在速度恢复后补发。串口写失败不自动重发动作。
-
-整车 `bringup real.launch.py` 默认 `/dev/nav`、115200 波特、100 Hz、`chassis_yaw_mode:=action_angle`。独立启动需指定 port 和 baud_rate。仅查看参数用 `ros2 launch chassis_comm chassis.launch.py --show-args`。
-
-兼容旧协议/台架时可显式选择 `relative_angle`（持续显式 yaw，拒绝非零 angular.z）或 `twist`（angular.z × yaw_horizon 转相对角度）；这两个模式不代表本车普通导航接口，整车不再默认使用它们。
-
-同一串口全双工接收大 yaw 实测角；尚无 MCU 动作完成反馈接口，导航不会自动触发动作。角度零位、正方向和动作执行过程由双方协议约定，不能从导航角速度推导。
-
-`protocol.py` 编解码与解析控制帧；`big_yaw.py` 解析大 yaw 反馈；`command_state.py` 管理输入新鲜度和动作边沿；`serial_node.py` 订阅 ROS 输入并读写串口。测试使用伪终端，不访问硬件。
-
-## 大 yaw 实测角接收
-
-下位机在同一串口发送 **8 字节、200 Hz** 反馈，大 yaw 离线时暂停发送：
+## 导航下行 A3（24 字节）
 
 ```
-A5 5A | float32 小端角度(rad) | CRC16/MODBUS 小端
- 2 B             4 B                    2 B
+A3 | is_through_hole:u8 | vx:f32 | vy:f32 | yaw:f32 | x:f32 | y:f32 | crc:u16
+ 0          1              2        6        10       14      18      22
 ```
 
-CRC 初值 `0xFFFF`、多项式 `0xA001`，仅覆盖角度的 4 字节。角度是**大 yaw 相对底盘的实测角**，范围 `[-π, π)`；接受 float32 编码后的 `-π` 边界，拒绝 NaN、Inf、越界值和 CRC 错误。例：`1.0 rad` 为 `A5 5A 00 00 80 3F 21 F4`。
+- `/cmd_vel.linear.x/y` 是雷达（大 yaw）坐标系的前/左速度，m/s，默认参考系为 `gimbal_nav`。速度直接透传，下位机按小 yaw 实测角转换到枪口系。
+- `yaw` 是**从雷达当前 +X 到期望朝向的有向转角**，rad，俯视逆时针为正。0 保持当前朝向，+π/2 逆时针转 90°，−π/2 顺时针转 90°。显式输入为 `/chassis/yaw_target`（Float32），不是绝对地图航向，也不是底盘相对角；不从定位 TF 或上行编码器角复制，不把 `angular.z`（rad/s）直接作为角度。
+- 普通平移不依赖转角输入：启动、未收到输入、输入非法或超过 `yaw_timeout`（默认 0.3 s）时发送 yaw=0。需要转向时，上层应根据剩余角度持续更新相对转角；保持非零输入代表每帧都相对当时朝向请求该转角，不是只转一次的增量命令。
+- `x/y` 是定位当前坐标，m，来自最新 `world_frame → base_frame` TF，默认 `map → gimbal_nav`。定位航向不参与 A3.yaw。TF 新鲜度检查使用采样时间，重复查询旧变换不会刷新看门狗。
+- `/chassis/pass_hole`（Bool）为持续状态：true 时每帧标志为 1，底盘停止小陀螺并随头；false 时标志为 0，下位机执行小陀螺。启动默认 false，保持最后一次收到的值。
+- 速度或定位缺失/超过各自默认 0.3 s 时，暂停 A3，让板侧在最后一个有效导航帧后 100 ms 离线停车；上行接收继续。零速度、标志 0 仍请求小陀螺，不能作为整车停车指令。输入恢复后按当前模式继续发送。
+- 节点退出、读写失败或部分写入时关闭端口，由板侧 100 ms 看门狗停车，不自动重连。速度超时后的总停车延迟约为 `command_timeout + 0.1 s`，另加调度延迟。
 
-| 默认话题 | ROS 类型 | 行为 |
+## 导航上行 A4（15 字节）
+
+```
+A4 | yaw:f32 | x:f32 | y:f32 | crc:u16
+ 0      1        5       9       13
+```
+
+上行 yaw 是**从底盘 +X 到雷达 +X 的编码器实测角**，rad、逆时针为正，两轴同向为 0。x/y 是目标点，须与 A3 的当前坐标使用同一世界坐标系。旧版 11 字节 A4 不再兼容。
+
+| 默认话题 | ROS 类型 | 含义 |
 | --- | --- | --- |
-| `/chassis/big_yaw` | `std_msgs/msg/Float32` | `data` 为 rad；每个有效帧发布一次，正常约 200 Hz；无有效帧时不发布，不补零、不重复旧角度 |
-| `/chassis/big_yaw_online` | `std_msgs/msg/Bool` | 启动为 false；有效帧恢复为 true；超过 `big_yaw_timeout`（默认 0.1 s）无有效帧则 false；仅状态变化时发布，reliable + transient_local，晚加入者可读取当前状态 |
+| `/chassis/big_yaw` | `std_msgs/msg/Float32` | 每个有效 A4 发布一次编码器角，rad |
+| `/chassis/big_yaw_online` | `std_msgs/msg/Bool` | 启动 false，有效 A4 后 true；超过 `feedback_timeout`（默认 0.1 s）无有效 A4 后 false；仅变化时发布，reliable + transient_local |
+| `/chassis/nav_target` | `geometry_msgs/msg/PointStamped` | 每个有效 A4 发布一次目标 x/y，z=0，frame_id 为 `world_frame`（默认 map）；时间戳为主机接收时间 |
 
-角度话题使用 reliable + volatile、depth=20，不缓存给晚加入者。接收采用非阻塞串口、200 Hz 独立轮询，支持半帧、粘包、噪声、丢字节和坏帧后的重新同步；一次读到多帧时逐帧发布。超时按主机单调时钟计算，协议没有采样时间戳；跨超时静默间隔的半帧会丢弃。串口读写异常均退出，不自动重连重放动作。
+角度和目标话题为 reliable + volatile、depth=20；失联不重复旧值、不补零。协议没有采样时间戳，未规定 A4 频率；接收端以 200 Hz 非阻塞轮询，支持半帧、粘包、噪声和坏帧后逐字节重新同步。跨静默超时的半帧丢弃，CRC 正确但含 NaN/Inf 的 A4 也会丢弃。其他类型的帧不刷新 A4 在线状态。
 
-启动方式不变（只能有一个节点打开 `/dev/nav`）：
+`nav_target` 只发布收到的目标，不自动提交 Nav2 action；上层任务可订阅并决定目标朝向与调度。编码器角也不会自动写入关节状态或 TF；CAD 关节轴向、安装零位的转换仍须按实物约定处理。历史 `big_yaw.py` 的 AA 55 解码器仅为旧台架保留，真车节点不使用它。
+
+## 启动和联调
 
 ```bash
+cd /home/yang/yang_nav
 source /opt/ros/jazzy/setup.bash
-source /home/potential/yang_nav/install/setup.bash
-ros2 launch chassis_comm chassis.launch.py port:=/dev/nav baud_rate:=115200
-# 整车入口同样自动启用接收；可用 chassis_big_yaw_timeout:=0.1 等参数覆盖
-# ros2 launch bringup real.launch.py
+colcon build --packages-select chassis_comm bringup --symlink-install
+source install/setup.bash
+ros2 launch bringup real.launch.py
+# 独立导航串口节点也默认 /dev/nav、115200；只能一个节点打开该端口：
+# ros2 launch chassis_comm chassis.launch.py
 ros2 topic echo /chassis/big_yaw
-ros2 topic hz /chassis/big_yaw
+ros2 topic echo /chassis/nav_target
 ros2 topic echo /chassis/big_yaw_online --qos-durability transient_local
 ```
 
-独立 launch 支持 `big_yaw_topic`、`big_yaw_online_topic`、`big_yaw_timeout`；整车入口对应 `chassis_` 前缀参数。`tools/record_bag.py` 默认录制这两个话题。
+独立 launch 可用 `--show-args` 查看参数；整车参数统一加 `chassis_` 前缀，如 `chassis_yaw_topic:=/chassis/yaw_target`、`chassis_feedback_timeout:=0.1`。端口仍可覆盖，以支持 PTY 联调，但节点、独立 launch、整车入口的默认值均为 `/dev/nav`。`yaw_mode`、`yaw_horizon` 以及此前 A2 自瞄话题参数不属于当前导航节点。
 
-反馈只发布测量角度和在线状态；没有自动写入 `/chassis/joint_states` 或改变 TF。CAD `yaw_joint` 的正方向与协议角度零位/正方向的转换尚需实物标定，导航速度仍以 `gimbal_nav` 为参考。
+`tools/record_bag.py` 录制相对转角输入、过洞模式、A4 目标点、编码器角和在线状态。测试使用新版导航固定参考帧逐字节验证，ROS + Linux PTY 验证转角语义、输入超时、A4 接收、帧过滤、并发收发和串口错误，不访问硬件：
 
-
-X/Y 参考系与动作 yaw 参考系不同：串口桥直接透传云台系速度，动作 yaw 仍是底盘机体系相对角度。
-`/chassis/joint_states` 未接通不妨碍从云台上的雷达/IMU 观测云台朝向；不能把缺失反馈的零值当成真实底盘朝向。
-串口现已接收大 yaw 实测角；该反馈不代表 MCU 已执行速度或过洞动作，bag 的 `/cmd_vel` 仍只能证明上位机输出。
+```bash
+colcon test --packages-select chassis_comm --event-handlers console_direct+
+colcon test-result --test-result-base build/chassis_comm --verbose
+```

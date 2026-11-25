@@ -1,4 +1,6 @@
-"""Convert angular velocity into a relative angle over an explicit horizon.
+"""Legacy bench helper; not used by the A3 hardware navigation bridge.
+
+Convert angular velocity into a relative angle over an explicit horizon.
 
 The fixed horizon describes a moving target, not a per-frame turn increment.
 Actual angular velocity depends on the MCU's angle-loop response and needs tuning.
