@@ -6,6 +6,7 @@ executes angular.z, and has no chassis serial node. Tests the installed plugin,
 shared configuration, speed envelope, position-only completion, and preemption.
 """
 import argparse
+import math
 import os
 from pathlib import Path
 import numpy as np
@@ -32,6 +33,15 @@ def main():
             text = (out / 'navigation.log').read_text(errors='replace')
             assert 'TranslationMPPI: controls reference X/Y' in text, text[-4000:]
             checks.append('shared navigation loads translation MPPI and lifecycle activates')
+            plant.pose[:] = [-3.3, -3., .7]
+            plant.run_for(.5)
+            for target in ([3.3, -3., -1.5], [-3.3, 3., 2.5]):
+                begin = len(plant.samples)
+                plant.goal(target, timeout=40.)
+                plant.wait(plant.stopped, 2., 'high-speed goal did not stop')
+                peak = max(math.hypot(*s['cmd'][:2]) for s in plant.samples[begin:])
+                assert 1.8 < peak <= 2.0 + 1e-6, f'2 m/s transit peak={peak}'
+                checks.append(f'long transit reaches {peak:.3f} m/s and stops at the goal')
             plant.pose[:] = [-2., 0., .7]
             plant.run_for(.5)
             for target in ([0., 0., -1.5], [0., 1.5, 2.5]):
@@ -74,6 +84,9 @@ def main():
             plant.blocker = None
             assert not plant.unexecutable_yaw, plant.unexecutable_yaw
             checks.append('all final navigation commands have angular.z=0')
+            peak = max(math.hypot(*s['cmd'][:2]) for s in plant.samples)
+            assert peak <= 2.0 + 1e-6, f'translation norm exceeds 2 m/s: {peak}'
+            checks.append('all final translation commands, including diagonal motion, stay within 2 m/s')
         result = dict(passed=True, checks=checks, final_pose=plant.pose.tolist())
     except Exception as exc:
         result = dict(passed=False, checks=checks, error=str(exc))

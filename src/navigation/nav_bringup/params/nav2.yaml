@@ -54,7 +54,7 @@ controller_server:
         slope_min_cells: 50
         types: [tunnel, slope, step_l1, step_l2, step_high, fly_slope, undulation]
         inner_plugin: nav_behaviors::TranslationMPPIController
-        speed_limit_reference: 1.5  # percent masks use the nominal base speed
+        speed_limit_reference: 2.0  # 100% speed mask = 2 m/s
         window_before: 2.0       # tracker takes over this far (path arc length) before the mouth
         window_after: 0.9        # ... and hands back this far after the far mouth (blend starts with the rear 0.19 m clear)
         blend: 0.4               # linear mix MPPI <-> tracker over this distance at both ends
@@ -102,15 +102,16 @@ controller_server:
       # Shared 1 s horizon: 20 steps at the 50 ms control period.
       time_steps: 20
       model_dt: 0.05
+      prune_distance: 2.5       # retain enough path for the 2 m velocity-reference lookahead
       batch_size: 500
       iteration_count: 1
       retry_attempt_limit: 3   # re-sample when every rollout collides (tight spots by walls)
       vx_std: 0.15
       vy_std: 0.15
       wz_std: 0.4
-      vx_max: 0.25
-      vx_min: -0.25
-      vy_max: 0.25
+      vx_max: 2.0
+      vx_min: -2.0
+      vy_max: 2.0
       wz_max: 2.0
       ax_max: 3.0
       ax_min: -3.0
@@ -166,9 +167,9 @@ controller_server:
       TranslationVelocityCritic:
         enabled: true
         cost_weight: 200.0
-        lookahead: 0.25
+        lookahead: 2.0    # gain 1: up to 2 m/s on a straight, slowing near the goal
         gain: 1.0
-        max_speed: 0.25
+        max_speed: 2.0
 local_costmap:
   local_costmap:
     ros__parameters:
@@ -179,7 +180,7 @@ local_costmap:
       transform_tolerance: 0.5
       rolling_window: true
       track_unknown_space: true
-      width: 8    # half-width covers the rollout plus the swept footprint
+      width: 8    # half-width covers the 1 s rollout at 2 m/s plus the swept footprint
       height: 8
       resolution: 0.025
       # chassis 0.594 m square + turret reaching x 0.374 (URDF meshes, turret at zero)
@@ -418,8 +419,8 @@ velocity_smoother:
     smoothing_frequency: 100.0
     scale_velocities: false
     feedback: OPEN_LOOP
-    max_velocity: [1.6, 1.6, 2.5]
-    min_velocity: [-1.6, -1.6, -2.5]
+    max_velocity: [2.0, 2.0, 2.5]
+    min_velocity: [-2.0, -2.0, -2.5]
     max_accel: [3.0, 3.0, 4.0]
     max_decel: [-3.0, -3.0, -4.0]
     odom_topic: /localization/odometry
@@ -474,12 +475,12 @@ cmd_gate:
     state_timeout: 2.0
     require_observation: true
     observation_timeout: 0.5
-    speed_limit_reference: 1.5
+    speed_limit_reference: 2.0
     idle_stop_time: 0.5
     state_topic: /backend_node/localization_state
     mode_topic: /nav_mode
     limits:
-      normal: {max_linear: 1.6, max_angular: 2.5}
+      normal: {max_linear: 2.0, max_angular: 2.5}     # norm cap: hypot(vx, vy), including diagonals
       tunnel: {max_linear: 0.8, max_angular: 1.0}     # backstop above zone.tunnel_speed + lateral correction
       ramp: {max_linear: 1.6, max_angular: 1.5}       # backstop above zone.ramp_speed (the charge up a slope)
       recovery: {max_linear: 0.6, max_angular: 1.5}

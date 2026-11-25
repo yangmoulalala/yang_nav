@@ -148,11 +148,11 @@ def main():
             assert probe.speed.percentage and abs(probe.speed.speed_limit - 50) < 1e-6
             checks.append('ground/ceiling filtering and SpeedFilter percentage mask')
             probe.send_commands = True
-            probe.wait_for(lambda: len(probe.outputs) > 20 and probe.outputs[-1][1] > .7)
+            probe.wait_for(lambda: len(probe.outputs) > 20 and probe.outputs[-1][1] > .95)
             probe.spin_for(.5)
             samples = [v for t, v in probe.outputs if t > time.monotonic() - .4]
-            assert samples and max(samples) <= .751, samples
-            checks.append('final velocity capped at 0.75 m/s for 50% mask')
+            assert samples and max(samples) <= 1.001, samples
+            checks.append('final velocity capped at 1.0 m/s for 50% of the 2 m/s reference')
             probe.obstacle = True
             probe.wait_for(lambda: probe.hit_count == 1 and probe.obstacle_cost() == 254)
             checks.append('live obstacle marks local costmap lethal')
