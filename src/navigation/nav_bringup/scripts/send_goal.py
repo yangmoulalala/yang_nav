@@ -27,7 +27,7 @@ from tf2_ros import Buffer, TransformListener
 class GoalSender(Node):
     def __init__(self):
         super().__init__('send_navigation_goal')
-        self.base_frame = self.declare_parameter('robot_base_frame', 'base_link').value
+        self.base_frame = self.declare_parameter('robot_base_frame', 'gimbal_nav').value
         self.require_trusted = self.declare_parameter('require_trusted', True).value
         self.trusted = False
         self.state_received_at = -math.inf

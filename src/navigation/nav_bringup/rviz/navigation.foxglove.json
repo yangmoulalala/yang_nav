@@ -46,7 +46,7 @@
         "lio_odom": {
           "visible": false
         },
-        "base_link": {
+        "gimbal_nav": {
           "visible": true
         },
         "mid360_link": {
@@ -267,7 +267,7 @@
         "near": 0.01,
         "far": 5000
       },
-      "followTf": "base_link",
+      "followTf": "gimbal_nav",
       "followMode": "follow-position",
       "scene": {
         "backgroundColor": "#101820",
@@ -286,7 +286,7 @@
         "lio_odom": {
           "visible": false
         },
-        "base_link": {
+        "gimbal_nav": {
           "visible": true
         },
         "mid360_link": {

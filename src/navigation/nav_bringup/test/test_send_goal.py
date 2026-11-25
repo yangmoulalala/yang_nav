@@ -20,6 +20,7 @@ from geometry_msgs.msg import PoseStamped, TransformStamped
 from lifecycle_msgs.msg import State
 from lifecycle_msgs.srv import GetState
 from nav2_msgs.action import NavigateToPose
+from nav_msgs.msg import OccupancyGrid
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.context import Context
@@ -42,7 +43,7 @@ class FakeNav(Node):
         self.active = False
         self.trusted = False
         self.publish_tf = False
-        self.base_frame = 'base_link'
+        self.base_frame = 'gimbal_nav'
         self.reject = False
         self.abort = False
         self.hold = False
@@ -59,6 +60,9 @@ class FakeNav(Node):
             String, '/backend_node/localization_state',
             QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.tf = TransformBroadcaster(self)
+        self.nav_map = self.create_publisher(OccupancyGrid, '/nav_map', QoSProfile(
+            depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        self.costmap = self.create_publisher(OccupancyGrid, '/local_costmap/costmap', 1)
         self.service = self.create_service(GetState, '/bt_navigator/get_state', self.get_state)
         self.server = ActionServer(
             self, NavigateToPose, '/navigate_to_pose', self.execute,
@@ -72,6 +76,14 @@ class FakeNav(Node):
 
     def publish(self):
         self.state.publish(String(data=f'state=NORMAL;pose_trusted={str(self.trusted).lower()}'))
+        grid = OccupancyGrid()
+        grid.header.frame_id = 'map'
+        grid.info.resolution = 1.
+        grid.info.width = grid.info.height = 1
+        grid.info.origin.orientation.w = 1.
+        grid.data = [0]
+        self.nav_map.publish(grid)
+        self.costmap.publish(grid)
         if self.publish_tf:
             transform = TransformStamped()
             transform.header.frame_id = 'map'
@@ -162,7 +174,7 @@ def test_waits_then_sends_exactly_one_map_goal(nav):
     assert not node.goals  # Untrusted localization must hold the goal.
     node.trusted = True
     time.sleep(0.7)
-    assert not node.goals  # Missing map -> base_link must also hold it.
+    assert not node.goals  # Missing map -> gimbal_nav must also hold it.
     node.publish_tf = True
     assert 'Navigation goal succeeded' in finish(process, 0)
     assert len(node.goals) == 1
@@ -177,11 +189,11 @@ def test_waits_then_sends_exactly_one_map_goal(nav):
     assert pose.pose.orientation.w == pytest.approx(math.cos(math.pi / 4))
 
 
-def test_real_goal_sender_uses_gimbal_reference_without_chassis_tf(nav):
+def test_goal_sender_accepts_an_explicit_reference_override(nav):
     node, client = nav
-    node.base_frame = 'gimbal_nav'
+    node.base_frame = 'test_nav_reference'
     node.active = node.trusted = node.publish_tf = True
-    output = finish(client('--ros-args', '-p', 'robot_base_frame:=gimbal_nav'), 0)
+    output = finish(client('--ros-args', '-p', 'robot_base_frame:=test_nav_reference'), 0)
     assert 'Navigation goal succeeded' in output
     assert len(node.goals) == 1
 

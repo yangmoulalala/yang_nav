@@ -1,17 +1,17 @@
-# Nav2 (Jazzy) parameters, sentry v2, RMUC sim, omni chassis.
+# Nav2 (Jazzy) parameters, sentry v2, hardware and simulation, turret-frame XY.
 #
 # cmd_vel chain:
 #   controller_server / behavior_server -> cmd_vel_nav -> velocity_smoother -> cmd_vel_smoothed
 #   -> collision_monitor -> cmd_gate (trust gate, watchdog, per-mode limits) -> /cmd_vel
 # terrain_obstacles supplies ground-relative live obstacle clouds.
-# Frames: map (backend) -> lio_odom (ZLIO) -> base_link.  Odometry: /localization/odometry
-# (map <- base_link, body-frame twist).
+# Frames: map (backend) -> lio_odom (ZLIO) -> gimbal_nav.  Odometry: /localization/odometry
+# (map <- gimbal_nav, body-frame twist).
 # Costmaps: static traversability (/nav_map), inflation, SpeedFilter; local live obstacle layer.
 
 bt_navigator:
   ros__parameters:
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: gimbal_nav
     odom_topic: /localization/odometry
     bt_loop_duration: 10
     default_server_timeout: 200   # ms; 20 ms timed out follow_path while the controller was busy
@@ -27,7 +27,7 @@ bt_navigator:
 
 controller_server:
   ros__parameters:
-    controller_frequency: 100.0  # 10 ms control cycle; MPPI rollout resolution is independent
+    controller_frequency: 20.0   # 50 ms cycle, matching model_dt
     costmap_update_timeout: 0.30
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.001
@@ -42,10 +42,9 @@ controller_server:
       required_movement_radius: 0.3
       movement_time_allowance: 10.0
     goal_checker:
-      plugin: nav2_controller::SimpleGoalChecker
+      plugin: nav_behaviors::TranslationGoalChecker
       xy_goal_tolerance: 0.15   # 0.10 left the footprint-checked robot hovering 0.1-0.2 m off goals near walls
-      yaw_goal_tolerance: 0.30
-      stateful: true
+      trans_stopped_velocity: 0.03
     FollowPath:
       # MPPI outside zone windows; deterministic omni tracking inside configured terrain
       plugin: nav_behaviors::ZoneAwareController
@@ -54,8 +53,8 @@ controller_server:
         min_cells: 50
         slope_min_cells: 50
         types: [tunnel, slope, step_l1, step_l2, step_high, fly_slope, undulation]
-        inner_plugin: nav2_mppi_controller::MPPIController
-        speed_limit_reference: 1.5  # percent masks use the nominal MPPI vx_max
+        inner_plugin: nav_behaviors::TranslationMPPIController
+        speed_limit_reference: 1.5  # percent masks use the nominal base speed
         window_before: 2.0       # tracker takes over this far (path arc length) before the mouth
         window_after: 0.9        # ... and hands back this far after the far mouth (blend starts with the rear 0.19 m clear)
         blend: 0.4               # linear mix MPPI <-> tracker over this distance at both ends
@@ -65,9 +64,9 @@ controller_server:
         tunnel_speed: 0.6        # m/s through the body; physical clearance and braking still need validation
         approach_speed: 1.0
         decel: 1.5
-        front_extent: 0.39       # footprint reach ahead of the centre; the gate works on the leading edge
+        front_extent: 0.52       # footprint reach ahead of the centre; the gate works on the leading edge
         exit_turn_span: 2.5      # same yaw joining distance as zone_shaper.lead_length after suffix replans
-        rear_extent: 0.31        # ... behind it (leading edge when the robot passes backwards)
+        rear_extent: 0.52        # ... behind it (leading edge when the robot passes backwards)
         check_margin: 0.3        # obstacle check of the path ahead: stopping distance + this, m
         collision_tolerance: 0.0   # full physical footprint, matching zone_shaper
         escape_speed: 0.15       # translation only while leaving an already occupied footprint
@@ -97,20 +96,21 @@ controller_server:
         chain_gap: 1.0
         chain_angle_deg: 12.0
         chain_lat: 0.30
+        angular_control: false
+        body_heading_available: false
       motion_model: Omni
-      # Preserve the 2 s prediction horizon at 100 Hz control. Jazzy MPPI supports
-      # a control period below model_dt (without control-sequence shifting).
-      time_steps: 40
+      # Shared 1 s horizon: 20 steps at the 50 ms control period.
+      time_steps: 20
       model_dt: 0.05
-      batch_size: 1000
+      batch_size: 500
       iteration_count: 1
       retry_attempt_limit: 3   # re-sample when every rollout collides (tight spots by walls)
-      vx_std: 0.25
-      vy_std: 0.25
+      vx_std: 0.15
+      vy_std: 0.15
       wz_std: 0.4
-      vx_max: 1.5
-      vx_min: -1.5
-      vy_max: 1.5
+      vx_max: 0.25
+      vx_min: -0.25
+      vy_max: 0.25
       wz_max: 2.0
       ax_max: 3.0
       ax_min: -3.0
@@ -124,8 +124,7 @@ controller_server:
       visualize: false
       regenerate_noises: true
       reset_period: 1.0
-      critics: [ConstraintCritic, CostCritic, GoalCritic, GoalAngleCritic, PathAlignCritic,
-                PathFollowCritic, PathAngleCritic, TwirlingCritic]
+      critics: [ConstraintCritic, CostCritic, GoalCritic, TranslationVelocityCritic, PathAlignCritic, PathFollowCritic]
       ConstraintCritic:
         enabled: true
         cost_power: 1
@@ -133,13 +132,8 @@ controller_server:
       GoalCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 8.0   # hold position while the final rotation finishes
-        threshold_to_consider: 1.4
-      GoalAngleCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 3.0
-        threshold_to_consider: 1.5   # rotate during the approach; a 150 deg turn at the goal made MPPI wander off it
+        cost_weight: 8.0   # position-only completion
+        threshold_to_consider: 0.30
       CostCritic:
         enabled: true
         cost_power: 1
@@ -155,47 +149,43 @@ controller_server:
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 14.0
+        cost_weight: 40.0
         max_path_occupancy_ratio: 0.05
-        trajectory_point_step: 4
-        threshold_to_consider: 0.5
-        offset_from_furthest: 20
+        trajectory_point_step: 1
+        threshold_to_consider: 0.15
+        offset_from_furthest: 1
         use_path_orientations: false
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 5.0
-        offset_from_furthest: 5
-        threshold_to_consider: 1.4
-      PathAngleCritic:
-        # mode 2: long axis on the path, either direction (omni, no preferred front)
-        enabled: false   # omni: no heading needed in normal mode; rotating near edges swept the footprint corner into lethal cells
-        cost_power: 1
-        cost_weight: 2.0
-        offset_from_furthest: 4
-        threshold_to_consider: 0.5
-        max_angle_to_furthest: 0.5
-        mode: 2
-      TwirlingCritic:
+        cost_weight: 10.0
+        offset_from_furthest: 3
+        threshold_to_consider: 0.25
+      open_loop: false
+      response_feedback: true
+      TranslationVelocityCritic:
         enabled: true
-        twirling_cost_power: 1
-        twirling_cost_weight: 6.0
-
+        cost_weight: 200.0
+        lookahead: 0.25
+        gain: 1.0
+        max_speed: 0.25
 local_costmap:
   local_costmap:
     ros__parameters:
       update_frequency: 100.0
       publish_frequency: 20.0
       global_frame: map   # not lio_odom: MPPI would wait in canTransform for map->lio_odom (8.3 Hz) and run at ~5 Hz
-      robot_base_frame: base_link
+      robot_base_frame: gimbal_nav
       transform_tolerance: 0.5
       rolling_window: true
       track_unknown_space: true
-      width: 8    # > 2 x MPPI reach (1.5 m/s x 2 s); off-grid rollout poses count as collisions
+      width: 8    # half-width covers the rollout plus the swept footprint
       height: 8
       resolution: 0.025
       # chassis 0.594 m square + turret reaching x 0.374 (URDF meshes, turret at zero)
-      footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
+      footprint: "[[0.500000, 0.099456], [0.423880, 0.283227], [0.283227, 0.423880], [0.099456, 0.500000], [-0.099456, 0.500000], [-0.283227,
+        0.423880], [-0.423880, 0.283227], [-0.500000, 0.099456], [-0.500000, -0.099456], [-0.423880, -0.283227], [-0.283227, -0.423880], [-0.099456,
+        -0.500000], [0.099456, -0.500000], [0.283227, -0.423880], [0.423880, -0.283227], [0.500000, -0.099456]]"
       footprint_padding: 0.01
       plugins: [static_layer, obstacle_layer, inflation_layer]
       filters: [speed_filter]
@@ -243,11 +233,13 @@ global_costmap:
       update_frequency: 2.0
       publish_frequency: 1.0
       global_frame: map
-      robot_base_frame: base_link
+      robot_base_frame: gimbal_nav
       transform_tolerance: 0.5
       resolution: 0.025
       track_unknown_space: true
-      footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
+      footprint: "[[0.500000, 0.099456], [0.423880, 0.283227], [0.283227, 0.423880], [0.099456, 0.500000], [-0.099456, 0.500000], [-0.283227,
+        0.423880], [-0.423880, 0.283227], [-0.500000, 0.099456], [-0.500000, -0.099456], [-0.423880, -0.283227], [-0.283227, -0.423880], [-0.099456,
+        -0.500000], [0.099456, -0.500000], [0.283227, -0.423880], [0.423880, -0.283227], [0.500000, -0.099456]]"
       footprint_padding: 0.01
       plugins: [static_layer, obstacle_layer, inflation_layer]
       obstacle_layer:
@@ -302,7 +294,7 @@ terrain_obstacles:
   ros__parameters:
     terrain_file: ""
     map_frame: map
-    base_frame: base_link
+    base_frame: gimbal_nav
     min_height: 0.06
     max_height: 0.24
     ground_tolerance: 0.04
@@ -389,10 +381,13 @@ smoother_server:
       chain_gap: 1.0         # touching zones -> one stretch (tunnel_3+slope_3 ...)
       chain_angle_deg: 12.0
       chain_lat: 0.30
-      footprint: "[[0.38, 0.30], [0.38, -0.30], [-0.30, -0.30], [-0.30, 0.30]]"
+      footprint: "[[0.500000, 0.099456], [0.423880, 0.283227], [0.283227, 0.423880], [0.099456, 0.500000], [-0.099456, 0.500000], [-0.283227,
+        0.423880], [-0.423880, 0.283227], [-0.500000, 0.099456], [-0.500000, -0.099456], [-0.423880, -0.283227], [-0.283227, -0.423880], [-0.099456,
+        -0.500000], [0.099456, -0.500000], [0.283227, -0.423880], [0.423880, -0.283227], [0.500000, -0.099456]]"
       footprint_padding: 0.0225  # half a 2.5 cm grid cell of planning reserve beyond physical 0.01 padding
       collision_tolerance: 0.0   # controller still checks the full physical footprint with 0.01 padding
 
+      robot_base_frame: gimbal_nav
 behavior_server:
   ros__parameters:
     local_costmap_topic: local_costmap/costmap_raw
@@ -411,7 +406,7 @@ behavior_server:
       plugin: nav2_behaviors::Wait
     local_frame: map   # must match local_costmap global_frame, else backup fails with "Pose Goes Off Grid"
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: gimbal_nav
     transform_tolerance: 0.5
     simulate_ahead_time: 1.0
     max_rotational_vel: 1.5
@@ -434,7 +429,7 @@ velocity_smoother:
 
 collision_monitor:
   ros__parameters:
-    base_frame_id: base_link
+    base_frame_id: gimbal_nav
     odom_frame_id: map
     cmd_vel_in_topic: cmd_vel_smoothed
     cmd_vel_out_topic: cmd_vel_collision_checked
@@ -484,9 +479,9 @@ cmd_gate:
     state_topic: /backend_node/localization_state
     mode_topic: /nav_mode
     limits:
-      normal:   {max_linear: 1.6, max_angular: 2.5}
-      tunnel:   {max_linear: 0.8, max_angular: 1.0}   # backstop above zone.tunnel_speed + lateral correction
-      ramp:     {max_linear: 1.6, max_angular: 1.5}   # backstop above zone.ramp_speed (the charge up a slope)
+      normal: {max_linear: 1.6, max_angular: 2.5}
+      tunnel: {max_linear: 0.8, max_angular: 1.0}     # backstop above zone.tunnel_speed + lateral correction
+      ramp: {max_linear: 1.6, max_angular: 1.5}       # backstop above zone.ramp_speed (the charge up a slope)
       recovery: {max_linear: 0.6, max_angular: 1.5}
     # NOTE: /nav_mode is published only by ZoneAwareController (normal|tunnel|ramp) and it never
     # publishes "recovery", so this row is a reserved backstop, not the active cap. Recovery motion is

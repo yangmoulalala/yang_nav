@@ -1,11 +1,11 @@
-"""Safety contract for an unobserved chassis orientation in the real profile."""
+"""Safety contract for an unobserved chassis orientation on hardware and simulation."""
 import ast
 import math
 from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-PARAMS = yaml.safe_load((ROOT/'params/real.yaml').read_text())
+PARAMS = yaml.safe_load((ROOT/'params/nav2.yaml').read_text())
 
 
 def test_obstacle_frames_and_physical_envelope_agree():
@@ -40,10 +40,6 @@ def test_directional_actions_cannot_use_turret_heading_as_chassis_heading():
     assert zone['angular_control'] is False
 
 
-def test_real_prediction_cycle_matches_control_cycle():
-    shared = yaml.safe_load((ROOT/'params/nav2.yaml').read_text())
-    base = shared['controller_server']['ros__parameters']
-    real = PARAMS['controller_server']['ros__parameters']
-    assert abs(1.0/real['controller_frequency'] - base['FollowPath']['model_dt']) < 1e-9
-    assert real['FollowPath']['vx_max'] == real['FollowPath']['vy_max'] == .25
-    assert real['FollowPath']['vx_min'] == -.25
+def test_shared_prediction_cycle_matches_control_cycle():
+    base = PARAMS['controller_server']['ros__parameters']
+    assert abs(1.0/base['controller_frequency'] - base['FollowPath']['model_dt']) < 1e-9

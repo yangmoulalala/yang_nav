@@ -70,23 +70,20 @@ def build(context):
     terrain_dir = _terrain_dir(_get(context, 'terrain_dir') or str(workspace / 'maps' / profile))
     params = _get(context, 'params_file') or str(share / 'params' / 'nav2.yaml')
     common = {'use_sim_time': sim}
-    base_frame = 'base_link' if profile == 'sim' else 'gimbal_nav'
-    profile_params = [] if profile == 'sim' else [str(share / 'params' / 'real.yaml')]
+    base_frame = 'gimbal_nav'
     bt_xml = str(share / 'behavior_trees' / 'navigate_to_pose.xml')
     bt_xml = ReplaceString(source_file=bt_xml,
-                          replacements={'__NAV_BASE_FRAME__': base_frame, '__NAV_ZONES_FILE__': str(terrain_dir / 'zones.yaml'),
-                                        '__RECOVERY_SPIN__': 'true' if profile == 'sim' else 'false'})
+                          replacements={'__NAV_ZONES_FILE__': str(terrain_dir / 'zones.yaml')})
     through_xml = ReplaceString(
         source_file=str(share / 'behavior_trees' / 'navigate_through_poses.xml'),
-        replacements={'__NAV_BASE_FRAME__': base_frame, '__NAV_ZONES_FILE__': str(terrain_dir / 'zones.yaml'),
-                                        '__RECOVERY_SPIN__': 'true' if profile == 'sim' else 'false'})
+        replacements={'__NAV_ZONES_FILE__': str(terrain_dir / 'zones.yaml')})
     for required in ('nav_map.yaml', 'speed_mask.yaml', 'zones.yaml', 'terrain.msgpack'):
         if not (terrain_dir / required).is_file():
             raise RuntimeError(f'Terrain package is missing {required}: {terrain_dir}; re-export it first')
 
     def nav2(pkg, exe, name=None, extra=None, remap=None):
         return Node(package=pkg, executable=exe, name=name or exe, output='screen',
-                    parameters=[params, *profile_params, dict(common, **(extra or {}))], remappings=remap or [])
+                    parameters=[params, dict(common, **(extra or {}))], remappings=remap or [])
 
     actions = [
         Node(package='nav_bringup', executable='goal_visualizer.py',
@@ -97,7 +94,7 @@ def build(context):
              extra={'yaml_filename': str(terrain_dir / 'speed_mask.yaml')}),
         nav2('nav2_map_server', 'costmap_filter_info_server', 'speed_filter_info_server'),
         Node(package='nav_terrain', executable='terrain_obstacles.py', name='terrain_obstacles',
-             output='screen', parameters=[params, *profile_params, dict(common,
+             output='screen', parameters=[params, dict(common,
                 terrain_file=str(terrain_dir / 'terrain.msgpack'))]),
         nav2('nav2_controller', 'controller_server', remap=[('cmd_vel', 'cmd_vel_nav')], extra={
             'FollowPath.zone.zones_file': str(terrain_dir / 'zones.yaml')}),
@@ -114,7 +111,7 @@ def build(context):
              name='lifecycle_manager_navigation', output='screen',
              parameters=[dict(common, autostart=True, node_names=LIFECYCLE_NODES, bond_timeout=0.0)]),
         Node(package='nav_safety', executable='cmd_gate', name='cmd_gate', output='screen',
-             parameters=[params, *profile_params, dict(common, require_trusted=(
+             parameters=[params, dict(common, require_trusted=(
                  _get(context, 'require_trusted').lower() != 'false'))],
              remappings=[('input', 'cmd_vel_collision_checked'), ('output', _get(context, 'cmd_vel_topic'))]),
     ]
