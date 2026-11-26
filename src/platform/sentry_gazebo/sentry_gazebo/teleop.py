@@ -66,7 +66,7 @@ class Teleop(Node):
     def __init__(self):
         super().__init__('sentry_teleop')
         self.topic = self.declare_parameter('cmd_vel_topic', '/cmd_vel').value
-        self.linear = float(self.declare_parameter('linear_speed', 0.25).value)
+        self.linear = float(self.declare_parameter('linear_speed', 1.0).value)
         self.angular = float(self.declare_parameter('angular_speed', 0.5).value)
         self.hold = float(self.declare_parameter('hold', 1.0).value)
         self.press_timeout = float(self.declare_parameter('press_timeout', 0.1).value)

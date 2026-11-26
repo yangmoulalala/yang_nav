@@ -35,7 +35,7 @@ ros2 run sentry_gazebo teleop                        # 终端 3
 ros2 topic pub --once /sim/turret_yaw std_msgs/msg/Float64 '{data: 1.0}'
 ```
 
-键盘 `w/s/a/d` 前后左右平移，`q/e` 转动云台，空格停车，`+/-` 调速，`x` 退出。初始平移速度 0.25 m/s；此入口只供仿真操作。
+键盘 `w/s/a/d` 前后左右平移，`q/e` 转动云台，空格停车，`+/-` 调速，`x` 退出。仿真遥控的初始平移速度为 1.0 m/s，可用 `--ros-args -p linear_speed:=0.25` 指定低速启动。
 
 `/chassis/big_yaw` 为约 200 Hz 的 Float32 实测仿真关节角（rad，范围 `[-π, π)`，仿真约定 CCW +Z）；`/chassis/big_yaw_online` 为 reliable + transient local 在线状态。失联时停止角度发布，不补零、不重复旧值。仿真角度约定不构成对实物 MCU 零位与正方向的标定。当前不模拟过洞动作和 MCU 动作完成反馈。
 
