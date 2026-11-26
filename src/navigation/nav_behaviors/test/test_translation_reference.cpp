@@ -18,6 +18,23 @@ TEST(TranslationReference, StopsAtGoalAndHandlesShortRepeatedOrEmptyPaths)
   const auto empty = translationReference({}, {1,2}, .25, 1., .25);
   EXPECT_EQ(empty.x,0.); EXPECT_EQ(empty.y,0.);
 }
+TEST(TranslationReference, ShortensLookaheadBeforeACornerWithoutSlowingStraights)
+{
+  const std::vector<XY> path{{0., 0.}, {1., 0.}, {2., 0.}, {2., 1.}, {2., 2.}};
+  const auto straight = translationReference(path, {0., 0.}, 2., 1., 2., .075);
+  EXPECT_NEAR(straight.x, 2., 1e-9);
+  EXPECT_NEAR(straight.y, 0., 1e-9);
+
+  const XY robot{1., .25};
+  const auto before_corner = translationReference(path, robot, 2., 1., 2., .075);
+  EXPECT_NEAR(before_corner.x, 1., 1e-9);
+  EXPECT_LT(before_corner.y, -.17);
+  EXPECT_GE(before_corner.y, -.25);
+
+  const auto at_corner = translationReference(path, {2., 0.}, 2., 1., 2., .075);
+  EXPECT_NEAR(at_corner.x, 0., 1e-9);
+  EXPECT_NEAR(at_corner.y, 2., 1e-9);
+}
 TEST(TranslationReference, RotatingAndTranslatingTheMapRotatesTheReference)
 {
   const double yaw = 1.3, c = std::cos(yaw), s = std::sin(yaw);

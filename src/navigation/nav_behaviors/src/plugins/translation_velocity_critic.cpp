@@ -20,12 +20,16 @@ public:
     auto get = parameters_handler_->getParamGetter(name_);
     get(weight_, "cost_weight", 200.0f);
     get(lookahead_, "lookahead", 0.25f);
+    get(max_path_deviation_, "max_path_deviation", 0.0f);
     get(gain_, "gain", 1.0f);
     get(max_speed_, "max_speed", 0.25f);
     for (const auto v : {weight_, lookahead_, gain_, max_speed_}) {
       if (!std::isfinite(v) || v <= 0.0f) {
         throw std::invalid_argument("TranslationVelocityCritic parameters must be positive and finite");
       }
+    }
+    if (!std::isfinite(max_path_deviation_) || max_path_deviation_ < 0.0f) {
+      throw std::invalid_argument("TranslationVelocityCritic max_path_deviation must be finite and nonnegative");
     }
     RCLCPP_INFO(logger_, "TranslationVelocityCritic: anchors imminent XY commands to local path feedback");
   }
@@ -40,7 +44,7 @@ public:
     }
     const auto & pose = data.state.pose.pose;
     const auto desired = nav_behaviors::translationReference(
-      path, {pose.position.x, pose.position.y}, lookahead_, gain_, max_speed_);
+      path, {pose.position.x, pose.position.y}, lookahead_, gain_, max_speed_, max_path_deviation_);
     const double yaw = tf2::getYaw(pose.orientation);
     // Cost the first two *predicted* commands, excluding the shared measured
     // velocity at index zero. Future passive turret yaw remains observable.
@@ -59,7 +63,7 @@ public:
     }
   }
 private:
-  float weight_{200.0f}, lookahead_{0.25f}, gain_{1.0f}, max_speed_{0.25f};
+  float weight_{200.0f}, lookahead_{0.25f}, max_path_deviation_{0.0f}, gain_{1.0f}, max_speed_{0.25f};
 };
 }  // namespace mppi::critics
 PLUGINLIB_EXPORT_CLASS(mppi::critics::TranslationVelocityCritic, mppi::critics::CriticFunction)

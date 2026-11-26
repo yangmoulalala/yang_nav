@@ -168,6 +168,7 @@ controller_server:
         enabled: true
         cost_weight: 200.0
         lookahead: 2.0    # gain 1: up to 2 m/s on a straight, slowing near the goal
+        max_path_deviation: 0.075
         gain: 1.0
         max_speed: 2.0
 local_costmap:
