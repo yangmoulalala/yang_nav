@@ -112,8 +112,9 @@ std::optional<RecoveryWork> Localization::captureRecovery() {
     work.force_startup_hint =
         work.startup_hint_prior.has_value() && config_.startup_hint.force_until_matched;
     // 局中恢复只用 UWB 位置先验；开机初始化不用 UWB（启动提示 / 起点附近描述子）。
-    work.uwb_required =
-        current == LocalizationStatus::Suspect || current == LocalizationStatus::Lost;
+    work.global_search = manual_request_ && manual_request_->global;
+    work.uwb_required = !work.global_search &&
+        (current == LocalizationStatus::Suspect || current == LocalizationStatus::Lost);
     if (work.uwb_required)
         work.uwb_prior = makeUwbRecoveryPriorLocked(frames_.latest());
     work.source_history.assign(frames_.history().begin(), frames_.history().end());
@@ -310,8 +311,12 @@ void Localization::commit(const RecoveryWork& work, const RecoveryResult& result
                 pending_recovery_.reset();
                 if (work.identity.manual_request_id != 0)
                     clearManualRelocalizationRequestLocked();
-                transition = state_.onRecoveryRelocalizationFailure(
-                    config_.recovery.suspect_failures_before_lost, result.source);
+                if (work.global_search) {
+                    transition = state_.forceLost("global relocalization failed: " + result.source);
+                } else {
+                    transition = state_.onRecoveryRelocalizationFailure(
+                        config_.recovery.suspect_failures_before_lost, result.source);
+                }
             }
             return true;
         }))
@@ -328,7 +333,7 @@ void Localization::commit(const RecoveryWork& work, const RecoveryResult& result
                             << applied_correction.rotation_rad * 180.0 / M_PI << ")");
     } else {
         BACKEND_WARN_STREAM("localization recovery pending: " << transition.reason);
-        if (transition.current == LocalizationStatus::Lost)
+        if (transition.current == LocalizationStatus::Lost && !work.global_search)
             triggerFrontendReset();
     }
 }
@@ -366,17 +371,38 @@ bool Localization::claim(RecoveryWork& work) {
 /// 在 LOST 状态记录等待下一有效帧的手动恢复请求。
 bool Localization::requestManualRelocalization() {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (state_.status() != LocalizationStatus::Lost) {
+    if (state_.status() != LocalizationStatus::Lost || (manual_request_ && manual_request_->global)) {
         return false;
     }
+    queueRelocalizationLocked(false);
+    return true;
+}
+
+bool Localization::requestGlobalRelocalization() {
+    const bool accepted = withOutputCommit([&] {
+        if (!config_.prior_map_enabled || descriptor_.size() == 0 || reset_coordinator_.pending() ||
+            (manual_request_ && manual_request_->global)) {
+            return false;
+        }
+        state_.forceLost("operator requested global relocalization");
+        pending_recovery_.reset();
+        queueRelocalizationLocked(true);
+        return true;
+    });
+    if (accepted)
+        publishState();
+    return accepted;
+}
+
+void Localization::queueRelocalizationLocked(bool global) {
     std::uint64_t request_id = ++next_manual_relocalization_request_id_;
     if (request_id == 0) {
         request_id = ++next_manual_relocalization_request_id_;
     }
     manual_request_ = ManualRequest{request_id, active_epoch_,
                                     frames_.hasLatest() ? frames_.latest().timestamp
-                                                        : std::numeric_limits<double>::quiet_NaN()};
-    return true;
+                                                        : std::numeric_limits<double>::quiet_NaN(),
+                                    global};
 }
 
 /// 清除已经完成或失效的手动恢复请求。

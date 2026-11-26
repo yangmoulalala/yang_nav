@@ -148,6 +148,7 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | --- | --- | --- |
 | `~/save_map` | `std_srvs/srv/Trigger` | 保存运行轨迹地图包至 `trajectory.save_directory`；用于建图模式 |
 | `~/relocalize` | `std_srvs/srv/Trigger` | 在 `LOST` 状态下请求重定位，收到新的有效帧后执行 |
+| `~/global_relocalize` | `std_srvs/srv/Trigger` | 停稳并停止导航后使用。对整张先验地图进行描述子检索，无需 UWB。接受请求后状态进入 `LOST`，新帧通过几何验证和连续确认才恢复可信位姿 |
 | `/localization_reset` | `std_srvs/srv/Trigger` | 发起前后端协调重置；`success=true` 表示请求已接受 |
 | `/zlio/reset_internal` | `localization_interfaces/srv/ResetFrontend` | 后端调用的前端重置服务 |
 

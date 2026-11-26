@@ -124,6 +124,40 @@ TEST_F(LocalizationFlow, LostManualRecoveryWaitsForNewDataAndKeepsPriorImmutable
     EXPECT_EQ(prior.revision(), prior_revision);
 }
 
+TEST_F(LocalizationFlow, GlobalRelocalizationUsesNewScansWithoutUwbOrPositionPrior) {
+    const auto identity = Eigen::Matrix4d::Identity();
+    config.startup_hint.T_map_sensor = identity;
+    config.recovery.initial_search_radius = 0.2;
+    config.recovery.global_fallback_candidates = 0;
+    config.recovery.automatic_when_lost = false;
+    config.recovery.confirmations = 2;
+    config.uwb.enabled = false;
+    start(true);
+    const auto displaced = testing::scenePose(10, 0, 0, 0);
+    auto first = frame(10, identity, displaced);
+    ASSERT_TRUE(ingest(first));
+    maintain();
+    ASSERT_TRUE(ingest(frame(11, identity, displaced)));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+
+    ASSERT_TRUE(controller->requestGlobalRelocalization());
+    EXPECT_FALSE(controller->requestGlobalRelocalization());
+    EXPECT_EQ(states.snapshots.back().localization.status, LocalizationStatus::Lost);
+    maintain();
+    EXPECT_EQ(controller->status(), LocalizationStatus::Lost);
+    auto next = frame(12, identity, testing::scenePose(20, 0, 0, 0));
+    ASSERT_TRUE(ingest(next));
+    maintain();
+    EXPECT_EQ(controller->status(), LocalizationStatus::Lost);
+    next.timestamp = 13;
+    ASSERT_TRUE(ingest(next));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+    EXPECT_LT((output(next).T_map_sensor - identity).norm(), 2e-4);
+    EXPECT_TRUE(reset.requests.empty());
+}
+
 /// 执行真实回环检索、几何验证和图提交，检查后续检索遵守冷却间隔。
 TEST_F(LocalizationFlow, ActualLoopRetrievalVerificationAndGraphCommitRespectCooldown) {
     config.loop.enabled = true;

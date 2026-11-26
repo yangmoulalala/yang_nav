@@ -129,6 +129,17 @@ void LocalizationNode::configureServices() {
     relocalize_service_ = create_service<std_srvs::srv::Trigger>(
         parameters_.services.relocalize, std::bind(&LocalizationNode::relocalizeService, this,
                                                    std::placeholders::_1, std::placeholders::_2));
+    global_relocalize_service_ = create_service<std_srvs::srv::Trigger>(
+        "~/global_relocalize",
+        [this](const std::shared_ptr<std_srvs::srv::Trigger::Request>,
+               std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+            invoke("global relocalization request", [&] {
+                response->success = controller_ && controller_->requestGlobalRelocalization();
+                response->message = response->success
+                    ? "global relocalization queued; waiting for a new scan"
+                    : "global relocalization needs a prior descriptor map and no pending request or reset";
+            });
+        });
     reset_service_ = create_service<std_srvs::srv::Trigger>(
         parameters_.services.reset, std::bind(&LocalizationNode::resetService, this,
                                               std::placeholders::_1, std::placeholders::_2));

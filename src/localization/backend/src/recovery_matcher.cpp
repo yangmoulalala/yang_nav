@@ -60,9 +60,9 @@ bool RecoveryMatcher::match(const RecoveryWork& work,
     request.source_information_scale =
         1.0 / static_cast<double>(std::max(1, work.accumulated_frames));
     if (position_prior == nullptr) {
-        // 描述子分支只在开机初始化时使用：在推算位置（地图原点）附近检索。
-        request.search_radius = config_.recovery.initial_search_radius;
-        request.global_fallback_candidates = config_.recovery.global_fallback_candidates;
+        request.search_radius = work.global_search ? 0.0 : config_.recovery.initial_search_radius;
+        request.global_fallback_candidates =
+            work.global_search ? 0 : config_.recovery.global_fallback_candidates;
     }
 
     const RelocalizationResult result =
@@ -149,15 +149,16 @@ RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     }
     if (match(work, nullptr, result)) {
         result.outcome = RecoveryOutcome::Matched;
-        result.source = (result.source.empty() ? "descriptor" : result.source) + " + scan-to-map";
+        result.source = work.global_search ? "global descriptor + scan-to-map"
+            : (result.source.empty() ? "descriptor" : result.source) + " + scan-to-map";
         return result;
     }
     if (result.source == "ambiguous") {
-        result.outcome = RecoveryOutcome::Deferred;
+        result.outcome = work.global_search ? RecoveryOutcome::Failed : RecoveryOutcome::Deferred;
         return result;
     }
     result.outcome = RecoveryOutcome::Failed;
-    result.source = "descriptor";
+    result.source = work.global_search ? "global descriptor" : "descriptor";
     return result;
 }
 }  // namespace backend

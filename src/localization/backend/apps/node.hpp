@@ -177,6 +177,7 @@ private:
     rclcpp::TimerBase::SharedPtr map_timer_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr relocalize_service_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr global_relocalize_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_service_;
     bool logged_first_frame_ = false;
 };

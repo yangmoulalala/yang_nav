@@ -80,6 +80,7 @@ public:
 
     /// 在 LOST 状态记录等待下一有效帧的手动恢复请求。
     bool requestManualRelocalization();
+    bool requestGlobalRelocalization();
     /// 冻结定位并请求协调重置；仅调用方明确保证整个跨代空档停车时允许静止衔接。
     bool requestCoordinatedReset(bool assume_stationary = false);
     /// 为匹配代次的前端输入中断冻结输出并作废旧观测，幂等尝试重置且保留图和轨迹。
@@ -312,7 +313,9 @@ private:
         std::uint64_t id = 0;
         std::uint64_t epoch = 0;
         double after_timestamp = std::numeric_limits<double>::quiet_NaN();
+        bool global = false;
     };
+    void queueRelocalizationLocked(bool global);
     struct EmptyLoopIdentity {
         int index = -1;
         std::uint64_t trajectory_revision = 0;
