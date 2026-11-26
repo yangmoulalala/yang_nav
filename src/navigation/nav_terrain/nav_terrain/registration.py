@@ -59,8 +59,9 @@ def align_points(source, tree, rotation, translation, iters=60, min_matches=3):
     R, t = rotation, translation
     for it in range(iters):
         q = source @ R.T + t
-        d, j = tree.query(q)
-        m = d < (0.5 if it < 15 else (0.2 if it < 35 else 0.08))
+        threshold = 0.5 if it < 15 else (0.2 if it < 35 else 0.08)
+        d, j = tree.query(q, distance_upper_bound=threshold)
+        m = np.isfinite(d)
         if m.sum() < min_matches:
             raise ValueError('ICP lost the overlap (%d matches); give a better start pose' % int(m.sum()))
         a, b = q[m], tree.data[j[m]]
