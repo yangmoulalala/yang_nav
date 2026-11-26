@@ -171,10 +171,10 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `SUSPECT` | 连续观测冲突、速度异常或匹配模型不再适用，正在尝试恢复 | `false` |
 | `LOST` | 定位丢失，等待或尝试重定位 | `false` |
 
-`localization_state` 使用分号分隔的 `key=value` 文本，固定保留 `status`、`pose_trusted`、
+`localization_state` 使用分号分隔的 `key=value` 文本，固定保留 `status`、`pose_trusted`、`pose_extrapolated`、
 `tf_frozen`、`epoch`、`generation`、`estimator_failure_count` 和 `reason`。
 `reason` 只保留首个冒号、分号或换行之前的原因摘要，最多 80 个 UTF-8 字节，超长时以 `...` 结尾。
-例如：`status=SUSPECT;pose_trusted=false;tf_frozen=false;epoch=0;generation=3;estimator_failure_count=0;reason=observation model invalid`。
+例如 `status=SUSPECT;pose_trusted=false;pose_extrapolated=true;tf_frozen=false;epoch=0;generation=3;estimator_failure_count=0;reason=observation model invalid`。
 
 `localization_diagnostics` 保留原完整格式，额外提供 `tf_published`、`pose_revision`、`stamp_ns`、
 `last_estimator_failure` 和未经摘要的 `reason`，用于配准质量、TF 时序和故障排查。
@@ -183,6 +183,8 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 查看完整诊断：`ros2 topic echo --once --full-length --qos-durability transient_local /backend_node/localization_diagnostics`。
 
 进入 `SUSPECT` 后，若已有同一前端代次的可信位姿，输出沿用其 map←odom 由里程计前推，`/localization/odometry` 保留前端速度（已转到车体系）；进入 `LOST`（或 `SUSPECT` 跨越了前端重置）后，输出冻结在最后可信位姿、速度清零。两种情况位姿协方差都放大到至少 10 m / π；世界点云是否继续发布由 `output.world_cloud.publish_untrusted` 决定。
+
+已发布同代次的前推位姿时，状态报告 `pose_extrapolated=true`，导航速度门允许限速通行。前推状态或避障观测超时后，速度门停止放行。
 
 ## 地图与标定工具
 

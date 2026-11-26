@@ -140,7 +140,7 @@ def generate_launch_description():
         DeclareLaunchArgument('params_file', default_value='', description='Nav2 parameters'),
         DeclareLaunchArgument('use_sim_time', default_value='', description='default true for sim, false for real'),
         DeclareLaunchArgument('require_trusted', default_value='true',
-                              description='stop unless localization reports pose_trusted=true'),
+                              description='require trusted or odometry-extrapolated localization'),
         DeclareLaunchArgument('rviz', default_value='false'),
         DeclareLaunchArgument('goal_x', default_value='', description='optional startup goal x in map, metres; set with goal_y'),
         DeclareLaunchArgument('goal_y', default_value='', description='optional startup goal y in map, metres; set with goal_x'),

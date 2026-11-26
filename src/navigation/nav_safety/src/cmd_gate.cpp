@@ -5,7 +5,7 @@
 //   /backend_node/localization_state (String, transient local)  pose_trusted gate
 //   /nav_mode (String, transient local)  normal|tunnel|ramp from ZoneAwareController; recovery reserved
 //
-// * Hold (zero) unless localization reports pose_trusted=true and the state is fresh.
+// * Require fresh trusted or odometry-extrapolated localization.
 // * Watchdog: MecanumDrive keeps executing the last command, so stale input becomes zero.
 // * Per-mode speed limits.
 // * When idle it sends zeros for idle_stop_time and then stays quiet, so teleop publishing
@@ -65,7 +65,7 @@ public:
     state_sub_ = create_subscription<std_msgs::msg::String>(
       declare_parameter<std::string>("state_topic", "/backend_node/localization_state"), latched,
       [this](std_msgs::msg::String::ConstSharedPtr m) {
-        trusted_ = parse_trusted(m->data);
+        localization_ = parse_localization(m->data);
         state_stamp_ = now();
         have_state_ = true;
       });
@@ -110,7 +110,7 @@ private:
     in.cmd_age = have_cmd_ ? (t - cmd_stamp_).seconds() : 0.0;
     in.have_state = have_state_;
     in.state_age = have_state_ ? (t - state_stamp_).seconds() : 0.0;
-    in.trusted = trusted_;
+    in.localization = localization_;
     in.have_observation = have_observation_;
     in.observation_age = have_observation_ ? (t - observation_stamp_).seconds() : 0.0;
 
@@ -127,8 +127,8 @@ private:
     }
     idle_ticks_ = 0;
     if (d == Decision::Pass) {
-      auto limits = cfg_.limits[static_cast<int>(mode_)];
-      limits.max_linear = std::min(limits.max_linear, speed_limit_);
+      const auto limits = motion_limits(cfg_.limits[static_cast<int>(mode_)], speed_limit_,
+          localization_);
       const Cmd c = limit({cmd_.linear.x, cmd_.linear.y, cmd_.angular.z}, limits);
       out.linear.x = c.vx;
       out.linear.y = c.vy;
@@ -154,7 +154,8 @@ private:
   int idle_ticks_limit_{15};
   int idle_ticks_{15};
   Mode mode_{Mode::Normal};
-  bool trusted_{false}, have_state_{false}, have_cmd_{false};
+  Localization localization_{Localization::Unavailable};
+  bool have_state_{false}, have_cmd_{false};
   bool have_observation_{false};
   double speed_limit_{std::numeric_limits<double>::infinity()};
   rclcpp::Time observation_stamp_{0, 0, RCL_ROS_TIME};

@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace nav_safety
 {
@@ -29,30 +31,40 @@ inline const char * mode_name(Mode m)
   return names[static_cast<int>(m)];
 }
 
-// Backend state string 'state=NORMAL;pose_trusted=true;...' -> pose_trusted.
-inline bool parse_trusted(const std::string & text)
+enum class Localization { Unavailable, Trusted, Extrapolated };
+
+inline std::string_view state_field(std::string_view text, std::string_view key)
 {
-  std::size_t start = 0;
-  while (start <= text.size()) {
-    std::size_t end = text.find(';', start);
-    if (end == std::string::npos) {end = text.size();}
-    const std::string part = text.substr(start, end - start);
-    const std::size_t eq = part.find('=');
-    if (eq != std::string::npos) {
-      auto trim = [](std::string s) {
-          const auto b = s.find_first_not_of(" \t");
-          const auto e = s.find_last_not_of(" \t");
-          return b == std::string::npos ? std::string() : s.substr(b, e - b + 1);
-        };
-      if (trim(part.substr(0, eq)) == "pose_trusted") {
-        std::string v = trim(part.substr(eq + 1));
-        std::transform(v.begin(), v.end(), v.begin(), ::tolower);
-        return v == "true";
-      }
+  const auto trim = [](std::string_view value) {
+      const auto first = value.find_first_not_of(" \t");
+      return first == std::string_view::npos ? std::string_view{} :
+             value.substr(first, value.find_last_not_of(" \t") - first + 1);
+    };
+  while (!text.empty()) {
+    const auto end = text.find(';');
+    const auto part = text.substr(0, end);
+    const auto eq = part.find('=');
+    if (eq != std::string_view::npos && trim(part.substr(0, eq)) == key) {
+      return trim(part.substr(eq + 1));
     }
-    start = end + 1;
+    if (end == std::string_view::npos) {break;}
+    text.remove_prefix(end + 1);
   }
-  return false;
+  return {};
+}
+
+inline Localization parse_localization(std::string_view text)
+{
+  auto trusted = std::string(state_field(text, "pose_trusted"));
+  std::transform(trusted.begin(), trusted.end(), trusted.begin(),
+    [](unsigned char ch) {return std::tolower(ch);});
+  if (trusted == "true") {return Localization::Trusted;}
+  if (state_field(text, "status") == "SUSPECT" &&
+    state_field(text, "pose_extrapolated") == "true")
+  {
+    return Localization::Extrapolated;
+  }
+  return Localization::Unavailable;
 }
 
 struct Limits
@@ -60,6 +72,8 @@ struct Limits
   double max_linear;   // |(vx, vy)|, m/s
   double max_angular;  // |wz|, rad/s
 };
+
+constexpr Limits kExtrapolatedLimits{0.6, 1.0};
 
 struct GateConfig
 {
@@ -82,7 +96,7 @@ struct GateInput
   double cmd_age = 0.0;
   bool have_state = false;
   double state_age = 0.0;
-  bool trusted = false;
+  Localization localization = Localization::Unavailable;
   bool have_observation = false;
   double observation_age = 0.0;
 };
@@ -105,7 +119,10 @@ inline Decision decide(const GateConfig & c, const GateInput & in, std::string &
     if (!std::isfinite(in.state_age) || in.state_age < 0.0 || in.state_age > c.state_timeout) {
       reason = "localization state stale"; return Decision::Hold;
     }
-    if (!in.trusted) {reason = "localization not trusted"; return Decision::Hold;}
+    if (in.localization == Localization::Unavailable) {
+      reason = "localization not trusted";
+      return Decision::Hold;
+    }
   }
   if (c.require_observation && (!in.have_observation || !std::isfinite(in.observation_age) ||
     in.observation_age < 0.0 || in.observation_age > c.observation_timeout))
@@ -115,6 +132,16 @@ inline Decision decide(const GateConfig & c, const GateInput & in, std::string &
   }
   reason.clear();
   return Decision::Pass;
+}
+
+inline Limits motion_limits(Limits limits, double speed_limit, Localization localization)
+{
+  limits.max_linear = std::min(limits.max_linear, speed_limit);
+  if (localization == Localization::Extrapolated) {
+    limits.max_linear = std::min(limits.max_linear, kExtrapolatedLimits.max_linear);
+    limits.max_angular = std::min(limits.max_angular, kExtrapolatedLimits.max_angular);
+  }
+  return limits;
 }
 
 struct Cmd

@@ -29,7 +29,7 @@ class GoalSender(Node):
         super().__init__('send_navigation_goal')
         self.base_frame = self.declare_parameter('robot_base_frame', 'gimbal_nav').value
         self.require_trusted = self.declare_parameter('require_trusted', True).value
-        self.trusted = False
+        self.pose_available = False
         self.state_received_at = -math.inf
         self.state_sub = self.create_subscription(
             String, '/backend_node/localization_state', self.on_state,
@@ -55,9 +55,10 @@ class GoalSender(Node):
         self.send_future = None
 
     def on_state(self, message):
-        fields = dict(part.strip().split('=', 1) for part in message.data.split(';') if '=' in part)
-        self.trusted = any(key.strip() == 'pose_trusted' and value.strip().lower() == 'true'
-                           for key, value in fields.items())
+        fields = {key.strip(): value.strip() for key, value in
+                  (part.split('=', 1) for part in message.data.split(';') if '=' in part)}
+        self.pose_available = fields.get('pose_trusted', '').lower() == 'true' or (
+            fields.get('status') == 'SUSPECT' and fields.get('pose_extrapolated') == 'true')
         self.state_received_at = time.monotonic()
 
     def on_nav_map(self, message):
@@ -84,8 +85,8 @@ class GoalSender(Node):
                 next_query = now + 0.5
             if not active or not self.action.server_is_ready():
                 reason = 'active /bt_navigator and /navigate_to_pose'
-            elif self.require_trusted and (not self.trusted or now - self.state_received_at > 2.0):
-                reason = 'fresh pose_trusted=true localization state'
+            elif self.require_trusted and (not self.pose_available or now - self.state_received_at > 2.0):
+                reason = 'fresh trusted or odometry-extrapolated localization'
             elif not self.nav_map_received:
                 reason = '/nav_map (static costmap source not yet published)'
             elif not self.costmap_received:

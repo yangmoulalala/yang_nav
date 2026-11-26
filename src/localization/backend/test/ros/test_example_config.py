@@ -67,12 +67,13 @@ class TestExampleConfig(unittest.TestCase):
             self.assertEqual(set(received), {'localization_state', 'localization_diagnostics'})
             state = dict(part.split('=', 1) for part in received['localization_state'].split(';'))
             detail = dict(part.split('=', 1) for part in received['localization_diagnostics'].split(';'))
-            self.assertEqual(set(state), {'status', 'pose_trusted', 'tf_frozen', 'epoch',
+            self.assertEqual(set(state), {'status', 'pose_trusted', 'pose_extrapolated', 'tf_frozen', 'epoch',
                                           'generation', 'estimator_failure_count', 'reason'})
             for key in state:
                 self.assertEqual(state[key], detail[key])
             self.assertEqual(state['status'], 'INITIALIZING')
             self.assertEqual(state['pose_trusted'], 'false')
+            self.assertEqual(state['pose_extrapolated'], 'false')
             self.assertTrue({'tf_published', 'pose_revision', 'stamp_ns',
                              'last_estimator_failure'}.issubset(detail))
             self.assertLess(len(received['localization_state']),

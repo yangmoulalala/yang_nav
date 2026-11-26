@@ -42,6 +42,8 @@ class FakeNav(Node):
         super().__init__('fake_nav_for_goal_test', context=context)
         self.active = False
         self.trusted = False
+        self.status = 'NORMAL'
+        self.extrapolated = False
         self.publish_tf = False
         self.base_frame = 'gimbal_nav'
         self.reject = False
@@ -75,7 +77,8 @@ class FakeNav(Node):
         return response
 
     def publish(self):
-        self.state.publish(String(data=f'state=NORMAL;pose_trusted={str(self.trusted).lower()}'))
+        self.state.publish(String(data=f'status={self.status};pose_trusted={str(self.trusted).lower()};'
+                                        f'pose_extrapolated={str(self.extrapolated).lower()}'))
         grid = OccupancyGrid()
         grid.header.frame_id = 'map'
         grid.info.resolution = 1.
@@ -195,6 +198,17 @@ def test_goal_sender_accepts_an_explicit_reference_override(nav):
     node.active = node.trusted = node.publish_tf = True
     output = finish(client('--ros-args', '-p', 'robot_base_frame:=test_nav_reference'), 0)
     assert 'Navigation goal succeeded' in output
+    assert len(node.goals) == 1
+
+
+def test_suspect_waits_for_extrapolated_pose(nav):
+    node, client = nav
+    node.active = node.publish_tf = True
+    node.status = 'SUSPECT'
+    assert 'no goal sent' in finish(client(timeout=3), 2)
+    assert not node.goals
+    node.extrapolated = True
+    assert 'Navigation goal succeeded' in finish(client(), 0)
     assert len(node.goals) == 1
 
 

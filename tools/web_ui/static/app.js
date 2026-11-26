@@ -146,16 +146,22 @@ function setupProcessRows() {
   }
 }
 
+function hasExtrapolatedPose(localization) {
+  return localization?.status === 'SUSPECT' && localization.pose_extrapolated === 'true';
+}
+
 function displayStatus() {
   const {ros, profile, processes: rows} = status;
   const loc = ros.localization;
   const ready = loc?.pose_trusted === 'true';
+  const extrapolated = hasExtrapolatedPose(loc);
   element('domain').textContent = `ROS 域 ${status.domain}`;
   element('active-profile').textContent = `${profileLabels[profile]} · 运行控制`;
   element('loc-status').textContent = locationLabels[loc?.status] || loc?.status || '—';
   element('loc-status').className = loc ? (ready ? 'good' : 'warn') : '';
   const reason = locationReasons[loc?.reason] || loc?.reason;
-  element('loc-trust').textContent = loc ? `${ready ? '位姿可信' : '位姿未可信'}${reason ? ` · ${reason}` : ''}` : '等待定位数据';
+  const trust = ready ? '位姿可信' : extrapolated ? '里程计前推 · 限速通行' : '位姿未可信';
+  element('loc-trust').textContent = loc ? `${trust}${reason ? ` · ${reason}` : ''}` : '等待定位数据';
   const format = (value, digits = 2) => Number.isFinite(value) ? value.toFixed(digits) : '—';
   element('pose').textContent = ros.pose ? `${format(ros.pose.x)} / ${format(ros.pose.y)}` : '—';
   element('yaw').textContent = ros.pose ? `${ros.pose.frame} · 航向 ${format(ros.pose.yaw, 1)}°` : 'x / y · m';
@@ -213,7 +219,8 @@ function updateControls() {
   }
   element('bag-start').disabled = unavailable || !['stopped', 'failed'].includes(rows.bag.state);
   element('optimizer-start').disabled = unavailable || !['stopped', 'failed', 'cancelled'].includes(rows?.optimizer?.state);
-  element('send-goal').disabled = unavailable || ros.nav2 !== 'active' || ros.localization?.pose_trusted !== 'true' || rows.goal.state === 'running';
+  const poseAvailable = ros?.localization?.pose_trusted === 'true' || hasExtrapolatedPose(ros?.localization);
+  element('send-goal').disabled = unavailable || ros.nav2 !== 'active' || !poseAvailable || rows.goal.state === 'running';
   for (const form of [setup, tuning]) form.querySelector('[type="submit"]').disabled = busy || !config;
 }
 

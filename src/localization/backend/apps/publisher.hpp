@@ -106,6 +106,7 @@ private:
     void publishLocalizationState(const LocalizationStatus status, const std::string& reason,
                                   const EstimatorFailureHistory& estimator_failures,
                                   const rclcpp::Time& stamp, const bool tf_published,
+                                  const bool pose_extrapolated,
                                   const std::uint64_t epoch, const std::uint64_t state_generation,
                                   const std::uint64_t pose_revision);
     /// 发布按输出时刻外参换算并做杆臂传播的车体位姿及协方差。
