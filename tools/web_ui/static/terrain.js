@@ -5,6 +5,7 @@
   const context = canvas.getContext('2d');
   const tool = element('surface-tool');
   const documentButtons = [...element('terrain-documents').querySelectorAll('[data-frame]')];
+  const referenceInput = element('terrain-reference-source');
   const registerForm = element('terrain-register');
   const guessFields = ['x', 'y', 'z', 'yaw'];
   const selectionLayer = document.createElement('canvas');
@@ -28,6 +29,26 @@
     guessFields.forEach((name, index) => { registerForm.elements[name].value = guess?.[index] ?? 0; });
   }
 
+  function showReferences() {
+    const {projects = [], models = []} = config?.terrain_references || {};
+    const loaded = project()?.reference;
+    const placeholder = new Option('选择场地工程或模型', '');
+    const archives = document.createElement('optgroup');
+    archives.label = '场地标注工程';
+    archives.replaceChildren(...projects.map(({path, annotated}) => new Option(`${path} · ${annotated} 个已标注`, path)));
+    const meshes = document.createElement('optgroup');
+    meshes.label = '原始场地模型';
+    meshes.replaceChildren(...models.map((path) => new Option(path, path)));
+    const selected = referenceInput.value;
+    referenceInput.replaceChildren(placeholder, ...[archives, meshes].filter((group) => group.children.length));
+    if (loaded && ![...referenceInput.options].some((option) => option.value === loaded)) {
+      referenceInput.add(new Option(loaded, loaded));
+    }
+    referenceInput.value = selected && [...referenceInput.options].some((option) => option.value === selected)
+      ? selected : (loaded || '');
+    controls();
+  }
+
   function controls() {
     element('terrain').setAttribute('aria-busy', String(busy));
     element('terrain-reload').disabled = busy;
@@ -36,13 +57,15 @@
     const selected = selection.size;
     element('patch-type').disabled = element('patch-passable').disabled = busy || !selected;
     element('patch-direction').querySelector('button').disabled = busy || !selected;
-    registerForm.querySelector('[type="submit"]').disabled = busy || !project()?.reference;
+    const referenceChanged = referenceInput.value && referenceInput.value !== project()?.reference;
+    element('terrain-reference').querySelector('button').disabled = busy || !referenceChanged;
+    registerForm.querySelector('[type="submit"]').disabled = busy || !project()?.reference || !!referenceChanged;
     element('terrain-auto-seed').disabled = busy || !project()?.registration_seed;
     for (const button of workspace.querySelectorAll('[data-edit]')) {
       const action = button.dataset.edit;
       button.disabled = busy || (!['undo', 'redo', 'adopt'].includes(action) && !selected) ||
         (action === 'merge' && selected < 2) || (['grow', 'shrink'].includes(action) && selected !== 1) ||
-        (action === 'adopt' && !project()?.can_adopt);
+        (action === 'adopt' && (!project()?.can_adopt || !!referenceChanged));
     }
   }
 
@@ -241,6 +264,7 @@
       image = bitmap;
       owners = new Uint32Array(data);
     }
+    const referenceChanged = state?.project?.reference !== next.project.reference;
     state = next;
     workspace.hidden = false;
     const map = project();
@@ -252,9 +276,11 @@
       const base = source.startsWith('maps/') ? source : `maps/${source.split('/').at(-1) || 'terrain'}`;
       element('terrain-save').elements.output.value = map.archive || (map.directory ? `${base}/annotation.surf.npz` : `${base}.surf.npz`);
       element('terrain-export').elements.output.value = map.directory ? `${base}/terrain_web` : `${base}_terrain`;
-      if (map.frame === 'map') setGuess(map.registration_seed);
       fit();
     }
+    if (map.frame === 'map' && (recenter || fresh || referenceChanged)) setGuess(map.registration_seed);
+    if (referenceChanged) referenceInput.value = '';
+    showReferences();
     element('patch-type').replaceChildren(new Option('批量设置', ''),
       ...Object.entries(state.types).sort(([left], [right]) => (+left === -1 ? 99 : +left) - (+right === -1 ? 99 : +right))
         .map(([id, name]) => new Option(name, id)));
@@ -262,7 +288,9 @@
     for (const input of segment.querySelectorAll('input')) input.value = map.params[input.name];
     element('terrain-registration').hidden = map.frame !== 'map';
     const reg = map.registration;
-    const reference = map.reference ? `参考 ${map.reference.split('/').at(-1)}` : '请在「场地模型」中打开参考模型或标注工程。';
+    const reference = map.reference
+      ? `参考 ${map.reference.split('/').at(-1)} · ${state.documents.field.annotated} 个已标注`
+      : '请选择已标注的场地工程，再载入参考。';
     const indicator = element('terrain-registration-result');
     const goodFit = reg && reg.residual_p50 < 0.06 && reg.inlier_ratio_8cm > 0.6;
     indicator.classList.toggle('warn', !!reg && !goodFit);
@@ -270,7 +298,7 @@
       `P50 ${reg.residual_p50.toFixed(3)} m / P90 ${reg.residual_p90.toFixed(3)} m · ` +
       `内点 ${(100 * reg.inlier_ratio_8cm).toFixed(0)}% · ` +
       `平移 (${reg.t_world_map.map((value) => value.toFixed(2)).join(', ')}) m · 航向 ${reg.rpy_deg[2].toFixed(1)}°` : '';
-    indicator.textContent = [reference, map.can_adopt ? `青色为参考边界 · ${residuals}` : (reg && `当前配准 · ${residuals}`)]
+    indicator.textContent = [reference, map.can_adopt ? `青色为参考边界 · ${residuals}` : (reg && `上次配准 · ${residuals}`)]
       .filter(Boolean).join(' · ');
     patchList();
     const present = new Set(map.patches.map((row) => row.id));
@@ -281,7 +309,7 @@
     if (busy) return;
     busy = true;
     controls();
-    if (operation === 'open' && /\.st(?:ep|p)$/i.test(payload.source.trim())) {
+    if (['open', 'reference'].includes(operation) && /\.st(?:ep|p)$/i.test(payload.source.trim())) {
       message('正在识别 STEP 场地。大型文件首次打开可能需要几分钟。', false, true);
     } else if (operation && operation !== 'switch') {
       message('正在处理地形工程…', false, true);
@@ -294,7 +322,7 @@
       else if (operation === 'seed') setGuess(result.guess);
       else await load(recenter, result.selected ?? (recenter ? [] : [...selection]));
       if (result.message) message(result.message);
-      if (result.output) await loadConfig();
+      if (result.output || (operation === 'save' && state.active === 'field')) await loadConfig();
     } catch (error) {
       message(error.message, true);
     } finally {
@@ -452,6 +480,15 @@
   });
   onSubmit('terrain-segment', async (form) => {
     if (await confirmAction('重新分割会恢复自动面片边界，并按重叠面积继承标注，确认应用？')) run('segment', {params: readNumbers(form)});
+  });
+  referenceInput.addEventListener('change', controls);
+  document.addEventListener('terrain-sources', showReferences);
+  onSubmit('terrain-reference', async (form) => {
+    const source = form.elements.source.value;
+    if (!source || source === project()?.reference) return;
+    const discard = state?.documents.field?.dirty === true;
+    if (discard && !await confirmAction('当前场地工程有未保存的标注，确认放弃并载入新的参考场地？')) return;
+    run('reference', {source, discard});
   });
   onSubmit('terrain-seed', (form) => run('seed', {source: form.elements.source.value}));
   element('terrain-auto-seed').addEventListener('click', () => setGuess(project().registration_seed));

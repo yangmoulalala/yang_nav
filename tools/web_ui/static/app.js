@@ -84,6 +84,7 @@ async function loadConfig() {
   element('surface-map-options').replaceChildren(...[...config.maps, ...sources.filter((path) => /\.(pcd|surf\.npz)$/i.test(path))]
     .map((path) => new Option(path, path)));
   element('terrain-seed-options').replaceChildren(...config.terrain.map((path) => new Option(`${path}/terrain.json`)));
+  document.dispatchEvent(new Event('terrain-sources'));
   const sourceInput = optimizer.elements.source;
   if (!sourceInput.value || sourceInput.value === sourceInput.dataset.suggested) {
     const current = config[config.profile];

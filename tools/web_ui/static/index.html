@@ -176,13 +176,17 @@
               <label>最小面片 · m²<input name="min_area" type="number" step="any" min="0" max="2" required></label>
             </div><button type="submit">应用分割参数</button></form></details>
             <details id="terrain-registration" open><summary>点云配准到场地</summary>
+              <form id="terrain-reference" class="field-action">
+                <label>参考场地<select name="source" id="terrain-reference-source" required><option value="">选择场地工程或模型</option></select></label>
+                <button type="submit">载入参考</button>
+              </form>
               <p id="terrain-registration-result" class="muted" aria-live="polite"></p>
               <form id="terrain-register"><div class="form-grid">
                 <label>初值 X · m<input name="x" type="number" step="any" value="0" required></label>
                 <label>初值 Y · m<input name="y" type="number" step="any" value="0" required></label>
                 <label>初值 Z · m<input name="z" type="number" step="any" value="0" required></label>
                 <label>初始航向 · °<input name="yaw" type="number" step="any" min="-360" max="360" value="0" required></label>
-              </div><div class="edit-buttons"><button type="button" id="terrain-auto-seed">用工程初值</button><button type="submit">运行 ICP</button><button type="button" data-edit="adopt">采用参考面片与标注</button></div></form>
+              </div><small>初值为建图原点在场地坐标中的位置和航向。</small><div class="edit-buttons"><button type="button" id="terrain-auto-seed">用工程初值</button><button type="submit">运行 ICP</button><button type="button" data-edit="adopt">采用参考面片与标注</button></div></form>
               <form id="terrain-seed" class="field-action"><label>已有配准文件<input name="source" list="terrain-seed-options" placeholder="maps/sim/terrain/terrain.json" required></label><button type="submit">读取初值</button></form>
               <datalist id="terrain-seed-options"></datalist>
             </details>

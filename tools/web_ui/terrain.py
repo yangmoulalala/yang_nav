@@ -6,6 +6,7 @@ from pathlib import Path
 import secrets
 from tempfile import TemporaryDirectory
 from threading import Lock
+from zipfile import BadZipFile
 
 import cv2
 import numpy as np
@@ -49,6 +50,23 @@ def terrain_sources():
         paths.extend(Path(directory) / name for name in files
                      if Path(name).suffix.lower() in (*SUFFIXES, '.pcd') and name != 'ground_z.npz')
     return sorted(str(item.relative_to(WORKSPACE)) for item in paths)
+
+
+def field_references(sources):
+    projects, models = [], []
+    for source in sources:
+        if source.lower().endswith('.surf.npz'):
+            try:
+                path = workspace_path(source, '场地工程')
+                with np.load(path, allow_pickle=False) as archive:
+                    meta = json.loads(archive['meta'].tobytes())
+                if meta.get('frame') == 'field':
+                    projects.append(dict(path=source, annotated=len(meta.get('ann', {}))))
+            except (OSError, ValueError, KeyError, AttributeError, TypeError, BadZipFile):
+                continue
+        elif Path(source).suffix.lower() in SUFFIXES:
+            models.append(source)
+    return dict(projects=projects, models=models)
 
 
 def resolve_surface(value):
@@ -141,6 +159,11 @@ class TerrainEditor:
     def field(self):
         return self.documents.get('field')
 
+    @property
+    def reference_path(self):
+        field = self.field
+        return str((field.archive or field.source).relative_to(WORKSPACE)) if field else ''
+
     def aligned(self, document):
         return (document.project.frame == 'map' and document.project.reg is not None and
                 self.field is not None and document.registered_to is self.field.project)
@@ -163,12 +186,11 @@ class TerrainEditor:
                        for pid in project.ids()]
             archive = str(document.archive.relative_to(WORKSPACE)) if document.archive else ''
             source = str(document.source.relative_to(WORKSPACE))
-            reference = str(self.field.source.relative_to(WORKSPACE)) if self.field else ''
             state['project'] = dict(source=source, directory=document.source.is_dir(), archive=archive, dirty=document.dirty,
                                     frame=project.frame, width=project.shape[1], height=project.shape[0],
                                     resolution=project.surf.resolution, origin=project.surf.origin,
                                     patches=patches, params=project.params.to_dict(), registration=project.reg,
-                                    reference=reference, can_adopt=self.aligned(document),
+                                    reference=self.reference_path, can_adopt=self.aligned(document),
                                     registration_seed=self.default_seed(document))
             return state
 
@@ -227,6 +249,8 @@ class TerrainEditor:
             self.documents[loaded.frame] = TerrainDocument(loaded, source, archive)
             if operation == 'open' or self.document is None:
                 self.active = loaded.frame
+            if operation == 'reference':
+                return dict(message=f'已载入参考场地，共 {len(loaded.ids())} 个面片，{len(loaded.ann)} 个有标注')
             return dict(message=f'已打开工程，共 {len(loaded.ids())} 个面片')
         if operation == 'switch':
             frame = body.get('frame')
@@ -295,8 +319,12 @@ class TerrainEditor:
     def default_seed(self, document):
         if document.project.frame != 'map':
             return None
-        if document.project.reg:
-            return self.guess(document.project.reg)
+        reg = document.project.reg
+        if reg and reg.get('residual_p50', float('inf')) < 0.06 and reg.get('inlier_ratio_8cm', 0) > 0.6:
+            saved_for_reference = (document.registered_to is None and
+                                   reg.get('reference', self.reference_path) == self.reference_path)
+            if self.aligned(document) or saved_for_reference:
+                return self.guess(reg)
         base = document.source if document.source.is_dir() else document.source.parent
         for file in (base / 'terrain' / 'terrain.json', base / 'terrain.json'):
             if file.is_file():
@@ -356,7 +384,8 @@ class TerrainEditor:
             if self.field is None or project.frame != 'map':
                 raise ValueError('配准需要已打开的点云工程和参考场地')
             guess = coordinates(body.get('guess'), [(-1000, 1000)] * 3 + [(-360, 360)], '配准初值')
-            project.register_to(self.field.project, guess[:3], guess[3])
+            registration = project.register_to(self.field.project, guess[:3], guess[3])
+            registration['reference'] = self.reference_path
             document.registered_to = self.field.project
         elif operation == 'adopt':
             if not self.aligned(document):
