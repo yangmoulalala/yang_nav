@@ -85,6 +85,8 @@ def main():
     topics=sorted(set(TOPICS+args.topic+(['/clock'] if args.use_sim_time else [])))
     if args.dry_run:
         print(json.dumps(dict(topics=topics,all_topics=args.all,storage=args.storage,use_sim_time=args.use_sim_time),indent=2));return 0
+    stop=threading.Event()
+    for sig in (signal.SIGINT,signal.SIGTERM):signal.signal(sig,lambda *_:stop.set())
     import rosbag2_py
     if args.storage not in rosbag2_py.get_registered_writers():
         ap.error(f'{args.storage} writer unavailable; installed writers: {rosbag2_py.get_registered_writers()}')
@@ -118,8 +120,6 @@ def main():
                   ros_domain_id=os.environ.get('ROS_DOMAIN_ID','0'),command=command,
                   use_sim_time=args.use_sim_time,topics=topics,all_topics=args.all,completed=False)
     (out/'session.json').write_text(json.dumps(manifest,indent=2)+'\n')
-    stop=threading.Event()
-    for sig in (signal.SIGINT,signal.SIGTERM):signal.signal(sig,lambda *_:stop.set())
     print(f'Session: {out}\nRecording existing topics. Ctrl-C stops only this recorder.',flush=True)
     log=(out/'recorder.log').open('w')
     process=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)

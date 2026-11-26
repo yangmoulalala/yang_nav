@@ -4,6 +4,7 @@
 
 | 入口 | 用途 |
 | --- | --- |
+| `bash tools/start_web_ui.sh --port 8080` | 启动局域网导航工作台，管理仿真或真车、定位、Nav2、录包和 Foxglove。[用法](../docs/web-ui.md) |
 | `bash tools/start_navigation.sh --dry-run` | 展示导航启动命令。去掉 `--dry-run` 后连接当前 domain 已运行的定位与传感器 |
 | `bash tools/start_navigation.sh profile:=real terrain_dir:=maps/real/site_a_001 goal_x:=1.0 goal_y:=1.5` | Nav2 和定位就绪后，自动发送一次地图坐标 `(1, 1.5)` 的目标，朝向默认 0 弧度 |
 | `ros2 run nav_bringup send_goal.py 1.0 1.5 --yaw 0.0` | 导航已启动时发送目标并等待结果；Ctrl+C 请求取消。仿真加 `--ros-args -p use_sim_time:=true` |

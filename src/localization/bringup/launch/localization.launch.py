@@ -33,6 +33,7 @@ ARGS = {
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
     'map_dir': ('', '~/save_map 保存目录（绝对路径）'),
     'rviz': ('false', '后端 RViz'),
+    'backend_overrides': ('', '后端 ROS 参数覆盖 YAML'),
     'primary_topic': ('', '主雷达（MID-360）点云话题'),
     'secondary_topic': ('', '副雷达（L2）点云话题'),
     'imu_topic': ('', 'ZLIO 使用的 IMU 话题'),
@@ -50,7 +51,8 @@ def build(context):
     arg = {key: LaunchConfiguration(key) for key in ARGS}
     lidar = arg['lidar'].perform(context)
     files = parameter_files(arg['config_dir'].perform(context),
-                            modules=('lidar_fusion', 'frontend', 'backend'), lidar=lidar)
+                            modules=('lidar_fusion', 'frontend', 'backend'), lidar=lidar,
+                            backend_overrides=arg['backend_overrides'].perform(context))
 
     def params(name):
         return files.name + '/' + name

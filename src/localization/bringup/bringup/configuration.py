@@ -50,7 +50,7 @@ def resolve(config_dir, module, lidar='dual'):
     return result
 
 
-def parameter_files(config_dir, modules=MODULES, lidar='dual'):
+def parameter_files(config_dir, modules=MODULES, lidar='dual', backend_overrides=''):
     """Materialize resolved files for the standalone module launch interfaces.
 
     The caller keeps the directory alive until launch shutdown, then cleans it.
@@ -60,7 +60,10 @@ def parameter_files(config_dir, modules=MODULES, lidar='dual'):
     try:
         for module in modules:
             path = Path(temporary.name) / f'{module}.yaml'
-            path.write_text(yaml.safe_dump(resolve(config_dir, module, lidar), sort_keys=False))
+            config = resolve(config_dir, module, lidar)
+            if module == 'backend' and backend_overrides:
+                config = merge(config, yaml.safe_load(Path(backend_overrides).read_text()))
+            path.write_text(yaml.safe_dump(config, sort_keys=False))
     except Exception:
         temporary.cleanup()
         raise

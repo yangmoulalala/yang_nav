@@ -37,6 +37,7 @@ PIPELINE_ARGS = {
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
     'map_dir': (str(WORKSPACE / 'maps' / 'real'/ '001'), '地图保存目录（绝对路径）'),
     'rviz': ('false', '后端 RViz'),
+    'backend_overrides': ('', '后端 ROS 参数覆盖 YAML'),
     'gimbal_yaw_offset': ('0.0', 'MCU +X 相对 CAD 云台零方向的实测 CCW 偏角(rad)，不是关节角'),
 }
 SOURCE_ARGS = {
