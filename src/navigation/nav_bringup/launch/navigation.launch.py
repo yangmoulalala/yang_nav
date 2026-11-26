@@ -14,8 +14,7 @@ Navigation nodes:
 terrain_obstacles provides ground-relative obstacle clouds to the costmap and collision_monitor.
 Velocity chain: controller/behaviors -> velocity_smoother -> collision_monitor -> cmd_gate.
 
-terrain_dir is a nav_terrain package, written by surface_studio (src/navigation/nav_terrain/README.md):
-    surface_studio.py <field model | prior map>   annotate patches, 导出 Nav2 -> terrain_dir
+terrain_dir is a nav_terrain package exported by the WebUI terrain editor (docs/web-ui.md):
     terrain_export.py <terrain_dir>/terrain.msgpack --out <terrain_dir>   (re-export with other parameters)
 nav_map.yaml feeds the costmaps; zones.yaml feeds shaping, tracking and recovery protection.
 Both NavigateToPose and NavigateThroughPoses use the custom zone-aware behavior trees.

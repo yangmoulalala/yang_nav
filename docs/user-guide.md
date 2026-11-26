@@ -189,7 +189,7 @@ ros2 bag play bags/recordings/site_a_002/bag --clock 50 --topics \
 
 ## 6. 离线优化地图
 
-地图保存后，输入原始目录，输出到一个新的目录：
+地图保存后，在 WebUI「离线地图优化」页选定原始地图和新输出目录，也可从终端运行以下命令。
 
 ```bash
 bash tools/optimize_map.sh --in maps/real/site_a_002 --out maps/real/site_a_002_optimized --threads 4
@@ -201,15 +201,11 @@ bash tools/optimize_map.sh --in maps/real/site_a_002 --out maps/real/site_a_002_
 
 ## 7. 地形标注和导出
 
-在有桌面显示的终端打开最终地图：
+在 WebUI「地形标注」页打开最终地图，例如 `maps/real/site_a_002_optimized`。
 
-```bash
-ros2 run nav_terrain surface_studio.py maps/real/site_a_002_optimized
-```
-
-1. 点选面片查看坡度、方向、高差和净空；切分过碎时调整分割参数。
-2. 设置类型和通行性：`1` 平地、`2` 坡道、`7` 隧道，`X` 切换可通过性，`R` 翻转方向。未标注、无数据和禁止通过的格子会导出为障碍。
-3. `Ctrl+S` 保存 `*.surf.npz` 工程；`Ctrl+E` 将导航文件导出到 `maps/real/site_a_002_optimized/terrain`。
+1. 点选面片查看坡度、方向、高程和净空。切分过碎时可调整分割参数。
+2. 设置类型、通行性和方向。未标注和禁止通行的格子会导出为障碍，无观测格保留为未知。
+3. 点击「保存工程」保存 `*.surf.npz`，再点击「导出 Nav2 地形」，例如导出到 `maps/real/site_a_002_optimized/terrain`。
 
 检查导出结果：
 

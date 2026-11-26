@@ -1,16 +1,3 @@
 #!/usr/bin/env python3
-import os
-from pathlib import Path
-import sys
-
-
-def main():
-    python = Path.home() / '.venvs' / 'nav-terrain' / 'bin' / 'python'
-    if sys.prefix == sys.base_prefix and python.is_file() and os.access(python, os.X_OK):
-        os.execv(str(python), [str(python), __file__, *sys.argv[1:]])
-    from nav_terrain.surface_studio import main as studio_main
-    return studio_main()
-
-
 if __name__ == "__main__":
-    raise SystemExit(main())
+    print('地形标注已迁移到导航工作台。运行 bash tools/start_web_ui.sh，打开「地形标注」页。')

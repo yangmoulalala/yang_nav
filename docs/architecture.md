@@ -27,7 +27,7 @@ bringup/{sim,real}.launch.py → localization.launch.py
 离线标注从 `Project.from_mesh()` 或 `Project.from_cloud()` 进入，依次生成高程栅格、面片和人工标注。`Project.export()` 将标注转换为 `TerrainMap`，再由 `terrain_export.export()` 生成下游文件。[模块与数据格式](../src/navigation/nav_terrain/README.md#3-处理流程)
 
 ```text
-场地网格 / 先验点云 → surface_studio → 人工标签与通行方向 → terrain_export
+场地网格 / 先验点云 → WebUI 地形标注 → 人工标签与通行方向 → terrain_export
   ├─ nav_map.yaml、speed_mask.yaml → Nav2 地图服务、代价图及速度限制
   ├─ zones.yaml                    → 路径整形、区域跟踪、行为树恢复保护
   └─ terrain.msgpack + /frontend/frame + TF → terrain_obstacles → 障碍点与清除射线

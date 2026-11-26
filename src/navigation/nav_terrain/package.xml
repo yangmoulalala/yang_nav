@@ -3,7 +3,7 @@
 <package format="3">
   <name>nav_terrain</name>
   <version>0.1.0</version>
-  <description>Terrain annotation: segment the field model or prior cloud into plane / slope patches (surface_studio), label them by hand, export a Nav2 terrain package.</description>
+  <description>Segment field models and prior clouds into plane and slope patches for WebUI annotation and Nav2 export.</description>
   <maintainer email="yang@todo.todo">yang</maintainer>
   <license>MIT</license>
 
@@ -13,7 +13,6 @@
   <exec_depend>python3-scipy</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
-  <exec_depend>python3-pyqt5</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>sensor_msgs_py</exec_depend>

@@ -255,88 +255,20 @@ def write_stl(path, tri):
             fh.write(struct.pack('<3f', 0, 0, 0) + t.astype('<f4').tobytes() + b'\0\0')
 
 
-def test_studio_gui(tmp_path, monkeypatch):
-    pytest.importorskip('PyQt5')
-    monkeypatch.setenv('QT_QPA_PLATFORM', 'offscreen')
-    from nav_terrain import surface_studio as st
-    st.make_app([])
-    s = st.Studio(sync=True)
-    s.resize(1300, 850)
-    s.set_params(params())
-    write_stl(tmp_path / 'f.stl', field())
-    s.open_model(str(tmp_path / 'f.stl'))
-    p = s.p
-    ramp, top = pid_at(p, 1.5, 1.0), pid_at(p, 1.5, 2.0)
-    s.click_cell(p.surf.cell_of(1.5, 1.0), Qt_mod(st))
-    if s.sel == [ramp]:
-        s.set_type(SLOPE)
-        s.dir_spin.setValue(30.0)                  # arrows / wheel apply without Enter
-        assert abs(p.direction(ramp) - 30.0) < 0.05
-        s.set_dir(None)
-        s.set_type(sp.UNSET)
-    assert s.sel == [ramp]
-    s.set_type(SLOPE)
-    assert p.a(ramp)['type'] == SLOPE and 'Slope' not in s.info.text()
-    s.click_cell(p.surf.cell_of(1.5, 2.0), Qt_mod(st, ctrl=True))
-    assert s.sel == [ramp, top]
-    s.merge_selected()
-    assert p.info(top) is None and s.sel == [ramp]
-    s.undo()
-    s.select([top])
-    s.set_passable(False)
-    assert p.a(top)['passable'] is False
-    s.brush_r.setValue(10)
-    s.region_mode.setCurrentIndex(1)                            # brush: join the selected patch
-    s.tool_brush.setChecked(True)
-    c, r = p.surf.cell_of(0.5, 0.5)
-    s.press_cell((c, r), Qt_mod(st))
-    s.move_cell((c + 4, r))
-    s.release_cell((c + 4, r))
-    assert pid_at(p, 0.6, 0.5) == top
-    floor = pid_at(p, 0.5, 3.5)
-    s.region_mode.setCurrentIndex(0)                            # new patch, only inside the selection
-    s.select([floor])
-    s.tool_rect.setChecked(True)
-    a, b = p.surf.cell_of(5.0, 0.2), p.surf.cell_of(5.8, 1.0)
-    s.press_cell(a, Qt_mod(st))
-    s.move_cell(b)
-    s.release_cell(b)
-    new = pid_at(p, 5.4, 0.6)
-    assert new not in (floor, 0) and s.sel == [new] and pid_at(p, 4.0, 0.6) == floor
-    s.select([floor])
-    s.tool_lasso.setChecked(True)
-    pts = [p.surf.cell_of(*xy) for xy in ((0.2, 2.0), (0.8, 2.0), (0.8, 2.6), (0.2, 2.6))]
-    s.press_cell(pts[0], Qt_mod(st))
-    for q in pts[1:]:
-        s.move_cell(q)
-    s.release_cell(pts[0])
-    las = pid_at(p, 0.5, 2.3)
-    assert las not in (floor, new, 0)
-    s.region_mode.setCurrentIndex(2)                            # back to the automatic segmentation
-    s.tool_rect.setChecked(True)
-    a, b = p.surf.cell_of(0.1, 1.9), p.surf.cell_of(0.9, 2.7)
-    s.press_cell(a, Qt_mod(st))
-    s.release_cell(b)
-    assert pid_at(p, 0.5, 2.3) == floor
-    s.tool_select.setChecked(True)
-    s.refresh_list()
-    assert s.tree.topLevelItemCount() == len(p.ids())
-    item = s.tree.topLevelItem(0)
-    s.tree.setCurrentItem(item)
-    assert s.sel == [item.data(0, st.Qt.UserRole)]
-    s.select([])
-    s.press_cell((0, 0), st.Qt.ShiftModifier)
-    corner = (p.shape[1] - 1, p.shape[0] - 1)
-    s.move_cell(corner)
-    s.release_cell(corner)
-    assert sorted(s.sel) == p.ids()
-    s.save_project(str(tmp_path / 'p.npz'))
-    assert s.export_to(str(tmp_path / 'out'))
-    s.show()
-    assert not s.grab().isNull()
-    s.dirty = False
-    s.close()
+def test_editor_preview_from_stl(tmp_path):
+    from nav_terrain.mesh_io import load_mesh
+    from nav_terrain.studio_render import compose_map
+    from nav_terrain.terrain_export import COLORS
 
-
-def Qt_mod(st, ctrl=False):
-    return st.Qt.ControlModifier if ctrl else st.Qt.NoModifier
+    source = tmp_path / 'field.stl'
+    write_stl(source, field())
+    project = sp.Project.from_mesh(load_mesh(source), params())
+    ramp = pid_at(project, 1.5, 1.0)
+    assert ramp > 0
+    options = dict(show_unset=True, opacity=0.72, edges=True, overlay=None, selected=[], stroke=None)
+    before = compose_map(project, COLORS, **options)
+    project.set_ann([ramp], type=SLOPE, dir=30.0)
+    after = compose_map(project, COLORS, **options)
+    assert after.shape == (*project.shape, 3)
+    assert np.any(after[project.owner[::-1] == ramp] != before[project.owner[::-1] == ramp])
+    assert project.arrows(ramp)[0][2] == pytest.approx(30.0)
