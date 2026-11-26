@@ -91,13 +91,15 @@ def workspace_path(value, label):
     return target
 
 
-def new_map_output(value):
-    target = workspace_path(value, '输出路径')
+def map_output(value):
+    raw = text(value, '输出路径')
+    selected = WORKSPACE / Path(raw).expanduser()
+    target = selected.resolve()
     root = WORKSPACE / 'maps'
     if not target.is_relative_to(root) or target == root:
         raise ValueError('输出须位于工作区 maps/ 下')
-    if target.exists():
-        raise ValueError('输出路径已经存在，请使用新目录')
+    if selected.is_symlink() or (target.exists() and not target.is_dir()):
+        raise ValueError('输出路径须为实际目录')
     return target
 
 

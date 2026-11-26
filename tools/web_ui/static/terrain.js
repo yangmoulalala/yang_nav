@@ -444,7 +444,7 @@
   }
   onSubmit('terrain-save', (form) => {
     const output = form.elements.output.value;
-    run('save', {output, overwrite: true});
+    run('save', {output});
   });
   onSubmit('terrain-export', (form) => {
     const {output, ...options} = Object.fromEntries(new FormData(form));

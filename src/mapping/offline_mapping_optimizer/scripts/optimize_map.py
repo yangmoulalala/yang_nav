@@ -13,7 +13,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--in', dest='source', type=Path, required=True,
                         help='saved native map bundle (keyframes.txt + clouds/)')
-    parser.add_argument('--out', type=Path, required=True, help='new output map bundle')
+    parser.add_argument('--out', type=Path, required=True, help='output map bundle')
+    parser.add_argument('--overwrite', action='store_true', help='replace an existing output bundle on success')
     parser.add_argument('--config', type=Path, help='optimizer params.yaml override')
     parser.add_argument('--threads', type=int, help='override all three CPU thread counts')
     parser.add_argument('--lidar-origin', type=float, nargs=3, metavar=('X', 'Y', 'Z'),
@@ -25,9 +26,11 @@ def main():
     source, output = args.source.expanduser().resolve(), args.out.expanduser().resolve()
     if not (source / 'keyframes.txt').is_file():
         parser.error(f'not a native map bundle: {source}')
-    if output == source or source in output.parents:
+    if output.is_relative_to(source) or (args.overwrite and source.is_relative_to(output)):
         parser.error('--out must be outside the input bundle')
-    if output.exists() and (not output.is_dir() or any(output.iterdir())):
+    if args.overwrite and (args.out.expanduser().is_symlink() or (output.exists() and not output.is_dir())):
+        parser.error('--overwrite requires a real output directory')
+    if not args.overwrite and output.exists() and (not output.is_dir() or any(output.iterdir())):
         parser.error('--out must be absent or an empty directory')
     if args.threads is not None and args.threads < 1:
         parser.error('--threads must be positive')
@@ -77,7 +80,10 @@ def main():
                 if args.no_mls:
                     command += ['-p', 'enable_mls_smoothing:=false']
                 run(command)
-                run([bridge, '--in', work / 'input', '--results', work / 'results', '--out', output])
+                publish = [bridge, '--in', work / 'input', '--results', work / 'results', '--out', output]
+                if args.overwrite:
+                    publish.append('--overwrite')
+                run(publish)
             except (subprocess.CalledProcessError, KeyboardInterrupt):
                 failure = output.parent / (output.name + '.optimization-failed.log')
                 failure.write_text(log_path.read_text())

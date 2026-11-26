@@ -1,3 +1,4 @@
+from ctypes import CDLL, get_errno
 from dataclasses import dataclass, replace
 import json
 import os
@@ -16,7 +17,7 @@ from nav_terrain.surface_project import Project
 from nav_terrain.surface_seg import SegParams
 from nav_terrain.terrain_export import COLORS, ExportConfig
 
-from .settings import WORKSPACE, flag, new_map_output, number, text, workspace_path
+from .settings import WORKSPACE, flag, map_output, number, text, workspace_path
 
 
 TYPES = {-1: '未标注', 0: '平地', 2: '坡道', 3: '一级台阶', 4: '二级台阶',
@@ -27,6 +28,18 @@ LOAD_FIELDS = {'resolution': (0.01, 0.2), 'cloud_res': (0.02, 0.2),
                'cloud_z_min': (-20.0, 20.0), 'cloud_z_max': (-20.0, 20.0),
                'z_max': (0.2, 5.0), 'min_clear': (0.05, 1.0), 'roof_height': (0.1, 3.0)}
 RMUL_STEP_STEM = 'rmul2027_3v3_v1.0.0'
+AT_FDCWD = -100
+RENAME_EXCHANGE = 2
+
+
+def publish_export(staging, destination):
+    if not destination.exists():
+        staging.rename(destination)
+        return
+    rename = CDLL(None, use_errno=True).renameat2
+    if rename(AT_FDCWD, os.fsencode(staging), AT_FDCWD, os.fsencode(destination), RENAME_EXCHANGE):
+        error = get_errno()
+        raise OSError(error, os.strerror(error), destination)
 
 
 def terrain_sources():
@@ -234,13 +247,14 @@ class TerrainEditor:
             destination = workspace_path(body.get('output'), '标注工程路径')
             if not destination.name.lower().endswith('.surf.npz'):
                 raise ValueError('工程文件名需要以 .surf.npz 结尾')
-            if destination.exists() and (destination != document.archive or body.get('overwrite') is not True):
-                raise ValueError('文件已存在，请换文件名，或确认保存当前工程')
             project.save(destination)
             document.archive, document.dirty = destination, False
             return dict(message=f'工程已保存到 {destination.relative_to(WORKSPACE)}')
         if operation == 'export':
-            destination = new_map_output(body.get('output'))
+            destination = map_output(body.get('output'))
+            for item in self.documents.values():
+                if item.source.is_relative_to(destination) or (item.archive and item.archive.is_relative_to(destination)):
+                    raise ValueError('导出目录不能覆盖已打开的地形来源或工程文件')
             cfg = ExportConfig(direction_split_deg=number(body.get('direction_split_deg', 20), 1, 180, '方向拆分角'),
                                speed_limits={key: int(number(body.get(key, default), 1, 100, '限速百分比'))
                                              for key, default in (('tunnel', 35), ('slope', 60), ('undulation', 50))})
@@ -248,8 +262,9 @@ class TerrainEditor:
             with TemporaryDirectory(prefix='.terrain_', dir=destination.parent) as temporary:
                 staging = Path(temporary) / 'terrain'
                 meta, zones = project.export(staging, cfg)
-                new_map_output(str(destination))
-                staging.rename(destination)
+                if map_output(body.get('output')) != destination:
+                    raise ValueError('导出路径已变更，请重新提交')
+                publish_export(staging, destination)
             return dict(message=f'地形已导出到 {destination.relative_to(WORKSPACE)}，共 {len(zones)} 个方向区域，'
                                 f'{meta["unannotated_cells"]} 格未标注，{meta["blocked_cells"]} 格禁止通行',
                         output=str(destination.relative_to(WORKSPACE)))

@@ -38,7 +38,7 @@
         <article class="panel process-panel"><header><h2>进程管理</h2></header><div id="processes"></div></article>
         <article class="panel"><header><h2>地图与控制</h2></header>
           <div class="operation"><div><b>全局重定位</b><small>在整张先验地图中搜索。操作前请停止 Nav2 和车辆。</small></div><button data-action="relocalize">触发</button></div>
-          <div class="operation"><div><b>保存地图</b><small>将当前建图结果写入配置中的输出目录。</small></div><button data-action="save_map">保存</button></div>
+          <div class="operation"><div><b>保存地图</b><small>将当前建图结果写入配置中的输出目录，覆盖已有结果。</small></div><button data-action="save_map">保存</button></div>
           <form id="goal-form" class="goal-form"><b>导航目标 <small>map 坐标 · m</small></b>
             <div class="pair"><label>X<input name="x" type="number" step="any" required></label><label>Y<input name="y" type="number" step="any" required></label></div>
             <div class="actions"><button type="button" data-action="cancel_goal">取消目标</button><button class="primary" id="send-goal" type="submit">发送目标</button></div>
@@ -73,7 +73,7 @@
         <form class="panel form-panel" id="optimizer-form">
           <header><h3>优化任务</h3><span class="pill" id="optimizer-state">—</span></header>
           <label>输入地图目录<input name="source" list="map-options" required placeholder="maps/sim/new_session"></label>
-          <label>输出地图目录<input name="output" required placeholder="maps/sim/new_session_optimized"></label>
+          <label>输出地图目录（可覆盖）<input name="output" required placeholder="maps/sim/new_session_optimized"></label>
           <div class="form-grid">
             <label>处理线程数<input name="threads" type="number" min="1" max="32" value="4" required></label>
             <label class="check"><input name="mls" type="checkbox" checked> 平滑合并点云（MLS）</label>
@@ -165,7 +165,7 @@
                 <label>坡道限速 · %<input name="slope" type="number" min="1" max="100" value="60" required></label>
                 <label>起伏路段限速 · %<input name="undulation" type="number" min="1" max="100" value="50" required></label>
               </div></details></form>
-            <small>未标注区域按障碍导出，无观测区域保留为未知。</small>
+            <small>保存和导出会覆盖已有结果。未标注区域按障碍导出，无观测区域保留为未知。</small>
           </article>
           <article class="panel">
             <header><h3>分割与配准</h3></header>

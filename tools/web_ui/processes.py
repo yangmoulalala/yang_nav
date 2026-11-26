@@ -8,7 +8,7 @@ from contextlib import suppress
 
 from ament_index_python.packages import PackageNotFoundError, get_package_prefix
 
-from .settings import (WORKSPACE, bag_request, flag, new_map_output, number, path, prior_path,
+from .settings import (WORKSPACE, bag_request, flag, map_output, number, path, prior_path,
                        terrain_path, workspace_path)
 
 
@@ -140,11 +140,7 @@ class Processes:
             command = ['ros2', 'launch', 'bringup', f'{profile}.launch.py',
                        f'mode:={config["mode"]}', f'lidar:={config["lidar"]}']
             if config['mode'] == 'mapping':
-                folder = path(config['map_dir'])
-                if not folder.is_relative_to(WORKSPACE / 'maps') or folder == WORKSPACE / 'maps':
-                    raise ValueError('建图输出请指定工作区 maps/ 下的新目录')
-                if folder.exists() and (not folder.is_dir() or any(folder.iterdir())):
-                    raise ValueError('建图输出目录已有数据，请指定新目录')
+                folder = map_output(config['map_dir'])
                 command.append(f'map_dir:={folder}')
             else:
                 folder = prior_path(config['prior_map'])
@@ -198,9 +194,9 @@ class Processes:
             source = prior_path(str(workspace_path(payload.get('source'), '输入地图')))
             if self.active_mapping() and source == Path(self.entries['localization'].output):
                 raise ValueError('请保存并停止当前建图，再优化该地图')
-            output = new_map_output(payload.get('output'))
-            if source == output or source in output.parents:
-                raise ValueError('优化输出须位于输入地图目录之外')
+            output = map_output(payload.get('output'))
+            if output.is_relative_to(source) or source.is_relative_to(output):
+                raise ValueError('优化输出与输入地图目录不能重叠')
             threads = number(payload.get('threads', 4), 1, 32, '线程数')
             if type(threads) is not int:
                 raise ValueError('线程数需要整数')
@@ -208,7 +204,7 @@ class Processes:
             if origin is not None and (not isinstance(origin, list) or len(origin) != 3):
                 raise ValueError('雷达光心需要 X、Y、Z 三个坐标')
             command = ['bash', 'tools/optimize_map.sh', '--in', str(source), '--out', str(output),
-                       '--threads', str(threads)]
+                       '--overwrite', '--threads', str(threads)]
             if not flag(payload.get('raycasting', False), '射线动态过滤'):
                 command.append('--no-raycasting')
             elif origin is not None:
@@ -317,9 +313,7 @@ class Processes:
         if name == 'optimizer':
             raise ValueError('请在离线优化页重新选定输出路径，再启动优化')
         if name == 'localization' and self.settings.active['mode'] == 'mapping':
-            folder = path(self.settings.active['map_dir'])
-            if folder.is_dir() and any(folder.iterdir()):
-                raise ValueError('重启建图前请保存当前地图，并在配置中改用新的输出目录')
+            map_output(self.settings.active['map_dir'])
         restart_nav = name in ('gazebo', 'localization') and self.alive('navigation')
         restart_loc = name == 'gazebo' and self.alive('localization')
         if restart_loc:

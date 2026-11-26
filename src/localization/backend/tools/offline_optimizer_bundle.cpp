@@ -17,7 +17,7 @@ using namespace backend;
 namespace {
 struct Options {
     std::string input, output, results;
-    bool help = false;
+    bool help = false, overwrite = false;
 };
 
 void writePose(std::ostream& out, const Eigen::Matrix4d& pose) {
@@ -59,7 +59,15 @@ std::vector<Eigen::Matrix4d> readPoses(const fs::path& path, std::size_t count) 
 void run(const Options& args) {
     tools::validateOutputLocation(args.input, args.output);
     if (!args.results.empty()) tools::validateOutputLocation(args.results, args.output);
-    DirectoryTransaction output(args.output);
+    if (args.overwrite) {
+        tools::validateOutputLocation(args.output, args.input);
+        if (!args.results.empty()) tools::validateOutputLocation(args.output, args.results);
+        const auto status = fs::symlink_status(args.output);
+        if (fs::exists(status) && !fs::is_directory(status))
+            throw std::invalid_argument("overwrite requires a real output directory");
+    }
+    DirectoryTransaction output(args.output, args.overwrite ? DirectoryTransaction::Policy::Replace
+                                                            : DirectoryTransaction::Policy::Create);
     std::string error;
     if (!output.prepare(&error)) throw std::runtime_error(error);
     KeyframeMap map;
@@ -140,9 +148,10 @@ int main(int argc, char** argv) {
         options.value({"--in"}, args.input);
         options.value({"--out"}, args.output);
         options.value({"--results"}, args.results);
+        options.flag({"--overwrite"}, args.overwrite);
         const bool valid = options.parse(argc, argv, args.help);
         if (!valid || args.help || args.input.empty() || args.output.empty()) {
-            std::cout << "Usage: offline_optimizer_bundle --in BUNDLE --out NEW_DIR [--results RESULTS]\n"
+            std::cout << "Usage: offline_optimizer_bundle --in BUNDLE --out DIR [--results RESULTS] [--overwrite]\n"
                          "Without --results: export frozen native/raw snapshot.\n"
                          "With --results: import optimized poses/masks, rebuild descriptors.\n";
             return valid && args.help ? 0 : 1;

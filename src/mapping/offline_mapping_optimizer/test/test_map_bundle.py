@@ -58,9 +58,12 @@ def test_two_stage_vgicp_corrects_relative_drift(tmp_path):
     (source / 'keyframes.txt').write_text('\n'.join(rows) + '\n')
     before = fingerprint(source)
     output = tmp_path / 'optimized'
+    stale = output / 'terrain' / 'old.txt'
+    stale.parent.mkdir(parents=True)
+    stale.write_text('previous output')
     params = config(tmp_path, local_submap_size=3, global_min_loop_overlap=.3,
                     global_voxel_resolution=.15, local_voxel_resolution=.15)
-    result = invoke('--in', source, '--out', output, '--config', params,
+    result = invoke('--in', source, '--out', output, '--overwrite', '--config', params,
                     '--threads', '2', '--no-raycasting', '--no-mls')
     assert 'Local stage: 3 submaps' in result.stdout
     assert 'Global graph: nodes=3' in result.stdout
@@ -69,6 +72,7 @@ def test_two_stage_vgicp_corrects_relative_drift(tmp_path):
     relative_x = poses[-1][2] - poses[0][2]
     assert abs(relative_x - 1.2) < .05, relative_x  # initial error: 0.20 m
     assert fingerprint(source) == before
+    assert not stale.parent.exists()
     assert len(list((output / 'clouds').glob('*.pcd'))) == 9
     assert (output / 'optimizer.log').is_file()
     # Published bundles must load through the actual backend, including XYZ/I validation.
@@ -104,6 +108,7 @@ def test_raycasting_removes_transient_geometry_from_local_clouds(tmp_path, origi
                     '--in', str(output), '--out', str(snapshot)], check=True)
     invoke('--in', source, '--out', output, code=2)
     invoke('--in', source, '--out', source / 'child', code=2)
+    invoke('--in', source, '--out', tmp_path, '--overwrite', code=2)
 
 
 def test_invalid_optimizer_config_does_not_publish_bundle(tmp_path):
@@ -116,3 +121,8 @@ def test_invalid_optimizer_config_does_not_publish_bundle(tmp_path):
     invoke('--in', source, '--out', output, '--config', params, code=1)
     assert not output.exists()
     assert (tmp_path / 'invalid.optimization-failed.log').is_file()
+    output.mkdir()
+    previous = output / 'previous.txt'
+    previous.write_text('previous output')
+    invoke('--in', source, '--out', output, '--overwrite', '--config', params, code=1)
+    assert previous.read_text() == 'previous output'
