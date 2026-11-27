@@ -17,7 +17,7 @@ from rclpy.signals import SignalHandlerOptions
 
 from .processes import LABELS, OWNERS, PROCESSES, Processes
 from .ros_state import RosState
-from .settings import Settings, WORKSPACE, candidates
+from .settings import Settings, WORKSPACE, candidates, prior_path
 from .terrain import TerrainEditor, field_references, preview_archive, terrain_sources
 
 
@@ -52,10 +52,21 @@ class Console:
                     foxglove_online='/foxglove_bridge' in self.ros.node_names(),
                     foxglove_port=self.foxglove_port)
 
+    def preview_prior(self):
+        if self.processes.alive('localization'):
+            process = self.processes.entries['localization']
+            return Path(process.output) if process.parameters['mode'] == 'localization' else None
+        if self.settings.active['mode'] != 'localization' or '/backend_node' in self.ros.node_names():
+            return None
+        try:
+            return prior_path(self.settings.active['prior_map'])
+        except ValueError:
+            return None
+
     def config(self):
         sources = terrain_sources()
         return {**self.settings.data, **candidates(), 'terrain_sources': sources,
-                'terrain_references': field_references(sources),
+                'terrain_references': field_references(sources, self.preview_prior()),
                 'fields': {profile: self.settings.fields(profile) for profile in ('sim', 'real')}}
 
     def action(self, route, body):
@@ -162,7 +173,7 @@ class Handler(BaseHTTPRequestHandler):
         elif route == '/api/terrain/project-preview':
             query = parse_qs(request.query)
             try:
-                image, metadata = preview_archive(query.get('source', [''])[0])
+                image, metadata = preview_archive(query.get('source', [''])[0], self.console.preview_prior())
                 self.respond(200, image, 'image/png', [('X-Terrain-Preview', json.dumps(metadata))])
             except ValueError as exc:
                 self.respond(400, {'error': str(exc)})

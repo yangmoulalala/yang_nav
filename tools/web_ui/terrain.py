@@ -18,7 +18,7 @@ from nav_terrain.surface_project import Project
 from nav_terrain.surface_seg import SegParams
 from nav_terrain.terrain_export import COLORS, ExportConfig
 
-from .settings import WORKSPACE, flag, map_output, number, text, workspace_path
+from .settings import WORKSPACE, flag, map_output, number, path as resolve_path, text, workspace_path
 
 
 TYPES = {-1: '未标注', 0: '平地', 2: '坡道', 3: '一级台阶', 4: '二级台阶',
@@ -52,7 +52,12 @@ def terrain_sources():
     return sorted(str(item.relative_to(WORKSPACE)) for item in paths)
 
 
-def field_references(sources):
+def matches_prior(frame, source, prior):
+    return bool(frame == 'map' and prior is not None and isinstance(source, str) and source
+                and resolve_path(source) in (prior, prior / 'map.pcd'))
+
+
+def field_references(sources, prior=None):
     projects, models = [], []
     for source in sources:
         if source.lower().endswith('.surf.npz'):
@@ -62,7 +67,8 @@ def field_references(sources):
                     meta = json.loads(archive['meta'].tobytes())
                 frame = meta.get('frame')
                 if frame in ('field', 'map'):
-                    projects.append(dict(path=source, frame=frame, annotated=len(meta.get('ann', {}))))
+                    projects.append(dict(path=source, frame=frame, annotated=len(meta.get('ann', {})),
+                                         matches_prior=matches_prior(frame, meta.get('source'), prior)))
             except (OSError, ValueError, KeyError, AttributeError, TypeError, BadZipFile):
                 continue
         elif Path(source).suffix.lower() in SUFFIXES:
@@ -140,7 +146,7 @@ def render_preview(project, overlay=None):
     return image.tobytes()
 
 
-def preview_archive(value):
+def preview_archive(value, prior=None):
     source = workspace_path(value, '标注工程路径')
     if not source.name.lower().endswith('.surf.npz') or not source.is_file():
         raise ValueError('请选择工作区中已保存的 .surf.npz 标注工程')
@@ -150,7 +156,8 @@ def preview_archive(value):
         annotated_types = [kind for pid in ids if (kind := project.a(pid)['type']) >= 0]
         legend = [(TYPES.get(kind, f'类型 {kind}'), COLORS[kind])
                   for kind in sorted(set(annotated_types)) if kind in COLORS]
-        metadata = dict(frame=project.frame, resolution=project.surf.resolution,
+        metadata = dict(frame=project.frame, resolution=project.surf.resolution, origin=project.surf.origin,
+                        matches_prior=matches_prior(project.frame, project.source, prior),
                         patches=len(ids), annotated=len(annotated_types), legend=legend)
         return render_preview(project), metadata
     except (OSError, ValueError, KeyError, TypeError, IndexError, BadZipFile, cv2.error) as exc:

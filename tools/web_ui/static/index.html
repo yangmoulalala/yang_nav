@@ -243,7 +243,20 @@
         <div class="map-toolbar"><div id="terrain-preview-legend" aria-label="地形图例"></div>
           <div class="actions"><button type="button" id="terrain-preview-out" aria-label="缩小预览">−</button><button type="button" id="terrain-preview-in" aria-label="放大预览">＋</button><button type="button" id="terrain-preview-fit">适应窗口</button></div>
         </div>
-        <div id="terrain-preview-view" tabindex="0" role="region" aria-label="可滚动的地形预览"><canvas id="terrain-preview-image" role="img" aria-label="已保存标注工程的地形俯视图"></canvas></div>
+        <p id="terrain-preview-coordinates" role="status"></p>
+        <div id="terrain-preview-view" tabindex="0" role="region" aria-label="可滚动的地形预览">
+          <div id="terrain-preview-plot">
+            <canvas id="terrain-preview-image" role="img" aria-label="已保存标注工程的地形俯视图"></canvas>
+            <svg id="terrain-preview-origin" width="80" height="72" viewBox="-7 -50 80 72" aria-hidden="true" hidden>
+              <path class="axis-x" d="M0 0 H40 M34 -5 L40 0 L34 5"/>
+              <path class="axis-y" d="M0 0 V-40 M-5 -34 L0 -40 L5 -34"/>
+              <circle r="4"/>
+              <text class="axis-x" x="22" y="-9">+X</text><text class="axis-y" x="8" y="-35">+Y</text>
+              <text x="7" y="16">map (0, 0)</text>
+            </svg>
+            <span id="terrain-preview-point" aria-hidden="true" hidden></span>
+          </div>
+        </div>
         <small>深色斜纹表示禁行。放大后可滚动查看。</small>
       </div>
     </dialog>

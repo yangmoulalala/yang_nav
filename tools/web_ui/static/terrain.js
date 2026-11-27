@@ -460,7 +460,11 @@
   const previewResult = element('terrain-preview-result');
   const previewView = element('terrain-preview-view');
   const previewImage = element('terrain-preview-image');
+  const previewOrigin = element('terrain-preview-origin');
+  const previewPoint = element('terrain-preview-point');
+  const previewCoordinates = element('terrain-preview-coordinates');
   let previewRequest;
+  let previewGrid;
   let previewZoom = 1;
 
   function showPreviewOptions() {
@@ -471,16 +475,52 @@
 
   function sizePreview() {
     if (previewResult.hidden || !previewView.clientWidth) return;
-    const scale = Math.min(previewView.clientWidth / previewImage.width, previewView.clientHeight / previewImage.height);
+    const padding = getComputedStyle(previewView);
+    const width = previewView.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight);
+    const height = previewView.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
+    const scale = Math.min(width / previewImage.width, height / previewImage.height);
     previewImage.style.width = `${Math.max(1, Math.floor(previewImage.width * scale * previewZoom))}px`;
     element('terrain-preview-out').disabled = previewZoom <= 1;
     element('terrain-preview-in').disabled = previewZoom >= 8;
   }
 
+  function placePreviewMarker(marker, horizontal, vertical) {
+    marker.style.left = `${100 * horizontal}%`;
+    marker.style.top = `${100 * vertical}%`;
+  }
+
+  function formatMeters(value) {
+    const meters = value.toFixed(3);
+    return meters === '-0.000' ? '0.000' : meters;
+  }
+
+  function resetPreviewPoint() {
+    previewGrid = undefined;
+    previewPoint.hidden = true;
+    previewCoordinates.textContent = '';
+    previewImage.removeAttribute('data-map');
+  }
+
+  previewImage.addEventListener('click', (event) => {
+    if (!previewGrid || previewResult.hidden) return;
+    const bounds = previewImage.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const horizontal = (event.clientX - bounds.left) / bounds.width;
+    const vertical = (event.clientY - bounds.top) / bounds.height;
+    if (horizontal < 0 || horizontal >= 1 || vertical < 0 || vertical >= 1) return;
+    const {origin, resolution} = previewGrid;
+    const mapX = origin[0] + horizontal * previewImage.width * resolution;
+    const mapY = origin[1] + (1 - vertical) * previewImage.height * resolution;
+    placePreviewMarker(previewPoint, horizontal, vertical);
+    previewPoint.hidden = false;
+    previewCoordinates.textContent = `map：X ${formatMeters(mapX)} m · Y ${formatMeters(mapY)} m`;
+  });
+
   element('terrain-preview-open').addEventListener('click', () => {
     showPreviewOptions();
     const input = element('terrain-preview-form').elements.source;
-    if (!input.value) input.value = project()?.archive || '';
+    const prior = config?.terrain_references?.projects?.find((item) => item.matches_prior);
+    if (!input.value) input.value = prior?.path || project()?.archive || '';
     previewStatus.classList.remove('warn');
     previewStatus.textContent = '选择现有工程，或输入服务器工作区内的 .surf.npz 路径。';
     previewDialog.showModal();
@@ -489,6 +529,7 @@
   previewDialog.addEventListener('close', () => {
     previewRequest?.abort();
     previewResult.hidden = true;
+    resetPreviewPoint();
     previewImage.width = previewImage.height = 1;
   });
   window.addEventListener('resize', sizePreview);
@@ -504,12 +545,14 @@
     const request = new AbortController();
     previewRequest = request;
     previewResult.hidden = true;
+    resetPreviewPoint();
     previewStatus.classList.remove('warn');
     previewStatus.textContent = '正在读取已保存的工程…';
     try {
       const response = await fetch(`/api/terrain/project-preview?${new URLSearchParams({source})}`, {signal: request.signal});
       if (!response.ok) throw new Error((await response.json()).error);
-      const {frame, resolution, patches, annotated, legend} = JSON.parse(response.headers.get('X-Terrain-Preview'));
+      const {frame, resolution, origin, matches_prior, patches, annotated, legend} =
+        JSON.parse(response.headers.get('X-Terrain-Preview'));
       const image = await createImageBitmap(await response.blob());
       try {
         if (request.signal.aborted) return;
@@ -526,12 +569,25 @@
         item.append(swatch, label);
         return item;
       }));
-      previewStatus.textContent = `${source} · ${frame === 'map' ? '地图坐标' : '场地坐标'} · ` +
+      const x = -origin[0] / resolution;
+      const y = previewImage.height + origin[1] / resolution;
+      const visible = frame === 'map' && x >= 0 && x <= previewImage.width && y >= 0 && y <= previewImage.height;
+      previewOrigin.toggleAttribute('hidden', !visible);
+      previewView.toggleAttribute('data-origin', visible);
+      if (visible) placePreviewMarker(previewOrigin, x / previewImage.width, y / previewImage.height);
+      if (frame === 'map') previewGrid = {origin, resolution};
+      previewImage.toggleAttribute('data-map', !!previewGrid);
+      previewCoordinates.textContent = previewGrid ? '点击图中任意一点，查看 map 坐标。' : '场地工程不提供 map 坐标。';
+      const frameLabel = frame === 'map'
+        ? (matches_prior ? '与匹配模式的先验地图一致' : '工程 map 坐标，未核实与匹配模式的先验地图一致')
+        : '场地坐标，不显示地图原点';
+      const originLabel = frame !== 'map' ? '' : (visible ? ' · +X 向右，+Y 向上' : ' · map (0, 0) 不在预览范围内');
+      previewStatus.textContent = `${source} · ${frameLabel}${originLabel} · ` +
         `${resolution.toFixed(3)} m/格 · ${annotated}/${patches} 个面片已标注`;
       previewZoom = 1;
       previewResult.hidden = false;
-      previewView.scrollTo(0, 0);
       sizePreview();
+      previewView.scrollTo(0, 0);
     } catch (error) {
       if (request.signal.aborted) return;
       previewStatus.classList.add('warn');

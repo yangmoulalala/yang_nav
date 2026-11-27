@@ -127,7 +127,19 @@ summary { cursor: pointer; color: var(--muted); }
 #terrain-preview-legend span { display: inline-flex; align-items: center; gap: 4px; }
 #terrain-preview-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
 #terrain-preview-view { height: clamp(180px, 55vh, 600px); overflow: auto; background: #10161d; border: 1px solid var(--edge); border-radius: 6px; }
-#terrain-preview-image { display: block; margin: auto; image-rendering: pixelated; }
+#terrain-preview-view[data-origin] { padding: 50px 73px 22px 7px; }
+#terrain-preview-plot { position: relative; width: max-content; margin: auto; }
+#terrain-preview-image { display: block; image-rendering: pixelated; }
+#terrain-preview-image[data-map] { cursor: crosshair; }
+#terrain-preview-coordinates { margin: 6px 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+#terrain-preview-point { position: absolute; width: 12px; height: 12px; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid #ffe085; border-radius: 50%; box-shadow: 0 0 0 1px #10161d, inset 0 0 0 1px #10161d; }
+#terrain-preview-origin { position: absolute; transform: translate(-7px, -50px); pointer-events: none; filter: drop-shadow(0 0 2px #10161d); }
+#terrain-preview-origin[hidden] { display: none; }
+#terrain-preview-origin .axis-x { color: #ff7979; }
+#terrain-preview-origin .axis-y { color: #8bff98; }
+#terrain-preview-origin path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
+#terrain-preview-origin circle, #terrain-preview-origin text { fill: currentColor; stroke: #10161d; stroke-width: 2.5; paint-order: stroke; }
+#terrain-preview-origin text { font-size: 12px; font-weight: 700; }
 @media (max-width: 1100px) {
   .sidebar { width: 168px; }
   main { margin-left: 168px; }
