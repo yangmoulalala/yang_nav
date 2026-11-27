@@ -102,6 +102,7 @@ void ParameterReader::loadMapTrajectoryAndRegistration() {
 
     getParam("trajectory/save_on_shutdown", parameters_.maps.save_on_shutdown);
     getParam("trajectory/save_directory", parameters_.maps.save_directory);
+    getParam("trajectory/save_interval", parameters_.maps.save_interval);
     getParam("trajectory/save_global_pcd", parameters_.maps.save_global_pcd);
     getParam("trajectory/map_voxel_resolution", parameters_.maps.runtime_voxel);
     getParam("trajectory/keyframe/distance", parameters_.runtime.keyframes.distance);
@@ -265,6 +266,22 @@ void ParameterReader::validateRelationships() {
                     "runtime map; "
                     "disabling trajectory.save_on_shutdown");
         parameters_.maps.save_on_shutdown = false;
+    }
+    if (!std::isfinite(parameters_.maps.save_interval) || parameters_.maps.save_interval < 0.0) {
+        throw std::invalid_argument("trajectory.save_interval must be finite and >= 0");
+    }
+    if (parameters_.runtime.prior_map_enabled && parameters_.maps.save_interval > 0.0) {
+        RCLCPP_WARN(node_.get_logger(),
+                    "immutable-prior localization does not accumulate a "
+                    "runtime map; "
+                    "disabling trajectory.save_interval");
+        parameters_.maps.save_interval = 0.0;
+    }
+    if (parameters_.maps.save_interval > 0.0 && parameters_.maps.save_directory.empty()) {
+        RCLCPP_WARN(node_.get_logger(),
+                    "trajectory.save_interval is set but trajectory.save_directory is empty; "
+                    "periodic map saving disabled");
+        parameters_.maps.save_interval = 0.0;
     }
     if (parameters_.runtime.prior_map_enabled && parameters_.visualization.publish_runtime_map) {
         RCLCPP_WARN(node_.get_logger(),

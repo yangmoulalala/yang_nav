@@ -54,6 +54,8 @@ struct MapStorageParameters {
     bool save_on_shutdown = false;
     bool save_global_pcd = true;
     std::string save_directory;
+    /// 建图期间周期写出运行轨迹地图的间隔（秒）；0 表示关闭。断电不会触发退出保存，靠它兜底。
+    double save_interval = 0.0;
     double runtime_voxel = 0.3;
     double publish_period = 2.0;
 };

@@ -1,10 +1,11 @@
-"""启动定位后端：参数文件提供全部调参项，launch 只提供运行模式与地图目录。
+"""启动定位后端：参数文件提供调参项，launch 提供运行模式与地图目录。
 
-每个节点参数只有一个来源：
-- params_file：除下列三项外的全部后端参数（ROS 参数文件格式，不支持继承或合并）；
+- params_file：除 launch 独占参数外的后端参数（ROS 参数文件格式，不支持继承或合并）；
 - launch：prior_map.enabled、prior_map.directory、trajectory.save_directory 与 use_sim_time；
+- 显式传入 save_interval 时，覆盖参数文件的 trajectory.save_interval。
 """
 
+import math
 import os
 from pathlib import Path
 
@@ -49,6 +50,12 @@ def resolve(args):
         'trajectory.save_directory': args['save_dir'],
         'use_sim_time': use_sim_time,
     }
+    raw_interval = args.get('save_interval', '').strip()
+    if raw_interval:
+        save_interval = float(raw_interval)
+        if not math.isfinite(save_interval) or save_interval < 0.0:
+            raise ValueError('save_interval must be finite and >= 0')
+        overrides['trajectory.save_interval'] = save_interval
     return str(params_file), overrides, use_sim_time, rviz, prior
 
 
@@ -61,6 +68,7 @@ def generate_launch_description():
         'mode': 'mapping',
         'prior_map': '',
         'save_dir': '',
+        'save_interval': '',
         'rviz': 'false',
     }
     descriptions = {
@@ -68,7 +76,8 @@ def generate_launch_description():
         'use_sim_time': '后端与 RViz 是否使用 /clock',
         'mode': 'mapping：无先验建图；localization：加载 prior_map 定位',
         'prior_map': '先验地图包目录；localization 必填且须存在，mapping 忽略',
-        'save_dir': '~/save_map 与退出保存的目标目录；留空则不可保存',
+        'save_dir': '手动、定时与退出保存的目标目录；留空则不可保存',
+        'save_interval': '建图定时保存间隔（秒）；留空使用参数文件，0 表示关闭',
         'rviz': '是否启动 RViz；可视化话题开关只由参数文件的 visualization.* 决定',
     }
 

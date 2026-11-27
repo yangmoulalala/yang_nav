@@ -74,6 +74,7 @@ def params_file(tmp_path):
     {'mode': 'unknown'}, {'mode': 'config'},
     {'mode': 'localization'}, {'mode': 'localization', 'prior_map': 'missing'},
     {'mode': 'mapping', 'rviz': 'perhaps'}, {'use_sim_time': 'sometimes'},
+    {'save_interval': '-1'}, {'save_interval': 'inf'}, {'save_interval': 'nan'},
 ])
 def test_invalid_arguments_fail_before_process_creation(tmp_path, params_file, overrides):
     """非法模式、缺失或不存在的先验地图、非法开关均在创建进程前失败。"""
@@ -100,6 +101,15 @@ def test_mapping_passes_params_file_and_launch_only_values(params_file):
     assert file_arg == str(params_file)
     assert overrides == {'prior_map.enabled': False, 'prior_map.directory': '',
                          'trajectory.save_directory': '/tmp/runtime', 'use_sim_time': False}
+
+
+@pytest.mark.parametrize('value, expected', [('60', 60.0), ('0', 0.0)])
+def test_explicit_save_interval_overrides_yaml(params_file, value, expected):
+    _, overrides = backend_launch.resolve({
+        'params_file': str(params_file), 'mode': 'mapping', 'prior_map': '',
+        'save_dir': '/tmp/runtime', 'use_sim_time': 'false', 'rviz': 'false',
+        'save_interval': value})[:2]
+    assert overrides['trajectory.save_interval'] == expected
 
 
 def test_localization_with_rviz_yields_backend_and_rviz(tmp_path, params_file):

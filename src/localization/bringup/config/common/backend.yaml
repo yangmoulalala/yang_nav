@@ -77,6 +77,9 @@ backend_node:
         max_interval: 0.5
       # 无先验图时是否在正常退出时保存运行轨迹地图。
       save_on_shutdown: false
+      # 建图期间周期保存地图的间隔，单位为秒；0 表示关闭。
+      # 断电不会触发退出保存，靠它把已建部分落到磁盘。
+      save_interval: 0.0
       # 保存地图包时是否额外输出合并后的全局 PCD。
       save_global_pcd: true
       # 合并运行地图时使用的体素边长，单位为米。

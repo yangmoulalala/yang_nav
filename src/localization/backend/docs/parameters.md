@@ -136,6 +136,7 @@
 | 键 | 类型 / 单位 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `save_on_shutdown` | 布尔 | `false` | 是否在正常退出时保存运行地图；关闭时仍可调用保存服务，先验定位时不保存 |
+| `save_interval` | 浮点，s | `0.0` | 无先验图且有输出目录时定时保存运行地图；`0` 关闭，保存成功会替换整个输出目录 |
 | `save_directory` | 路径 | 仅 launch | 建图结果的保存目录；由 launch 参数 `save_dir` 提供，留空则不可保存 |
 | `save_global_pcd` | 布尔 | `true` | 保存地图包时是否额外生成全局 `map.pcd` |
 | `map_voxel_resolution` | 浮点，m | `0.15` | 运行地图显示及全局 PCD 导出的体素边长；须 `≥0`，`0` 不降采样 |
@@ -385,7 +386,8 @@ UWB 只在 `SUSPECT`/`LOST` 恢复时作位置先验，不参与跟踪和因子�
 | `use_sim_time` | 布尔 | `false` | 后端和 RViz 是否使用 `/clock` 仿真时间 |
 | `mode` | 字符串 | `mapping` | `mapping` 无先验建图；`localization` 加载 `prior_map` 定位；决定 `prior_map.enabled` |
 | `prior_map` | 路径 | `""` | 先验地图包目录，写入 `prior_map.directory`；`localization` 必填且须存在，`mapping` 忽略 |
-| `save_dir` | 路径 | `""` | `~/save_map` 与退出保存的目标目录，写入 `trajectory.save_directory`；留空则不可保存 |
+| `save_dir` | 路径 | `""` | 手动、定时与退出保存的目标目录，写入 `trajectory.save_directory`；留空则不可保存 |
+| `save_interval` | 浮点，s | 留空 | 非空时覆盖 `trajectory.save_interval`，`0` 关闭定时保存 |
 | `rviz` | 布尔 | `false` | 是否启动 RViz；可视化话题开关只由参数文件的 `visualization.*` 决定 |
 
 bringup 的 `localization.launch.py` 包含本文件，并传入 `bringup/config/common/backend.yaml` 与话题 remap。

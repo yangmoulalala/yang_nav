@@ -155,6 +155,36 @@ void LocalizationNode::configureTimers() {
             std::chrono::duration<double>(std::max(0.1, parameters_.maps.publish_period)),
             std::bind(&LocalizationNode::mapPublishCallback, this), map_callback_group_);
     }
+    // 断电不会走到 finish()，建图期间只能靠周期写出保住已建部分。
+    if (parameters_.maps.save_interval > 0.0 && !parameters_.maps.save_directory.empty()) {
+        save_timer_ = create_wall_timer(
+            std::chrono::duration<double>(parameters_.maps.save_interval),
+            std::bind(&LocalizationNode::saveMapTimerCallback, this), map_callback_group_);
+        RCLCPP_INFO_STREAM(get_logger(), "periodic map save every "
+                                             << parameters_.maps.save_interval << " s to "
+                                             << parameters_.maps.save_directory);
+    }
+}
+
+/// 周期写出运行轨迹地图；与 save_map 服务共用互斥回调组，天然避免重入。
+void LocalizationNode::saveMapTimerCallback() {
+    if (failed() || parameters_.maps.save_directory.empty()) {
+        return;
+    }
+    invoke(
+        "periodic map save",
+        [&] {
+            if (saveTrajectoryMap(parameters_.maps.save_directory)) {
+                RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 60000,
+                                            "periodic map save finished: "
+                                                << parameters_.maps.save_directory);
+            } else {
+                RCLCPP_WARN_STREAM_THROTTLE(get_logger(), *get_clock(), 60000,
+                                            "periodic map save skipped or failed: "
+                                                << parameters_.maps.save_directory);
+            }
+        },
+        FailurePolicy::Skip);
 }
 
 /// 发布静态地图、坐标轴和初始状态并报告有效能力。

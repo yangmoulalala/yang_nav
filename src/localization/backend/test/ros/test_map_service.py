@@ -61,6 +61,7 @@ def generate_test_description():
         'common.publish_odom_tf': True,
         'loop.enabled': False,
         'trajectory.save_on_shutdown': False, 'trajectory.map_voxel_resolution': 0.0,
+        'trajectory.save_interval': 1.0,
         'trajectory.keyframe.min_interval': 0.0, 'trajectory.keyframe.max_interval': 0.1,
         'visualization.enabled': False,
     }
@@ -175,6 +176,8 @@ class TestMapService(unittest.TestCase):
                 sequence = parent.header.stamp.sec - 10
                 self.assertAlmostEqual(child.transform.translation.x, .5 * sequence + .1, places=5)
                 self.assertAlmostEqual(child.transform.translation.y, -.05, places=5)
+            self.wait_until(lambda: len(list((destination / 'clouds').glob('*.pcd'))) == 3)
+            self.assertTrue((destination / 'keyframes.txt').is_file())
             self.assertTrue(self.save(client).success)
             before = fingerprint(destination)
             self.assertIn('map.pcd', before)

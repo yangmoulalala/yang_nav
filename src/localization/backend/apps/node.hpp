@@ -126,6 +126,8 @@ private:
     void maintenanceCallback();
     /// 按配置周期发布当前运行轨迹地图。
     void mapPublishCallback();
+    /// 建图期间按 save_interval 周期写出运行轨迹地图，未优雅退出时保住已建部分。
+    void saveMapTimerCallback();
 
     /// 提交前端新代次身份并重建输入队列和输出时间水位。
     void onFrontendResetBoundary();
@@ -175,6 +177,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr uwb_team_sub_;
     rclcpp::TimerBase::SharedPtr maintenance_timer_;
     rclcpp::TimerBase::SharedPtr map_timer_;
+    rclcpp::TimerBase::SharedPtr save_timer_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr relocalize_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr global_relocalize_service_;

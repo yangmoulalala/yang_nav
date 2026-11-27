@@ -36,6 +36,7 @@ PIPELINE_ARGS = {
     'mode': ('mapping', 'mapping 或 localization'),
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
     'map_dir': (str(WORKSPACE / 'maps' / 'real'/ '001'), '地图保存目录（绝对路径）'),
+    'save_interval': ('', '定时保存间隔（秒）；留空时有输出目录的建图默认 60，0 关闭'),
     'rviz': ('false', '后端 RViz'),
     'backend_overrides': ('', '后端 ROS 参数覆盖 YAML'),
     'lidar_min_range': ('', '雷达近距软件过滤下限（米），留空使用配置默认值'),
