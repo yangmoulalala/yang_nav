@@ -151,6 +151,31 @@ def test_cloud_registration_transfer():
     assert a['type'] == UNDULATION and abs(a['dir'] - (30 - math.degrees(yaw))) < 0.5   # manual direction, rotated by the registration
 
 
+def test_cloud_registration_transfers_saved_map_annotations(tmp_path):
+    points = sample_mesh(field(), 120000, np.random.default_rng(1))
+    reference = sp.Project.from_cloud(points, params(), log=lambda *_: None)
+    patch = pid_at(reference, 0.5, 3.5)
+    reference.set_ann([patch], type=UNDULATION, dir=30.0, passable=False)
+    archive = tmp_path / 'reference.surf.npz'
+    reference.save(archive)
+    reference = sp.Project.load(archive)
+
+    translation = np.array([0.40, -0.20, 0.0])
+    cloud = sp.Project.from_cloud(points - translation, params(), log=lambda *_: None)
+    registration_result = cloud.register_to(reference, translation, 0.0, log=lambda *_: None)
+    assert registration_result['reference_frame'] == 'map'
+    assert registration_result['t_world_map'] == pytest.approx(translation, abs=0.03)
+
+    col, row = cloud.surf.cell_of(0.5 - translation[0], 3.5 - translation[1])
+    cloud.surf.z[row, col] = np.nan
+    assert cloud.field_lookup(reference)[row, col] == patch
+    assert cloud.adopt_from(reference, log=lambda *_: None) == 1
+    assert np.isnan(cloud.surf.z[row, col]) and cloud.patch_at(col, row) == 0
+    annotation = cloud.a(pid_at(cloud, 0.6 - translation[0], 3.5 - translation[1]))
+    assert annotation['type'] == UNDULATION and not annotation['passable']
+    assert annotation['dir'] == pytest.approx(30.0, abs=0.5)
+
+
 def test_no_surface_observation_exports_as_unknown(tmp_path):
     p = proj()
     floor = pid_at(p, 0.5, 3.5)

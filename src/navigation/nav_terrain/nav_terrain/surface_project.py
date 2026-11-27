@@ -10,9 +10,8 @@ Nothing is guessed: a new patch is not annotated.  Re-running the segmentation h
 patch the annotation of the old patch it overlaps most (> half of its cells); the extent edits are
 replaced by the new segmentation.
 
-A prior-cloud project (frame 'map') can be registered onto a field-model project (frame 'field'),
-p_field = R p_map + t, and then adopt the model's patches and annotations: a sparse cloud splits one
-surface into many fragments, the model's patches are exact.  The cloud keeps its own heights.
+A prior-cloud project (frame 'map') can be registered onto a field model or another cloud project,
+p_reference = R p_map + t, and adopt the reference's patches and annotations. The cloud keeps its own heights.
 
 Export: observed, unannotated or not-passable cells -> OBSTACLE; cells without a surface observation
 -> UNKNOWN. Then terrain_export writes Nav2 maps, the direction field and zones.
@@ -366,11 +365,12 @@ class Project:
 
     # ------------------------------------------------------------------ registration / transfer
     def register_to(self, field_proj, guess_xyz, guess_yaw_deg, log=print):
-        if self.frame != 'map' or field_proj.frame != 'field':
-            raise ValueError('register a prior-cloud project onto a field-model project')
+        if self.frame != 'map' or field_proj.frame not in ('field', 'map'):
+            raise ValueError('register a prior-cloud project onto a field model or cloud project')
         tgt = ss.surface_points(field_proj.surf, field_proj.params)
         src = ss.surface_points(self.surf, self.params, max_points=200000)
         self.reg = icp(tgt, src, guess_xyz, math.radians(guess_yaw_deg))
+        self.reg['reference_frame'] = field_proj.frame
         log('配准：t %s，rpy %s°，残差 p50 %.3f / p90 %.3f m，内点 %.0f %%'
             % (np.round(self.reg['t_world_map'], 3).tolist(), np.round(self.reg['rpy_deg'], 2).tolist(),
                self.reg['residual_p50'], self.reg['residual_p90'], 100 * self.reg['inlier_ratio_8cm']))
@@ -383,11 +383,11 @@ class Project:
         return projection.sample(field_proj.owner, 0) if grid is None else projection.sample(grid, np.nan)
 
     def adopt_from(self, field_proj, log=print):
-        """Replace this project's patches by the field model's (same ids) and copy its annotations.
+        """Replace this project's patches by the reference's (same ids) and copy its annotations.
 
-        Every cloud cell takes the model patch under its centre.  Cells of a model patch without cloud
-        data (tunnel floors under the roof, scan shadows) take the model height, so the patch stays
-        whole; cells outside the model get no patch (obstacle on export).  Directions are rotated into the map frame; a
+        Every cloud cell takes the reference patch under its centre. Only a field model can supply
+        heights in cells without cloud data (tunnel floors under the roof, scan shadows).
+        Cells outside the reference get no patch (obstacle on export). Directions are rotated into the map frame; a
         multi-direction slope on its geometric direction stays per face.  Like a re-segmentation this
         resets the undo history and the 'restore' extent (now the model patches)."""
         if self.reg is None:
@@ -396,7 +396,7 @@ class Project:
         projection = FieldProjection(self.surf, field_proj.surf, self.reg)
         look = projection.sample(field_proj.owner, 0)
         hole = (look > 0) & ~np.isfinite(self.surf.z)
-        if hole.any():
+        if field_proj.frame == 'field' and hole.any():
             fz = projection.sample(field_proj.surf.z, np.nan)
             R, t = projection.rotation, projection.translation
             z = self.surf.z.copy()
@@ -416,7 +416,7 @@ class Project:
                 b['dir'], b['rev'] = (field_proj.direction(fp) - yaw) % 360.0, False
             ann[fp] = b
         self._replace_patches(look.astype(np.int32), ann)
-        log('采用模型面片：%d 个点云面片 -> %d 个模型面片，%d 个标注（模型共 %d 个）'
+        log('采用参考面片：%d 个点云面片 -> %d 个参考面片，%d 个标注（参考共 %d 个）'
             % (before, len(self.ids()), len(ann), len(field_proj.ann)))
         return len(ann)
 

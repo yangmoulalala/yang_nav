@@ -32,15 +32,19 @@
   function showReferences() {
     const {projects = [], models = []} = config?.terrain_references || {};
     const loaded = project()?.reference;
-    const placeholder = new Option('选择场地工程或模型', '');
-    const archives = document.createElement('optgroup');
-    archives.label = '场地标注工程';
-    archives.replaceChildren(...projects.map(({path, annotated}) => new Option(`${path} · ${annotated} 个已标注`, path)));
+    const placeholder = new Option('选择标注工程或场地模型', '');
+    const archives = [['field', '场地标注工程'], ['map', '建图标注工程']].map(([frame, label]) => {
+      const group = document.createElement('optgroup');
+      group.label = label;
+      group.replaceChildren(...projects.filter((item) => (item.frame || 'field') === frame)
+        .map(({path, annotated}) => new Option(`${path} · ${annotated} 个已标注`, path)));
+      return group;
+    });
     const meshes = document.createElement('optgroup');
     meshes.label = '原始场地模型';
     meshes.replaceChildren(...models.map((path) => new Option(path, path)));
     const selected = referenceInput.value;
-    referenceInput.replaceChildren(placeholder, ...[archives, meshes].filter((group) => group.children.length));
+    referenceInput.replaceChildren(placeholder, ...[...archives, meshes].filter((group) => group.children.length));
     if (loaded && ![...referenceInput.options].some((option) => option.value === loaded)) {
       referenceInput.add(new Option(loaded, loaded));
     }
@@ -290,8 +294,8 @@
     element('terrain-registration').hidden = map.frame !== 'map';
     const reg = map.registration;
     const reference = map.reference
-      ? `参考 ${map.reference.split('/').at(-1)} · ${state.documents.field.annotated} 个已标注`
-      : '请选择已标注的场地工程，再载入参考。';
+      ? `参考 ${map.reference.split('/').at(-1)} · ${map.reference_annotated} 个已标注`
+      : '请选择标注工程或场地模型，再载入参考。';
     const indicator = element('terrain-registration-result');
     const goodFit = reg && reg.residual_p50 < 0.06 && reg.inlier_ratio_8cm > 0.6;
     indicator.classList.toggle('warn', !!reg && !goodFit);

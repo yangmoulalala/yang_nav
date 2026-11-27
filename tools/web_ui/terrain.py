@@ -57,11 +57,12 @@ def field_references(sources):
     for source in sources:
         if source.lower().endswith('.surf.npz'):
             try:
-                path = workspace_path(source, '场地工程')
+                path = workspace_path(source, '参考工程')
                 with np.load(path, allow_pickle=False) as archive:
                     meta = json.loads(archive['meta'].tobytes())
-                if meta.get('frame') == 'field':
-                    projects.append(dict(path=source, annotated=len(meta.get('ann', {}))))
+                frame = meta.get('frame')
+                if frame in ('field', 'map'):
+                    projects.append(dict(path=source, frame=frame, annotated=len(meta.get('ann', {}))))
             except (OSError, ValueError, KeyError, AttributeError, TypeError, BadZipFile):
                 continue
         elif Path(source).suffix.lower() in SUFFIXES:
@@ -174,6 +175,7 @@ class TerrainEditor:
         self.lock = Lock()
         self.action_lock = Lock()
         self.documents = {}
+        self.map_reference: TerrainDocument | None = None
         self.active = 'map'
         self.revision = secrets.token_hex(8)
 
@@ -182,17 +184,17 @@ class TerrainEditor:
         return self.documents.get(self.active)
 
     @property
-    def field(self):
-        return self.documents.get('field')
+    def reference(self):
+        return self.map_reference or self.documents.get('field')
 
     @property
     def reference_path(self):
-        field = self.field
-        return str((field.archive or field.source).relative_to(WORKSPACE)) if field else ''
+        reference = self.reference
+        return str((reference.archive or reference.source).relative_to(WORKSPACE)) if reference else ''
 
     def aligned(self, document):
         return (document.project.frame == 'map' and document.project.reg is not None and
-                self.field is not None and document.registered_to is self.field.project)
+                self.reference is not None and document.registered_to is self.reference.project)
 
     def require_revision(self, revision):
         if revision != self.revision:
@@ -217,6 +219,7 @@ class TerrainEditor:
                                     resolution=project.surf.resolution, origin=project.surf.origin,
                                     patches=patches, params=project.params.to_dict(), registration=project.reg,
                                     reference=self.reference_path, can_adopt=self.aligned(document),
+                                    reference_annotated=len(self.reference.project.ann) if self.reference else 0,
                                     registration_seed=self.default_seed(document))
             return state
 
@@ -229,7 +232,7 @@ class TerrainEditor:
             project = document.project
             if route == 'owners':
                 return project.owner[::-1].astype('<u4', copy=False).tobytes(), 'application/octet-stream'
-            overlay = patch_edges(project.field_lookup(self.field.project)) if self.aligned(document) else None
+            overlay = patch_edges(project.field_lookup(self.reference.project)) if self.aligned(document) else None
             return render_preview(project, overlay), 'image/png'
 
     def details(self, revision, pid):
@@ -257,19 +260,28 @@ class TerrainEditor:
     def perform(self, operation, body):
         if operation in ('open', 'reference'):
             source = resolve_surface(body.get('source'))
-            target = 'field' if operation == 'reference' else body.get('target')
+            target = body.get('target') if operation == 'open' else None
             if target not in (None, 'map', 'field'):
                 raise ValueError('地形工作区无效')
             if target:
                 self.check_discard(target, body)
+            archive = source if source.name.lower().endswith('.surf.npz') and source.is_file() else None
+            if operation == 'reference' and not archive and (not source.is_file() or source.suffix.lower() not in SUFFIXES):
+                raise ValueError('配准参考需要已保存的 .surf.npz 标注工程或场地模型')
             loaded = load_surface(source, body)
+            if loaded.frame not in ('map', 'field'):
+                raise ValueError('地形工程坐标系无效')
             if target and loaded.frame != target:
-                raise ValueError('参考场地需要场地坐标系，建图点云需要地图坐标系')
-            self.check_discard(loaded.frame, body)
-            archive = source if source.name.lower().endswith('.surf.npz') else None
-            self.documents[loaded.frame] = TerrainDocument(loaded, source, archive)
-            if operation == 'open' or self.document is None:
-                self.active = loaded.frame
+                raise ValueError('场地工作区需要场地坐标系，建图工作区需要地图坐标系')
+            if operation == 'reference' and loaded.frame == 'map':
+                self.map_reference = TerrainDocument(loaded, source, archive)
+            else:
+                self.check_discard(loaded.frame, body)
+                self.documents[loaded.frame] = TerrainDocument(loaded, source, archive)
+                if loaded.frame == 'field':
+                    self.map_reference = None
+                if operation == 'open' or self.document is None:
+                    self.active = loaded.frame
             if operation == 'reference':
                 return dict(message=f'已载入参考场地，共 {len(loaded.ids())} 个面片，{len(loaded.ann)} 个有标注')
             return dict(message=f'已打开工程，共 {len(loaded.ids())} 个面片')
@@ -283,7 +295,8 @@ class TerrainEditor:
             filename = workspace_path(body.get('source'), '配准初值文件')
             if filename.name != 'terrain.json' or not filename.is_file():
                 raise ValueError('请选择已导出的 terrain.json')
-            return dict(message='已读入配准初值', guess=self.read_seed(filename))
+            frame = self.reference.project.frame if self.reference else 'field'
+            return dict(message='已读入配准初值', guess=self.read_seed(filename, frame))
         document = self.document
         if document is None:
             raise ValueError('请先打开地形工程')
@@ -297,7 +310,10 @@ class TerrainEditor:
             return dict(message=f'工程已保存到 {destination.relative_to(WORKSPACE)}')
         if operation == 'export':
             destination = map_output(body.get('output'))
-            for item in self.documents.values():
+            sources = [*self.documents.values()]
+            if self.map_reference:
+                sources.append(self.map_reference)
+            for item in sources:
                 if item.source.is_relative_to(destination) or (item.archive and item.archive.is_relative_to(destination)):
                     raise ValueError('导出目录不能覆盖已打开的地形来源或工程文件')
             cfg = ExportConfig(direction_split_deg=number(body.get('direction_split_deg', 20), 1, 180, '方向拆分角'),
@@ -324,9 +340,11 @@ class TerrainEditor:
             raise ValueError('该工程有未保存修改，请先保存或确认放弃')
 
     @staticmethod
-    def read_seed(filename):
+    def read_seed(filename, reference_frame='field'):
         content = json.loads(filename.read_text(encoding='utf-8'))
         reg = content.get('registration', content) if isinstance(content, dict) else None
+        if isinstance(reg, dict) and reg.get('reference_frame', 'field') != reference_frame:
+            raise ValueError('配准文件的参考坐标系与当前参考不一致')
         return TerrainEditor.guess(reg)
 
     @staticmethod
@@ -340,12 +358,16 @@ class TerrainEditor:
     def default_seed(self, document):
         if document.project.frame != 'map':
             return None
+        reference_frame = self.reference.project.frame if self.reference else 'field'
         reg = document.project.reg
         if reg and reg.get('residual_p50', float('inf')) < 0.06 and reg.get('inlier_ratio_8cm', 0) > 0.6:
             saved_for_reference = (document.registered_to is None and
+                                   reg.get('reference_frame', 'field') == reference_frame and
                                    reg.get('reference', self.reference_path) == self.reference_path)
             if self.aligned(document) or saved_for_reference:
                 return self.guess(reg)
+        if reference_frame == 'map':
+            return None
         base = document.source if document.source.is_dir() else document.source.parent
         for file in (base / 'terrain' / 'terrain.json', base / 'terrain.json'):
             if file.is_file():
@@ -402,16 +424,17 @@ class TerrainEditor:
             project.segment(replace(project.params, **checked_options(body.get('params'), SEGMENT_FIELDS)))
             ids = []
         elif operation == 'register':
-            if self.field is None or project.frame != 'map':
-                raise ValueError('配准需要已打开的点云工程和参考场地')
+            reference = self.reference
+            if reference is None or project.frame != 'map':
+                raise ValueError('配准需要已打开的点云工程和参考工程或场地模型')
             guess = coordinates(body.get('guess'), [(-1000, 1000)] * 3 + [(-360, 360)], '配准初值')
-            registration = project.register_to(self.field.project, guess[:3], guess[3])
+            registration = project.register_to(reference.project, guess[:3], guess[3])
             registration['reference'] = self.reference_path
-            document.registered_to = self.field.project
+            document.registered_to = reference.project
         elif operation == 'adopt':
             if not self.aligned(document):
-                raise ValueError('请先配准点云和参考场地')
-            project.adopt_from(self.field.project)
+                raise ValueError('请先配准点云和参考工程或场地模型')
+            project.adopt_from(self.reference.project)
             document.registered_to = None
             ids = []
         else:
