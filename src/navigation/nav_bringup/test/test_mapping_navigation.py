@@ -1,4 +1,4 @@
-"""Run the mapping planners against a rolling map fed by synthetic clearing rays."""
+"""Run mapping navigation with synthetic clearing rays and a cumulative point cloud."""
 
 import math
 import os
@@ -43,16 +43,16 @@ def test_mapping_observations_extend_single_goal_but_never_substitute_a_waypoint
         transform.transform.rotation.w = 1.0
         clearing = node.create_publisher(PointCloud2, '/nav/clearing', qos_profile_sensor_data)
         hits = node.create_publisher(PointCloud2, '/nav/obstacles', qos_profile_sensor_data)
+        latched = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+        runtime_map = node.create_publisher(PointCloud2, '/backend_node/runtime_map', latched)
         odom = node.create_publisher(Odometry, '/localization/odometry', 10)
         radius = 1.8
         robot_x = 0.0
-        latest_grid = None
+        obstacle = False
+        floor_observed = False
+        grids = {}
         directions = [(math.cos(index * math.tau / 1080), math.sin(index * math.tau / 1080))
                       for index in range(1080)]
-
-        def receive_grid(grid):
-            nonlocal latest_grid
-            latest_grid = grid
 
         def publish_observations():
             stamp = node.get_clock().now().to_msg()
@@ -61,14 +61,18 @@ def test_mapping_observations_extend_single_goal_but_never_substitute_a_waypoint
             broadcaster.sendTransform(transform)
             header = Header(stamp=stamp, frame_id='gimbal_nav')
             clearing.publish(create_cloud_xyz32(header, [(radius * dx, radius * dy, 0.) for dx, dy in directions]))
-            hits.publish(create_cloud_xyz32(header, []))
+            hits.publish(create_cloud_xyz32(header, [(0.425, 0.025, 0.1)] if obstacle else []))
+            if floor_observed:
+                runtime_map.publish(create_cloud_xyz32(
+                    Header(stamp=stamp, frame_id='map'), [(-3.375, 3.075, -0.062), (0.425, 0.025, -0.062)]))
             odometry = Odometry(header=Header(stamp=stamp, frame_id='map'), child_frame_id='gimbal_nav')
             odometry.pose.pose.position.x = robot_x
             odometry.pose.pose.orientation.w = 1.0
             odom.publish(odometry)
 
-        node.create_subscription(OccupancyGrid, '/global_costmap/costmap', receive_grid,
-                                 QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        for scope in ('global', 'local'):
+            node.create_subscription(OccupancyGrid, f'/{scope}_costmap/costmap',
+                                     lambda grid, scope=scope: grids.update({scope: grid}), latched)
         node.create_timer(0.05, publish_observations)
         single = ActionClient(node, ComputePathToPose, '/compute_path_to_pose')
         multi = ActionClient(node, ComputePathThroughPoses, '/compute_path_through_poses')
@@ -90,13 +94,19 @@ def test_mapping_observations_extend_single_goal_but_never_substitute_a_waypoint
         def is_active():
             return result(lifecycle.call_async(GetState.Request())).current_state.label == 'active'
 
-        def cell(x, y):
-            if latest_grid is None:
+        def cell(x, y, scope='global'):
+            grid = grids.get(scope)
+            if grid is None:
                 return None
-            info = latest_grid.info
+            info = grid.info
             col = math.floor((x - info.origin.position.x) / info.resolution)
             row = math.floor((y - info.origin.position.y) / info.resolution)
-            return latest_grid.data[row * info.width + col]
+            if not (0 <= col < info.width and 0 <= row < info.height):
+                return None
+            return grid.data[row * info.width + col]
+
+        def both_have(x, y, cost):
+            return all(cell(x, y, scope) == cost for scope in ('global', 'local'))
 
         def pose(x):
             target = PoseStamped(header=Header(frame_id='map'))
@@ -117,8 +127,15 @@ def test_mapping_observations_extend_single_goal_but_never_substitute_a_waypoint
         wait_for(is_active)
         wait_for(lambda: cell(0., 0.) == 0 and cell(3.2, 0.) == -1)
 
-        partial = plan(3.2)
-        assert partial.status == GoalStatus.STATUS_SUCCEEDED, partial
+        partial = None
+
+        def planner_ready():
+            nonlocal partial
+            partial = plan(3.2)
+            return partial.result.error_code != ComputePathToPose.Result.TIMEOUT
+
+        wait_for(planner_ready)
+        assert partial.status == GoalStatus.STATUS_SUCCEEDED, log.read_text()[-12000:]
         endpoint = partial.result.path.poses[-1].pose.position.x
         assert 0.5 < endpoint < 1.4
         assert all(cell(point.pose.position.x, point.pose.position.y) == 0 for point in partial.result.path.poses)
@@ -150,6 +167,19 @@ def test_mapping_observations_extend_single_goal_but_never_substitute_a_waypoint
         assert complete.status == GoalStatus.STATUS_SUCCEEDED, complete
         assert complete.result.path.poses[-1].pose.position.x == 3.2
         assert run_action(multi, route).status == GoalStatus.STATUS_SUCCEEDED
+
+        wait_for(lambda: both_have(-3.375, 3.075, -1))
+        floor_observed = True
+        wait_for(lambda: both_have(-3.375, 3.075, 0))
+        assert both_have(-3.225, 3.075, -1)
+        obstacle = True
+        wait_for(lambda: both_have(0.425, 0.025, 100))
+        blocked = plan(3.2)
+        assert blocked.status == GoalStatus.STATUS_ABORTED
+        assert blocked.result.error_code == ComputePathToPose.Result.START_OCCUPIED
+        floor_observed = False
+        wait_for(lambda: both_have(-3.375, 3.075, -1))
+        assert both_have(0.425, 0.025, 100)
     finally:
         if process.poll() is None:
             os.killpg(process.pid, signal.SIGINT)

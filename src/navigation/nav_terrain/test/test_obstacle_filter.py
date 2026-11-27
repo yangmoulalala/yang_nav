@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 from nav_terrain.obstacle_filter import FilterConfig, GroundFilter, LiveGroundFilter
+from nav_terrain.mapping_ground import ground_evidence
 from nav_terrain.terrain_map import OBSTACLE, UNKNOWN, TerrainMap
 
 
@@ -11,6 +12,18 @@ def terrain():
     m.elevation = np.zeros(m.terrain.shape, np.float32)
     m.clearance = np.full(m.terrain.shape, np.inf, np.float32)
     return m
+
+
+def test_mapping_ground_accepts_only_observed_uncontested_cells():
+    points = np.array([[-0.24, 0.05, 1.01], [0.02, 0.05, 1.0], [0.04, 0.05, 1.15],
+                       [0.22, 0.05, 2.0], [0.38, 0.05, 0.85], [0.39, 0.04, 1.0],
+                       [np.nan, 0.0, 1.0], [5.0, 0.0, 1.0]])
+    grid, origin = ground_evidence(points, [-0.02, 0.0, 1.062], 0.062, FilterConfig(), 0.15, 1.0)
+    def cost(world_x):
+        col, row = np.floor(([world_x, 0.05] - origin) / 0.15).astype(int)
+        return grid[row, col]
+    assert cost(-0.24) == 0
+    assert all(cost(world_x) == -1 for world_x in (-0.5, 0.02, 0.22, 0.38))
 
 
 def test_ground_roof_self_and_invalid_returns_are_not_obstacles():
@@ -141,3 +154,32 @@ def test_ceiling_rejection_is_not_just_max_height_clipping():
     hits, rays = f.select(p, p, (0, 0, .1), 0)
     assert hits.tolist() == [1]  # roof is inside the configured obstacle height band
     assert rays.tolist() == [1]
+
+
+def test_mapping_ground_carves_floor_along_observed_rays():
+    angles = np.linspace(0.0, 2.0 * np.pi, 720, endpoint=False)
+    points = np.stack([3.0 * np.cos(angles), 3.0 * np.sin(angles), np.full(angles.size, 1.0)], axis=1)
+    grid, origin = ground_evidence(points, [0.0, 0.0, 1.062], 0.062, FilterConfig(), 0.05, 4.0)
+
+    def cost(x, y=0.0):
+        col, row = np.floor(([x, y] - origin) / 0.05).astype(int)
+        return grid[row, col]
+
+    # Everything between the robot and the ring is observed floor, not just the hits.
+    assert all(cost(distance) == 0 for distance in (0.25, 0.8, 1.5, 2.0, 2.9))
+    assert cost(3.5) == -1
+
+
+def test_mapping_ground_stops_carving_at_the_nearest_obstacle():
+    angles = np.linspace(0.0, 2.0 * np.pi, 720, endpoint=False)
+    points = np.stack([3.0 * np.cos(angles), 3.0 * np.sin(angles), np.full(angles.size, 1.0)], axis=1)
+    points = np.vstack([points, [[1.5, 0.0, 1.15]]])
+    grid, origin = ground_evidence(points, [0.0, 0.0, 1.062], 0.062, FilterConfig(), 0.05, 4.0)
+
+    def cost(x):
+        col, row = np.floor(([x, 0.0] - origin) / 0.05).astype(int)
+        return grid[row, col]
+
+    assert cost(1.2) == 0      # floor in front of the obstacle stays observed
+    assert cost(2.0) == -1     # nothing behind an obstacle is declared clear
+    assert cost(-2.0) == 0     # the opposite ray is unaffected

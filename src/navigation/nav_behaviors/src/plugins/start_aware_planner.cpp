@@ -2,6 +2,8 @@
 // The shared costmap is never cleared, masked or modified by this wrapper.
 #include <chrono>
 #include <algorithm>
+#include <cmath>
+#include <memory>
 #include <optional>
 #include "nav2_costmap_2d/footprint.hpp"
 #include "nav2_core/global_planner.hpp"
@@ -158,6 +160,37 @@ private:
     return planFromStart(start,goal,canceled);
   }
 
+  // Copy the neighbourhood the detour search can reach, so the search never holds
+  // the master costmap mutex that the update thread and the controller need.
+  static std::shared_ptr<nav2_costmap_2d::Costmap2D> detourWindow(
+    nav2_costmap_2d::Costmap2D & source, const Pose2 & robot, const Pose2 & target)
+  {
+    const double resolution = source.getResolution();
+    const double reach = std::hypot(target.x - robot.x, target.y - robot.y);
+    const double half = std::min(12.0, std::max(3.0, reach + 1.0));
+    const auto limit = [](double value, int low, int high) {
+        return std::max(low, std::min(high, static_cast<int>(value)));
+      };
+    const int size_x = static_cast<int>(source.getSizeInCellsX());
+    const int size_y = static_cast<int>(source.getSizeInCellsY());
+    const int min_x = limit(std::floor((robot.x - half - source.getOriginX()) / resolution), 0, size_x);
+    const int max_x = limit(std::ceil((robot.x + half - source.getOriginX()) / resolution), min_x, size_x);
+    const int min_y = limit(std::floor((robot.y - half - source.getOriginY()) / resolution), 0, size_y);
+    const int max_y = limit(std::ceil((robot.y + half - source.getOriginY()) / resolution), min_y, size_y);
+    if (max_x - min_x < 8 || max_y - min_y < 8) {return nullptr;}
+    auto window = std::make_shared<nav2_costmap_2d::Costmap2D>(
+        static_cast<unsigned>(max_x - min_x), static_cast<unsigned>(max_y - min_y), resolution,
+        source.getOriginX() + min_x * resolution, source.getOriginY() + min_y * resolution,
+        nav2_costmap_2d::NO_INFORMATION);
+    const auto * data = source.getCharMap();
+    for (int row = min_y; row < max_y; ++row) {
+      std::copy_n(data + static_cast<size_t>(row) * source.getSizeInCellsX() + min_x,
+        max_x - min_x,
+        window->getCharMap() + static_cast<size_t>(row - min_y) * window->getSizeInCellsX());
+    }
+    return window;
+  }
+
   nav_msgs::msg::Path planInObservedSpace(const geometry_msgs::msg::PoseStamped & start,
     const geometry_msgs::msg::PoseStamped & goal, const std::function<bool()> & canceled)
   {
@@ -170,25 +203,83 @@ private:
     }
     const auto footprint = map_->getRobotFootprint();
     using MapLock = std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t>;
+    std::string direct_failure;
     try {
-      return planFromStart(start, goal, canceled);
+      auto direct = planFromStart(start, goal, canceled);
+      if (fallbacks_ > 0) {
+        RCLCPP_INFO(logger_, "StartAwarePlanner: direct planning recovered after %d fallback plans",
+          fallbacks_);
+        fallbacks_ = 0;
+      }
+      return direct;
     } catch (const nav2_core::PlannerCancelled &) {
       throw;
+    } catch (const nav2_core::StartOutsideMapBounds &) {
+      throw;
+    } catch (const nav2_core::StartOccupied &) {
+      throw;
     } catch (const nav2_core::PlannerException & error) {
-      RCLCPP_WARN_THROTTLE(logger_, *map_->get_clock(), 2000,
-        "StartAwarePlanner: direct plan rejected: %s", error.what());
+      direct_failure = error.what();
     }
     if (canceled && canceled()) {throw nav2_core::PlannerCancelled("Approach planning canceled");}
+    std::vector<Pose2> approach;
+    std::shared_ptr<nav2_costmap_2d::Costmap2D> window;
     MapLock lock(*costs->getMutex());
+    unsigned goal_col, goal_row;
+    if (costs->worldToMap(target.x, target.y, goal_col, goal_row) &&
+      observedTranslationFree(*costs, footprint, robot, target))
+    {
+      const auto segments = std::max(1, static_cast<int>(std::ceil(
+        std::hypot(target.x - robot.x, target.y - robot.y) / costs->getResolution())));
+      std::vector<Pose2> points;
+      points.reserve(segments + 1);
+      for (int segment = 0; segment < segments; ++segment) {
+        const double fraction = static_cast<double>(segment) / segments;
+        points.push_back({robot.x + fraction * (target.x - robot.x),
+          robot.y + fraction * (target.y - robot.y), robot.yaw});
+      }
+      points.push_back(target);
+      nav_msgs::msg::Path path;
+      path.header = start.header;
+      path.poses = translationPoses(start, points);
+      path.poses.back().pose = goal.pose;
+      return path;
+    }
     const bool unknown_goal = needsObservedApproach(*costs, footprint, target);
-    const auto approach = observedApproach(*costs, footprint, robot, target, approach_clearance_, !unknown_goal);
+    approach = observedApproach(*costs, footprint, robot, target, approach_clearance_, !unknown_goal);
+    window = detourWindow(*costs, robot, target);
+    lock.unlock();
+    // The detour search is the expensive step. Run it on a copy of the neighbourhood
+    // so the costmap update thread and the controller are not queued behind it.
+    std::vector<Pose2> detour;
+    if (window) {
+      const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(200);
+      detour = observedDetour(*window, footprint, robot, target, approach_clearance_, [&] {
+          return (canceled && canceled()) || std::chrono::steady_clock::now() >= deadline;
+        });
+    }
+    if (canceled && canceled()) {throw nav2_core::PlannerCancelled("Approach planning canceled");}
+    auto remaining = [&](const Pose2 & pose) {
+        return std::hypot(pose.x - target.x, pose.y - target.y);
+      };
+    if (!detour.empty() && (approach.empty() || remaining(detour.back()) == 0.0 ||
+      remaining(detour.back()) + 0.15 < remaining(approach.back())))
+    {
+      approach = std::move(detour);
+    }
+    ++fallbacks_;
+    RCLCPP_WARN_THROTTLE(logger_, *map_->get_clock(), 5000,
+      "StartAwarePlanner: observed-space fallback #%d; direct plan rejected: %s",
+      fallbacks_, direct_failure.c_str());
     if (approach.empty()) {
-      throw nav2_core::NoValidPathCouldBeFound("No observed free approach toward the goal");
+      throw nav2_core::NoValidPathCouldBeFound(
+              "No observed free approach toward the goal; direct planning: " + direct_failure);
     }
     nav_msgs::msg::Path path;
     path.header = start.header;
     path.poses = translationPoses(start, approach);
     const auto & end = approach.back();
+    if (end.x == target.x && end.y == target.y) {path.poses.back().pose = goal.pose; return path;}
     RCLCPP_INFO_THROTTLE(logger_, *map_->get_clock(), 2000,
       "Unknown space: approach (%.2f, %.2f); original target remains pending", end.x, end.y);
     return path;
@@ -242,6 +333,15 @@ private:
         return path;
       }
       if (require_observed_path_) {
+        if (!map->worldToMap(a.x, a.y, sx, sy)) {
+          throw nav2_core::StartOutsideMapBounds("Mapping start is outside the global costmap");
+        }
+        if (!footprintFreeInUnknown(*map, fp, a) ||
+          (map->getCost(sx, sy) >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE &&
+          map->getCost(sx, sy) != nav2_costmap_2d::NO_INFORMATION))
+        {
+          throw nav2_core::StartOccupied("Mapping start is blocked by an obstacle or its inflation");
+        }
         throw nav2_core::NoValidPathCouldBeFound("Mapping start lacks observed footprint clearance");
       }
       escapes = escapePaths(*map, fp, a, b, max_distance_);
@@ -314,6 +414,7 @@ private:
   bool approach_unknown_goal_{false};
   bool require_observed_path_{false};
   bool allow_unknown_{true};
+  int fallbacks_{0};
 };
 }  // namespace nav_behaviors
 PLUGINLIB_EXPORT_CLASS(nav_behaviors::StartAwarePlanner, nav2_core::GlobalPlanner)

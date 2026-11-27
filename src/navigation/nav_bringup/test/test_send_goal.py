@@ -415,6 +415,10 @@ def test_mapping_uses_live_costmaps_without_terrain_servers():
         costmap = params[name][name]['ros__parameters']
         assert costmap['rolling_window'] and costmap['track_unknown_space']
         assert 'static_layer' not in costmap['plugins'] and not costmap.get('filters')
+        assert costmap['plugins'] == ['mapping_ground', 'obstacle_layer', 'inflation_layer']
+        assert costmap['mapping_ground']['map_topic'] == '/nav/mapping_ground'
+        assert costmap['obstacle_layer']['plugin'] == 'nav_behaviors::MappingObstacleLayer'
+        assert not costmap['obstacle_layer']['footprint_clearing_enabled']
     gate = params['cmd_gate']['ros__parameters']
     assert gate['require_observation'] and gate['limits']['normal']['max_linear'] == 0.5
     assert params['controller_server']['ros__parameters']['FollowPath']['ax_max'] == 0.9

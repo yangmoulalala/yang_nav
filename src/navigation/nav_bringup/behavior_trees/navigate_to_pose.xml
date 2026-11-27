@@ -44,7 +44,7 @@
                   <CommitZonePath planned_signature="{planning_goal_signature}" input_path="{shaped_path}" path="{path}" signature="{path_goal_signature}"/>
                 </Sequence>
               </Fallback>
-              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+              <__NAV_GLOBAL_RECOVERY__ name="GlobalCostmapRecovery"/>
             </RecoveryNode>
           </Fallback>
         </RateController>
@@ -53,7 +53,7 @@
           <KeepOccupiedGoalPending path="{path}">
           <RecoveryNode number_of_retries="1" name="FollowPath">
           <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
-          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <__NAV_LOCAL_RECOVERY__ name="LocalCostmapRecovery"/>
           </RecoveryNode>
           </KeepOccupiedGoalPending>
         </ReactiveSequence>
@@ -61,8 +61,8 @@
 
       <!-- recovery ladder, one child per nav_behaviors::RecoveryAction -->
       <Sequence name="Recover-ClearCostmaps">
-        <ClearEntireCostmap name="ClearLocalCostmap-Recovery" service_name="local_costmap/clear_entirely_local_costmap"/>
-        <ClearEntireCostmap name="ClearGlobalCostmap-Recovery" service_name="global_costmap/clear_entirely_global_costmap"/>
+        <__NAV_LOCAL_RECOVERY__ name="RecoverLocalCostmap"/>
+        <__NAV_GLOBAL_RECOVERY__ name="RecoverGlobalCostmap"/>
         <Wait wait_duration="1.0"/>
       </Sequence>
       <Spin name="Recover-Spin" spin_dist="1.57" time_allowance="10"/>

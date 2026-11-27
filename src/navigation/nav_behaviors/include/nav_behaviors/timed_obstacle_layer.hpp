@@ -13,6 +13,9 @@ public:
   void updateBounds(double x, double y, double yaw, double * min_x, double * min_y,
     double * max_x, double * max_y) override;
   void reset() override;
+protected:
+  virtual unsigned char expiredObstacleCost() const {return nav2_costmap_2d::FREE_SPACE;}
+
 private:
   struct Evidence {double x, y, stamp;};
   std::map<std::pair<int64_t, int64_t>, Evidence> evidence_;

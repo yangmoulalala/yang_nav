@@ -57,10 +57,17 @@ def mapping_params(document):
     for name, size in (('local_costmap', 8), ('global_costmap', 30)):
         costmap = document[name][name]['ros__parameters']
         costmap.update(rolling_window=True, track_unknown_space=True, width=size, height=size,
-                       resolution=0.05, plugins=['obstacle_layer', 'inflation_layer'])
+                       resolution=0.05, plugins=['mapping_ground', 'obstacle_layer', 'inflation_layer'])
+        costmap['mapping_ground'] = dict(plugin='nav2_costmap_2d::StaticLayer',
+                                         map_topic='/nav/mapping_ground', map_subscribe_transient_local=True,
+                                         footprint_clearing_enabled=False)
         costmap.pop('filters', None)
-        costmap['obstacle_layer']['plugin'] = 'nav2_costmap_2d::ObstacleLayer'
+        costmap['obstacle_layer'].update(plugin='nav_behaviors::MappingObstacleLayer',
+                                          footprint_clearing_enabled=False)
+    global_costmap = document['global_costmap']['global_costmap']['ros__parameters']
+    global_costmap['update_frequency'] = max(10.0, global_costmap['update_frequency'])
     planners = document['planner_server']['ros__parameters']
+    planners['costmap_update_timeout'] = max(1.0, planners.get('costmap_update_timeout', 1.0))
     for name in ('GridBased', 'StrictGridBased'):
         planners[name].update(allow_unknown=False, approach_occupied_goal=False,
                               require_observed_path=True, tolerance=0.0,
@@ -145,8 +152,12 @@ def build(context):
     base_frame = 'gimbal_nav'
     zones = '' if mapping else str(terrain_dir / 'zones.yaml')
     replacements = {'__NAV_ZONES_FILE__': zones,
+                    '__NAV_GLOBAL_RECOVERY__': ('Wait wait_duration="0.5"' if mapping else
+                        'ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"'),
+                    '__NAV_LOCAL_RECOVERY__': ('Wait wait_duration="0.5"' if mapping else
+                        'ClearEntireCostmap service_name="local_costmap/clear_entirely_local_costmap"'),
                     '__NAV_BACKUP__': 'false' if mapping else 'true',
-                    '__NAV_RETRIES__': '1' if mapping else '-1',
+                    '__NAV_RETRIES__': '3' if mapping else '-1',
                     '__NAV_PATH_MAX_AGE__': '1' if mapping else '10'}
     bt_xml = str(share / 'behavior_trees' / 'navigate_to_pose.xml')
     bt_xml = ReplaceString(source_file=bt_xml, replacements=replacements)

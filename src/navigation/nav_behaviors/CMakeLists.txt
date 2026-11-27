@@ -27,6 +27,10 @@ find_package(tf2_geometry_msgs REQUIRED)
 add_library(timed_obstacle_layer SHARED src/plugins/timed_obstacle_layer.cpp)
 target_include_directories(timed_obstacle_layer PRIVATE include)
 ament_target_dependencies(timed_obstacle_layer nav2_costmap_2d rclcpp pluginlib sensor_msgs)
+add_library(mapping_obstacle_layer SHARED src/plugins/mapping_obstacle_layer.cpp)
+target_include_directories(mapping_obstacle_layer PRIVATE include)
+target_link_libraries(mapping_obstacle_layer timed_obstacle_layer)
+ament_target_dependencies(mapping_obstacle_layer nav2_costmap_2d pluginlib)
 pluginlib_export_plugin_description_file(nav2_costmap_2d costmap_plugins.xml)
 
 # Reusable zone geometry, policy parsing, tracking and phase state; no ROS dependencies.
@@ -95,7 +99,7 @@ ament_target_dependencies(zone_bt_nodes rclcpp std_msgs nav_msgs behaviortree_cp
 
 pluginlib_export_plugin_description_file(nav2_core plugins.xml)
 
-install(TARGETS translation_velocity_critic translation_goal_checker translation_mppi_controller timed_obstacle_layer start_aware_planner zone_path_shaper zone_aware_controller zone_bt_nodes
+install(TARGETS translation_velocity_critic translation_goal_checker translation_mppi_controller timed_obstacle_layer mapping_obstacle_layer start_aware_planner zone_path_shaper zone_aware_controller zone_bt_nodes
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
@@ -111,6 +115,10 @@ if(BUILD_TESTING)
   target_include_directories(test_timed_obstacle_layer PRIVATE include)
   target_link_libraries(test_timed_obstacle_layer timed_obstacle_layer)
   ament_target_dependencies(test_timed_obstacle_layer nav2_costmap_2d nav2_util sensor_msgs tf2_ros)
+  ament_add_gtest(test_mapping_obstacle_layer test/test_mapping_obstacle_layer.cpp)
+  target_include_directories(test_mapping_obstacle_layer PRIVATE include)
+  target_link_libraries(test_mapping_obstacle_layer mapping_obstacle_layer)
+  ament_target_dependencies(test_mapping_obstacle_layer nav2_costmap_2d nav2_util sensor_msgs tf2_ros)
   ament_add_gtest(test_costmap_collision test/test_costmap_collision.cpp)
   target_link_libraries(test_costmap_collision directional_zone_core)
   ament_target_dependencies(test_costmap_collision nav2_costmap_2d nav_msgs)

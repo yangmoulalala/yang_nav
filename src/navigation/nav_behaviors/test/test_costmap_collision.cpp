@@ -139,6 +139,42 @@ TEST(ObservedApproach, DirectPathsRequireObservedSweptFootprintAndOriginalEndpoi
   EXPECT_FALSE(observedPathFree(map, fp, path, start, goal));
 }
 
+TEST(ObservedApproach, StraightFallbackRequiresFreeCentreAndSweptFootprint)
+{
+  nav2_costmap_2d::Costmap2D map(160, 160, 0.05, -4, -4, 0);
+  const auto fp = footprint();
+  const Pose2 start{0, 0, 0}, goal{2, 0, 0};
+  EXPECT_TRUE(observedTranslationFree(map, fp, start, goal));
+  obstacle(map, 1.0, 0.0, nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
+  EXPECT_FALSE(observedTranslationFree(map, fp, start, goal));
+  obstacle(map, 1.0, 0.0, nav2_costmap_2d::FREE_SPACE);
+  for (const auto cost : {nav2_costmap_2d::LETHAL_OBSTACLE, nav2_costmap_2d::NO_INFORMATION}) {
+    obstacle(map, 1.0, 0.30, cost);
+    EXPECT_FALSE(observedTranslationFree(map, fp, start, goal));
+  }
+}
+
+TEST(ObservedApproach, SearchesAroundUnknownGapWithoutCrossingIt)
+{
+  nav2_costmap_2d::Costmap2D map(160, 160, 0.05, -4, -4, 0);
+  const auto robot = footprint();
+  const Pose2 start{0, 0, 0}, goal{2, 0, 0};
+  obstacle(map, 1.0, 0.0, nav2_costmap_2d::NO_INFORMATION);
+  ASSERT_FALSE(observedTranslationFree(map, robot, start, goal));
+  const auto path = observedDetour(map, robot, start, goal, 0.10, {});
+  ASSERT_GE(path.size(), 2u);
+  EXPECT_DOUBLE_EQ(path.back().x, goal.x);
+  EXPECT_DOUBLE_EQ(path.back().y, goal.y);
+  for (size_t index = 1; index < path.size(); ++index) {
+    EXPECT_TRUE(observedTranslationFree(map, robot, path[index - 1], path[index]));
+  }
+  obstacle(map, goal.x, goal.y, nav2_costmap_2d::NO_INFORMATION);
+  const auto partial = observedDetour(map, robot, start, goal, 0.10, {});
+  ASSERT_GE(partial.size(), 2u);
+  EXPECT_GT(std::hypot(partial.back().x - goal.x, partial.back().y - goal.y), 0.20);
+  EXPECT_TRUE(observedDetour(map, robot, start, goal, 0.10, [] {return true;}).empty());
+}
+
 TEST(CostmapCollision, ReentryCoversRotatingFootprintReactionAndBrakingInEveryDirection)
 {
   nav2_costmap_2d::Costmap2D map(200, 200, .025, -2.5, -2.5, 0);

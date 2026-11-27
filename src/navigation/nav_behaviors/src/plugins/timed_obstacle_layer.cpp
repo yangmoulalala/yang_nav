@@ -57,8 +57,8 @@ void TimedObstacleLayer::updateBounds(double x, double y, double yaw,
       if (distance >= obs.obstacle_max_range_ || distance < obs.obstacle_min_range_ ||
         getCost(mx, my) != nav2_costmap_2d::LETHAL_OBSTACLE) {continue;}
       double wx, wy; mapToWorld(mx, my, wx, wy);
-      const auto key = std::make_pair(std::llround((wx - anchor_x_) / resolution_),
-        std::llround((wy - anchor_y_) / resolution_));
+      const auto key = std::make_pair(static_cast<int64_t>(std::floor((wx - anchor_x_) / resolution_)),
+        static_cast<int64_t>(std::floor((wy - anchor_y_) / resolution_)));
       auto found = evidence_.find(key);
       if (found == evidence_.end() || stamp > found->second.stamp) {
         evidence_[key] = {wx, wy, stamp};
@@ -70,9 +70,10 @@ void TimedObstacleLayer::updateBounds(double x, double y, double yaw,
     const auto & point = it->second;
     if (!worldToMap(point.x, point.y, mx, my)) {it = evidence_.erase(it); continue;}
     if (now - point.stamp > retention_) {
-      // Only this layer is changed. Static walls and other layers remain intact.
-      setCost(mx, my, nav2_costmap_2d::FREE_SPACE);
-      touch(point.x, point.y, min_x, min_y, max_x, max_y);
+      if (getCost(mx, my) == nav2_costmap_2d::LETHAL_OBSTACLE) {
+        setCost(mx, my, expiredObstacleCost());
+        touch(point.x, point.y, min_x, min_y, max_x, max_y);
+      }
       it = evidence_.erase(it);
     } else {++it;}
   }
