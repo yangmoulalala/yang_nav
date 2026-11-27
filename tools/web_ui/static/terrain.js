@@ -215,6 +215,7 @@
       button.title = current?.source || '';
       element(`terrain-open-${frame}`).hidden = frame !== next.active;
     }
+    element('terrain-discard-hint').hidden = !next.documents[next.active]?.dirty;
     if (!next.project) {
       state = next;
       selection = new Set();
@@ -414,10 +415,9 @@
   element('patch-passable').addEventListener('change', (event) => {
     if (event.target.value !== '') run('annotate', {passable: event.target.value === 'true'});
   });
-  workspace.addEventListener('click', async (event) => {
+  workspace.addEventListener('click', (event) => {
     const command = event.target.closest('[data-edit]')?.dataset.edit;
     if (!command) return;
-    if (command === 'adopt' && !await confirmAction('采用模型面片和标注会替换当前点云的面片和编辑历史，确认继续？')) return;
     run(command);
   });
   function onSubmit(form, handler) {
@@ -426,7 +426,7 @@
   for (const button of documentButtons) {
     const frame = button.dataset.frame;
     button.addEventListener('click', () => { if (state?.active !== frame) run('switch', {frame}, true); });
-    onSubmit(`terrain-open-${frame}`, async (form) => {
+    onSubmit(`terrain-open-${frame}`, (form) => {
       const {source, offset_x, offset_y, offset_z, ...params} = Object.fromEntries(new FormData(form));
       let offset;
       if (frame === 'field' && /\.st(?:ep|p)$/i.test(source.trim())) {
@@ -437,7 +437,6 @@
         }
       }
       const discard = state?.documents[frame]?.dirty === true;
-      if (discard && !await confirmAction('该工程有未保存的修改，确认放弃并打开另一个来源？')) return;
       run('open', {source, target: frame, discard, offset,
         params: Object.fromEntries(Object.entries(params).filter(([, value]) => value !== '').map(([key, value]) => [key, Number(value)]))}, true);
     });
@@ -450,9 +449,7 @@
     const {output, ...options} = Object.fromEntries(new FormData(form));
     run('export', {output, ...Object.fromEntries(Object.entries(options).map(([key, value]) => [key, Number(value)]))});
   });
-  onSubmit('terrain-segment', async (form) => {
-    if (await confirmAction('重新分割会恢复自动面片边界，并按重叠面积继承标注，确认应用？')) run('segment', {params: readNumbers(form)});
-  });
+  onSubmit('terrain-segment', (form) => run('segment', {params: readNumbers(form)}));
   onSubmit('terrain-seed', (form) => run('seed', {source: form.elements.source.value}));
   element('terrain-auto-seed').addEventListener('click', () => setGuess(project().registration_seed));
   onSubmit('terrain-register', (form) => run('register', {guess: guessFields.map((name) => form.elements[name].valueAsNumber)}));

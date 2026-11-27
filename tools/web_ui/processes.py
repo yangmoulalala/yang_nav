@@ -104,7 +104,7 @@ class Processes:
                 state = 'cancelled'
             data[name] = dict(state=state, output=process.output if process else None,
                               code=process.child.poll() if process else None)
-            if name == 'localization' and state == 'running':
+            if name in ('localization', 'navigation') and state == 'running':
                 data[name]['mode'] = process.parameters['mode']
         return data
 
@@ -150,6 +150,8 @@ class Processes:
                 if not port.startswith('/dev/') or not Path(port).is_char_device():
                     raise ValueError(f'找不到底盘串口 {port or "/dev/nav"}')
                 command.append(f'chassis_port:={port}')
+                if 'lidar_min_range' in config['tuning']:
+                    command.append(f'lidar_min_range:={config["tuning"]["lidar_min_range"]}')
                 if config['lidar'] == 'dual' and config['l2_launch']:
                     l2 = path(config['l2_launch'])
                     if not l2.is_file() or not l2.name.endswith('.launch.py'):
@@ -163,21 +165,24 @@ class Processes:
             return
         elif name == 'navigation':
             loc = self.entries.get('localization')
-            if config['mode'] != 'localization' or (self.alive('localization') and
-                                                    loc.parameters['mode'] != 'localization'):
-                raise ValueError('Nav2 需要使用先验地图的匹配模式')
-            if not self.alive('localization') and '/backend_node' not in self.ros.node_names():
+            managed_loc = self.alive('localization')
+            mode = loc.parameters['mode'] if managed_loc else config['mode']
+            if not managed_loc and '/backend_node' not in self.ros.node_names():
                 raise ValueError('请先启动定位')
             self.wait_for_localization()
-            prior = self.entries['localization'].output if self.alive('localization') else config['prior_map']
-            folder = terrain_path(config['terrain_dir'] or prior)
             command = ['ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
-                       f'profile:={profile}', f'terrain_dir:={folder}']
+                       f'profile:={profile}', f'mode:={mode}']
+            output = None
+            if mode == 'localization':
+                prior = loc.output if managed_loc else config['prior_map']
+                folder = terrain_path(config['terrain_dir'] or prior)
+                command.append(f'terrain_dir:={folder}')
+                output = str(folder)
             if config['tuning']:
                 params = self.directory / 'nav2.yaml'
                 self.settings.overrides(name, params)
                 command.append(f'params_file:={params}')
-            self.launch(name, command, config, str(folder))
+            self.launch(name, command, dict(config, mode=mode), output)
             return
         elif name == 'bag':
             bag_name, options = bag_request(payload)
@@ -235,18 +240,21 @@ class Processes:
         raise ValueError('定位未得到可信位姿，Nav2 尚未启动。请查看定位日志。')
 
     def send_goal(self, payload):
-        if self.active_mapping() or self.settings.active['mode'] == 'mapping':
-            raise ValueError('建图时无法发送导航目标')
-        if self.ros.snapshot().get('nav2') != 'active':
+        state = self.ros.snapshot()
+        if state.get('nav2') != 'active':
             raise ValueError('Nav2 尚未激活')
+        if state.get('localization', {}).get('pose_trusted') != 'true' or not state.get('pose'):
+            raise ValueError('定位尚未得到可信位姿')
         x = number(payload.get('x'), -10000, 10000, 'X')
         y = number(payload.get('y'), -10000, 10000, 'Y')
         if self.alive('goal'):
             raise ValueError('已有网页目标正在执行，请先取消')
         executable = Path(get_package_prefix('nav_bringup')) / 'lib/nav_bringup/send_goal.py'
         clock = str(self.settings.profile == 'sim').lower()
+        mode = (self.entries['navigation'].parameters['mode'] if self.alive('navigation') else
+                'mapping' if self.active_mapping() else self.settings.active['mode'])
         command = [str(executable), str(x), str(y), '--wait-timeout', '15',
-                   '--ros-args', '-p', f'use_sim_time:={clock}']
+                   '--ros-args', '-p', f'use_sim_time:={clock}', '-p', f'mapping:={str(mode == "mapping").lower()}']
         self.launch('goal', command)
 
     def active_mapping(self):
@@ -293,7 +301,7 @@ class Processes:
             for name in reversed(launched):
                 self.stop(name)
             raise
-        if (config['mode'] == 'localization' and not self.alive('navigation') and
+        if (not self.alive('navigation') and
                 not self.ros.node_names().intersection(OWNERS['navigation'])):
             self.start('navigation', {})
 

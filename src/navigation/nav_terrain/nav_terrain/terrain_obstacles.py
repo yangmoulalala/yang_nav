@@ -1,4 +1,4 @@
-"""Filter committed, deskewed frontend observations against the offline ground grid."""
+"""Filter committed frontend observations against annotated or locally level ground."""
 import numpy as np
 import rclpy
 from rclpy.node import Node
@@ -10,7 +10,7 @@ from std_msgs.msg import Header
 from tf2_ros import Buffer, TransformException, TransformListener
 from localization_interfaces.msg import FrontendFrame
 
-from nav_terrain.obstacle_filter import FilterConfig, GroundFilter
+from nav_terrain.obstacle_filter import FilterConfig, GroundFilter, LiveGroundFilter
 from nav_terrain.terrain_map import TerrainMap
 from nav_terrain.registration import quaternion_matrix
 
@@ -24,10 +24,11 @@ class TerrainObstacles(Node):
     def __init__(self):
         super().__init__('terrain_obstacles')
         path = self.declare_parameter('terrain_file', '').value
+        self.mapping = self.declare_parameter('mapping', False).value
         cfg = FilterConfig()
         for name in cfg.__dataclass_fields__:
             setattr(cfg, name, self.declare_parameter(name, getattr(cfg, name)).value)
-        self.filter = GroundFilter(TerrainMap.load(path), cfg)
+        self.filter = LiveGroundFilter(cfg) if self.mapping else GroundFilter(TerrainMap.load(path), cfg)
         self.map_frame = self.declare_parameter('map_frame', 'map').value
         self.base_frame = self.declare_parameter('base_frame', 'base_link').value
         self.base_ground_offset = self.declare_parameter('base_ground_offset', 0.0).value
@@ -42,7 +43,7 @@ class TerrainObstacles(Node):
         # TF may arrive after the observation. Retry only the newest frame, without
         # blocking the executor that receives TF, and never replay a stale cloud.
         self.create_timer(0.02, self.process)
-        self.get_logger().info('terrain obstacles ready: ' + str(path))
+        self.get_logger().info('terrain obstacles ready: ' + ('live flat-ground mode' if self.mapping else path))
 
     def receive(self, frame):
         self.pending = frame
@@ -70,6 +71,8 @@ class TerrainObstacles(Node):
             points = np.asarray(points).reshape(-1, 3)
             mapped, body = points @ rm.T + tm, points @ rb.T + tb
             hits, rays = self.filter.select(mapped, body, tm, base[2] - self.base_ground_offset)
+            if self.mapping and not rays.size:
+                return
             header = Header(stamp=stamp.to_msg(), frame_id=source)
             self.obstacles.publish(point_cloud2.create_cloud_xyz32(header, points[hits]))
             self.clearing.publish(point_cloud2.create_cloud_xyz32(header, points[rays]))

@@ -214,7 +214,8 @@ void normalizeObservationNumerics(Config& c, const Config& d) {
                                d.relocalization.ambiguity_rotation_rad));
     c.recovery.suspect_failures_before_lost = std::max(1, c.recovery.suspect_failures_before_lost);
     fields(c.recovery, d.recovery,
-           {&RecoveryConfig::period, &RecoveryConfig::initial_search_radius},
+           {&RecoveryConfig::period, &RecoveryConfig::initial_search_radius,
+            &RecoveryConfig::odom_search_radius},
            nonnegativeOr);
     source(c.tracking.source, d.tracking.source);
     source(c.recovery.source, d.recovery.source);

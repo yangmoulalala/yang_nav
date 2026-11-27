@@ -106,7 +106,7 @@ ROS_DOMAIN_ID=87 python3 tools/nav_regress/dynamic_accept.py --out /tmp/nav_dyna
 
 ## 占用起点回归
 
-`occupied_start.py --out /tmp/nav_occupied` 用真实 Nav2 和运动学底盘验证边角重叠、车心落入较厚静态障碍时的退出、到点和后续新目标；`--recorded-exit` 使用正式地图及 2026-11-13 手动日志的两个出口位姿 (4.52,-5.24)、(4.59,-5.27)。测试保持碰撞监控、定位可信门和观测门开启；只模拟代价图重叠，不模拟实体穿墙。使用独立 ROS_DOMAIN_ID，并在已加载 Jazzy/工作空间的终端运行。
+`occupied_start.py --out /tmp/nav_occupied` 用真实 Nav2 和运动学底盘验证边角重叠、车心落入较厚静态障碍时的退出、到点和后续新目标，也验证原目标无路可达时仍能安全脱困且不误报到达。`--recorded-exit` 使用正式地图及 2026-11-13 手动日志的两个出口位姿 (4.52,-5.24)、(4.59,-5.27)。测试保持碰撞监控、定位可信门和观测门开启；只模拟代价图重叠，不模拟实体穿墙。使用独立 ROS_DOMAIN_ID，并在已加载 Jazzy/工作空间的终端运行。
 
 
 ### 共用纯平移回归

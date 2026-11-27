@@ -106,9 +106,10 @@ struct RecoveryWork {
     Eigen::Matrix4d predicted_map_pose = Eigen::Matrix4d::Identity();
     std::optional<RelocalizationPositionPrior> startup_hint_prior;
     bool global_search = false;
-    /// 局中恢复（SUSPECT/LOST）：只用 UWB 位置先验重定位；为 true 且没有 uwb_prior 时只等待。
+    /// 局中恢复选择 UWB 时，没有新鲜先验就等待，不回退到里程计。
     bool uwb_required = false;
     std::optional<RelocalizationPositionPrior> uwb_prior;
+    std::optional<RelocalizationPositionPrior> odom_prior;
     std::vector<FrontendFrame> source_history;
     int accumulated_frames = 0;
     double source_span_seconds = 0.0;

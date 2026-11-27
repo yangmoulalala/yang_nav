@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "nav_behaviors/costmap_collision.hpp"
 #include "nav_behaviors/overlap_escape.hpp"
+#include "nav_behaviors/ordinary_escape_release.hpp"
 #include "nav_behaviors/zone_tracker.hpp"
 
 using namespace nav_behaviors;  // NOLINT
@@ -31,6 +32,21 @@ TEST(CostmapCollision, ChecksInteriorUnknownAndBounds)
   map.resetMap(0, 0, 160, 160);
   obstacle(map, 0.1, 0.1, 255);
   EXPECT_FALSE(footprintFree(map, footprint(), {0, 0, 0}));
+}
+
+TEST(CostmapCollision, ReentryCoversRotatingFootprintReactionAndBrakingInEveryDirection)
+{
+  nav2_costmap_2d::Costmap2D map(200, 200, .025, -2.5, -2.5, 0);
+  const Pose2 robot{0, 0, 1.3};
+  EXPECT_TRUE(clearBrakingEnvelope(map, footprint(), robot, .8, .9, .6));
+  for (unsigned char cost : {253, 254, 255}) {
+    obstacle(map, -.8, .6, cost);
+    EXPECT_FALSE(clearBrakingEnvelope(map, footprint(), robot, .8, .9, .6));
+    map.resetMap(0, 0, 200, 200);
+  }
+  EXPECT_FALSE(clearBrakingEnvelope(map, footprint(), {2., 0., 0.}, .8, .9, .6));
+  EXPECT_FALSE(clearBrakingEnvelope(map, footprint(), robot, .8, 0., .6));
+  EXPECT_FALSE(clearBrakingEnvelope(map, {}, robot, .8, .9, .6));
 }
 
 TEST(CostmapCollision, ChecksBetweenSparsePosesAndDuringRotation)
@@ -171,6 +187,130 @@ TEST(OverlapEscape, RejectsNewContactsRotationUnknownAndGrowingOverlap)
   map.resetMap(0, 0, 160, 160); obstacle(map, 0, 0, 255);
   EXPECT_TRUE(escapePaths(map, footprint(), {0, 0, 0}, {1, 0, 0}).empty());
   EXPECT_TRUE(escapePaths(map, footprint(), {1.9, 0, 0}, {1, 0, 0}).empty());
+}
+
+TEST(OrdinaryEscapeRelease, RequiresDistinctFreshMapAndObservationStamps)
+{
+  ClearMapConfirmation confirm;
+  constexpr int64_t start = 1000000000, step = 100000000;
+  EXPECT_FALSE(confirm.update(true, start, start, start));
+  EXPECT_FALSE(confirm.update(true, start + 2*step, start, start + 2*step));
+  EXPECT_FALSE(confirm.update(true, start + 3*step, start, start + 3*step));
+  confirm.reset();
+  EXPECT_FALSE(confirm.update(true, start, start, start));
+  EXPECT_FALSE(confirm.update(true, start + 2*step, start + 2*step, start));
+  for (int index = 3; index < 10; ++index) {
+    const auto stamp = start + index*step;
+    EXPECT_FALSE(confirm.update(true, stamp, stamp, stamp));
+  }
+  EXPECT_TRUE(confirm.update(true, start + 10*step, start + 10*step, start + 10*step));
+  EXPECT_FALSE(confirm.update(true, start + 16*step, start + 16*step, start + 10*step));
+  EXPECT_FALSE(confirm.update(true, start + 17*step, start + 17*step, start + 17*step));
+}
+
+TEST(OrdinaryEscapeRelease, OccupancyClockGapsAndRewindsInvalidateClearance)
+{
+  ClearMapConfirmation confirm;
+  constexpr int64_t start = 1000000000, step = 100000000;
+  auto sample = [&](bool clear, int64_t stamp) {return confirm.update(clear, stamp, stamp, stamp);};
+  EXPECT_FALSE(sample(true, start));
+  EXPECT_FALSE(sample(false, start + 2*step));
+  EXPECT_FALSE(sample(true, start + 3*step));
+  for (int index = 4; index < 13; ++index) {EXPECT_FALSE(sample(true, start + index*step));}
+  EXPECT_TRUE(sample(true, start + 13*step));
+  EXPECT_FALSE(sample(true, start + 20*step));
+  EXPECT_FALSE(sample(true, start));
+  EXPECT_FALSE(confirm.update(true, start + step, start + 2*step, start + step));
+  EXPECT_FALSE(confirm.update(true, start + 2*step, 0, start + 2*step));
+}
+
+TEST(OrdinaryEscapeRelease, RechecksConnectorAndSweptPathWithoutSkippingCorners)
+{
+  nav2_costmap_2d::Costmap2D map(200, 200, .025, -2., -2., 0);
+  const Pose2 robot{0., -.8, .3};
+  const std::vector<XY> path{{-1., 0.}, {0., 0.}, {.85, 0.}, {.85, 1.}};
+  const auto fp = footprint();
+  EXPECT_TRUE(escapeRejoinPathFree(map, fp, path, robot, 1.4));
+  obstacle(map, 0., -.2);
+  EXPECT_FALSE(escapeRejoinPathFree(map, fp, path, robot, 1.4));
+  map.resetMap(0, 0, 200, 200);
+  obstacle(map, .85, .4, 255);
+  EXPECT_FALSE(escapeRejoinPathFree(map, fp, path, robot, 1.4));
+  map.resetMap(0, 0, 200, 200);
+  obstacle(map, .85, .0, 253);
+  EXPECT_FALSE(escapeRejoinPathFree(map, fp, path, robot, 1.4));
+  EXPECT_FALSE(escapeRejoinPathFree(map, fp, {}, robot, .3));
+  EXPECT_FALSE(escapeRejoinPathFree(map, fp, {{2.9, -.8}}, robot, .3));
+}
+
+TEST(OrdinaryEscapeHold, OccupiedFootprintEscapesAtOneSecondWithoutRearming)
+{
+  using Decision = OrdinaryEscapeHold::Decision;
+  using namespace std::chrono_literals;
+  OrdinaryEscapeHold hold;
+  const auto start = OrdinaryEscapeHold::Clock::time_point{};
+  constexpr int64_t stamp = 1000000000;
+  hold.start(start);
+  EXPECT_EQ(hold.update(start + 999ms, true, false, stamp, stamp, stamp), Decision::Wait);
+  EXPECT_EQ(hold.update(start + 1s, true, false, stamp, stamp, stamp), Decision::Escape);
+  EXPECT_TRUE(hold.active());
+  EXPECT_EQ(hold.update(start + 2s, true, false, stamp, stamp, stamp), Decision::Escape);
+  hold.reset();
+  EXPECT_FALSE(hold.active());
+  hold.start(start + 2s);
+  EXPECT_EQ(hold.update(start + 2500ms, true, false, stamp, stamp, stamp), Decision::Wait);
+}
+
+TEST(OrdinaryEscapeHold, TimeoutDoesNotAuthorizeEscapeOnUnusableData)
+{
+  using Decision = OrdinaryEscapeHold::Decision;
+  using namespace std::chrono_literals;
+  OrdinaryEscapeHold hold;
+  const auto start = OrdinaryEscapeHold::Clock::time_point{};
+  constexpr int64_t stamp = 1000000000;
+  hold.start(start);
+  EXPECT_EQ(hold.update(start + 1s, false, false, stamp, stamp, stamp), Decision::Fail);
+  EXPECT_EQ(hold.update(start + 1s, true, false, stamp, 0, stamp), Decision::Fail);
+  EXPECT_EQ(hold.update(start + 1s, true, false, stamp, stamp, stamp - 500000001), Decision::Fail);
+}
+
+TEST(OrdinaryEscapeHold, ClearFootprintStillNeedsFreshConfirmationWithABoundedGrace)
+{
+  using Decision = OrdinaryEscapeHold::Decision;
+  using namespace std::chrono_literals;
+  OrdinaryEscapeHold hold;
+  const auto start = OrdinaryEscapeHold::Clock::time_point{};
+  constexpr int64_t stamp = 1000000000, step = 100000000;
+  hold.start(start);
+  for (int index = 2; index < 12; ++index) {
+    const auto sample = stamp + index * step;
+    EXPECT_EQ(hold.update(start + index * 100ms, true, true, sample, sample, sample), Decision::Wait);
+  }
+  constexpr auto confirmed = stamp + 12 * step;
+  EXPECT_EQ(hold.update(start + 1200ms, true, true, confirmed, confirmed, confirmed), Decision::Rejoin);
+
+  hold.reset();
+  hold.start(start);
+  EXPECT_EQ(hold.update(start + 2s, true, true, stamp, stamp, stamp), Decision::Wait);
+  EXPECT_EQ(hold.update(start + 2250ms, true, true, stamp, stamp, stamp), Decision::Fail);
+}
+
+TEST(OrdinaryEscapeHold, EscapeCommandAllowsClearanceConfirmationAfterTranslation)
+{
+  using Decision = OrdinaryEscapeHold::Decision;
+  using namespace std::chrono_literals;
+  OrdinaryEscapeHold hold;
+  const auto start = OrdinaryEscapeHold::Clock::time_point{};
+  constexpr int64_t stamp = 1000000000, step = 100000000;
+  hold.start(start);
+  EXPECT_EQ(hold.update(start + 3s, true, false, stamp, stamp, stamp), Decision::Escape);
+  hold.commandedEscape(start + 3s);
+  for (int index = 1; index < 11; ++index) {
+    const auto sample = stamp + index * step;
+    EXPECT_EQ(hold.update(start + 3s + index * 100ms, true, true, sample, sample, sample), Decision::Wait);
+  }
+  constexpr auto confirmed = stamp + 11 * step;
+  EXPECT_EQ(hold.update(start + 4100ms, true, true, confirmed, confirmed, confirmed), Decision::Rejoin);
 }
 
 TEST(OverlapEscape, LeavingContactCannotReenterAndRollingOriginDoesNotChangeIdentity)

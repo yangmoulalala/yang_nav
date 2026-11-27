@@ -6,6 +6,7 @@ the bag and saves the final graph and parameters. This tool only records data.
 Use --use-sim-time for simulation; the default uses the real robot clock.
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import json
 import math
@@ -59,15 +60,9 @@ def capture(command, timeout=8):
 
 
 def snapshot(out, phase):
-    directory=out/phase;directory.mkdir(exist_ok=True)
-    for name,command in [('topics',['ros2','topic','list','-t']),
-                         ('nodes',['ros2','node','list']),
-                         ('services',['ros2','service','list','-t'])]:
-        text,code=capture(command);(directory/(name+'.txt')).write_text(text)
-    nodes=(directory/'nodes.txt').read_text().splitlines()
-    for index,node in enumerate(sorted(set(n.strip() for n in nodes if n.startswith('/')))):
-        text,code=capture(['ros2','param','dump',node],timeout=3)
-        (directory/(f'params_{index}_'+node.strip('/').replace('/','_')+'.yaml')).write_text(text)
+    text,code=capture([sys.executable,str(WS/'tools/record_bag_graph.py'),str(out/phase)],timeout=8)
+    if text:print(text.rstrip(),flush=True)
+    if code:print(f'{phase}: ROS snapshot incomplete; bag data is unaffected.',flush=True)
 
 
 def main():
@@ -103,7 +98,7 @@ def main():
     for name,command in [('git_status',['git','status','--short']),('git_revision',['git','rev-parse','HEAD']),
                          ('git_diff',['git','diff','HEAD','--','src','tools']),('system',['uname','-a'])]:
         text,code=capture(command);(out/(name+'.txt')).write_text(text)
-    raw=set(SENSOR_TOPICS)
+    raw=set(SENSOR_TOPICS)-{'/livox/lidar'}
     qos={topic:dict(reliability='best_effort',durability='volatile',history='keep_last',depth=100) for topic in raw}
     for topic in LATCHED_TOPICS:
         qos[topic]=dict(reliability='reliable',durability='transient_local',history='keep_last',depth=100)
@@ -121,32 +116,33 @@ def main():
                   use_sim_time=args.use_sim_time,topics=topics,all_topics=args.all,completed=False)
     (out/'session.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(f'Session: {out}\nRecording existing topics. Ctrl-C stops only this recorder.',flush=True)
-    log=(out/'recorder.log').open('w')
-    process=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
-    thread=threading.Thread(target=snapshot,args=(out,'start_graph'),daemon=True);thread.start()
-    begin=time.monotonic()
-    try:
-        while process.poll() is None and not stop.wait(.2):
-            if args.duration and time.monotonic()-begin>=args.duration:break
-    finally:
-        if process.poll() is None:os.killpg(process.pid,signal.SIGINT)
-        try:process.wait(timeout=30)
-        except subprocess.TimeoutExpired:
-            print('Recorder did not finalize in 30 s; sending TERM. Inspect recorder.log.',file=sys.stderr)
-            os.killpg(process.pid,signal.SIGTERM)
-            process.wait(timeout=10)
-        log.close();thread.join(timeout=5)
-    info,info_code=capture(['ros2','bag','info',str(out/'bag')],timeout=15)
-    (out/'bag_info.txt').write_text(info)
-    # When recording starts before bringup, start_graph can legitimately be
-    # empty. Capture the running graph too, before the user stops its nodes.
-    print('Saving final ROS graph and runtime parameters; keep session nodes running.',flush=True)
-    snapshot(out,'stop_graph')
-    manifest.update(completed=info_code==0,recorder_exit_code=process.returncode,
+    with ThreadPoolExecutor(max_workers=2) as snapshots:
+        with (out/'recorder.log').open('w') as log:
+            process=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+            snapshots.submit(snapshot,out,'start_graph')
+            begin=time.monotonic()
+            try:
+                while process.poll() is None and not stop.wait(.2):
+                    if args.duration and time.monotonic()-begin>=args.duration:break
+            finally:
+                if process.poll() is None:os.killpg(process.pid,signal.SIGINT)
+                try:process.wait(timeout=30)
+                except subprocess.TimeoutExpired:
+                    print('Recorder did not finalize in 30 s; sending TERM. Inspect recorder.log.',file=sys.stderr)
+                    os.killpg(process.pid,signal.SIGTERM)
+                    process.wait(timeout=10)
+        recorder_ok=process.returncode in (0,130,-signal.SIGINT)
+        if recorder_ok and (out/'bag'/'metadata.yaml').is_file():
+            print(f'Bag data saved: {out}',flush=True)
+        print('Collecting final ROS diagnostics and checking bag metadata.',flush=True)
+        snapshots.submit(snapshot,out,'stop_graph')
+        info,info_code=capture(['ros2','bag','info',str(out/'bag')],timeout=15)
+        (out/'bag_info.txt').write_text(info)
+    manifest.update(completed=recorder_ok and info_code==0,recorder_exit_code=process.returncode,
                     elapsed_seconds=time.monotonic()-begin,finished=datetime.now().astimezone().isoformat())
     (out/'session.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(info,flush=True)
-    print(f'Saved session: {out}',flush=True)
-    return 0 if manifest['completed'] and process.returncode in (0,130,-signal.SIGINT) else 1
+    print(f'{"Saved session" if manifest["completed"] else "Incomplete session"}: {out}',flush=True)
+    return 0 if manifest['completed'] else 1
 
 if __name__=='__main__':raise SystemExit(main())

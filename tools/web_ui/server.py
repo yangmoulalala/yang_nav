@@ -212,7 +212,7 @@ def main():
     parser = argparse.ArgumentParser(description='yang_nav ROS 2 Web 工作台')
     parser.add_argument('--host', default='0.0.0.0')
     parser.add_argument('--port', default=8080, type=port)
-    parser.add_argument('--foxglove-port', default=8765, type=port)
+    parser.add_argument('--foxglove-port', default=8766, type=port)
     args = parser.parse_args()
     if args.port == args.foxglove_port:
         parser.error('网页与 Foxglove Bridge 需要不同端口')

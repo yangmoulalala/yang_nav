@@ -27,7 +27,7 @@ from rclpy.context import Context
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from std_msgs.msg import String
+from std_msgs.msg import Header, String
 from tf2_ros import TransformBroadcaster
 
 
@@ -43,6 +43,8 @@ class FakeNav(Node):
         self.active = False
         self.trusted = False
         self.publish_tf = False
+        self.publish_static_map = True
+        self.publish_observation = False
         self.base_frame = 'gimbal_nav'
         self.reject = False
         self.abort = False
@@ -63,6 +65,8 @@ class FakeNav(Node):
         self.nav_map = self.create_publisher(OccupancyGrid, '/nav_map', QoSProfile(
             depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.costmap = self.create_publisher(OccupancyGrid, '/local_costmap/costmap', 1)
+        self.live_costmap = self.create_publisher(OccupancyGrid, '/global_costmap/costmap', 1)
+        self.observation = self.create_publisher(Header, '/nav/observation', 5)
         self.service = self.create_service(GetState, '/bt_navigator/get_state', self.get_state)
         self.server = ActionServer(
             self, NavigateToPose, '/navigate_to_pose', self.execute,
@@ -82,7 +86,11 @@ class FakeNav(Node):
         grid.info.width = grid.info.height = 1
         grid.info.origin.orientation.w = 1.
         grid.data = [0]
-        self.nav_map.publish(grid)
+        if self.publish_static_map:
+            self.nav_map.publish(grid)
+        if self.publish_observation:
+            self.observation.publish(Header(stamp=self.get_clock().now().to_msg(), frame_id=self.base_frame))
+            self.live_costmap.publish(grid)
         self.costmap.publish(grid)
         if self.publish_tf:
             transform = TransformStamped()
@@ -198,6 +206,17 @@ def test_goal_sender_accepts_an_explicit_reference_override(nav):
     assert len(node.goals) == 1
 
 
+def test_mapping_goal_waits_for_live_observation_instead_of_static_map(nav):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = True
+    node.publish_static_map = False
+    assert 'fresh /nav/observation' in finish(client('--ros-args', '-p', 'mapping:=true', timeout=3), 2)
+    assert not node.goals
+    node.publish_observation = True
+    assert 'Navigation goal succeeded' in finish(client('--ros-args', '-p', 'mapping:=true'), 0)
+    assert len(node.goals) == 1
+
+
 @pytest.mark.parametrize('missing', ['active', 'trusted', 'publish_tf', 'clock'])
 def test_readiness_timeout_sends_nothing(nav, missing):
     node, client = nav
@@ -245,7 +264,8 @@ def test_launch_validates_goal_and_defaults_to_no_sender():
     spec = importlib.util.spec_from_file_location('navigation_launch', PACKAGE / 'launch' / 'navigation.launch.py')
     launch = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(launch)
-    values = dict(profile='real', use_sim_time='', terrain_dir=str(PACKAGE), params_file='',
+    values = dict(profile='real', mode='localization', use_sim_time='', terrain_dir=str(PACKAGE),
+                  params_file=str(PACKAGE / 'params' / 'nav2.yaml'),
                   require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false',
                   goal_x='', goal_y='', goal_yaw='0', goal_wait_timeout='120')
     with patch.object(launch, '_get', side_effect=lambda _, key: values[key]), \
@@ -262,3 +282,58 @@ def test_launch_validates_goal_and_defaults_to_no_sender():
             with pytest.raises(RuntimeError):
                 launch.build(None)
             values[key] = previous
+
+
+@pytest.mark.parametrize('profile,custom,limit', [
+    ('real', False, 2.0), ('sim', False, 2.0), ('real', True, 2.0),
+])
+def test_localization_launch_resolves_platform_params(tmp_path, profile, custom, limit):
+    from launch import LaunchContext
+    import yaml
+
+    spec = importlib.util.spec_from_file_location('navigation_launch', PACKAGE / 'launch' / 'navigation.launch.py')
+    launch = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(launch)
+    context = LaunchContext()
+    base_params = PACKAGE / 'params' / 'nav2.yaml'
+    context.launch_configurations.update(
+        profile=profile, mode='localization', terrain_dir=str(PACKAGE),
+        params_file=str(base_params) if custom else '', goal_x='', goal_y='', use_sim_time='',
+        require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false')
+    make_temp_file = launch.NamedTemporaryFile
+    with patch.object(launch, 'NamedTemporaryFile', side_effect=lambda **kwargs: make_temp_file(dir=tmp_path, **kwargs)), \
+            patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)), \
+            patch.object(Path, 'is_file', return_value=True), \
+            patch.object(launch, 'Node', wraps=launch.Node) as launch_node:
+        launch.build(context)
+        gate = next(call for call in launch_node.call_args_list if call.kwargs['package'] == 'nav_safety')
+        source = Path(gate.kwargs['parameters'][0])
+        params = yaml.safe_load(source.read_text())
+        assert params['cmd_gate']['ros__parameters']['limits']['normal']['max_linear'] == limit
+
+
+def test_mapping_uses_live_costmaps_without_terrain_servers():
+    from launch import LaunchContext
+    from launch_ros.actions import Node
+
+    spec = importlib.util.spec_from_file_location('navigation_launch', PACKAGE / 'launch' / 'navigation.launch.py')
+    launch = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(launch)
+    context = LaunchContext()
+    context.launch_configurations.update(profile='real', mode='mapping', use_sim_time='', terrain_dir='',
+                                         params_file='', cmd_vel_topic='/cmd_vel', rviz='false',
+                                         goal_x='', goal_y='')
+    with patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)):
+        actions = launch.build(context)
+    packages = [str(action.node_package) for action in actions if isinstance(action, Node)]
+    assert not any('nav2_map_server' in package for package in packages)
+    assert any('nav2_collision_monitor' in package for package in packages)
+    params = launch.navigation_params(PACKAGE / 'params' / 'nav2.yaml',
+                                      PACKAGE / 'params' / 'nav2_real.yaml', mapping=True)
+    for name in ('global_costmap', 'local_costmap'):
+        costmap = params[name][name]['ros__parameters']
+        assert costmap['rolling_window'] and costmap['track_unknown_space']
+        assert 'static_layer' not in costmap['plugins'] and not costmap.get('filters')
+    gate = params['cmd_gate']['ros__parameters']
+    assert gate['require_observation'] and gate['limits']['normal']['max_linear'] == 0.5
+    assert params['controller_server']['ros__parameters']['FollowPath']['ax_max'] == 0.9

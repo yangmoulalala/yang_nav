@@ -12,60 +12,88 @@
   <aside class="sidebar">
     <a class="brand" href="#overview"><span class="compass" aria-hidden="true">⌖</span><span>yang_nav<small>导航工作台</small></span></a>
     <nav aria-label="工作台导航">
-      <a href="#overview">运行概览</a>
-      <a href="#setup">模式与地图</a>
+      <a href="#overview">运行工作台</a>
       <a href="#optimizer">离线地图优化</a>
       <a href="#terrain">地形标注</a>
       <a href="#tuning">参数调整</a>
-      <a href="#recording">录包与 Foxglove</a>
-      <a href="#logs">运行日志</a>
     </nav>
     <div class="side-footer"><span id="connection" class="pill">连接中</span><span id="domain">ROS 2</span></div>
   </aside>
   <main>
     <section id="overview">
       <header class="section-head">
-        <div><p class="eyebrow" id="active-profile">运行控制</p><h1>运行概览</h1></div>
+        <div><p class="eyebrow" id="active-profile">运行控制</p><h1>运行工作台</h1><small id="real-operation-hint" class="warn" hidden>真车操作点击即执行；请先确认周围安全，关闭全部前请停稳。</small></div>
         <div class="actions"><button data-action="stack/stop">关闭全部</button><button class="primary" data-action="stack/start">启动系统</button></div>
       </header>
-      <div class="metrics">
+      <nav class="overview-nav" aria-label="运行工作台区块">
+        <a href="#setup">模式与地图</a>
+        <a href="#recording">录包与 Foxglove</a>
+        <a href="#logs">运行日志</a>
+      </nav>
+      <section class="metrics" aria-label="运行概览">
         <article class="metric"><label>定位状态</label><strong id="loc-status">—</strong><span id="loc-trust">等待定位数据</span></article>
         <article class="metric"><label>地图位姿</label><strong class="numeric" id="pose">—</strong><span id="yaw">x / y · m</span></article>
         <article class="metric"><label>实测 / 指令速度</label><strong class="numeric" id="speed">— / —</strong><span id="velocity">m/s</span></article>
         <article class="metric"><label>Nav2 / 底盘反馈</label><strong id="nav2">—</strong><span id="chassis">等待状态</span></article>
-      </div>
+      </section>
       <div class="grid">
         <article class="panel process-panel"><header><h2>进程管理</h2></header><div id="processes"></div></article>
         <article class="panel"><header><h2>地图与控制</h2></header>
           <div class="operation"><div><b>全局重定位</b><small>在整张先验地图中搜索。操作前请停止 Nav2 和车辆。</small></div><button data-action="relocalize">触发</button></div>
           <div class="operation"><div><b>保存地图</b><small>将当前建图结果写入配置中的输出目录，覆盖已有结果。</small></div><button data-action="save_map">保存</button></div>
           <form id="goal-form" class="goal-form"><b>导航目标 <small>map 坐标 · m</small></b>
+            <small>发送真车目标前，请确认行驶区域安全。</small>
             <div class="pair"><label>X<input name="x" type="number" step="any" required></label><label>Y<input name="y" type="number" step="any" required></label></div>
             <div class="actions"><button type="button" data-action="cancel_goal">取消目标</button><button class="primary" id="send-goal" type="submit">发送目标</button></div>
           </form>
         </article>
       </div>
-    </section>
-    <section id="setup" hidden>
-      <header class="section-head"><div><h2>模式与地图</h2><p>仿真和真车各自保存启动配置。</p></div></header>
-      <form class="panel form-panel" id="setup-form">
-        <div class="form-grid">
-          <label>运行平台<select name="profile"><option value="sim">仿真</option><option value="real">真车</option></select></label>
-          <label>定位后端<select name="mode"><option value="localization">先验地图匹配</option><option value="mapping">从零建图</option></select></label>
-          <label>雷达配置<select name="lidar"><option value="single">单雷达</option><option value="dual">双雷达</option></select></label>
-          <label data-mode="localization">先验地图目录<input name="prior_map" list="map-options" placeholder="maps/sim"></label>
-          <label data-mode="localization">导航地形目录<input name="terrain_dir" list="terrain-options" placeholder="留空时从先验地图目录查找"></label>
-          <label data-mode="mapping">建图输出目录<input name="map_dir" placeholder="maps/sim/new_session"></label>
-          <label data-profile="sim">Gazebo 场地<select name="arena"><option value="rmuc">RMUC</option><option value="rmul">RMUL</option></select></label>
-          <label data-profile="sim">出生阵营<select name="team"><option value="auto">场地默认</option><option value="red">红方</option><option value="blue">蓝方</option></select></label>
-          <label data-profile="sim" class="check"><input name="gui" type="checkbox"> 在主机显示 Gazebo 窗口</label>
-          <label data-profile="sim" class="check"><input name="uwb" type="checkbox"> 发布仿真 UWB</label>
-          <label data-profile="real">底盘串口<input name="chassis_port" placeholder="/dev/nav"></label>
-          <label data-profile="real" data-lidar="dual">L2 驱动 launch 路径<input name="l2_launch" placeholder="留空时使用已启动驱动"></label>
+      <section id="setup" class="overview-block" aria-labelledby="setup-heading">
+        <header class="section-head"><div><h2 id="setup-heading">模式与地图</h2><p>仿真和真车各自保存启动配置。</p></div></header>
+        <form class="panel form-panel" id="setup-form">
+          <div class="form-grid">
+            <label>运行平台<select name="profile"><option value="sim">仿真</option><option value="real">真车</option></select></label>
+            <label>定位后端<select name="mode"><option value="localization">先验地图匹配</option><option value="mapping">从零建图</option></select></label>
+            <label>雷达配置<select name="lidar"><option value="single">单雷达</option><option value="dual">双雷达</option></select></label>
+            <label data-mode="localization">先验地图目录<input name="prior_map" list="map-options" placeholder="maps/sim"></label>
+            <label data-mode="localization">导航地形目录<input name="terrain_dir" list="terrain-options" placeholder="留空时从先验地图目录查找"></label>
+            <label data-mode="mapping">建图输出目录<input name="map_dir" placeholder="maps/sim/new_session"></label>
+            <label data-profile="sim">Gazebo 场地<select name="arena"><option value="rmuc">RMUC</option><option value="rmul">RMUL</option></select></label>
+            <label data-profile="sim">出生阵营<select name="team"><option value="auto">场地默认</option><option value="red">红方</option><option value="blue">蓝方</option></select></label>
+            <label data-profile="sim" class="check"><input name="gui" type="checkbox"> 在主机显示 Gazebo 窗口</label>
+            <label data-profile="sim" class="check"><input name="uwb" type="checkbox"> 发布仿真 UWB</label>
+            <label data-profile="real">底盘串口<input name="chassis_port" placeholder="/dev/nav"></label>
+            <label data-profile="real" data-lidar="dual">L2 驱动 launch 路径<input name="l2_launch" placeholder="留空时使用已启动驱动"></label>
+          </div>
+          <datalist id="map-options"></datalist><datalist id="terrain-options"></datalist>
+          <div class="form-footer"><small>保存后，启动或重启对应进程加载配置。</small><button class="primary" type="submit">保存启动配置</button></div>
+        </form>
+      </section>
+      <section id="recording" class="overview-block" aria-labelledby="recording-heading">
+        <header class="section-head"><h2 id="recording-heading">录包与 Foxglove</h2></header>
+        <div class="grid">
+          <form class="panel form-panel" id="bag-form"><header><h3>ROS Bag</h3><span id="bag-status" class="pill">—</span></header>
+            <div class="form-grid">
+              <label>会话目录名<input name="name" placeholder="留空自动生成"></label>
+              <label>时长 · 秒<input name="duration" type="number" min="0" max="86400" value="0" title="填 0 持续录制"></label>
+              <label>备注<input name="note" maxlength="400" placeholder="场地或测试目的"></label>
+              <label>追加话题<input name="topics" placeholder="以空格分隔话题"></label>
+              <label class="check"><input name="all" type="checkbox" checked> 录制所有话题</label>
+            </div>
+            <p class="result-path" id="bag-output"></p>
+            <div class="actions"><button type="button" data-action="process/bag/stop">停止录包</button><button class="primary" id="bag-start" type="submit">开始录包</button></div>
+          </form>
+          <article class="panel form-panel"><header><h3>Foxglove Bridge</h3><span class="pill" id="fox-status">—</span></header>
+            <label for="fox-address">WebSocket 地址</label><div class="copy"><input id="fox-address" readonly><button id="copy-fox" type="button">复制</button></div>
+            <p class="muted" id="fox-hint">在 Foxglove 中选择 Foxglove WebSocket，连接此地址查看点云、TF、路径和代价地图。</p>
+          </article>
         </div>
-        <datalist id="map-options"></datalist><datalist id="terrain-options"></datalist>
-        <div class="form-footer"><small>保存后，启动或重启对应进程加载配置。</small><button class="primary" type="submit">保存启动配置</button></div>
-      </form>
+      </section>
+      <details id="logs" class="panel overview-block">
+        <summary>运行日志</summary>
+        <label class="log-picker">进程<select id="log-name"><option value="localization">定位 / 建图</option><option value="navigation">Nav2</option><option value="gazebo">Gazebo</option><option value="bag">录包</option><option value="optimizer">离线地图优化</option><option value="goal">网页导航目标</option></select></label>
+        <pre id="log-text" tabindex="0">暂无日志</pre>
+      </details>
     </section>
     <section id="optimizer" hidden>
       <header class="section-head"><div><h2>离线地图优化</h2><p>使用已保存的关键帧地图。优化后用输出地图制作地形和定位。</p></div></header>
@@ -99,6 +127,7 @@
         <button type="button" data-frame="field" aria-pressed="false"><strong>场地模型</strong><small>未打开</small></button>
         <button type="button" data-frame="map" aria-pressed="true"><strong>建图点云</strong><small>未打开</small></button>
       </div>
+      <small id="terrain-discard-hint" class="warn" hidden>打开新来源会丢弃当前工程的未保存修改。</small>
       <form id="terrain-open-field" class="panel terrain-open" hidden>
         <div class="field-action"><label>场地模型或标注工程<input name="source" list="surface-field-options" required placeholder="maps/field_models/场地.step"></label>
           <button type="submit" class="primary">打开场地</button></div>
@@ -174,7 +203,7 @@
               <label>平斜面分界 · °<input name="flat_deg" type="number" step="any" min="0.5" max="20" required></label>
               <label>斜面法向差 · °<input name="normal_deg" type="number" step="any" min="1" max="30" required></label>
               <label>最小面片 · m²<input name="min_area" type="number" step="any" min="0" max="2" required></label>
-            </div><button type="submit">应用分割参数</button></form></details>
+            </div><button type="submit">应用分割参数</button><small>重新分割会恢复自动面片边界，并按重叠面积继承标注。</small></form></details>
             <details id="terrain-registration" open><summary>点云配准到场地</summary>
               <p id="terrain-registration-result" class="muted" aria-live="polite"></p>
               <form id="terrain-register"><div class="form-grid">
@@ -183,6 +212,7 @@
                 <label>初值 Z · m<input name="z" type="number" step="any" value="0" required></label>
                 <label>初始航向 · °<input name="yaw" type="number" step="any" min="-360" max="360" value="0" required></label>
               </div><div class="edit-buttons"><button type="button" id="terrain-auto-seed">用工程初值</button><button type="submit">运行 ICP</button><button type="button" data-edit="adopt">采用参考面片与标注</button></div></form>
+              <small>采用参考面片与标注会替换当前点云的面片和编辑历史。</small>
               <form id="terrain-seed" class="field-action"><label>已有配准文件<input name="source" list="terrain-seed-options" placeholder="maps/sim/terrain/terrain.json" required></label><button type="submit">读取初值</button></form>
               <datalist id="terrain-seed-options"></datalist>
             </details>
@@ -198,32 +228,7 @@
         <div class="form-footer"><small>留空采用项目默认值。保存后，重启 Nav2 或定位加载参数。</small><button class="primary" type="submit">保存参数</button></div>
       </form>
     </section>
-    <section id="recording" hidden>
-      <header class="section-head"><h2>录包与 Foxglove</h2></header>
-      <div class="grid">
-        <form class="panel form-panel" id="bag-form"><header><h3>ROS Bag</h3><span id="bag-status" class="pill">—</span></header>
-          <div class="form-grid">
-            <label>会话目录名<input name="name" placeholder="留空自动生成"></label>
-            <label>时长 · 秒<input name="duration" type="number" min="0" max="86400" value="0" title="填 0 持续录制"></label>
-            <label>备注<input name="note" maxlength="400" placeholder="场地或测试目的"></label>
-            <label>追加话题<input name="topics" placeholder="以空格分隔话题"></label>
-            <label class="check"><input name="all" type="checkbox"> 录制所有话题</label>
-          </div>
-          <p class="result-path" id="bag-output"></p>
-          <div class="actions"><button type="button" data-action="process/bag/stop">停止录包</button><button class="primary" id="bag-start" type="submit">开始录包</button></div>
-        </form>
-        <article class="panel form-panel"><header><h3>Foxglove Bridge</h3><span class="pill" id="fox-status">—</span></header>
-          <label for="fox-address">WebSocket 地址</label><div class="copy"><input id="fox-address" readonly><button id="copy-fox" type="button">复制</button></div>
-          <p class="muted" id="fox-hint">在 Foxglove 中选择 Foxglove WebSocket，连接此地址查看点云、TF、路径和代价地图。</p>
-        </article>
-      </div>
-    </section>
-    <section id="logs" class="panel log-panel" hidden>
-      <header><h2>运行日志</h2><label><span class="sr-only">进程</span><select id="log-name"><option value="localization">定位 / 建图</option><option value="navigation">Nav2</option><option value="gazebo">Gazebo</option><option value="bag">录包</option><option value="optimizer">离线地图优化</option><option value="goal">网页导航目标</option></select></label></header>
-      <pre id="log-text" tabindex="0">暂无日志</pre>
-    </section>
     <div id="notice" role="status" hidden></div>
-    <dialog id="confirmation"><form method="dialog"><h2>确认操作</h2><p id="confirm-text"></p><div class="actions"><button value="cancel">返回</button><button class="primary" value="yes">确认</button></div></form></dialog>
   </main>
 </body>
 </html>

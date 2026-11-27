@@ -32,6 +32,13 @@ h2 { font-size: 19px; }
 h3 { font-size: 15px; }
 .section-head p, .muted { color: var(--muted); }
 .section-head .eyebrow { color: var(--teal); margin-bottom: 3px; font-size: 12px; font-weight: 650; }
+.overview-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.overview-nav a { border: 1px solid var(--edge); border-radius: 7px; color: var(--muted); padding: 5px 10px; }
+.overview-nav a:hover { background: var(--surface); color: var(--text); }
+.overview-block { margin: 24px 0 0; scroll-margin-top: 18px; }
+#logs > summary { color: var(--text); font-size: 19px; font-weight: 700; }
+.log-picker { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+.log-picker select { width: auto; margin: 0; }
 .actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 7px; }
 button, input, select { font: inherit; color: var(--text); border: 1px solid var(--edge); border-radius: 7px; }
 button { padding: 7px 12px; background: #252d36; cursor: pointer; white-space: nowrap; }
@@ -76,10 +83,6 @@ input[type="checkbox"] { accent-color: var(--teal); width: 16px; height: 16px; }
 pre { margin: 0; border: 1px solid var(--edge); border-radius: 7px; background: #10161d; padding: 12px; min-height: 130px; height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
 #notice { position: fixed; z-index: 4; right: 20px; bottom: 20px; max-width: min(420px, calc(100% - 40px)); background: #263f39; border: 1px solid #427a69; border-radius: 9px; padding: 12px 16px; white-space: pre-line; }
 #notice.bad { background: #482e31; border-color: #7b4c51; }
-dialog { max-width: min(420px, 90vw); background: var(--surface); border: 1px solid var(--edge); border-radius: 10px; color: var(--text); padding: 20px; }
-dialog::backdrop { background: #000a; }
-dialog p { padding: 12px 0 20px; }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .work-grid { align-items: start; }
 #optimizer-form { display: grid; gap: 10px; }
 #optimizer-form > header { padding-bottom: 0; }
@@ -96,6 +99,7 @@ summary { cursor: pointer; color: var(--muted); }
 .terrain-documents button[aria-pressed="true"] { border-color: var(--teal); color: var(--teal); }
 .terrain-documents small { overflow: hidden; text-overflow: ellipsis; }
 .terrain-open { margin-bottom: 12px; }
+#terrain-discard-hint { margin-bottom: 8px; }
 .terrain-grid { display: grid; grid-template-columns: minmax(0, 2.3fr) minmax(260px, 1fr); gap: 12px; align-items: start; }
 .terrain-map { padding: 10px; }
 .map-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin-bottom: 8px; }

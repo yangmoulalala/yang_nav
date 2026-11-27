@@ -4,6 +4,7 @@
  */
 
 #include <cmath>
+#include <utility>
 
 #include "backend/covariance.hpp"
 #include "backend/localization.hpp"
@@ -111,12 +112,29 @@ std::optional<RecoveryWork> Localization::captureRecovery() {
     work.startup_hint_prior = makeStartupHintPriorLocked(frames_.latest());
     work.force_startup_hint =
         work.startup_hint_prior.has_value() && config_.startup_hint.force_until_matched;
-    // 局中恢复只用 UWB 位置先验；开机初始化不用 UWB（启动提示 / 起点附近描述子）。
     work.global_search = manual_request_ && manual_request_->global;
-    work.uwb_required = !work.global_search &&
-        (current == LocalizationStatus::Suspect || current == LocalizationStatus::Lost);
-    if (work.uwb_required)
-        work.uwb_prior = makeUwbRecoveryPriorLocked(frames_.latest());
+    if (!work.global_search && current != LocalizationStatus::Initializing) {
+        work.uwb_required = config_.uwb.enabled;
+        const auto& trusted = poses_.trusted();
+        if (work.uwb_required) {
+            work.uwb_prior = makeUwbRecoveryPriorLocked(work.frame);
+        } else if (config_.recovery.odom_search_radius > 0.0 && trusted.hasPose() &&
+                   trusted.epoch() == work.frame.epoch) {
+            const Eigen::Matrix4d predicted = trusted.mapOdom() * work.frame.odom_pose;
+            const double yaw = yawFromMatrix(predicted);
+            RelocalizationPositionPrior prior;
+            prior.source = "odometry";
+            prior.map_point = predicted.block<3, 1>(0, 3);
+            prior.R_yawless_sensor =
+                yawGuess(-yaw, Eigen::Vector3d::Zero()).block<3, 3>(0, 0) *
+                predicted.block<3, 3>(0, 0);
+            prior.yaw_seed_rad = yaw;
+            prior.allow_yaw_sweep_fallback = false;
+            prior.search_radius = config_.recovery.odom_search_radius;
+            prior.max_candidates = config_.relocalization.relocalization_max_candidates;
+            work.odom_prior = std::move(prior);
+        }
+    }
     work.source_history.assign(frames_.history().begin(), frames_.history().end());
     return work;
 }
@@ -333,7 +351,7 @@ void Localization::commit(const RecoveryWork& work, const RecoveryResult& result
                             << applied_correction.rotation_rad * 180.0 / M_PI << ")");
     } else {
         BACKEND_WARN_STREAM("localization recovery pending: " << transition.reason);
-        if (transition.current == LocalizationStatus::Lost && !work.global_search)
+        if (transition.current == LocalizationStatus::Lost && work.uwb_required)
             triggerFrontendReset();
     }
 }

@@ -3,6 +3,7 @@ const setup = element('setup-form');
 const tuning = element('tuning-form');
 const bag = element('bag-form');
 const optimizer = element('optimizer-form');
+const logs = element('logs');
 const processes = {gazebo: 'Gazebo', localization: '定位 / 建图', navigation: 'Nav2'};
 const processLabels = {running: '运行中', stopped: '已停止', failed: '异常退出',
   stopping: '正在关闭', external: '外部运行', cancelled: '已取消'};
@@ -152,6 +153,7 @@ function displayStatus() {
   const ready = loc?.pose_trusted === 'true';
   element('domain').textContent = `ROS 域 ${status.domain}`;
   element('active-profile').textContent = `${profileLabels[profile]} · 运行控制`;
+  element('real-operation-hint').hidden = profile !== 'real';
   element('loc-status').textContent = locationLabels[loc?.status] || loc?.status || '—';
   element('loc-status').className = loc ? (ready ? 'good' : 'warn') : '';
   const reason = locationReasons[loc?.reason] || loc?.reason;
@@ -169,10 +171,15 @@ function displayStatus() {
     const row = rows[name];
     processPill(`badge-${name}`, row);
     const mode = row.mode ? `${row.mode === 'mapping' ? '建图' : '先验匹配'} · ` : '';
-    const path = row.state === 'running' && row.output ? `${mode}${row.output}` : '';
+    const path = row.state !== 'running' ? '' : row.output ? `${mode}${row.output}` :
+      name === 'navigation' && row.mode === 'mapping' ? '建图 · 实时雷达导航' : '';
     element(`detail-${name}`).textContent = row.state === 'failed' ? `退出码 ${row.code} · 查看日志` : path;
   }
   processPill('bag-status', rows.bag);
+  if (rows.bag.state === 'stopping') element('bag-status').textContent = '正在完成录包写入';
+  if (rows.bag.state === 'stopped' && rows.bag.code === 0 && rows.bag.output) {
+    element('bag-status').textContent = '录包已保存';
+  }
   const foxStatus = element('fox-status');
   foxStatus.dataset.state = status.foxglove_online ? 'running' : 'stopped';
   foxStatus.textContent = status.foxglove_online ? '已发现 Bridge' : '当前 ROS 域未发现';
@@ -202,7 +209,9 @@ function updateControls() {
       const row = rows[name];
       const running = row?.state === 'running';
       enabled = command === 'start' ? ['stopped', 'failed'].includes(row?.state) : running;
-      if (name === 'navigation' && mode === 'mapping' && command === 'start') enabled = false;
+      if (name === 'navigation' && command === 'start') {
+        enabled &&= ['running', 'external'].includes(rows.localization.state);
+      }
     }
     if (enabled && action === 'save_map') enabled = !!ros.services.save_map && (mode === 'mapping' || rows.localization.state === 'external');
     if (enabled && action === 'relocalize') enabled = !!ros.services.relocalize &&
@@ -213,31 +222,16 @@ function updateControls() {
   }
   element('bag-start').disabled = unavailable || !['stopped', 'failed'].includes(rows.bag.state);
   element('optimizer-start').disabled = unavailable || !['stopped', 'failed', 'cancelled'].includes(rows?.optimizer?.state);
-  element('send-goal').disabled = unavailable || ros.nav2 !== 'active' || ros.localization?.pose_trusted !== 'true' || rows.goal.state === 'running';
+  element('send-goal').disabled = unavailable || ros.nav2 !== 'active' || !ros.pose ||
+    ros.localization?.pose_trusted !== 'true' || rows.goal.state === 'running';
   for (const form of [setup, tuning]) form.querySelector('[type="submit"]').disabled = busy || !config;
 }
 
-function confirmAction(text) {
-  const dialog = element('confirmation');
-  element('confirm-text').textContent = text;
-  dialog.returnValue = 'cancel';
-  return new Promise((resolve) => {
-    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'yes'), {once: true});
-    dialog.showModal();
-  });
-}
-
-document.addEventListener('click', async (event) => {
+document.addEventListener('click', (event) => {
   const button = event.target.closest('button[data-action]');
   if (!button || button.disabled) return;
   const action = button.dataset.action;
-  if (action === 'relocalize' && !await confirmAction('确认 Nav2 已停止、车辆已停稳。触发后定位将进入未可信状态，直到匹配通过。')) return;
-  if (action === 'stack/stop' && !await confirmAction('确认车辆已停稳。录包收尾后，将关闭此工作台启动的进程。')) return;
-  if (action === 'process/gazebo/stop' && status?.processes.localization.state === 'running' &&
-      !await confirmAction('停止 Gazebo 会同时关闭定位和 Nav2。建图时请先保存地图。')) return;
-  if (status?.profile === 'real' && (action === 'stack/start' || /process\/(localization|navigation)\/(start|restart|stop)$/.test(action)) &&
-      !await confirmAction('即将操作真车进程，请确认车辆周围安全。')) return;
-  await operate(action, {}, action === 'save_map');
+  operate(action, {}, action === 'save_map');
 });
 
 setup.addEventListener('change', (event) => {
@@ -290,10 +284,9 @@ element('optimizer-annotate').addEventListener('click', async () => {
   location.hash = 'terrain';
   await loadConfig();
 });
-element('goal-form').addEventListener('submit', async (event) => {
+element('goal-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const {x, y} = Object.fromEntries(new FormData(event.target));
-  if (!await confirmAction(`发送地图目标 (${x}, ${y}) m，确认行驶区域安全。`)) return;
   operate('goal', {x: Number(x), y: Number(y)});
 });
 element('copy-fox').addEventListener('click', async () => {
@@ -324,11 +317,26 @@ async function updateStatus() {
     badge.textContent = '连接中断';
   }
   updateControls();
+  if (status?.processes.bag) updateBagProgress(status.processes.bag);
+}
+
+async function updateBagProgress(row) {
+  if (!row.output || !['running', 'stopping'].includes(row.state)) return;
+  try {
+    const {text} = await api('log/bag');
+    const sessionLog = text.split(/^\[[^\n]+\] 进程启动$/m).at(-1);
+    if (status?.processes.bag !== row || !sessionLog.split('\n').includes(`Bag data saved: ${row.output}`)) return;
+    const badge = element('bag-status');
+    badge.dataset.state = 'stopping';
+    badge.textContent = '包已写完 · 正在检查并采集诊断';
+  } catch (_) {
+    return;
+  }
 }
 
 async function updateLog() {
-  const optimizing = location.hash === '#optimizer';
-  if (!optimizing && location.hash !== '#logs') return;
+  const optimizing = !element('optimizer').hidden;
+  if (!optimizing && (element('overview').hidden || !logs.open)) return;
   const name = optimizing ? 'optimizer' : element('log-name').value;
   const log = element(optimizing ? 'optimizer-log' : 'log-text');
   try {
@@ -345,21 +353,27 @@ async function updateLog() {
 }
 
 function showPage() {
-  const selected = [...document.querySelectorAll('.sidebar nav a')].find((link) => link.hash === location.hash)?.hash || '#overview';
-  for (const page of document.querySelectorAll('main > section')) page.hidden = `#${page.id}` !== selected;
+  const target = element(location.hash.slice(1));
+  const jump = target?.matches('#overview > .overview-block') ? target : null;
+  const selected = target?.matches('main > section') ? target.id : 'overview';
+  for (const page of document.querySelectorAll('main > section')) page.hidden = page.id !== selected;
   for (const link of document.querySelectorAll('.sidebar nav a')) {
-    link.classList.toggle('selected', link.hash === selected);
-    if (link.hash === selected) link.setAttribute('aria-current', 'page');
+    link.classList.toggle('selected', link.hash === `#${selected}`);
+    if (link.hash === `#${selected}`) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
-  window.scrollTo(0, 0);
+  if (jump === logs) logs.open = true;
+  if (jump) jump.scrollIntoView();
+  else window.scrollTo(0, 0);
   updateLog();
-  document.dispatchEvent(new CustomEvent('nav-page', {detail: selected.slice(1)}));
+  document.dispatchEvent(new CustomEvent('nav-page', {detail: selected}));
 }
 
 setupProcessRows();
 showPage();
 window.addEventListener('hashchange', showPage);
+document.querySelector('.overview-nav a[href="#logs"]').addEventListener('click', () => { logs.open = true; });
+logs.addEventListener('toggle', () => { if (logs.open) updateLog(); });
 element('log-name').addEventListener('change', updateLog);
 updateControls();
 loadConfig().catch((error) => message(error.message, true));

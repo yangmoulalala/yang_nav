@@ -152,8 +152,9 @@ backend_node:
       suspicious_angular_speed: 30.0
     recovery:
       # 开机初始化在里程计推算位置（地图原点或启动提示）附近检索的半径，单位为米；启动提示也用此半径。
-      # 局中恢复（SUSPECT/LOST）只用 UWB，见 uwb.search_radius。
       initial_search_radius: 2.0
+      # 未启用 UWB 时，恢复解相对同代里程计预测的位置偏差上限（米）；0 关闭。
+      odom_search_radius: 2.0
       source:
         # 一次观测成立所需的最少因果点云帧数。
         min_frames: 2
@@ -185,7 +186,7 @@ backend_node:
       global_fallback_candidates: 0
       # SUSPECT 升级到 LOST 所需的连续恢复失败次数。
       suspect_failures_before_lost: 3
-      # LOST 状态是否持续自动尝试重定位（只在推算位置附近搜索）。
+      # LOST 状态是否持续自动尝试局部重定位。
       automatic_when_lost: true
       # 提交恢复前要求连续给出一致位姿的次数；1 表示首次匹配即提交。
       confirmations: 2
@@ -203,7 +204,7 @@ backend_node:
       ambiguity_rotation_deg: 30.0
     uwb:
       # 局中恢复（SUSPECT/LOST）是否使用裁判系统 UWB。UWB 只作重定位位置先验，不参与跟踪，也不用于判断定位是否正常；
-      # 开机初始化不用 UWB。关闭或没有新鲜 UWB 时，SUSPECT/LOST 不做重定位，只等待。 [按车调整]
+      # 开机初始化不用 UWB。开启时等待新鲜 UWB；关闭时可在同代里程计预测附近恢复。 [按车调整]
       enabled: false
       # UWB 消息的 frame_id，不一致的消息被丢弃。己方颜色从 uwb_pose/team（red/blue）读取。
       frame: uwb

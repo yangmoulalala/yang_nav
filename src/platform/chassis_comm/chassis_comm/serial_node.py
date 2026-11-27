@@ -26,7 +26,9 @@ class ChassisSerial(Node):
         baud = self.declare_parameter('baud_rate', 115200).value
         rate = self.declare_parameter('rate', 100.0).value
         command_timeout = self.declare_parameter('command_timeout', 0.3).value
-        self._pose_timeout = self.declare_parameter('pose_timeout', 0.3).value
+        # map -> lio_odom arrives at LiDAR rate (10 Hz); 0.3 s left three frames of
+        # margin and a single late frame paused TX and hard-stopped the MCU.
+        self._pose_timeout = self.declare_parameter('pose_timeout', 0.45).value
         yaw_timeout = self.declare_parameter('yaw_timeout', 0.3).value
         write_timeout = self.declare_parameter('write_timeout', 0.005).value
         self._feedback_timeout = self.declare_parameter('feedback_timeout', 0.1).value

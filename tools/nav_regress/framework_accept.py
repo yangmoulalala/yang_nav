@@ -11,7 +11,10 @@ import os
 from pathlib import Path
 import numpy as np
 import rclpy
+import yaml
 from action_msgs.msg import GoalStatus
+from ament_index_python.packages import get_package_share_directory
+from bringup.configuration import merge
 from support.plant import Plant
 from support.runtime import finish, navigation
 from support.terrain import flat_fixture
@@ -25,6 +28,13 @@ def main():
     args = ap.parse_args()
     os.environ.setdefault('ROS_DOMAIN_ID', '158')
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
+    params_dir = Path(get_package_share_directory('nav_bringup')) / 'params'
+    params = yaml.safe_load((params_dir / 'nav2.yaml').read_text())
+    if args.profile == 'real':
+        params = merge(params, yaml.safe_load((params_dir / 'nav2_real.yaml').read_text()))
+    speed_limit = params['cmd_gate']['ros__parameters']['limits']['normal']['max_linear']
+    follow = params['controller_server']['ros__parameters']['FollowPath']
+    transit_speed = min(speed_limit, follow['TranslationVelocityCritic']['max_speed'])
     terrain = flat_fixture(out, 'XY-only chassis fixture', 100)
     rclpy.init(); plant = Plant(out)
     checks = []
@@ -40,7 +50,8 @@ def main():
                 plant.goal(target, timeout=40.)
                 plant.wait(plant.stopped, 2., 'high-speed goal did not stop')
                 peak = max(math.hypot(*s['cmd'][:2]) for s in plant.samples[begin:])
-                assert 1.8 < peak <= 2.0 + 1e-6, f'2 m/s transit peak={peak}'
+                assert 0.9 * transit_speed < peak <= speed_limit + 1e-6, (
+                    f'{args.profile} transit peak={peak}, reference={transit_speed}, limit={speed_limit}')
                 checks.append(f'long transit reaches {peak:.3f} m/s and stops at the goal')
             plant.pose[:] = [-2., 0., .7]
             plant.run_for(.5)
@@ -85,8 +96,8 @@ def main():
             assert not plant.unexecutable_yaw, plant.unexecutable_yaw
             checks.append('all final navigation commands have angular.z=0')
             peak = max(math.hypot(*s['cmd'][:2]) for s in plant.samples)
-            assert peak <= 2.0 + 1e-6, f'translation norm exceeds 2 m/s: {peak}'
-            checks.append('all final translation commands, including diagonal motion, stay within 2 m/s')
+            assert peak <= speed_limit + 1e-6, f'translation norm exceeds {speed_limit} m/s: {peak}'
+            checks.append(f'all final translation commands, including diagonal motion, stay within {speed_limit} m/s')
         result = dict(passed=True, checks=checks, final_pose=plant.pose.tolist())
     except Exception as exc:
         result = dict(passed=False, checks=checks, error=str(exc))

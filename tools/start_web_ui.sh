@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 web_workspace=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-for web_setup in /opt/ros/jazzy/setup.bash "$web_workspace/install/setup.bash"; do
+for web_setup in /opt/ros/jazzy/setup.bash "$web_workspace/install/local_setup.bash"; do
   if [[ ! -f "$web_setup" ]]; then
     printf 'Missing %s. Install ROS 2 Jazzy and build the workspace first.\n' "$web_setup" >&2
     exit 2

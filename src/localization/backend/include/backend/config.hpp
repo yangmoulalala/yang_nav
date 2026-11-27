@@ -185,8 +185,9 @@ struct InnovationConfig {
 struct RecoveryConfig {
     double period = 0.2;
     /// 开机初始化时在里程计推算位置（地图原点或启动提示）附近检索的半径，m；启动提示也用此半径。
-    /// 局中恢复（SUSPECT/LOST）不用它，改用 UwbConfig::search_radius。
     double initial_search_radius = 2.0;
+    /// 无 UWB 时，局中恢复允许偏离同代里程计预测的位置范围；0 关闭。
+    double odom_search_radius = 2.0;
     /// 初始化时局部检索失败后补充的全局描述子候选数；0 不做全局重定位。
     int global_fallback_candidates = 0;
     int suspect_failures_before_lost = 3;
@@ -205,7 +206,7 @@ struct RecoveryConfig {
 /// 局中恢复使用的裁判系统 UWB 位置参数。UWB 只在 SUSPECT/LOST 恢复时作位置先验，
 /// 不参与跟踪和因子图，也不用于判断定位是否正常；开机初始化不用 UWB。
 struct UwbConfig {
-    /// 是否在局中恢复时使用 UWB；关闭或没有新鲜 UWB 时 SUSPECT/LOST 不做重定位，只等待。
+    /// 是否在局中恢复时使用 UWB；开启时等待新鲜 UWB，关闭时可用同代里程计预测。
     bool enabled = false;
     /// 己方为红方时使用的 UWB（裁判）坐标系到 map 的固定变换（SE(2)）。
     Eigen::Matrix4d T_map_uwb_red = Eigen::Matrix4d::Identity();

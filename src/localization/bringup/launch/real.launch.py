@@ -38,6 +38,7 @@ PIPELINE_ARGS = {
     'map_dir': (str(WORKSPACE / 'maps' / 'real'/ '001'), '地图保存目录（绝对路径）'),
     'rviz': ('false', '后端 RViz'),
     'backend_overrides': ('', '后端 ROS 参数覆盖 YAML'),
+    'lidar_min_range': ('', '雷达近距软件过滤下限（米），留空使用配置默认值'),
     'gimbal_yaw_offset': ('0.0', 'MCU +X 相对 CAD 云台零方向的实测 CCW 偏角(rad)，不是关节角'),
 }
 SOURCE_ARGS = {
@@ -59,7 +60,7 @@ CHASSIS_ARGS = {
     'chassis_cmd_vel_topic': ('/cmd_vel', '最终安全门输出的速度话题'),
     'chassis_action_topic': ('/chassis/pass_hole', 'Bool 过洞模式电平：true 随头，false 小陀螺'),
     'chassis_command_timeout': ('0.3', '速度输入超时（s）'),
-    'chassis_pose_timeout': ('0.3', '定位 TF 超时（s）'),
+    'chassis_pose_timeout': ('0.45', '定位 TF 超时（s）'),
     'chassis_yaw_timeout': ('0.3', '相对转角输入超时（s），过期发送 yaw=0'),
     'chassis_yaw_topic': ('/chassis/yaw_target', '相对雷达当前朝向的期望转角，Float32，rad'),
     'chassis_write_timeout': ('0.005', '串口写超时（s）'),
@@ -89,6 +90,7 @@ def generate_launch_description():
         Node(package='livox_ros_driver2', executable='livox_ros_driver2_node',
              name='livox_lidar_publisher', output='screen',
              condition=IfCondition(arg['driver_mid360']),
+             additional_env={'FASTDDS_BUILTIN_TRANSPORTS': 'UDPv4'},
              parameters=[PathJoinSubstitution([config, 'livox_driver.yaml']),
                          {'user_config_path': PathJoinSubstitution([config, 'MID360_config.json'])}],
              remappings=[('/livox/lidar', arg['mid360_topic']), ('/livox/imu', arg['imu_topic'])]),

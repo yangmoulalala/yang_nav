@@ -22,7 +22,7 @@ def main():
     args = ap.parse_args()
     os.environ.setdefault('ROS_DOMAIN_ID', '93')
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
-    terrain = Path(__file__).resolve().parents[2]/'maps/sim/terrain' if args.recorded_exit else fixture(out)
+    terrain = Path(__file__).resolve().parents[2]/'maps/sim/terrain' if args.recorded_exit else fixture(out, additional_wall=True)
     rclpy.init(); plant = Plant(out); checks = []
     try:
         with navigation(out, terrain, plant):
@@ -44,6 +44,16 @@ def main():
                 print('PASS '+checks[-1], flush=True)
             text = (out/'navigation.log').read_text()
             assert 'occupied start' in text and 'occupied footprint, escaping' in text
+            if not args.recorded_exit:
+                plant.pose[:] = [-.1, -2., 0.]
+                plant.run_for(1.2)
+                handle, future = plant.start((4., -2., 0.))
+                plant.wait(lambda: abs(plant.pose[0]) > 1.12, 25., 'did not escape without a route to the goal')
+                assert 'Occupied start: escape only' in (out/'navigation.log').read_text()
+                assert not future.done(), 'escape-only endpoint completed or aborted navigation'
+                plant.cancel(handle, future)
+                checks.append('escaped the occupied start even with the original goal unreachable')
+                print('PASS '+checks[-1], flush=True)
             result = dict(passed=True, checks=checks)
     except Exception:
         result = dict(passed=False, checks=checks, error=traceback.format_exc())

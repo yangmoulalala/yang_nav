@@ -137,7 +137,7 @@ inline bool escapeMotionFree(const nav2_costmap_2d::Costmap2D & map,
 struct EscapePath {std::vector<Pose2> poses; double score{0.0};};
 inline std::vector<EscapePath> escapePaths(const nav2_costmap_2d::Costmap2D & map,
   const std::vector<geometry_msgs::msg::Point> & fp, const Pose2 & start, const Pose2 & goal,
-  double max_distance = 1.5)
+  double max_distance = 1.5, double free_runout = 0.08)
 {
   std::vector<EscapePath> out;
   const auto initial = footprintContacts(map, fp, start);
@@ -160,7 +160,8 @@ inline std::vector<EscapePath> escapePaths(const nav2_costmap_2d::Costmap2D & ma
       const bool free = next.cells.empty() && map.worldToMap(q.x, q.y, x, y) &&
         map.getCost(x, y) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
       if (free && first_free < 0.0) {first_free = d;}
-      if (free && d >= first_free + 0.08) {
+      if (!free) {first_free = -1.0;}
+      if (free && d >= first_free + free_runout) {
         candidate.score = d + 0.25 * (std::hypot(goal.x - q.x, goal.y - q.y) -
           std::hypot(goal.x - start.x, goal.y - start.y));
         out.push_back(std::move(candidate));

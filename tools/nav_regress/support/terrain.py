@@ -14,7 +14,7 @@ def flat_fixture(out, description, speed):
     return terrain
 
 
-def fixture(out):
+def fixture(out, *, additional_wall=False):
     terrain = out / 'terrain'
     m = TerrainMap.blank(280, 240, .05, (-7., -6.))
     m.elevation = np.zeros(m.terrain.shape, np.float32)
@@ -27,6 +27,8 @@ def fixture(out):
     wall = (np.abs(x) < .6) & (np.abs(y) >= .5) & (np.abs(y - 2.5) >= .7)
     slope = (np.abs(x) < .6) & (np.abs(y - 2.5) < .7)
     m.terrain[tunnel], m.terrain[wall], m.terrain[slope] = TUNNEL, OBSTACLE, SLOPE
+    if additional_wall:
+        m.terrain[np.abs(x - 2.5) < .4] = OBSTACLE
     m.clearance[tunnel] = .25
     export(m, terrain, ExportConfig(terrain_cost=0.), source='closed-loop Nav2 fixture')
     return terrain

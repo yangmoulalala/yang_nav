@@ -1,6 +1,6 @@
 /**
  * @file recovery_matcher.cpp
- * @brief 初始化（启动提示 → 描述子）与局中恢复（UWB）求解恢复位姿。
+ * @brief 使用启动提示、地点描述子或位置先验求解恢复位姿。
  */
 
 #include <algorithm>
@@ -99,13 +99,15 @@ bool RecoveryMatcher::match(const RecoveryWork& work,
     return true;
 }
 
-/// 求解完整可观恢复位姿：初始化按启动提示 → 描述子；SUSPECT/LOST 只用 UWB 位置先验。
+/// 求解完整可观恢复位姿：局中自动恢复使用 UWB 或同代里程计先验。
 RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     RecoveryResult result;
-    // 局中恢复只在有新鲜 UWB 时进行；没有 UWB 时不做重定位，推迟且不计失败。
-    if (work.uwb_required && !work.uwb_prior) {
+    const auto& position_prior = work.uwb_required ? work.uwb_prior : work.odom_prior;
+    const bool local_recovery = !work.global_search &&
+                                work.identity.status != LocalizationStatus::Initializing;
+    if (local_recovery && !position_prior) {
         result.outcome = RecoveryOutcome::Deferred;
-        result.source = "waiting for fresh UWB";
+        result.source = work.uwb_required ? "waiting for fresh UWB" : "no local odometry prior";
         return result;
     }
     // 初始化的显式责任链：完整启动提示 → 描述子；每个分支仍调用同一匹配器。
@@ -135,16 +137,16 @@ RecoveryResult RecoveryMatcher::compute(const RecoveryWork& work) {
     }
     if (work.source_evidence.disposition != ObservationDisposition::Measurement)
         return result;
-    if (work.uwb_required) {
-        if (match(work, &*work.uwb_prior, result)) {
+    if (local_recovery) {
+        if (match(work, &*position_prior, result)) {
             result.outcome = RecoveryOutcome::Matched;
-            result.source = "UWB + scan-to-map";
+            result.source = work.uwb_required ? "UWB + scan-to-map" : "odometry + scan-to-map";
             return result;
         }
         result.outcome =
             result.source == "ambiguous" ? RecoveryOutcome::Deferred : RecoveryOutcome::Failed;
         if (result.outcome == RecoveryOutcome::Failed)
-            result.source = "UWB position prior";
+            result.source = work.uwb_required ? "UWB position prior" : "odometry position prior";
         return result;
     }
     if (match(work, nullptr, result)) {

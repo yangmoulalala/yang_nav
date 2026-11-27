@@ -7,6 +7,7 @@ import yaml
 
 
 MODULES = ('frontend', 'backend', 'lidar_fusion', 'lidar_calibration')
+LIDAR_MIN_RANGE_BOUNDS = (0.2, 0.5)
 
 
 def merge(base, override, prefix=''):
@@ -50,17 +51,26 @@ def resolve(config_dir, module, lidar='dual'):
     return result
 
 
-def parameter_files(config_dir, modules=MODULES, lidar='dual', backend_overrides=''):
+def parameter_files(config_dir, modules=MODULES, lidar='dual', backend_overrides='', lidar_min_range=None):
     """Materialize resolved files for the standalone module launch interfaces.
 
     The caller keeps the directory alive until launch shutdown, then cleans it.
     Source configuration stays in common/ and its small explicit overrides.
     """
+    if lidar_min_range is not None:
+        minimum, maximum = LIDAR_MIN_RANGE_BOUNDS
+        if not minimum <= lidar_min_range <= maximum:
+            raise ValueError(f'近距软件过滤须在 {minimum} 到 {maximum} 米之间')
     temporary = TemporaryDirectory(prefix='yang_nav_params_')
     try:
         for module in modules:
             path = Path(temporary.name) / f'{module}.yaml'
             config = resolve(config_dir, module, lidar)
+            if lidar_min_range is not None:
+                if module == 'frontend':
+                    config['zlio']['ros__parameters']['sensor']['minimum_range'] = float(lidar_min_range)
+                elif module == 'lidar_fusion':
+                    config['lidar_merge']['ros__parameters']['min_range'] = float(lidar_min_range)
             if module == 'backend' and backend_overrides:
                 config = merge(config, yaml.safe_load(Path(backend_overrides).read_text()))
             path.write_text(yaml.safe_dump(config, sort_keys=False))

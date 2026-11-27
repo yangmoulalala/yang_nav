@@ -54,11 +54,65 @@ TEST(TranslationMotionModel, ResponseChangesCollisionRolloutButPreservesActuator
   model.initialize(limits,.05f); model.setResponse(1.05,-.3);
   mppi::models::State state;state.reset(2,5);
   state.cvx.fill(.2f);state.cvy.fill(.1f);
-  state.vx.fill(.2f*1.05f+.1f*.3f);state.vy.fill(-.2f*.3f+.1f*1.05f);
+  state.speed.linear.x = .24;
+  state.speed.linear.y = .045;
   model.predict(state);
   for (size_t i=0;i<2;++i) {
     EXPECT_NEAR(state.vx(i,0),.24,1e-6);EXPECT_NEAR(state.vy(i,0),.045,1e-6);
     EXPECT_NEAR(state.vx(i,1),.24,1e-6);EXPECT_NEAR(state.vy(i,1),.045,1e-6);
     EXPECT_NEAR(state.cvx(i,0),.2,1e-6);EXPECT_NEAR(state.cvy(i,0),.1,1e-6);
+  }
+}
+
+TEST(TranslationMotionModel, SlewStartsFromCommandButFirstPoseUsesMeasuredMotion)
+{
+  nav_behaviors::TranslationMotionModel model;
+  mppi::models::ControlConstraints limits;
+  limits.ax_max = limits.ay_max = 1.0f;
+  limits.ax_min = limits.ay_min = -1.0f;
+  limits.az_max = 4.0f;
+  model.initialize(limits, .05f);
+  model.setCommandStart(nav_behaviors::XY{.4, 0.0});
+  mppi::models::State state;
+  state.reset(2, 5);
+  state.speed.linear.x = .3;
+  state.speed.linear.y = .2;
+  state.cvx.fill(.6f);
+  state.cvy.fill(0.0f);
+  model.predict(state);
+  EXPECT_NEAR(state.vx(0, 0), .3, 1e-6);
+  EXPECT_NEAR(state.vy(0, 0), .2, 1e-6);
+  EXPECT_NEAR(state.vx(0, 1), .45, 1e-6);
+  EXPECT_NEAR(state.vy(0, 1), 0.0, 1e-6);
+}
+
+TEST(TranslationMotionModel, FixedFrameCandidatesKeepDirectionAsTurretRotates)
+{
+  nav_behaviors::TranslationMotionModel model;
+  mppi::models::ControlConstraints limits{};
+  limits.ax_max = limits.ay_max = .9f;
+  limits.ax_min = limits.ay_min = -1.f;
+  limits.az_max = 4.f;
+  model.initialize(limits, .05f);
+  model.setFixedFrameTranslation(true);
+  model.setResponse(1.0, .15);
+  model.setCommandStart(nav_behaviors::XY{.8, 0.0});
+  for (double rate : {-3.15, 3.15}) {
+    mppi::models::State state;
+    state.reset(3, 20);
+    state.speed.linear.x = .7;
+    state.speed.angular.z = rate;
+    state.cvx.fill(.8f);
+    state.cvy.fill(0.f);
+    model.predict(state);
+    EXPECT_NEAR(state.vx(0, 0), .7, 1e-6);
+    for (size_t step = 1; step < 20; ++step) {
+      const double angle = step * .05 * rate;
+      const double vx = state.vx(0, step), vy = state.vy(0, step);
+      EXPECT_NEAR(std::cos(angle) * vx - std::sin(angle) * vy, .8, 1e-6);
+      EXPECT_NEAR(std::sin(angle) * vx + std::cos(angle) * vy, .12, 1e-6);
+      EXPECT_NEAR(state.cvx(0, step - 1), .8, 1e-6);
+      EXPECT_NEAR(state.wz(0, step), rate, 1e-6);
+    }
   }
 }

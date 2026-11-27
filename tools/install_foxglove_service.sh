@@ -2,7 +2,7 @@
 set -euo pipefail
 
 fox_domain=${ROS_DOMAIN_ID:-0}
-fox_port=${1:-8765}
+fox_port=${1:-8766}
 fox_workspace=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 if [[ ! $fox_domain =~ ^(0|[1-9][0-9]{0,2})$ ]] || ((fox_domain > 232)) ||
    [[ ! $fox_port =~ ^[1-9][0-9]{0,4}$ ]] || ((fox_port > 65535)); then

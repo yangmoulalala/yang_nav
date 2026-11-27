@@ -182,6 +182,7 @@ void ParameterReader::loadTracking() {
 void ParameterReader::loadRecovery() {
     getParam("recovery/period", parameters_.runtime.recovery.period);
     getParam("recovery/initial_search_radius", parameters_.runtime.recovery.initial_search_radius);
+    getParam("recovery/odom_search_radius", parameters_.runtime.recovery.odom_search_radius);
     getParam("recovery/global_fallback_candidates",
              parameters_.runtime.recovery.global_fallback_candidates);
     getParam("recovery/suspect_failures_before_lost",

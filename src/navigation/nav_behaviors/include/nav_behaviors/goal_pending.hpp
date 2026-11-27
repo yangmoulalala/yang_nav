@@ -1,6 +1,8 @@
 // A safe approach point must never complete the original occupied target request.
 #pragma once
+#include <chrono>
 #include <cmath>
+#include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/buffer.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "behaviortree_cpp/decorator_node.h"
@@ -31,7 +33,11 @@ public:
 class KeepOccupiedGoalPending : public BT::DecoratorNode {
 public:
   using BT::DecoratorNode::DecoratorNode;
-  static BT::PortsList providedPorts() {return {BT::InputPort<nav_msgs::msg::Path>("path")};}
+  static BT::PortsList providedPorts() {
+    return {BT::InputPort<nav_msgs::msg::Path>("path"),
+      BT::InputPort<double>("hold_timeout", 3.0,
+        "seconds held at an approach point before failing into the recovery ladder")};
+  }
   BT::NodeStatus tick() override {
     auto input=getInput<nav_msgs::msg::Path>("path");
     if (!input || input.value().poses.empty()) {return BT::NodeStatus::FAILURE;}
@@ -45,16 +51,34 @@ public:
       resetChild();waiting_=false;signature_=sig;x_=end.x;y_=end.y;complete_=complete;
     }
     setStatus(BT::NodeStatus::RUNNING);
-    if(waiting_) {return BT::NodeStatus::RUNNING;}
+    if(waiting_) {
+      // The planner can keep returning the very approach point the robot already
+      // stands on (goal buried in the inflation ring), so the endpoint never moves
+      // and this decorator would hold forever: FollowPath is never ticked again and
+      // cmd_vel stays at zero. Bound the hold so the recovery ladder gets a turn.
+      const auto timeout=getInput<double>("hold_timeout");
+      const double held=std::chrono::duration<double>(
+        std::chrono::steady_clock::now()-wait_start_).count();
+      if (timeout && held > timeout.value()) {
+        RCLCPP_WARN(rclcpp::get_logger("nav_behaviors"),
+          "KeepOccupiedGoalPending: held %.1f s at an approach point that never reaches the goal"
+          " (%.2f, %.2f); failing into recovery", held, x_, y_);
+        waiting_=false;
+        return BT::NodeStatus::FAILURE;
+      }
+      return BT::NodeStatus::RUNNING;
+    }
     x_=end.x; y_=end.y; complete_=complete;
     auto status=child_node_->executeTick();
     if(status==BT::NodeStatus::SUCCESS && !complete) {
-      resetChild();waiting_=true;return BT::NodeStatus::RUNNING;
+      resetChild();waiting_=true;wait_start_=std::chrono::steady_clock::now();
+      return BT::NodeStatus::RUNNING;
     }
     return status;
   }
   void halt() override {waiting_=false;signature_.clear();BT::DecoratorNode::halt();}
 private:
   bool waiting_{false},complete_{false};double x_{0},y_{0};std::string signature_;
+  std::chrono::steady_clock::time_point wait_start_{};
 };
 }  // namespace nav_behaviors

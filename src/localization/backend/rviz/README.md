@@ -1,6 +1,6 @@
 # Foxglove 定位可视化
 
-导入本目录的 `backend.foxglove.json`，连接 Foxglove WebSocket `ws://192.168.1.154:8765`。
+导入本目录的 `backend.foxglove.json`，连接 Foxglove WebSocket `ws://192.168.1.154:8766`。
 这是布局文件，使用 Foxglove 的 **布局 / Layout → 导入 / Import**，不是“打开数据文件”。
 建议窗口至少 1600 × 900；深色应用主题与布局中的深蓝灰背景更协调。
 

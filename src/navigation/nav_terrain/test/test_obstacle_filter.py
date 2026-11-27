@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from nav_terrain.obstacle_filter import FilterConfig, GroundFilter
+from nav_terrain.obstacle_filter import FilterConfig, GroundFilter, LiveGroundFilter
 from nav_terrain.terrain_map import OBSTACLE, UNKNOWN, TerrainMap
 
 
@@ -21,6 +21,15 @@ def test_ground_roof_self_and_invalid_returns_are_not_obstacles():
     hits, rays = f.select(points, points, (0, 0, .1), 0)
     assert hits.tolist() == [1]
     assert rays.tolist() == [1]  # stop the clearing ray at the obstacle, never at the roof
+
+
+def test_live_filter_needs_no_terrain_and_never_clears_behind_a_hit():
+    points = np.array([[3, 0, 1.0], [1, 0, 1.15], [0, 2, 1.01],
+                       [-2, 0, 1.5], [0.1, 0.1, 1.15], [np.nan, 0, 1.0]])
+    body = points - [0, 0, 1.062]
+    hits, rays = LiveGroundFilter().select(points, body, (0, 0, 1.2), 1.0)
+    assert hits.tolist() == [1]
+    assert set(rays) == {1, 2}
 
 
 def test_slope_uses_local_ground_and_keeps_low_box():

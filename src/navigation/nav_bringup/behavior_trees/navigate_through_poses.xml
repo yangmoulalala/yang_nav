@@ -9,8 +9,8 @@
 -->
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <ZoneRecovery base_frame="gimbal_nav" retries="-1" retry_delay="1.0" state_topic="/nav_zone_state" zone_timeout="4.0" zones_file="__NAV_ZONES_FILE__"
-                  spin_after="1" backup_after="2" spin="false" name="NavigateRecovery">
+    <ZoneRecovery base_frame="gimbal_nav" retries="__NAV_RETRIES__" retry_delay="1.0" state_topic="/nav_zone_state" zone_timeout="4.0" zones_file="__NAV_ZONES_FILE__"
+                  spin_after="1" backup_after="2" spin="false" backup="__NAV_BACKUP__" name="NavigateRecovery">
       <PipelineSequence name="NavigateWithReplanning">
         <ControllerSelector selected_controller="{selected_controller}" default_controller="FollowPath" topic_name="controller_selector"/>
         <PlannerSelector selected_planner="{selected_planner}" default_planner="StrictGridBased" topic_name="planner_selector"/>

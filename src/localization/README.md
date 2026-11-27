@@ -18,7 +18,7 @@ MID-360 内置 IMU ────────────────────�
 | 包 | 来源 | 作用 |
 | --- | --- | --- |
 | `frontend` | 上游 | ZLIO 激光惯性里程计（`zlio_node`），输出观测与高频预测；组合启动关闭其 TF 发布 |
-| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位；组合启动成对发布两条动态 TF；局中恢复（SUSPECT/LOST）用裁判系统 UWB 作位置先验 |
+| `backend` | 上游 | 因子图后端：建图、回环、先验地图定位；组合启动成对发布两条动态 TF；局中用 UWB 或同代里程计预测作局部恢复先验 |
 | `localization_interfaces` | 上游 | 前后端消息与重置服务 |
 | `livox_ros_driver2` | 上游 | 真车 MID-360 驱动 |
 | `lidar_fusion` | 新增 | 单/双雷达合并为一路带 `offset_time` 的 PointCloud2 |
@@ -118,8 +118,8 @@ ros2 launch bringup real.launch.py mode:=localization prior_map:=/abs/map
 - TF：启动 `robot_state_publisher`，根为 `gimbal_nav`，只发布可观测的固定云台子树；不启动默认零关节发布器。
   接通真实关节反馈后，应另行恢复有依据的物理底盘 TF；普通 X/Y 仍应保持云台参考。
 - 后端：`bringup/config/common/backend.yaml`；单雷达仅叠加 `config/single_lidar.yaml`。
-  真车 `uwb.enabled: false`（`uwb.zero_pose_*` 未标定），此时 SUSPECT/LOST 不会自动恢复；接入裁判系统 UWB 后在这里打开，并按
-  `backend/docs/parameters.md` 的 `uwb` 小节配置。
+  真车默认 `uwb.enabled: false`，`SUSPECT`/`LOST` 在同代里程计预测附近尝试局部恢复；没有同代可信锚或漂移超出局部范围时，停稳并停止导航后可调用 `/backend_node/global_relocalize`。
+  接入裁判系统 UWB 后可启用，并按 `backend/docs/parameters.md` 的 `uwb` 小节标定。
 
 **以下取值未在真车验证（本机无硬件），上车先核对**，改启动参数或 yaml 即可，不用改代码：
 

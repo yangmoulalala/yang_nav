@@ -23,8 +23,9 @@ Options:
   --dry-run    Load the environment and print the command without launching nodes.
 
 Launch arguments are forwarded to nav_bringup/navigation.launch.py:
+  mode:=localization|mapping Default: localization; mapping uses live LiDAR on flat ground
   terrain_dir:=PATH    Default: maps/<profile> (terrain/ when present)
-  params_file:=PATH    Default: installed nav_bringup/params/nav2.yaml
+  params_file:=PATH    Full custom YAML; otherwise use installed sim/real profile defaults
   profile:=sim|real    Default: sim (use_sim_time:=false also selects real)
   use_sim_time:=BOOL   Default: true for sim, false for real
   cmd_vel_topic:=TOPIC Default: /cmd_vel (geometry_msgs/Twist)

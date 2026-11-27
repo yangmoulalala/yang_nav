@@ -40,11 +40,69 @@ class FilterConfig:
             raise ValueError('invalid range, interpolation radius, ceiling tolerance or ray count')
 
 
-class GroundFilter:
-    def __init__(self, terrain: TerrainMap, config=None):
-        terrain.validate()
+class LiveGroundFilter:
+    def __init__(self, config=None):
         self.config = config or FilterConfig()
         self.config.validate()
+
+    def sample(self, xy, fallback):
+        return fallback, np.inf
+
+    def terrain_returns(self, points):
+        return False
+
+    def select(self, points_map, points_base, sensor_map, fallback_ground):
+        """Return source indices for obstacle hits and clearing endpoints.
+
+        A clearing ray ends at the nearest obstacle in its azimuth bin. Where
+        there is no hit it ends at the farthest observed ground point. Ceiling,
+        invalid and unseen returns never manufacture free space. Publish rays
+        in the input sensor frame so Nav2 uses the actual sensor origin.
+        """
+        p = np.asarray(points_map, dtype=float).reshape(-1, 3)
+        base = np.asarray(points_base, dtype=float).reshape(-1, 3)
+        if p.shape != base.shape:
+            raise ValueError('map and base point arrays must match')
+        cfg = self.config
+        delta = p[:, :2] - np.asarray(sensor_map)[:2]
+        distance = np.linalg.norm(delta, axis=1)
+        valid = np.isfinite(p).all(axis=1) & np.isfinite(base).all(axis=1)
+        valid &= (distance > 0.05) & (distance <= cfg.max_range)
+        # Include the padded chassis and turret, also on an inclined robot.
+        self_return = ((base[:, 0] > -0.34) & (base[:, 0] < 0.42) & (np.abs(base[:, 1]) < 0.34))
+        valid &= ~self_return
+        ids = np.flatnonzero(valid)
+        if not len(ids):
+            return ids, ids.copy()
+        ground, ceiling = self.sample(p[ids, :2], fallback_ground)
+        height = p[ids, 2] - ground
+        hits = (height >= cfg.min_height) & (height <= cfg.max_height)
+        hits &= height < ceiling - cfg.ceiling_tolerance
+        hits &= ~np.asarray(self.terrain_returns(p[ids]))
+        ground_return = np.abs(height) <= cfg.ground_tolerance
+        bins = np.floor((np.arctan2(delta[ids, 1], delta[ids, 0]) + np.pi)
+                        * cfg.ray_bins / (2 * np.pi)).astype(int) % cfg.ray_bins
+        obstacle_ids = ids[hits]
+        # Sort once, then reduce each observed bin. The farthest floor return
+        # clears a disappearing obstacle only after free ground is observed.
+        nearest_hit = np.full(cfg.ray_bins, np.inf)
+        np.minimum.at(nearest_hit, bins[hits], distance[obstacle_ids])
+        candidates = hits | (ground_return & (distance[ids] < nearest_hit[bins]))
+        chosen = {}
+        for j in np.flatnonzero(candidates)[np.argsort(distance[ids[candidates]])]:
+            b = bins[j]
+            if np.isfinite(nearest_hit[b]):
+                if hits[j] and distance[ids[j]] <= nearest_hit[b]:
+                    chosen[b] = ids[j]
+            else:
+                chosen[b] = ids[j]
+        return obstacle_ids, np.asarray(list(chosen.values()), dtype=np.int64)
+
+
+class GroundFilter(LiveGroundFilter):
+    def __init__(self, terrain: TerrainMap, config=None):
+        super().__init__(config)
+        terrain.validate()
         if terrain.elevation is None:
             raise ValueError('terrain.msgpack has no elevation; re-export the surface project')
         self.resolution, self.origin = terrain.resolution, np.asarray(terrain.origin)
@@ -88,42 +146,17 @@ class GroundFilter:
         ceiling[~np.isfinite(ceiling)] = np.inf
         return ground, ceiling
 
-    def select(self, points_map, points_base, sensor_map, fallback_ground):
-        """Return source indices for obstacle hits and clearing endpoints.
-
-        A clearing ray ends at the nearest obstacle in its azimuth bin. Where
-        there is no hit it ends at the farthest observed ground point. Ceiling,
-        invalid and unseen returns never manufacture free space. Publish rays
-        in the input sensor frame so Nav2 uses the actual sensor origin.
-        """
-        p = np.asarray(points_map, dtype=float).reshape(-1, 3)
-        base = np.asarray(points_base, dtype=float).reshape(-1, 3)
-        if p.shape != base.shape:
-            raise ValueError('map and base point arrays must match')
-        cfg = self.config
-        delta = p[:, :2] - np.asarray(sensor_map)[:2]
-        distance = np.linalg.norm(delta, axis=1)
-        valid = np.isfinite(p).all(axis=1) & np.isfinite(base).all(axis=1)
-        valid &= (distance > 0.05) & (distance <= cfg.max_range)
-        # Include the padded chassis and turret, also on an inclined robot.
-        self_return = ((base[:, 0] > -0.34) & (base[:, 0] < 0.42) & (np.abs(base[:, 1]) < 0.34))
-        valid &= ~self_return
-        ids = np.flatnonzero(valid)
-        if not len(ids):
-            return ids, ids.copy()
-        ground, ceiling = self.sample(p[ids, :2], fallback_ground)
-        height = p[ids, 2] - ground
-        hits = (height >= cfg.min_height) & (height <= cfg.max_height)
-        hits &= height < ceiling - cfg.ceiling_tolerance
+    def terrain_returns(self, points):
         # Keep the conservative obstacle rule for explicitly labelled cells.
         # A registered riser may look like a point obstacle, but discard a
         # return only when its XY is close to a cardinal terrain boundary and
         # its height lies between that cell's ground and the known higher side.
         # Dynamic objects elsewhere in the lower cell remain visible.
-        cols, rows = np.floor((p[ids, :2] - self.origin) / self.resolution).astype(np.int64).T
+        cfg = self.config
+        cols, rows = np.floor((points[:, :2] - self.origin) / self.resolution).astype(np.int64).T
         in_grid = ((rows >= 0) & (rows < self.ground.shape[0]) &
                    (cols >= 0) & (cols < self.ground.shape[1]))
-        terrain_return = np.zeros(len(ids), dtype=bool)
+        terrain_return = np.zeros(len(points), dtype=bool)
         if np.any(in_grid):
             inside = np.flatnonzero(in_grid)
             rr, cc = rows[inside], cols[inside]
@@ -132,7 +165,7 @@ class GroundFilter:
             traversable = (labels != OBSTACLE) & (labels != UNKNOWN)
             x0 = self.origin[0] + cc * self.resolution
             y0 = self.origin[1] + rr * self.resolution
-            local = p[ids[inside]]
+            local = points[inside]
             riser = np.zeros(len(inside), dtype=bool)
             for dr, dc, neighbor in self.edge_neighbors:
                 higher = neighbor[rr, cc]
@@ -149,22 +182,4 @@ class GroundFilter:
                                     (local[:, 2] <= higher + cfg.terrain_surface_tolerance))
                 riser |= edge & (edge_distance <= cfg.terrain_edge_xy_tolerance) & between_surfaces
             terrain_return[inside] = traversable & riser
-        hits &= ~terrain_return
-        ground_return = np.abs(height) <= cfg.ground_tolerance
-        bins = np.floor((np.arctan2(delta[ids, 1], delta[ids, 0]) + np.pi)
-                        * cfg.ray_bins / (2 * np.pi)).astype(int) % cfg.ray_bins
-        obstacle_ids = ids[hits]
-        # Sort once, then reduce each observed bin. The farthest floor return
-        # clears a disappearing obstacle only after free ground is observed.
-        nearest_hit = np.full(cfg.ray_bins, np.inf)
-        np.minimum.at(nearest_hit, bins[hits], distance[obstacle_ids])
-        candidates = hits | (ground_return & (distance[ids] < nearest_hit[bins]))
-        chosen = {}
-        for j in np.flatnonzero(candidates)[np.argsort(distance[ids[candidates]])]:
-            b = bins[j]
-            if np.isfinite(nearest_hit[b]):
-                if hits[j] and distance[ids[j]] <= nearest_hit[b]:
-                    chosen[b] = ids[j]
-            else:
-                chosen[b] = ids[j]
-        return obstacle_ids, np.asarray(list(chosen.values()), dtype=np.int64)
+        return terrain_return

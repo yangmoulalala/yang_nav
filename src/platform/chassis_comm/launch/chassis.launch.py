@@ -12,7 +12,7 @@ ARGUMENTS = {
     'baud_rate': ('115200', int, 'baud rate agreed with MCU'),
     'rate': ('100.0', float, 'A3 serial frame rate (Hz)'),
     'command_timeout': ('0.3', float, 'velocity input timeout (s)'),
-    'pose_timeout': ('0.3', float, 'localization TF timeout (s)'),
+    'pose_timeout': ('0.45', float, 'localization TF timeout (s)'),
     'yaw_timeout': ('0.3', float, 'relative turn input timeout (s); stale means hold heading'),
     'write_timeout': ('0.005', float, 'serial write timeout (s)'),
     'feedback_timeout': ('0.1', float, 'A4 online and incomplete RX frame timeout (s)'),

@@ -158,6 +158,63 @@ TEST_F(LocalizationFlow, GlobalRelocalizationUsesNewScansWithoutUwbOrPositionPri
     EXPECT_TRUE(reset.requests.empty());
 }
 
+TEST_F(LocalizationFlow, SuspectRecoversWithoutUwbAfterTwoConsistentLocalMatches) {
+    const auto identity = Eigen::Matrix4d::Identity();
+    config.startup_hint.T_map_sensor = identity;
+    config.recovery.confirmations = 2;
+    config.uwb.enabled = false;
+    start(true);
+    ASSERT_TRUE(ingest(frame(10, identity, identity)));
+    maintain();
+    ASSERT_TRUE(ingest(frame(11, identity, identity)));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+
+    const auto truth = testing::scenePose(.25, 0, 0, .03);
+    auto current = frame(12, truth, testing::scenePose(.38, 0, 0, .06));
+    ASSERT_TRUE(ingest(current, Eigen::Vector3d(10, 0, 0)));
+    ASSERT_EQ(controller->status(), LocalizationStatus::Suspect);
+    maintain();
+    EXPECT_EQ(controller->status(), LocalizationStatus::Suspect);
+    EXPECT_FALSE(output(current).pose_trusted);
+    maintain();
+    EXPECT_EQ(controller->status(), LocalizationStatus::Suspect);
+    current.timestamp = 13;
+    ASSERT_TRUE(ingest(current));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+    EXPECT_TRUE(output(current).pose_trusted);
+    EXPECT_LT((output(current).T_map_sensor - truth).norm(), 2e-4);
+}
+
+TEST_F(LocalizationFlow, OdometryRecoveryRejectsDistantMatchWithoutResettingFrontend) {
+    const auto identity = Eigen::Matrix4d::Identity();
+    config.startup_hint.T_map_sensor = identity;
+    config.recovery.odom_search_radius = .05;
+    config.recovery.suspect_failures_before_lost = 1;
+    config.uwb.enabled = false;
+    reset.available = true;
+    start(true);
+    ASSERT_TRUE(ingest(frame(10, identity, identity)));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+
+    const auto drifted = frame(11, identity, testing::scenePose(.3, 0, 0, 0));
+    ASSERT_TRUE(ingest(drifted, Eigen::Vector3d(10, 0, 0)));
+    ASSERT_EQ(controller->status(), LocalizationStatus::Suspect);
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Lost);
+    EXPECT_FALSE(output(drifted).pose_trusted);
+    EXPECT_TRUE(reset.requests.empty());
+
+    const auto current = frame(12, identity, identity);
+    ASSERT_TRUE(ingest(current));
+    maintain();
+    ASSERT_EQ(controller->status(), LocalizationStatus::Normal);
+    EXPECT_TRUE(output(current).pose_trusted);
+    EXPECT_TRUE(reset.requests.empty());
+}
+
 /// 执行真实回环检索、几何验证和图提交，检查后续检索遵守冷却间隔。
 TEST_F(LocalizationFlow, ActualLoopRetrievalVerificationAndGraphCommitRespectCooldown) {
     config.loop.enabled = true;
@@ -216,7 +273,7 @@ TEST_F(LocalizationFlow, InconsistentLoopCannotRewriteOdometryOrDegradeTrackingH
 }
 
 
-/// 局中恢复只在有新鲜 UWB 时进行：没有 UWB 时保持 SUSPECT 等待，不计失败、不进 LOST；
+/// 启用 UWB 时，没有新鲜读数则保持 SUSPECT 等待，不计失败、不进 LOST；
 /// 收到 UWB 后在其位置附近匹配恢复。UWB 不用于判断定位是否正常。
 TEST_F(LocalizationFlow, InGameRecoveryWaitsForUwbAndThenRecoversNearIt) {
     config.startup_hint.T_map_sensor = Eigen::Matrix4d::Identity();

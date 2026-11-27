@@ -16,6 +16,36 @@
 namespace nav_behaviors
 {
 
+inline bool clearBrakingEnvelope(
+  const nav2_costmap_2d::Costmap2D & map, const std::vector<geometry_msgs::msg::Point> & footprint,
+  const Pose2 & robot, double speed, double deceleration, double reaction_time)
+{
+  if (footprint.size() < 3 || !std::isfinite(robot.x) || !std::isfinite(robot.y) ||
+    !std::isfinite(speed) || speed < 0.0 || !std::isfinite(deceleration) || deceleration <= 0.0 ||
+    !std::isfinite(reaction_time) || reaction_time <= 0.0) {return false;}
+  double radius = 0.0;
+  for (const auto & point : footprint) {
+    if (!std::isfinite(point.x) || !std::isfinite(point.y)) {return false;}
+    radius = std::max(radius, std::hypot(point.x, point.y));
+  }
+  if (radius <= 0.0) {return false;}
+  radius += speed * reaction_time + speed * speed / (2.0 * deceleration);
+  unsigned int left, bottom, right, top;
+  if (!std::isfinite(radius) || !map.worldToMap(robot.x - radius, robot.y - radius, left, bottom) ||
+    !map.worldToMap(robot.x + radius, robot.y + radius, right, top)) {return false;}
+  const double half = .5 * map.getResolution();
+  for (unsigned row = bottom; row <= top; ++row) {
+    for (unsigned col = left; col <= right; ++col) {
+      if (map.getCost(col, row) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {continue;}
+      double world_x, world_y;
+      map.mapToWorld(col, row, world_x, world_y);
+      if (std::hypot(std::max(0.0, std::abs(world_x - robot.x) - half),
+        std::max(0.0, std::abs(world_y - robot.y) - half)) <= radius) {return false;}
+    }
+  }
+  return true;
+}
+
 template<class Visitor>
 inline bool visitFootprintCells(
   const nav2_costmap_2d::Costmap2D & map,

@@ -17,6 +17,7 @@
 // configured with this plugin's name, so its parameters stay under <name>.*; the tracker's live under
 // <name>.zone.*.  /nav_mode (latched, tunnel / ramp / normal) is the cmd_gate speed backstop and is
 // published only here.
+#include <atomic>
 #include <cmath>
 #include <cstdio>
 #include <limits>
@@ -35,12 +36,15 @@
 #include "nav_behaviors/zone_state.hpp"
 #include "nav_behaviors/costmap_collision.hpp"
 #include "nav_behaviors/overlap_escape.hpp"
+#include "nav_behaviors/ordinary_escape_release.hpp"
 #include "nav_behaviors/zone_tracker.hpp"
 #include "nav_behaviors/zones_yaml.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "pluginlib/class_loader.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/header.hpp"
+#include "geometry_msgs/msg/polygon_stamped.hpp"
 #include "zone_markers.hpp"
 
 namespace nav_behaviors
@@ -187,10 +191,22 @@ public:
         rclcpp::QoS(1).reliable().transient_local());
     viz_pub_ = node->create_publisher<MarkerArray>("/nav_zones/tracker", 5);
     frame_ = costmap_ros->getGlobalFrameID();
+    if (!angular_control_ && !body_heading_available_) {
+      map_updates_ = costmap_ros->create_subscription<geometry_msgs::msg::PolygonStamped>(
+        "published_footprint", rclcpp::QoS(1), [this](geometry_msgs::msg::PolygonStamped::ConstSharedPtr msg) {
+          map_stamp_ = msg->header.frame_id == frame_ ? rclcpp::Time(msg->header.stamp).nanoseconds() : 0;
+        });
+      observations_ = node->create_subscription<std_msgs::msg::Header>(
+        "/nav/observation", rclcpp::QoS(1), [this](std_msgs::msg::Header::ConstSharedPtr msg) {
+          observation_stamp_ = rclcpp::Time(msg->stamp).nanoseconds();
+        });
+    }
   }
 
   void cleanup() override
   {
+    map_updates_.reset();
+    observations_.reset();
     if (inner_) {
       inner_->cleanup();
     }
@@ -203,6 +219,9 @@ public:
 
   void activate() override
   {
+    stopWaiting();
+    map_stamp_ = 0;
+    observation_stamp_ = 0;
     inner_->activate();
     mode_pub_->on_activate();
     phase_pub_->on_activate();
@@ -226,6 +245,7 @@ public:
 
   void reset() override
   {
+    stopWaiting();
     inner_->reset();
     tracker_.resetProgress();
     escape_target_.reset();
@@ -236,6 +256,7 @@ public:
 
   bool cancel() override
   {
+    stopWaiting();
     publishPhase(ZonePhase::None, std::string(), true);
     publishMode(ZoneProfile::NarrowPassage, false, true);
     return inner_->cancel();
@@ -247,9 +268,12 @@ public:
       throw nav2_core::ControllerException("ZoneAwareController: path frame or size is invalid");
     }
     inner_->setPlan(path);
+    rejoin_path_.clear();
+    rejoin_path_.reserve(path.poses.size());
     std::vector<Pose2> poses;
     poses.reserve(path.poses.size());
     for (const auto & ps : path.poses) {
+      rejoin_path_.push_back({ps.pose.position.x, ps.pose.position.y});
       const auto & o = ps.pose.orientation;
       poses.push_back({ps.pose.position.x, ps.pose.position.y,
           std::atan2(2.0 * (o.w * o.z + o.x * o.y), 1.0 - 2.0 * (o.y * o.y + o.z * o.z))});
@@ -275,7 +299,9 @@ public:
     publishMode(o.profile, o.weight > 0.0 && o.zone_mode);
     publishTracker(robot, o, pose.header.stamp);
     try {
-      if (auto escape = escapeCommand(robot, velocity, pose.header)) {
+      const bool ordinary_xy = !angular_control_ && !body_heading_available_ &&
+        o.weight <= 0.0 && o.phase == ZonePhase::None;
+      if (auto escape = escapeCommand(robot, velocity, pose.header, ordinary_xy)) {
         publishPhase(o.phase, o.zone_id);
         capSpeed(escape->twist);
         return *escape;
@@ -400,8 +426,15 @@ public:
   }
 
 private:
+  void stopWaiting()
+  {
+    ordinary_escape_hold_.reset();
+    escape_timeout_logged_ = false;
+  }
+
   std::optional<geometry_msgs::msg::TwistStamped> escapeCommand(
-    const Pose2 & robot, const geometry_msgs::msg::Twist & measured, const std_msgs::msg::Header & header)
+    const Pose2 & robot, const geometry_msgs::msg::Twist & measured, const std_msgs::msg::Header & header,
+    bool ordinary_xy)
   {
     auto * map = costmap_ros_->getCostmap();
     std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t> lock(*map->getMutex());
@@ -409,7 +442,49 @@ private:
     unsigned center_x, center_y;
     const bool center_free = map->worldToMap(robot.x, robot.y, center_x, center_y) &&
       map->getCost(center_x, center_y) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
-    if (current.valid && current.cells.empty() && center_free && !escape_target_) {return std::nullopt;}
+    const bool clear = current.valid && current.cells.empty() && center_free;
+    if (!ordinary_xy) {stopWaiting();}
+    const auto now = OrdinaryEscapeHold::Clock::now();
+    if (ordinary_xy && !ordinary_escape_hold_.active() && (escape_target_ || (current.valid && !clear)) &&
+      std::abs(measured.angular.z) > 0.05)
+    {
+      ordinary_escape_hold_.start(now);
+      RCLCPP_INFO(logger_, "Ordinary XY navigation: holding for confirmed footprint clearance");
+    }
+    bool timed_out = false;
+    if (ordinary_escape_hold_.active()) {
+      using Decision = OrdinaryEscapeHold::Decision;
+      const auto decision = ordinary_escape_hold_.update(
+        now, current.valid && costmap_ros_->isCurrent(), clear, clock_->now().nanoseconds(),
+        map_stamp_.load(), observation_stamp_.load());
+      if (decision == Decision::Wait) {
+        geometry_msgs::msg::TwistStamped stop;
+        stop.header = header;
+        return stop;
+      }
+      if (decision == Decision::Fail) {
+        throw nav2_core::NoValidControl("Ordinary XY navigation: clearance hold timed out without confirmed clearance or usable costmap data for escape");
+      }
+      if (decision == Decision::Rejoin) {
+        const double speed = std::hypot(measured.linear.x, measured.linear.y);
+        const double decel = std::min(tracker_.params().decel, tracker_.params().ramp_decel);
+        const double preview = check_margin_ + 0.2 * speed + speed * speed / (2.0 * decel);
+        if (!escapeRejoinPathFree(*map, check_footprint_, rejoin_path_, robot, preview)) {
+          throw nav2_core::NoValidControl("Ordinary XY navigation: path ahead still blocked after footprint clearance");
+        }
+        escape_target_.reset();
+        escape_contacts_ = {};
+        stopWaiting();
+        RCLCPP_INFO(logger_, "Ordinary XY navigation: footprint and path prefix clear; returning to controller");
+        return std::nullopt;
+      }
+      timed_out = true;
+      if (!escape_timeout_logged_) {
+        escape_timeout_logged_ = true;
+        RCLCPP_WARN(logger_, "Ordinary XY navigation: footprint clearance hold timed out; checking translation escape");
+      }
+    }
+    if (clear && !escape_target_) {return std::nullopt;}
     if (!current.valid) {throw nav2_core::NoValidControl("Escape footprint contains unknown/out-of-map space");}
     if (!escape_target_) {
       const auto exits = escapePaths(*map, check_footprint_, robot, plan_goal_.value_or(robot), escape_max_distance_);
@@ -424,6 +499,9 @@ private:
     escape_contacts_.area = current.area;
     const auto target = *escape_target_;
     const double dx = target.x - robot.x, dy = target.y - robot.y, distance = std::hypot(dx, dy);
+    if (timed_out && distance < 0.03) {
+      throw nav2_core::NoValidControl("Ordinary XY navigation: escape endpoint is still occupied");
+    }
     if (current.cells.empty() && distance < 0.03) {
       escape_target_.reset();
       inner_->reset();
@@ -445,10 +523,17 @@ private:
     const double along = (mx * dx + my * dy) / std::max(distance, 1e-6);
     const double across = std::abs(mx * dy - my * dx) / std::max(distance, 1e-6);
     if (std::abs(measured.angular.z) > 0.05 || along < -0.02 || across > 0.03 ||
-      std::hypot(mx, my) > escape_speed_ + 0.05) {return cmd;}
+      std::hypot(mx, my) > escape_speed_ + 0.05)
+    {
+      if (timed_out) {
+        throw nav2_core::NoValidControl("Ordinary XY navigation: measured motion prevents safe escape after clearance hold timeout");
+      }
+      return cmd;
+    }
     const double speed = std::min(escape_speed_, 1.5 * distance);
     cmd.twist.linear.x = speed * (cy * dx + sy * dy) / std::max(distance, 1e-6);
     cmd.twist.linear.y = speed * (-sy * dx + cy * dy) / std::max(distance, 1e-6);
+    if (timed_out && speed > 0.0 && v_cap_ > 0.0) {ordinary_escape_hold_.commandedEscape(now);}
     return cmd;
   }
 
@@ -613,6 +698,12 @@ private:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
   std::vector<geometry_msgs::msg::Point> check_footprint_;
   std::optional<Pose2> plan_goal_, escape_target_;
+  std::vector<XY> rejoin_path_;
+  OrdinaryEscapeHold ordinary_escape_hold_;
+  bool escape_timeout_logged_{false};
+  std::atomic<int64_t> map_stamp_{0}, observation_stamp_{0};
+  rclcpp::Subscription<geometry_msgs::msg::PolygonStamped>::SharedPtr map_updates_;
+  rclcpp::Subscription<std_msgs::msg::Header>::SharedPtr observations_;
   ContactState escape_contacts_;
   bool angular_control_{true}, body_heading_available_{true};
   double escape_speed_{0.15}, escape_max_distance_{1.5};

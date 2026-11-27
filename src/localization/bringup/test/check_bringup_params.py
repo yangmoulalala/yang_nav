@@ -7,14 +7,14 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'bringup'))
-from bringup.configuration import MODULES, merge, resolve
+from bringup.configuration import MODULES, merge, parameter_files, resolve
 
 CONFIG = ROOT / 'bringup' / 'config'
 # Only sensor representation, sampling and map/UWB coordinates differ.
 PLATFORM_KEYS = {
     'frontend': {
         'zlio/input.imu_acceleration_scale', 'zlio/input.maximum_imu_interval',
-        'zlio/sensor.minimum_range', 'zlio/sensor.maximum_range',
+        'zlio/sensor.maximum_range',
         'zlio/initialization.minimum_directional_support', 'zlio/filter.gyro_variance',
     },
     'backend': {
@@ -62,6 +62,9 @@ def main():
                     assert values['zlio/frames.base'] == 'gimbal_nav'
                     assert values['zlio/frames.imu'] == 'mid360_imu_link'
                     assert values['zlio/output.publish_tf'] is False
+                    assert values['zlio/sensor.minimum_range'] == 0.3
+                elif module == 'lidar_fusion':
+                    assert values['lidar_merge/min_range'] == 0.3
                 elif module == 'backend':
                     assert values['backend_node/common.body_frame'] == 'gimbal_nav'
                     assert values['backend_node/common.sensor_frame'] == 'mid360_imu_link'
@@ -92,6 +95,17 @@ def main():
         raise AssertionError('unknown override keys must be rejected')
     for name in ('livox_driver.yaml',):
         flat(yaml.safe_load((CONFIG / 'real' / name).read_text()))
+    with parameter_files(CONFIG / 'real', lidar='single', lidar_min_range=0.25) as directory:
+        frontend = flat(yaml.safe_load((Path(directory) / 'frontend.yaml').read_text()))
+        fusion = flat(yaml.safe_load((Path(directory) / 'lidar_fusion.yaml').read_text()))
+        assert frontend['zlio/sensor.minimum_range'] == fusion['lidar_merge/min_range'] == 0.25
+    for invalid in (0.19, 0.51, float('nan'), float('inf')):
+        try:
+            parameter_files(CONFIG / 'real', lidar_min_range=invalid)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f'invalid lidar_min_range accepted: {invalid}')
     print('OK shared TF, platform overrides, single-LiDAR overrides and unknown-key rejection')
     return 0
 

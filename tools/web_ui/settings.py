@@ -4,7 +4,7 @@ import re
 from tempfile import NamedTemporaryFile
 
 from ament_index_python.packages import get_package_share_directory
-from bringup.configuration import resolve
+from bringup.configuration import LIDAR_MIN_RANGE_BOUNDS, merge, resolve
 import yaml
 
 
@@ -34,6 +34,7 @@ TUNING = {
                          'local_costmap.local_costmap.ros__parameters.inflation_layer.cost_scaling_factor'),
     'global_cost_decay': ('navigation', '全局膨胀代价衰减系数', '1/m', 0.5, 12.0, 0.1,
                           'global_costmap.global_costmap.ros__parameters.inflation_layer.cost_scaling_factor'),
+    'lidar_min_range': ('localization', '雷达近距软件过滤', 'm', *LIDAR_MIN_RANGE_BOUNDS, 0.01, None),
     'correction_period': ('localization', '跟踪校正周期', 's', 0.2, 3.0, 0.05,
                           'backend_node.ros__parameters.tracking.correction_period'),
     'target_radius': ('localization', '跟踪子图半径', 'm', 2.0, 20.0, 0.5,
@@ -167,6 +168,13 @@ def yaml_set(data, key, value):
     data[name] = value
 
 
+def navigation_defaults(profile):
+    data = yaml.safe_load(NAV_PARAMS.read_text())
+    if profile == 'real':
+        data = merge(data, yaml.safe_load(NAV_PARAMS.with_name('nav2_real.yaml').read_text()))
+    return data
+
+
 class Settings:
     def __init__(self, directory):
         self.file = directory / 'settings.yaml'
@@ -203,6 +211,8 @@ class Settings:
         values = {}
         if set(payload) - TUNING.keys():
             raise ValueError('存在不支持的调参项')
+        if self.profile != 'real' and 'lidar_min_range' in payload:
+            raise ValueError('雷达近距软件过滤仅用于真车配置')
         for name, value in payload.items():
             _, label, _, minimum, maximum, _, _ = TUNING[name]
             value = number(value, minimum, maximum, label)
@@ -216,26 +226,36 @@ class Settings:
         self.data = document
 
     def fields(self, profile):
-        nav = yaml.safe_load(NAV_PARAMS.read_text())
-        loc = resolve(LOC_CONFIG / profile, 'backend', self.data[profile]['lidar'])
-        return [dict(key=name, component=component, label=label, unit=unit, min=minimum, max=maximum,
-                     step=step, default=yaml_value(nav if component == 'navigation' else loc, key))
-                for name, (component, label, unit, minimum, maximum, step, key) in TUNING.items()]
+        nav = navigation_defaults(profile)
+        lidar = self.data[profile]['lidar']
+        loc = resolve(LOC_CONFIG / profile, 'backend', lidar)
+        fields = []
+        for name, (component, label, unit, minimum, maximum, step, key) in TUNING.items():
+            if name == 'lidar_min_range':
+                if profile != 'real':
+                    continue
+                frontend = resolve(LOC_CONFIG / profile, 'frontend', lidar)
+                default = yaml_value(frontend, 'zlio.ros__parameters.sensor.minimum_range')
+            else:
+                default = yaml_value(nav if component == 'navigation' else loc, key)
+            fields.append(dict(key=name, component=component, label=label, unit=unit, min=minimum,
+                               max=maximum, step=step, default=default))
+        return fields
 
     def overrides(self, component, destination):
         values = self.active['tuning']
         if component == 'navigation':
-            data = yaml.safe_load(NAV_PARAMS.read_text())
+            data = navigation_defaults(self.profile)
         else:
             data = {'backend_node': {'ros__parameters': {}}}
         for name, value in values.items():
             group, _, _, _, _, _, key = TUNING[name]
-            if group == component:
+            if group == component and key is not None:
                 yaml_set(data, key, value)
         if 'cruise' in values and component == 'navigation':
-            controller = data['controller_server']['ros__parameters']['FollowPath']
-            speed = values['cruise']
-            controller['TranslationVelocityCritic']['max_speed'] = speed
+            critic = data['controller_server']['ros__parameters']['FollowPath']['TranslationVelocityCritic']
+            limit = values['cruise']
+            critic['max_speed'] = min(critic['max_speed'], limit) if self.profile == 'real' else limit
         if 'linear_accel' in values and component == 'navigation':
             accel = values['linear_accel']
             controller = data['controller_server']['ros__parameters']['FollowPath']

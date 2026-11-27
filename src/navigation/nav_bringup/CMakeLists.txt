@@ -4,7 +4,7 @@ project(nav_bringup)
 find_package(ament_cmake REQUIRED)
 
 install(DIRECTORY launch behavior_trees rviz DESTINATION share/${PROJECT_NAME})
-install(FILES params/nav2.yaml DESTINATION share/${PROJECT_NAME}/params)
+install(FILES params/nav2.yaml params/nav2_real.yaml DESTINATION share/${PROJECT_NAME}/params)
 install(PROGRAMS scripts/send_goal.py scripts/goal_visualizer.py DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

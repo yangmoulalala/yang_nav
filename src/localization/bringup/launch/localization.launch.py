@@ -34,6 +34,7 @@ ARGS = {
     'map_dir': ('', '~/save_map 保存目录（绝对路径）'),
     'rviz': ('false', '后端 RViz'),
     'backend_overrides': ('', '后端 ROS 参数覆盖 YAML'),
+    'lidar_min_range': ('', '雷达近距软件过滤下限（米），留空使用配置默认值'),
     'primary_topic': ('', '主雷达（MID-360）点云话题'),
     'secondary_topic': ('', '副雷达（L2）点云话题'),
     'imu_topic': ('', 'ZLIO 使用的 IMU 话题'),
@@ -50,9 +51,11 @@ def include(package, launch_file, arguments):
 def build(context):
     arg = {key: LaunchConfiguration(key) for key in ARGS}
     lidar = arg['lidar'].perform(context)
+    lidar_range = arg['lidar_min_range'].perform(context).strip()
     files = parameter_files(arg['config_dir'].perform(context),
                             modules=('lidar_fusion', 'frontend', 'backend'), lidar=lidar,
-                            backend_overrides=arg['backend_overrides'].perform(context))
+                            backend_overrides=arg['backend_overrides'].perform(context),
+                            lidar_min_range=float(lidar_range) if lidar_range else None)
 
     def params(name):
         return files.name + '/' + name

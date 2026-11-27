@@ -27,6 +27,8 @@ ros2 launch bringup real.launch.py mode:=localization lidar:=single \
   prior_map:=/home/potential/yang_nav/maps/real/site_a_001
 ```
 
+真车启动文件只对 MID-360 驱动进程启用 Fast DDS UDPv4，避免 DDS 共享内存端口检查阻塞同步发布、造成 IMU 断流。此设置不改变雷达网口参数，也不放宽前端断流保护。
+
 终端 B 启动导航：
 
 ```bash
@@ -176,6 +178,8 @@ bash tools/record_bag.sh --use-sim-time --output bags/recordings/sim_site_a_002 
 
 `--use-sim-time` 同时录制 `/clock`，收到第一条时钟消息后才写入数据。可先用 `bash tools/record_bag.sh --dry-run` 查看默认话题。
 
+录包时 `/livox/lidar` 的 QoS 随发布端协商；MID-360 驱动提供可靠传输时，录包端也用可靠订阅，避免 UDP 点云分片丢失后整帧缺失。
+
 ```bash
 ros2 bag info bags/recordings/sim_site_a_002/bag
 ```
@@ -241,7 +245,7 @@ ros2 run nav_terrain terrain_export.py maps/real/site_a_002_optimized/terrain/te
 
 ## 真车普通导航与串口协议
 
-当前下位机普通模式执行云台方向参考的 X/Y 速度。`profile:=real` 使用仅控制平移的 MPPI，要求当前位置距路径终点不超过 0.15 m 且实测 X/Y 合速度不超过 0.03 m/s 才判定到达，普通目标的 yaw 不触发底盘转向；自动恢复不使用 Spin。控制器预测采用实测航向和被动角速度，不把 angular.z 当作可执行的普通控制通道。`profile:=sim` 使用同一份纯平移配置；profile 仅选择时间和地图默认路径。
+当前下位机普通模式执行云台方向参考的 X/Y 速度。`profile:=real` 使用仅控制平移的 MPPI，要求当前位置距路径终点不超过 0.15 m 且实测 X/Y 合速度不超过 0.03 m/s 才判定到达，普通目标的 yaw 不触发底盘转向；自动恢复不使用 Spin。控制器预测采用实测航向和被动角速度，不把 angular.z 当作可执行的普通控制通道。`profile:=sim` 共用控制器，保留原仿真速度参数。
 
 真车导航串口默认 `/dev/nav`、115200 波特。A3 下行（24 字节）发送雷达系 X/Y 速度、持续过洞标志、相对雷达当前朝向的期望转角（rad），以及定位 TF 给出的当前 x/y（m）。普通平移默认 yaw=0；显式转角输入 `/chassis/yaw_target` 为 Float32，逆时针为正，超过默认 0.3 s 后恢复 yaw=0；不会把定位航向、编码器角或 angular.z 当作相对转角。`/chassis/pass_hole` Bool 为 true 时每帧保持过洞模式，false 为小陀螺模式。速度或定位 TF 过期时暂停 A3，触发板侧 100 ms 离线停车。A4 上行改为 15 字节，编码器实测角发布到 `/chassis/big_yaw`，在线状态发布到 `/chassis/big_yaw_online`，目标 x/y 发布到 `/chassis/nav_target`（PointStamped，map 系），供上层任务消费。导航节点只处理 A3/A4，不发布自瞄状态；编码器角不自动写入关节 TF。详情见 [底盘接口 README](../src/platform/chassis_comm/README.md)。
 
@@ -260,9 +264,8 @@ ros2 run nav_terrain terrain_export.py maps/real/site_a_002_optimized/terrain/te
 不能把完成坐标重构当作已经修复实车偏航；还需核对 MCU 实际速度轴向、速度跟踪和时间延迟。
 
 共享导航配置使用 20 Hz 控制，与 0.05 s 模型步长一致；速度平滑器和最终安全门仍为 100 Hz。
-普通地形最大平移合速度为 2 m/s，X/Y 每轴允许 ±2 m/s，最终安全门按 `hypot(vx, vy)` 限幅，斜向同样不超过 2 m/s。
-百分比限速的 100% 对应 2 m/s，地形掩码仍可进一步降速；隧道参考速度 0.6 m/s、坡道 1.4 m/s，分别保留 0.8/1.6 m/s 的安全门上限。
-局部路径速度评分使用 2 m 前瞻、增益 1、参考合速度上限 2 m/s，到终点附近自然降速，并保留 MPPI 碰撞预测。
+真车默认在共享 `nav2.yaml` 上叠加 `nav2_real.yaml`：普通地形跟踪参考上限 1.00 m/s，最终安全门按 `hypot(vx, vy)` 限幅至 1.50 m/s；百分比限速的 100% 对应 1.50 m/s。MPPI 与平滑器的 X/Y 每轴加速和减速幅值分别为 0.9、1.0 m/s²。局部方向看路径前方 0.10 m，参考速度大小看前方 2 m 并在终点附近降速；不发送预计会继续明显离开路径的速度。建图导航仍额外限速至 0.5 m/s；碰撞预测、碰撞监视与安全门看门狗不变。
+这些真车初值参考 2026-11-26 23:33 的空场录包：目标执行期间，定位平移速度中位数 0.25 m/s、P95 为 0.63 m/s、峰值 1.34 m/s。短路线上观察到的峰值不是持续车速，也不是制动标定。`params_file:=...` 显式替换完整参数，不再叠加平台默认值。
 20 Hz 来自此前真车低速调试时的计算预算，并非已测得的最佳频率；100 Hz 控制受 Jazzy MPPI 支持，但须结合计算耗时与传感器延迟验证。
 这些软件验证不能据此判定 MCU 实际轴向已标定，也不能代替实车高速制动验证。
 再次实车验证前应先停止车辆并取消旧目标，重启真车定位、导航以加载新参考系和插件，再发送新目标。
