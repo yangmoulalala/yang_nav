@@ -34,6 +34,8 @@ Launch arguments are forwarded to nav_bringup/navigation.launch.py:
   goal_x:=X goal_y:=Y  Optional: send one goal in map (metres) after navigation is ready
   goal_yaw:=RADIANS   Default: 0.0 (faces map +X)
   goal_wait_timeout:=SECONDS Default: 120.0; no goal is sent if readiness times out
+  serial_goals:=BOOL  Default: false; allow A4 targets in real localization or mapping
+  serial_target_topic:=TOPIC Default: /chassis/nav_target (geometry_msgs/PointStamped)
 
 Relative paths are resolved from the workspace root. ROS_DOMAIN_ID and ROS_LOG_DIR
 are inherited. Ctrl-C stops this launch; it does not stop external localization/sensors.

@@ -23,7 +23,7 @@ def link():
     os.set_blocking(master, False)
     prefix = f'/minipc_test_{os.getpid()}'
     world, base = f'world_{os.getpid()}', f'radar_{os.getpid()}'
-    args = ['--ros-args']
+    args = ['--ros-args', '-r', f'/chassis/tx_velocity:={prefix}/tx_velocity']
     topics = {
         'cmd_vel_topic': '/velocity', 'action_topic': '/hole',
         'target_topic': '/target', 'yaw_topic': '/turn',

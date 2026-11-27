@@ -52,15 +52,21 @@ def _terrain_dir(raw):
 
 
 def mapping_params(document):
-    for name in ('local_costmap', 'global_costmap'):
+    # The local window only has to cover the controller rollout; the global one also holds the
+    # goals, so at 8 m every target further than 4 m fell outside the costmap and was rejected.
+    for name, size in (('local_costmap', 8), ('global_costmap', 30)):
         costmap = document[name][name]['ros__parameters']
-        costmap.update(rolling_window=True, track_unknown_space=True, width=8, height=8,
+        costmap.update(rolling_window=True, track_unknown_space=True, width=size, height=size,
                        resolution=0.05, plugins=['obstacle_layer', 'inflation_layer'])
         costmap.pop('filters', None)
         costmap['obstacle_layer']['plugin'] = 'nav2_costmap_2d::ObstacleLayer'
+    # Mapping has no static terrain, so unknown cells are traversable: a target clicked in
+    # unexplored space is planned through the rolling window and re-planned as LiDAR fills it
+    # in. approach_unknown_goal stays as the fallback for goals beyond the window edge.
     planners = document['planner_server']['ros__parameters']
     for name in ('GridBased', 'StrictGridBased'):
-        planners[name].update(allow_unknown=False, approach_occupied_goal=False)
+        planners[name].update(allow_unknown=True, approach_occupied_goal=False,
+                              approach_unknown_goal=True)
     # Mapping keeps the pre-tune conservative envelope: the real profile raises the
     # driver limits for racing, not for building maps.
     follow = document['controller_server']['ros__parameters']['FollowPath']
@@ -112,6 +118,9 @@ def build(context):
     if mode not in ('mapping', 'localization'):
         raise RuntimeError('mode must be mapping or localization')
     mapping = mode == 'mapping'
+    serial_goals = _get(context, 'serial_goals').lower() == 'true'
+    if serial_goals and (profile != 'real' or goal_x):
+        raise RuntimeError('serial_goals requires the real profile without a startup goal')
     terrain_arg = _get(context, 'terrain_dir')
     if mapping and terrain_arg:
         raise RuntimeError('mapping navigation does not use an offline terrain_dir')
@@ -207,7 +216,13 @@ def build(context):
         actions.append(Node(package='rviz2', executable='rviz2', name='nav_rviz', output='screen',
                             arguments=['-d', str(rviz)] if rviz.is_file() else [],
                             parameters=[common]))
-    if goal_x:
+    if serial_goals:
+        actions.append(Node(
+            package='nav_bringup', executable='send_goal.py', name='serial_navigation_goal',
+            output='screen', arguments=['--listen-serial'],
+            parameters=[dict(common, robot_base_frame=base_frame, require_trusted=True, mapping=mapping,
+                             serial_target_topic=_get(context, 'serial_target_topic'))]))
+    elif goal_x:
         actions.append(Node(
             package='nav_bringup', executable='send_goal.py', name='startup_navigation_goal',
             output='screen',
@@ -232,6 +247,10 @@ def generate_launch_description():
         DeclareLaunchArgument('require_trusted', default_value='true',
                               description='require trusted or odometry-extrapolated localization'),
         DeclareLaunchArgument('rviz', default_value='false'),
+        DeclareLaunchArgument('serial_goals', default_value='false', choices=['true', 'false'],
+                              description='forward live A4 goals in the real profile'),
+        DeclareLaunchArgument('serial_target_topic', default_value='/chassis/nav_target',
+                              description='PointStamped target input when serial_goals is enabled'),
         DeclareLaunchArgument('goal_x', default_value='', description='optional startup goal x in map, metres; set with goal_y'),
         DeclareLaunchArgument('goal_y', default_value='', description='optional startup goal y in map, metres; set with goal_x'),
         DeclareLaunchArgument('goal_yaw', default_value='0.0', description='startup goal heading in radians, 0 faces map +X'),

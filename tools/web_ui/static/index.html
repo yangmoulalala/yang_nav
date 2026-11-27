@@ -35,6 +35,8 @@
         <article class="metric"><label>地图位姿</label><strong class="numeric" id="pose">—</strong><span id="yaw">x / y · m</span></article>
         <article class="metric"><label>实测 / 指令速度</label><strong class="numeric" id="speed">— / —</strong><span id="velocity">m/s</span></article>
         <article class="metric"><label>Nav2 / 底盘反馈</label><strong id="nav2">—</strong><span id="chassis">等待状态</span></article>
+        <article class="metric"><label>串口接收目标（A4）</label><strong class="numeric" id="serial-target">—</strong><span id="serial-target-detail">等待 A4 上行</span></article>
+        <article class="metric"><label>串口下发速度（A3）</label><strong class="numeric" id="serial-speed">—</strong><span id="serial-speed-detail">暂无 A3 下发</span></article>
       </section>
       <div class="grid">
         <article class="panel process-panel"><header><h2>进程管理</h2></header><div id="processes"></div></article>
@@ -63,6 +65,7 @@
             <label data-profile="sim" class="check"><input name="gui" type="checkbox"> 在主机显示 Gazebo 窗口</label>
             <label data-profile="sim" class="check"><input name="uwb" type="checkbox"> 发布仿真 UWB</label>
             <label data-profile="real">底盘串口<input name="chassis_port" placeholder="/dev/nav"></label>
+            <label data-profile="real" class="check"><input name="serial_goals" type="checkbox"> 串口目标自动触发导航（车辆可能立即移动）</label>
             <label data-profile="real" data-lidar="dual">L2 驱动 launch 路径<input name="l2_launch" placeholder="留空时使用已启动驱动"></label>
           </div>
           <datalist id="map-options"></datalist><datalist id="terrain-options"></datalist>

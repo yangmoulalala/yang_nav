@@ -102,10 +102,20 @@ inline bool footprintFree(
     });
 }
 
+inline bool footprintFreeInUnknown(
+  const nav2_costmap_2d::Costmap2D & map,
+  const std::vector<geometry_msgs::msg::Point> & footprint, const Pose2 & pose)
+{
+  return visitFootprintCells(map, footprint, pose, [&](unsigned x, unsigned y, const auto &) {
+      const auto cost = map.getCost(x, y);
+      return cost < nav2_costmap_2d::LETHAL_OBSTACLE || cost == nav2_costmap_2d::NO_INFORMATION;
+    });
+}
+
 inline bool footprintMotionFree(
   const nav2_costmap_2d::Costmap2D & map,
   const std::vector<geometry_msgs::msg::Point> & footprint, const Pose2 & a, const Pose2 & b,
-  Pose2 * collision_pose = nullptr)
+  Pose2 * collision_pose = nullptr, bool unknown_passable = false)
 {
   double radius = 0.0;
   for (const auto & p : footprint) {radius = std::max(radius, std::hypot(p.x, p.y));}
@@ -116,7 +126,9 @@ inline bool footprintMotionFree(
   for (int i = 0; i <= steps; ++i) {
     const double f = static_cast<double>(i) / steps;
     const Pose2 pose{a.x + f * (b.x - a.x), a.y + f * (b.y - a.y), normAngle(a.yaw + f * turn)};
-    if (!footprintFree(map, footprint, pose)) {
+    const bool free = unknown_passable ?
+      footprintFreeInUnknown(map, footprint, pose) : footprintFree(map, footprint, pose);
+    if (!free) {
       if (collision_pose) {*collision_pose = pose;}
       return false;
     }

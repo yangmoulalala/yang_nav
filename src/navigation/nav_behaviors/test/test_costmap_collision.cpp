@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "nav_behaviors/costmap_collision.hpp"
+#include "nav_behaviors/observed_approach.hpp"
 #include "nav_behaviors/overlap_escape.hpp"
 #include "nav_behaviors/ordinary_escape_release.hpp"
 #include "nav_behaviors/zone_tracker.hpp"
@@ -32,6 +33,91 @@ TEST(CostmapCollision, ChecksInteriorUnknownAndBounds)
   map.resetMap(0, 0, 160, 160);
   obstacle(map, 0.1, 0.1, 255);
   EXPECT_FALSE(footprintFree(map, footprint(), {0, 0, 0}));
+}
+
+TEST(CostmapCollision, UnknownPassableOnlyWhenAllowed)
+{
+  nav2_costmap_2d::Costmap2D map(160, 160, 0.025, -2, -2, nav2_costmap_2d::NO_INFORMATION);
+  const auto fp = footprint();
+  EXPECT_TRUE(footprintFreeInUnknown(map, fp, {0, 0, 0}));
+  EXPECT_FALSE(footprintFree(map, fp, {0, 0, 0}));
+  EXPECT_TRUE(footprintMotionFree(map, fp, {0, 0, 0}, {1, 0, 0}, nullptr, true));
+  EXPECT_FALSE(footprintMotionFree(map, fp, {0, 0, 0}, {1, 0, 0}));
+  obstacle(map, 0.0, 0.0);  // lethal blocks even when unknown is passable
+  EXPECT_FALSE(footprintFreeInUnknown(map, fp, {0, 0, 0}));
+  EXPECT_FALSE(footprintMotionFree(map, fp, {0, 0, 0}, {1, 0, 0}, nullptr, true));
+}
+
+TEST(ObservedApproach, KeepsFootprintInObservedSpaceAndAdvancesAsBoundaryMoves)
+{
+  nav2_costmap_2d::Costmap2D map(160, 160, 0.05, -4, -4, nav2_costmap_2d::NO_INFORMATION);
+  const Pose2 start{0, 0, 0};
+  const Pose2 goal{3.5, 0, 0};
+  const auto fp = footprint();
+  auto stopped = fp;
+  nav2_costmap_2d::padFootprint(stopped, 0.10);
+  for (unsigned row = 0; row < 160; ++row) {
+    for (unsigned col = 0; col < 120; ++col) {map.setCost(col, row, 0);}
+  }
+  EXPECT_TRUE(needsObservedApproach(map, fp, goal));
+  EXPECT_TRUE(needsObservedApproach(map, fp, {1.9, 0, 0}));
+  EXPECT_FALSE(needsObservedApproach(map, fp, {1, 0, 0}));
+  const auto first = observedApproach(map, fp, start, goal, 0.10);
+  ASSERT_GE(first.size(), 2u);
+  EXPECT_GT(first.back().x, 1.45);
+  EXPECT_LT(first.back().x, 1.53);
+  EXPECT_TRUE(footprintFree(map, stopped, first.back()));
+  for (size_t index = 1; index < first.size(); ++index) {
+    EXPECT_TRUE(footprintMotionFree(map, fp, first[index - 1], first[index]));
+  }
+  for (unsigned row = 0; row < 160; ++row) {
+    for (unsigned col = 120; col < 150; ++col) {map.setCost(col, row, 0);}
+  }
+  const auto second = observedApproach(map, fp, first.back(), goal, 0.10);
+  ASSERT_GE(second.size(), 2u);
+  EXPECT_GT(second.back().x, first.back().x + 1.0);
+  EXPECT_GT(goal.x - second.back().x, 0.20);
+  for (unsigned row = 0; row < 160; ++row) {
+    for (unsigned col = 150; col < 160; ++col) {map.setCost(col, row, 0);}
+  }
+  EXPECT_FALSE(needsObservedApproach(map, fp, goal));
+}
+
+TEST(ObservedApproach, StopsBeforeObstaclesAndRollingWindowEdge)
+{
+  nav2_costmap_2d::Costmap2D map(160, 160, 0.05, -4, -4, 0);
+  const auto fp = footprint();
+  const Pose2 start{0, 0, 0};
+  const Pose2 goal{6, 0, 0};
+  EXPECT_TRUE(needsObservedApproach(map, fp, goal));
+  const auto bounded = observedApproach(map, fp, start, goal, 0.10);
+  ASSERT_GE(bounded.size(), 2u);
+  EXPECT_GT(bounded.back().x, 3.45);
+  EXPECT_LT(bounded.back().x, 3.53);
+  obstacle(map, 1.0, 0.0);
+  EXPECT_FALSE(needsObservedApproach(map, fp, {1.0, 0.0, 0.0}));
+  const auto blocked = observedApproach(map, fp, start, goal, 0.10);
+  ASSERT_GE(blocked.size(), 2u);
+  EXPECT_LT(blocked.back().x, 0.53);
+  obstacle(map, 0.0, 0.0, nav2_costmap_2d::NO_INFORMATION);
+  EXPECT_TRUE(observedApproach(map, fp, start, goal, 0.10).empty());
+}
+
+TEST(ObservedApproach, KnownGoalBeyondUnknownGap)
+{
+  nav2_costmap_2d::Costmap2D map(160, 160, 0.05, -4, -4, 0);
+  const auto fp = footprint();
+  const Pose2 start{0, 0, 0};
+  const Pose2 goal{3.5, 0, 0};
+  EXPECT_TRUE(observedApproach(map, fp, start, goal, 0.10, true).empty());
+  obstacle(map, 1.5, 0, nav2_costmap_2d::LETHAL_OBSTACLE);
+  EXPECT_TRUE(observedApproach(map, fp, start, goal, 0.10, true).empty());
+  obstacle(map, 1.5, 0, nav2_costmap_2d::NO_INFORMATION);
+  EXPECT_FALSE(needsObservedApproach(map, fp, goal));
+  const auto approach = observedApproach(map, fp, start, goal, 0.10, true);
+  ASSERT_GE(approach.size(), 2u);
+  EXPECT_GT(approach.back().x, .95);
+  EXPECT_LT(approach.back().x, 1.03);
 }
 
 TEST(CostmapCollision, ReentryCoversRotatingFootprintReactionAndBrakingInEveryDirection)

@@ -7,6 +7,7 @@
 #include "nav2_core/global_planner.hpp"
 #include "nav2_core/planner_exceptions.hpp"
 #include "nav2_util/node_utils.hpp"
+#include "nav_behaviors/observed_approach.hpp"
 #include "nav_behaviors/overlap_escape.hpp"
 #include "pluginlib/class_loader.hpp"
 #include "pluginlib/class_list_macros.hpp"
@@ -28,6 +29,11 @@ public:
     }
     nav2_util::declare_parameter_if_not_declared(node, name + ".approach_occupied_goal", rclcpp::ParameterValue(false));
     node->get_parameter(name + ".approach_occupied_goal", approach_goal_);
+    nav2_util::declare_parameter_if_not_declared(node, name + ".approach_unknown_goal", rclcpp::ParameterValue(false));
+    node->get_parameter(name + ".approach_unknown_goal", approach_unknown_goal_);
+    // Same parameter the inner Smac planner reads; unknown cells are passable when it is set.
+    nav2_util::declare_parameter_if_not_declared(node, name + ".allow_unknown", rclcpp::ParameterValue(true));
+    node->get_parameter(name + ".allow_unknown", allow_unknown_);
     nav2_util::declare_parameter_if_not_declared(node, name + ".approach_clearance", rclcpp::ParameterValue(0.20));
     node->get_parameter(name + ".approach_clearance", approach_clearance_);
     if (approach_clearance_ < 0.0 || approach_clearance_ > 1.0) {
@@ -60,12 +66,12 @@ private:
       std::atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))};
   }
 
-  static std::vector<geometry_msgs::msg::PoseStamped> escapePoses(
-    const geometry_msgs::msg::PoseStamped & start, const EscapePath & escape)
+  static std::vector<geometry_msgs::msg::PoseStamped> translationPoses(
+    const geometry_msgs::msg::PoseStamped & start, const std::vector<Pose2> & points)
   {
     std::vector<geometry_msgs::msg::PoseStamped> poses;
-    poses.reserve(escape.poses.size());
-    for (const auto & point : escape.poses) {
+    poses.reserve(points.size());
+    for (const auto & point : points) {
       auto pose = start;
       pose.pose.position.x = point.x;
       pose.pose.position.y = point.y;
@@ -77,6 +83,7 @@ private:
   nav_msgs::msg::Path planTowardsGoal(const geometry_msgs::msg::PoseStamped & start,
     const geometry_msgs::msg::PoseStamped & goal, const std::function<bool()> & canceled)
   {
+    if (approach_unknown_goal_) {return planInObservedSpace(start, goal, canceled);}
     if (approach_goal_) {
       auto * costs = map_->getCostmap();
       std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t> lock(*costs->getMutex());
@@ -147,6 +154,63 @@ private:
     approach_anchor_.reset();
     return planFromStart(start,goal,canceled);
   }
+
+  nav_msgs::msg::Path planInObservedSpace(const geometry_msgs::msg::PoseStamped & start,
+    const geometry_msgs::msg::PoseStamped & goal, const std::function<bool()> & canceled)
+  {
+    auto * costs = map_->getCostmap();
+    const auto robot = toPose2(start);
+    auto target = toPose2(goal);
+    target.yaw = robot.yaw;
+    if (!std::isfinite(target.x) || !std::isfinite(target.y)) {
+      throw nav2_core::NoValidPathCouldBeFound("Goal coordinates must be finite");
+    }
+    const auto footprint = map_->getRobotFootprint();
+    using MapLock = std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t>;
+    // allow_unknown lets Smac route the real goal through unexplored cells, so try it first and
+    // keep the straight observed approach only for goals beyond the rolling window or a gap that
+    // Smac cannot cross.
+    try {
+      return planFromStart(start, goal, canceled);
+    } catch (const nav2_core::PlannerCancelled &) {
+      throw;
+    } catch (const nav2_core::PlannerException &) {
+    }
+    bool unknown_goal;
+    {
+      MapLock lock(*costs->getMutex());
+      unknown_goal = needsObservedApproach(*costs, footprint, target);
+    }
+    if (canceled && canceled()) {throw nav2_core::PlannerCancelled("Approach planning canceled");}
+    MapLock lock(*costs->getMutex());
+    const auto approach = observedApproach(*costs, footprint, robot, target, approach_clearance_, !unknown_goal);
+    if (approach.empty()) {
+      throw nav2_core::NoValidPathCouldBeFound("No observed free approach toward the goal");
+    }
+    nav_msgs::msg::Path path;
+    path.header = start.header;
+    path.poses = translationPoses(start, approach);
+    const auto & end = approach.back();
+    RCLCPP_INFO_THROTTLE(logger_, *map_->get_clock(), 2000,
+      "Unknown space: approach (%.2f, %.2f); original target remains pending", end.x, end.y);
+    return path;
+  }
+
+  void validateObservedPath(const nav_msgs::msg::Path & path, const Pose2 & start) const
+  {
+    auto * costs = map_->getCostmap();
+    const auto footprint = map_->getRobotFootprint();
+    std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t> lock(*costs->getMutex());
+    auto previous = start;
+    for (const auto & point : path.poses) {
+      const Pose2 pose{point.pose.position.x, point.pose.position.y, start.yaw};
+      if (!footprintMotionFree(*costs, footprint, previous, pose, nullptr, allow_unknown_)) {
+        throw nav2_core::NoValidPathCouldBeFound("Mapping path lacks observed footprint clearance");
+      }
+      previous = pose;
+    }
+  }
+
   nav_msgs::msg::Path planFromStart(const geometry_msgs::msg::PoseStamped & start,
     const geometry_msgs::msg::PoseStamped & goal, const std::function<bool()> & canceled)
   {
@@ -162,11 +226,17 @@ private:
       }
       const auto fp = map_->getRobotFootprint();
       unsigned sx, sy;
-      if (footprintFree(*map, fp, a) && map->worldToMap(a.x, a.y, sx, sy) &&
-        map->getCost(sx, sy) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {
+      // With allow_unknown the start may already touch unexplored cells; only real obstacles
+      // make it an occupied start.
+      const bool footprint_clear = allow_unknown_ ?
+        footprintFreeInUnknown(*map, fp, a) : footprintFree(*map, fp, a);
+      if (footprint_clear && map->worldToMap(a.x, a.y, sx, sy) &&
+        (allow_unknown_ ? map->getCost(sx, sy) < nav2_costmap_2d::LETHAL_OBSTACLE :
+        map->getCost(sx, sy) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE)) {
         lock.unlock();
         auto path = inner_->createPlan(start, goal, canceled);
         if (!path.poses.empty()) {path.poses.front() = start;}
+        if (approach_unknown_goal_) {validateObservedPath(path, a);}
         return path;
       }
       escapes = escapePaths(*map, fp, a, b, max_distance_);
@@ -185,7 +255,8 @@ private:
         // zone_shaper will validate the full swept transition from here to the suffix.
         if (suffix.poses.empty()) {continue;}
         suffix.poses.front() = free_start;
-        auto prefix = escapePoses(start, escape);
+        if (approach_unknown_goal_) {validateObservedPath(suffix, end);}
+        auto prefix = translationPoses(start, escape.poses);
         prefix.insert(prefix.end(), suffix.poses.begin() + 1, suffix.poses.end());
         suffix.poses = std::move(prefix);
         RCLCPP_INFO(logger_, "StartAwarePlanner: occupied start, %.2f m translation escape before normal plan",
@@ -219,7 +290,7 @@ private:
       if (std::hypot(end.x - target.x, end.y - target.y) <= 0.20) {continue;}
       nav_msgs::msg::Path path;
       path.header = start.header;
-      path.poses = escapePoses(start, escape);
+      path.poses = translationPoses(start, escape.poses);
       RCLCPP_INFO_THROTTLE(logger_, *map_->get_clock(), 2000,
         "Occupied start: escape only; original target remains pending");
       return path;
@@ -236,6 +307,8 @@ private:
   std::optional<geometry_msgs::msg::PoseStamped> approach_anchor_;
   geometry_msgs::msg::PoseStamped anchor_goal_;
   bool approach_goal_{false};
+  bool approach_unknown_goal_{false};
+  bool allow_unknown_{true};
 };
 }  // namespace nav_behaviors
 PLUGINLIB_EXPORT_CLASS(nav_behaviors::StartAwarePlanner, nav2_core::GlobalPlanner)

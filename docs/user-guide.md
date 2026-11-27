@@ -94,6 +94,12 @@ ros2 run nav_bringup send_goal.py 1.0 1.5 --yaw 0.0
 
 也可以在 RViz 中把 Fixed Frame 设为 `map`，选择 **Nav2 Goal**，在地图上按住并拖动设置终点和朝向。
 
+### 由真车串口触发
+
+确认场地安全后，在 WebUI 的「模式与地图」中选择「真车」，勾选「串口目标自动触发导航」，保存并重启 Nav2。先验地图匹配和从零建图都支持；建图时还需等实时雷达观测与滚动代价地图就绪。命令行等效参数为 `profile:=real serial_goals:=true`；如更改了底盘的 `chassis_target_topic`，导航侧的 `serial_target_topic` 也要与之相同。默认关闭，仿真不启用，不能与 `goal_x`/`goal_y` 同时使用。
+
+启用串口联动后，导航一旦就绪便会提交首个新鲜的 `map` 目标，即使板端一直广播同一个坐标。其后，只有相对上次已提交位置变化超过 1 cm 的新鲜目标才会提交，可替换当前目标。`(0, 0)` 是合法目标；A4 没有目标有效位，因此板端不能用它表示清空目标。重复帧不会重新发送，即使目标完成、取消或被拒绝；需要先提交另一坐标，才能再次请求原坐标。A4 不携带目标航向，Nav2 目标 yaw 填 0，不使用 A4 编码器角作为航向。串口断流不会撤销已接受的目标；需要停车时主动取消目标或停用导航。
+
 ### 自己的程序如何调用
 
 导航接口是 `/navigate_to_pose`，类型为 `nav2_msgs/action/NavigateToPose`。目标中的 `pose.header.frame_id` 填 `map`，位置填 `x/y`，朝向填四元数。`yaw=0` 对应 `z=0, w=1`。在定位可信且 Nav2 已激活后，也可直接调用：
@@ -135,6 +141,8 @@ ros2 launch bringup sim.launch.py mode:=mapping lidar:=dual \
 ```
 
 仿真手动驾驶用 `ros2 run sentry_gazebo teleop`，空格停车，`x` 退出。手动建图时保持 Nav2 关闭。需要录包时，先按第 5 节开始录制，再驾驶走图。
+
+要边建图边导航，可在平坦开阔场地另开终端运行 `bash tools/start_navigation.sh profile:=real mode:=mapping`（仿真改为 `profile:=sim`），再按第 3 节发送单点目标。目标或途中遇到未知区、且没有可行绕路时，Nav2 只沿目标方向走已观测的空地，随雷达更新重规划；没有安全进展则停车，仍未到达原目标。不会把未知区域当成可通行区域。
 
 走完路线后停车，保持建图进程运行，在另一终端保存地图：
 

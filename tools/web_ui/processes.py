@@ -172,6 +172,8 @@ class Processes:
             self.wait_for_localization()
             command = ['ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
                        f'profile:={profile}', f'mode:={mode}']
+            if not simulation and config['serial_goals']:
+                command.append('serial_goals:=true')
             output = None
             if mode == 'localization':
                 prior = loc.output if managed_loc else config['prior_map']

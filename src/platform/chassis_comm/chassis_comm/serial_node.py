@@ -3,12 +3,12 @@
 import math
 import time
 
-from geometry_msgs.msg import PointStamped, Twist
+from geometry_msgs.msg import PointStamped, Twist, TwistStamped
 import rclpy
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
-from rclpy.qos import DurabilityPolicy, QoSProfile
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from rclpy.utilities import try_shutdown
 import serial
@@ -47,7 +47,7 @@ class ChassisSerial(Node):
         if baud < FRAME_SIZE * 10 * rate:
             raise ValueError('baud_rate cannot carry 24-byte A3 8N1 frames at the requested rate')
         self._state = NavigationState(command_timeout, self._pose_timeout, yaw_timeout)
-        self._failed = False
+        self._retry_at = 0.0
         self._last_active = None
         self._parser = FrameParser(headers=(0xA4,))
         self._last_feedback_stamp = None
@@ -57,6 +57,9 @@ class ChassisSerial(Node):
         self._tf_listener = TransformListener(self._tf_buffer, self)
         self._target_pub = self.create_publisher(
             PointStamped, self.declare_parameter('target_topic', '/chassis/nav_target').value, 20)
+        self._tx_velocity_pub = self.create_publisher(
+            TwistStamped, '/chassis/tx_velocity',
+            QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT))
         self._big_yaw_pub = self.create_publisher(
             Float32, self.declare_parameter('big_yaw_topic', '/chassis/big_yaw').value, 20)
         self._online_pub = self.create_publisher(
@@ -74,7 +77,8 @@ class ChassisSerial(Node):
             lambda msg: self._state.update_hole(msg.data), qos)
         # Full duplex, 8N1, no flow control, nonblocking RX; one owner per port.
         self._serial = serial.Serial(
-            port, baudrate=baud, timeout=0, write_timeout=write_timeout, exclusive=True)
+            baudrate=baud, timeout=0, write_timeout=write_timeout, exclusive=True)
+        self._serial.port = port
         steady = Clock(clock_type=ClockType.STEADY_TIME)
         self._timer = self.create_timer(1.0 / rate, self._tick, clock=steady)
         self._rx_timer = self.create_timer(0.005, self._receive, clock=steady)
@@ -89,9 +93,11 @@ class ChassisSerial(Node):
             self._online_pub.publish(Bool(data=online))
 
     def _receive(self):
-        if self._failed:
-            return
         stamp = time.monotonic()
+        if not self._serial.is_open:
+            if stamp >= self._retry_at:
+                self._connect(stamp)
+            return
         if (self._last_rx_byte_stamp is not None
                 and stamp - self._last_rx_byte_stamp > self._feedback_timeout):
             self._parser.reset()
@@ -99,8 +105,8 @@ class ChassisSerial(Node):
         try:
             data = self._serial.read(min(self._serial.in_waiting, 4096))
         except (serial.SerialException, OSError) as exc:
-            self._fail()
-            raise RuntimeError(f'chassis serial read failed: {exc}') from exc
+            self._disconnect(f'read failed: {exc}')
+            return
         if data:
             self._last_rx_byte_stamp = stamp
             for message in self._parser.feed(data):
@@ -117,6 +123,8 @@ class ChassisSerial(Node):
         self._set_feedback_online(online)
 
     def _velocity(self, msg: Twist):
+        if not self._serial.is_open:
+            return
         try:
             if not math.isfinite(msg.angular.z):
                 raise ValueError('angular.z must be finite')
@@ -130,6 +138,8 @@ class ChassisSerial(Node):
             self.get_logger().error(str(exc), throttle_duration_sec=2.0)
 
     def _yaw(self, msg: Float32):
+        if not self._serial.is_open:
+            return
         try:
             self._state.update_yaw(msg.data, time.monotonic())
         except ValueError as exc:
@@ -151,14 +161,41 @@ class ChassisSerial(Node):
         frame = encode_frame(command)
         if self._serial.write(frame) != len(frame):
             raise serial.SerialTimeoutException('partial chassis frame write')
+        velocity = TwistStamped()
+        velocity.header.stamp = self.get_clock().now().to_msg()
+        velocity.header.frame_id = self._base_frame
+        velocity.twist.linear.x, velocity.twist.linear.y = command.vx, command.vy
+        self._tx_velocity_pub.publish(velocity)
 
-    def _fail(self):
-        self._failed = True
+    def _connect(self, stamp):
+        self._retry_at = stamp + 1.0
+        try:
+            self._serial.open()
+        except (serial.SerialException, OSError) as exc:
+            self.get_logger().warning(f'Cannot open {self._serial.port}: {exc}; retrying every second',
+                                      throttle_duration_sec=5.0)
+            return
+        self.get_logger().info(f'Connected to chassis serial port {self._serial.port}')
+
+    def _disconnect(self, reason):
+        self._retry_at = time.monotonic() + 1.0
+        self._state.invalidate_velocity()
+        self._state.yaw_stamp = None
+        self._last_active = None
+        self._parser.reset()
+        self._last_rx_byte_stamp = self._last_feedback_stamp = None
         self._set_feedback_online(False)
-        self._serial.close()
+        self._close_port()
+        self.get_logger().warning(f'Chassis serial {reason}; A3 TX stopped, retrying every second')
+
+    def _close_port(self):
+        try:
+            self._serial.close()
+        except OSError as exc:
+            self.get_logger().warning(f'Closing chassis serial port failed: {exc}')
 
     def _tick(self):
-        if self._failed:
+        if not self._serial.is_open:
             return
         stamp = time.monotonic()
         self._update_pose(stamp)
@@ -175,8 +212,7 @@ class ChassisSerial(Node):
         try:
             self._write(self._state.command(stamp))
         except (serial.SerialException, OSError) as exc:
-            self._fail()
-            raise RuntimeError(f'chassis serial write failed: {exc}') from exc
+            self._disconnect(f'write failed: {exc}')
 
     def close(self):
         self._timer.cancel()
@@ -184,7 +220,7 @@ class ChassisSerial(Node):
         if rclpy.ok(context=self.context):
             self._set_feedback_online(False)
         # Let the MCU's 100 ms A3 watchdog stop autonomous motion.
-        self._serial.close()
+        self._close_port()
 
 
 def main(args=None):

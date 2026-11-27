@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import pytest
 import rclpy
-from geometry_msgs.msg import PoseStamped, TransformStamped
+from geometry_msgs.msg import PointStamped, PoseStamped, TransformStamped
 from lifecycle_msgs.msg import State
 from lifecycle_msgs.srv import GetState
 from nav2_msgs.action import NavigateToPose
@@ -68,6 +68,7 @@ class FakeNav(Node):
             depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.costmap = self.create_publisher(OccupancyGrid, '/local_costmap/costmap', 1)
         self.live_costmap = self.create_publisher(OccupancyGrid, '/global_costmap/costmap', 1)
+        self.serial_target = self.create_publisher(PointStamped, '/chassis/nav_target', 10)
         self.observation = self.create_publisher(Header, '/nav/observation', 5)
         self.service = self.create_service(GetState, '/bt_navigator/get_state', self.get_state)
         self.server = ActionServer(
@@ -136,11 +137,12 @@ def nav():
     thread.start()
     processes = []
 
-    def client(*extra, timeout=10.0):
+    def client(*extra, timeout=10.0, serial=False):
         env = dict(os.environ, ROS_DOMAIN_ID=str(DOMAIN))
+        arguments = (['--listen-serial'] if serial else
+                     ['1.0', '1.5', '--yaw', str(math.pi / 2), '--wait-timeout', str(timeout)])
         process = subprocess.Popen(
-            [sys.executable, str(CLIENT), '1.0', '1.5', '--yaw', str(math.pi / 2),
-             '--wait-timeout', str(timeout), *extra],
+            [sys.executable, str(CLIENT), *arguments, *extra],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
         processes.append(process)
         return process
@@ -200,6 +202,47 @@ def test_waits_then_sends_exactly_one_map_goal(nav):
     assert pose.pose.orientation.w == pytest.approx(math.cos(math.pi / 4))
 
 
+def test_serial_goals_wait_skip_stale_and_deduplicate(nav):
+    node, client = nav
+    node.active = node.publish_tf = True
+    client(serial=True)
+    wait_until(lambda: node.serial_target.get_subscription_count() == 1)
+
+    def publish(x, frame='map'):
+        message = PointStamped()
+        message.header.frame_id = frame
+        message.header.stamp = node.get_clock().now().to_msg()
+        message.point.x, message.point.y = x, 1.0 if x else 0.0
+        node.serial_target.publish(message)
+
+    publish(2.0)
+    time.sleep(0.65)
+    assert not node.goals
+    node.trusted = True
+    publish(2.0, frame='odom')
+    time.sleep(0.6)
+    assert not node.goals
+
+    def stream(x):
+        for _ in range(10):
+            publish(x)
+            time.sleep(0.05)
+
+    stream(2.0)
+    wait_until(lambda: len(node.display_goals) == 1)
+    stream(2.005)
+    assert len(node.goals) == 1
+    assert (node.goals[0].pose.pose.position.x, node.goals[0].pose.pose.position.y) == (2.0, 1.0)
+    assert node.goals[0].pose.pose.orientation.w == 1.0
+    stream(3.0)
+    wait_until(lambda: len(node.display_goals) == 2)
+    stream(0.0)
+    wait_until(lambda: len(node.display_goals) == 3)
+    assert [(goal.pose.pose.position.x, goal.pose.pose.position.y) for goal in node.goals] == [
+        (2.0, 1.0), (3.0, 1.0), (0.0, 0.0)]
+    assert not node.interactive_goals
+
+
 def test_goal_sender_accepts_an_explicit_reference_override(nav):
     node, client = nav
     node.base_frame = 'test_nav_reference'
@@ -217,6 +260,30 @@ def test_mapping_goal_waits_for_live_observation_instead_of_static_map(nav):
     assert not node.goals
     node.publish_observation = True
     assert 'Navigation goal succeeded' in finish(client('--ros-args', '-p', 'mapping:=true'), 0)
+    assert len(node.goals) == 1
+
+
+def test_mapping_serial_goal_waits_for_live_observation(nav):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = True
+    node.publish_static_map = False
+    client('--ros-args', '-p', 'mapping:=true', serial=True)
+    wait_until(lambda: node.serial_target.get_subscription_count() == 1)
+
+    def stream():
+        for _ in range(15):
+            message = PointStamped()
+            message.header.frame_id = 'map'
+            message.header.stamp = node.get_clock().now().to_msg()
+            message.point.x, message.point.y = 2.0, 1.0
+            node.serial_target.publish(message)
+            time.sleep(0.05)
+
+    stream()
+    assert not node.goals
+    node.publish_observation = True
+    stream()
+    wait_until(lambda: len(node.display_goals) == 1)
     assert len(node.goals) == 1
 
 
@@ -270,11 +337,18 @@ def test_launch_validates_goal_and_defaults_to_no_sender():
     values = dict(profile='real', mode='localization', use_sim_time='', terrain_dir=str(PACKAGE),
                   params_file=str(PACKAGE / 'params' / 'nav2.yaml'),
                   require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false',
-                  goal_x='', goal_y='', goal_yaw='0', goal_wait_timeout='120')
+                  goal_x='', goal_y='', goal_yaw='0', goal_wait_timeout='120',
+                  serial_goals='false', serial_target_topic='/chassis/nav_target')
     with patch.object(launch, '_get', side_effect=lambda _, key: values[key]), \
             patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)), \
             patch.object(Path, 'is_file', return_value=True):
         assert all('send_goal.py' not in str(action.node_executable) for action in launch.build(None))
+        values['serial_goals'] = 'true'
+        assert sum('send_goal.py' in str(action.node_executable) for action in launch.build(None)) == 1
+        values['profile'] = 'sim'
+        with pytest.raises(RuntimeError, match='serial_goals requires the real profile'):
+            launch.build(None)
+        values.update(profile='real', serial_goals='false')
         values.update(goal_x='1.0', goal_y='1.5')
         senders = [action for action in launch.build(None) if 'send_goal.py' in str(action.node_executable)]
         assert len(senders) == 1
@@ -302,7 +376,7 @@ def test_localization_launch_resolves_platform_params(tmp_path, profile, custom,
     context.launch_configurations.update(
         profile=profile, mode='localization', terrain_dir=str(PACKAGE),
         params_file=str(base_params) if custom else '', goal_x='', goal_y='', use_sim_time='',
-        require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false')
+        require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false', serial_goals='false')
     make_temp_file = launch.NamedTemporaryFile
     with patch.object(launch, 'NamedTemporaryFile', side_effect=lambda **kwargs: make_temp_file(dir=tmp_path, **kwargs)), \
             patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)), \
@@ -325,9 +399,13 @@ def test_mapping_uses_live_costmaps_without_terrain_servers():
     context = LaunchContext()
     context.launch_configurations.update(profile='real', mode='mapping', use_sim_time='', terrain_dir='',
                                          params_file='', cmd_vel_topic='/cmd_vel', rviz='false',
-                                         goal_x='', goal_y='')
-    with patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)):
+                                         goal_x='', goal_y='', serial_goals='true',
+                                         serial_target_topic='/chassis/nav_target')
+    with patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)), \
+            patch.object(launch, 'Node', wraps=Node) as launch_node:
         actions = launch.build(context)
+    bridge = next(call for call in launch_node.call_args_list if call.kwargs.get('name') == 'serial_navigation_goal')
+    assert bridge.kwargs['parameters'][0]['mapping'] is True
     packages = [str(action.node_package) for action in actions if isinstance(action, Node)]
     assert not any('nav2_map_server' in package for package in packages)
     assert any('nav2_collision_monitor' in package for package in packages)
@@ -340,3 +418,14 @@ def test_mapping_uses_live_costmaps_without_terrain_servers():
     gate = params['cmd_gate']['ros__parameters']
     assert gate['require_observation'] and gate['limits']['normal']['max_linear'] == 0.5
     assert params['controller_server']['ros__parameters']['FollowPath']['ax_max'] == 0.9
+    # Goals clicked in unexplored space must plan through unknown cells; the global window has to
+    # reach past the 8 m local rollout, and the observed approach remains the out-of-window fallback.
+    assert params['global_costmap']['global_costmap']['ros__parameters']['width'] == 30
+    assert params['local_costmap']['local_costmap']['ros__parameters']['width'] == 8
+    planners = params['planner_server']['ros__parameters']
+    for name in ('GridBased', 'StrictGridBased'):
+        assert planners[name]['allow_unknown']
+        assert planners[name]['approach_unknown_goal']
+        assert not planners[name]['approach_occupied_goal']
+    localization = launch.navigation_params(PACKAGE / 'params' / 'nav2.yaml')
+    assert not localization['planner_server']['ros__parameters']['GridBased'].get('approach_unknown_goal')

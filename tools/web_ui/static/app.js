@@ -152,6 +152,23 @@ function hasExtrapolatedPose(localization) {
   return localization?.status === 'SUSPECT' && localization.pose_extrapolated === 'true';
 }
 
+function format(value, digits = 2) {
+  return Number.isFinite(value) ? value.toFixed(digits) : '—';
+}
+
+function displaySerialStatus(ros) {
+  const target = ros?.serial_target;
+  const velocity = ros?.serial_velocity;
+  element('serial-target').textContent = target ? `${format(target.x)} / ${format(target.y)}` : '—';
+  element('serial-target-detail').textContent = target ?
+    `${target.frame} · X / Y · m${ros.chassis === true ? '' : ' · 上次接收'}` :
+    ros ? (ros.chassis === false ? 'A4 反馈离线' : '等待 A4 上行') : '连接中断';
+  element('serial-speed').textContent = velocity ? `${format(velocity.speed)} m/s` : '—';
+  element('serial-speed-detail').textContent = velocity ?
+    `${velocity.frame} · Vx ${format(velocity.x)} / Vy ${format(velocity.y)} m/s` :
+    ros ? '暂无 A3 下发' : '连接中断';
+}
+
 function displayStatus() {
   const {ros, profile, processes: rows} = status;
   const loc = ros.localization;
@@ -165,7 +182,6 @@ function displayStatus() {
   const reason = locationReasons[loc?.reason] || loc?.reason;
   const trust = ready ? '位姿可信' : extrapolated ? '里程计前推 · 限速通行' : '位姿未可信';
   element('loc-trust').textContent = loc ? `${trust}${reason ? ` · ${reason}` : ''}` : '等待定位数据';
-  const format = (value, digits = 2) => Number.isFinite(value) ? value.toFixed(digits) : '—';
   element('pose').textContent = ros.pose ? `${format(ros.pose.x)} / ${format(ros.pose.y)}` : '—';
   element('yaw').textContent = ros.pose ? `${ros.pose.frame} · 航向 ${format(ros.pose.yaw, 1)}°` : 'x / y · m';
   element('speed').textContent = `${format(ros.measured?.speed)} / ${format(ros.command?.speed)}`;
@@ -173,6 +189,7 @@ function displayStatus() {
   element('nav2').textContent = ros.nav2 === 'active' ? '已激活' : ros.nav2 || '—';
   element('nav2').className = ros.nav2 === 'active' ? 'good' : '';
   element('chassis').textContent = ros.chassis === undefined ? '底盘反馈 —' : `底盘反馈${ros.chassis ? '在线' : '离线'}`;
+  displaySerialStatus(ros);
   element('row-gazebo').hidden = profile !== 'sim' && rows.gazebo.state !== 'external';
   for (const name of ['gazebo', 'localization', 'navigation']) {
     const row = rows[name];
@@ -250,6 +267,7 @@ setup.addEventListener('submit', (event) => {
   const body = Object.fromEntries(new FormData(setup));
   body.gui = setup.elements.gui.checked;
   body.uwb = setup.elements.uwb.checked;
+  body.serial_goals = setup.elements.serial_goals.checked;
   operate('setup', body, true);
 });
 tuning.addEventListener('submit', (event) => {
@@ -320,6 +338,7 @@ async function updateStatus() {
     badge.textContent = '已连接';
   } catch (_) {
     status = undefined;
+    displaySerialStatus();
     badge.dataset.state = 'failed';
     badge.textContent = '连接中断';
   }

@@ -142,7 +142,7 @@ def defaults(profile):
     return dict(mode='localization', lidar='dual' if simulation else 'single',
                 prior_map='maps/sim' if simulation else 'maps/real/site_a_001', terrain_dir='',
                 map_dir=f'maps/{profile}/new_session', arena='rmuc', team='auto', gui=False, uwb=True,
-                chassis_port='/dev/nav', l2_launch='', tuning={})
+                chassis_port='/dev/nav', serial_goals=False, l2_launch='', tuning={})
 
 
 def yaml_write(destination, data):
@@ -204,6 +204,7 @@ class Settings:
             document[name] = text(payload.get(name, previous[name]), name)
         document['gui'] = flag(payload.get('gui', previous['gui']), 'Gazebo GUI')
         document['uwb'] = flag(payload.get('uwb', previous['uwb']), '仿真 UWB')
+        document['serial_goals'] = flag(payload.get('serial_goals', previous['serial_goals']), '串口触发导航')
         document['tuning'] = previous['tuning']
         self.save(dict(self.data, profile=profile, **{profile: document}))
 
