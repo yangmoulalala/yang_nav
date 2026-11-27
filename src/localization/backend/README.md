@@ -171,10 +171,10 @@ ZLIO 点云位于传感器坐标系，时间戳须与同一消息内的里程计
 | `SUSPECT` | 连续观测冲突、速度异常或匹配模型不再适用，正在尝试恢复 | `false` |
 | `LOST` | 定位丢失，等待或尝试重定位 | `false` |
 
-`localization_state` 使用分号分隔的 `key=value` 文本，固定保留 `status`、`pose_trusted`、
+`localization_state` 使用分号分隔的 `key=value` 文本，固定保留 `status`、`pose_trusted`、`pose_extrapolated`、
 `tf_frozen`、`epoch`、`generation`、`estimator_failure_count` 和 `reason`。
 `reason` 只保留首个冒号、分号或换行之前的原因摘要，最多 80 个 UTF-8 字节，超长时以 `...` 结尾。
-例如：`status=SUSPECT;pose_trusted=false;tf_frozen=false;epoch=0;generation=3;estimator_failure_count=0;reason=observation model invalid`。
+例如 `status=SUSPECT;pose_trusted=false;pose_extrapolated=true;tf_frozen=false;epoch=0;generation=3;estimator_failure_count=0;reason=observation model invalid`。
 
 `localization_diagnostics` 保留原完整格式，额外提供 `tf_published`、`pose_revision`、`stamp_ns`、
 `last_estimator_failure` 和未经摘要的 `reason`，用于配准质量、TF 时序和故障排查。

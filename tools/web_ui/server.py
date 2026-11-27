@@ -18,7 +18,7 @@ from rclpy.signals import SignalHandlerOptions
 from .processes import LABELS, OWNERS, PROCESSES, Processes
 from .ros_state import RosState
 from .settings import Settings, WORKSPACE, candidates
-from .terrain import TerrainEditor, terrain_sources
+from .terrain import TerrainEditor, field_references, terrain_sources
 
 
 STATIC = Path(__file__).with_name('static')
@@ -53,7 +53,9 @@ class Console:
                     foxglove_port=self.foxglove_port)
 
     def config(self):
-        return {**self.settings.data, **candidates(), 'terrain_sources': terrain_sources(),
+        sources = terrain_sources()
+        return {**self.settings.data, **candidates(), 'terrain_sources': sources,
+                'terrain_references': field_references(sources),
                 'fields': {profile: self.settings.fields(profile) for profile in ('sim', 'real')}}
 
     def action(self, route, body):

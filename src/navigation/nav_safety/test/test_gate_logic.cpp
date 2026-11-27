@@ -30,14 +30,18 @@ TEST(Limit, RejectsNonFiniteCommands)
   EXPECT_DOUBLE_EQ(out.vy, 0.0);
 }
 
-TEST(ParseTrusted, Variants)
+TEST(ParseLocalization, Variants)
 {
-  EXPECT_TRUE(parse_trusted("state=NORMAL;pose_trusted=true;epoch=3"));
-  EXPECT_TRUE(parse_trusted("pose_trusted = TRUE"));
-  EXPECT_FALSE(parse_trusted("state=LOST;pose_trusted=false"));
-  EXPECT_FALSE(parse_trusted("state=NORMAL"));
-  EXPECT_FALSE(parse_trusted(""));
-  EXPECT_FALSE(parse_trusted("not_pose_trusted=true"));
+  EXPECT_EQ(parse_localization("state=NORMAL;pose_trusted=true;epoch=3"), Localization::Trusted);
+  EXPECT_EQ(parse_localization("status=OBS_DEGRADED;pose_trusted = TRUE"), Localization::Trusted);
+  EXPECT_EQ(parse_localization("status=SUSPECT;pose_trusted=false;pose_extrapolated=true"),
+    Localization::Extrapolated);
+  for (const auto * state : {"status=LOST;pose_trusted=false;pose_extrapolated=true",
+    "status=INITIALIZING;pose_trusted=false", "status=SUSPECT;pose_extrapolated=false",
+    "status=SUSPECT", "state=NORMAL", "", "not_pose_trusted=true"})
+  {
+    EXPECT_EQ(parse_localization(state), Localization::Unavailable);
+  }
 }
 
 TEST(ParseMode, Known)
@@ -54,7 +58,7 @@ static GateInput fresh_trusted()
   in.cmd_age = 0.05;
   in.have_state = true;
   in.state_age = 0.1;
-  in.trusted = true;
+  in.localization = Localization::Trusted;
   return in;
 }
 
@@ -64,6 +68,22 @@ TEST(Decide, PassWhenFreshAndTrusted)
   std::string r;
   EXPECT_EQ(decide(c, fresh_trusted(), r), Decision::Pass);
   EXPECT_TRUE(r.empty());
+}
+
+TEST(Decide, ExtrapolatedPoseStillRequiresFreshStateAndObstacles)
+{
+  GateConfig cfg;
+  cfg.require_observation = true;
+  auto input = fresh_trusted();
+  input.localization = Localization::Extrapolated;
+  input.have_observation = true;
+  std::string reason;
+  EXPECT_EQ(decide(cfg, input, reason), Decision::Pass);
+  input.state_age = 2.0;
+  EXPECT_EQ(decide(cfg, input, reason), Decision::Hold);
+  input.state_age = 0.1;
+  input.observation_age = 0.6;
+  EXPECT_EQ(decide(cfg, input, reason), Decision::Hold);
 }
 
 TEST(Decide, IdleOnStaleOrMissingInput)
@@ -82,7 +102,7 @@ TEST(Decide, HoldWhenUntrustedOrStale)
   GateConfig c;
   std::string r;
   auto in = fresh_trusted();
-  in.trusted = false;
+  in.localization = Localization::Unavailable;
   EXPECT_EQ(decide(c, in, r), Decision::Hold);
   in = fresh_trusted();
   in.state_age = 2.0;
@@ -98,9 +118,19 @@ TEST(Decide, TrustNotRequired)
   c.require_trusted = false;
   std::string r;
   auto in = fresh_trusted();
-  in.trusted = false;
+  in.localization = Localization::Unavailable;
   in.have_state = false;
   EXPECT_EQ(decide(c, in, r), Decision::Pass);
+}
+
+TEST(Limit, ExtrapolationCapDoesNotRaiseOtherLimits)
+{
+  const auto capped = motion_limits({2.0, 2.5}, 1.2, Localization::Extrapolated);
+  EXPECT_DOUBLE_EQ(capped.max_linear, 0.6);
+  EXPECT_DOUBLE_EQ(capped.max_angular, 1.0);
+  const auto stricter = motion_limits({0.5, 0.7}, 0.4, Localization::Extrapolated);
+  EXPECT_DOUBLE_EQ(stricter.max_linear, 0.4);
+  EXPECT_DOUBLE_EQ(stricter.max_angular, 0.7);
 }
 
 TEST(Limit, KeepsDirection)

@@ -42,6 +42,7 @@ void writeStateField(std::ostream& output, const std::string& value) {
 void Publisher::publishLocalizationState(const LocalizationStatus status, const std::string& reason,
                                          const EstimatorFailureHistory& estimator_failures,
                                          const rclcpp::Time& stamp, const bool tf_published,
+                                         const bool pose_extrapolated,
                                          const std::uint64_t epoch,
                                          const std::uint64_t state_generation,
                                          const std::uint64_t pose_revision) {
@@ -52,6 +53,7 @@ void Publisher::publishLocalizationState(const LocalizationStatus status, const 
     std::ostringstream text;
     text << "status=" << LocalizationStateMachine::statusName(status)
          << ";pose_trusted=" << (LocalizationStateMachine::poseTrusted(status) ? "true" : "false")
+         << ";pose_extrapolated=" << (pose_extrapolated ? "true" : "false")
          << ";tf_frozen=" << (LocalizationStateMachine::tfFrozen(status) ? "true" : "false")
          << ";epoch=" << epoch << ";generation=" << state_generation
          << ";estimator_failure_count=" << estimator_failures.count << ";reason=";
@@ -66,6 +68,7 @@ void Publisher::publishLocalizationState(const LocalizationStatus status, const 
         diagnostics << "status=" << LocalizationStateMachine::statusName(status)
                     << ";pose_trusted="
                     << (LocalizationStateMachine::poseTrusted(status) ? "true" : "false")
+                    << ";pose_extrapolated=" << (pose_extrapolated ? "true" : "false")
                     << ";tf_frozen="
                     << (LocalizationStateMachine::tfFrozen(status) ? "true" : "false")
                     << ";tf_published=" << (tf_published ? "true" : "false") << ";epoch=" << epoch
@@ -157,7 +160,7 @@ void Publisher::publishState(const LocalizationSnapshot& snapshot) {
     publishLocalizationState(snapshot.localization.status, snapshot.localization.reason,
                              snapshot.localization.estimator_failures,
                              rclcpp::Time(0, 0, RCL_ROS_TIME),
-                             /*tf_published=*/false, snapshot.epoch,
+                             /*tf_published=*/false, /*pose_extrapolated=*/false, snapshot.epoch,
                              snapshot.localization.generation, snapshot.pose_revision);
 }
 
@@ -170,7 +173,8 @@ void Publisher::publishProjection(const LocalizationProjection& projection,
     publishTransforms(projection, stamp);
     publishLocalizationState(projection.status, projection.reason, projection.estimator_failures,
                              rclcpp::Time(stamp),
-                             /*tf_published=*/true, projection.epoch, projection.state_generation,
+                             /*tf_published=*/true, projection.pose_extrapolated,
+                             projection.epoch, projection.state_generation,
                              projection.pose_revision);
 }
 

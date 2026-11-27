@@ -42,6 +42,8 @@ class FakeNav(Node):
         super().__init__('fake_nav_for_goal_test', context=context)
         self.active = False
         self.trusted = False
+        self.status = 'NORMAL'
+        self.extrapolated = False
         self.publish_tf = False
         self.publish_static_map = True
         self.publish_observation = False
@@ -79,7 +81,8 @@ class FakeNav(Node):
         return response
 
     def publish(self):
-        self.state.publish(String(data=f'state=NORMAL;pose_trusted={str(self.trusted).lower()}'))
+        self.state.publish(String(data=f'status={self.status};pose_trusted={str(self.trusted).lower()};'
+                                        f'pose_extrapolated={str(self.extrapolated).lower()}'))
         grid = OccupancyGrid()
         grid.header.frame_id = 'map'
         grid.info.resolution = 1.

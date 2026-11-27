@@ -1,6 +1,6 @@
 # Foxglove 导航布局（推荐）
 
-导入本目录的 `navigation.foxglove.json`，连接 Foxglove WebSocket `ws://192.168.1.154:8765`。
+导入本目录的 `navigation.foxglove.json`，连接 Foxglove WebSocket。本机 WSL 可用 `ws://localhost:8765`，其他机器用运行 Bridge 的主机地址。
 使用 **布局 / Layout → 导入 / Import**，不是“打开数据文件”。
 建议窗口至少 1600 × 900，日常使用深色主题。
 
@@ -48,11 +48,12 @@
 ## 使用
 
 1. 启动传感器、定位、Foxglove Bridge 和导航。
-2. 连接 `ws://192.168.1.154:8765`，导入布局，确认 `map → lio_odom → gimbal_nav` 可用。
-3. 检查定位状态 `pose_trusted=true`、地图与机器人位置正确后，再发送导航目标。
-4. 使用 3D 面板的 **Publish pose / 发布位姿** 工具，在地图上拖出目标位置和朝向。
-   布局已将其 `poseTopic` 设为 Nav2 的 `/goal_pose`，不是 ROS 1 的 `/move_base_simple/goal`。
-   布局默认工具仍为发布点，需主动选择发布位姿后才会发送目标。
+2. 连接 Foxglove WebSocket，导入布局，确认 `map → lio_odom → gimbal_nav` 可用。
+3. 确认地图与机器人位置正确，定位可信或 `SUSPECT` 且 `pose_extrapolated=true` 时可发送导航目标。前推期间导航限速。
+4. 在「导航 · 全局地图」3D 面板点击 **Publish / 发布**，选择 **2D pose / 2D 位姿**，在地图上从目标位置按住左键拖向期望朝向后松开。该布局的全局地图默认选择 2D 位姿，发布到 Nav2 的 `/goal_pose`。
+
+如果 3D 面板没有发布工具，请在运行 Bridge 的主机上用 `bash tools/install_foxglove_service.sh` 更新项目服务，然后在 Foxglove 断开并重新连接。服务会启用 `clientPublish`，仅允许客户端发布到 `/goal_pose`。沿用现有服务的 `ROS_DOMAIN_ID` 和端口。
+已有布局可重新导入，或在全局地图的面板设置中确认 **Publish → 2D pose → Topic** 为 `/goal_pose`。
 
 本项目也可通过 `tools/start_navigation.sh goal_x:=... goal_y:=...` 或
 `ros2 run nav_bringup send_goal.py X Y --yaw YAW` 发送目标，实际接口为 `/navigate_to_pose`。

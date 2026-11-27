@@ -71,7 +71,7 @@ bash tools/start_navigation.sh profile:=real terrain_dir:=maps/real/site_a_001 \
   goal_x:=1.0 goal_y:=1.5 goal_yaw:=0.0
 ```
 
-程序会等待 Nav2 激活、定位报告 `pose_trusted=true`，并且导航参考变换可用后（真车与仿真 `map → gimbal_nav`），自动向 `/navigate_to_pose` 发送**一次**目标。发送器会输出目标是否接受、是否成功到达；失败不会自动重复发送。默认最多等待就绪 120 秒，可加 `goal_wait_timeout:=180` 调整。未就绪超时就不发送目标，导航本身仍保持运行。
+程序会等待 Nav2 激活、定位报告 `pose_trusted=true`，并确认 `map → gimbal_nav` 变换可用，然后向 `/navigate_to_pose` 发送一次目标。发送器会输出目标是否接受、是否成功到达。默认最多等待 120 秒，可用 `goal_wait_timeout:=180` 调整。等待超时后导航继续运行。
 
 仿真时使用相同的目标参数，换成仿真配置：
 
@@ -235,7 +235,7 @@ ros2 run nav_terrain terrain_export.py maps/real/site_a_002_optimized/terrain/te
 | --- | --- |
 | `Package ... not found` | 按第 1 节加载当前工作区；尚未构建时先编译 |
 | 启动报缺少地形文件 | `terrain_dir` 必须包含 `nav_map.yaml`、`speed_mask.yaml`、`zones.yaml` 和 `terrain.msgpack` |
-| 自动目标一直等待 | 查 `ros2 lifecycle get /bt_navigator` 是否为 `active`；用 `ros2 topic echo --once --qos-durability transient_local /backend_node/localization_state` 查 `pose_trusted`；用 `ros2 run tf2_ros tf2_echo map gimbal_nav` 查真车变换（仿真用 base_link） |
+| 自动目标一直等待 | 查 `ros2 lifecycle get /bt_navigator` 是否为 `active`，读取 `/backend_node/localization_state` 的 `pose_trusted` 和 `pose_extrapolated`，并用 `ros2 run tf2_ros tf2_echo map gimbal_nav` 检查导航参考变换 |
 | 目标被拒绝或导航失败 | 看发送器和 Nav2 输出；确认目标在当前地图可通行区域且有足够空间 |
 | 目标已接受但车不动 | 查定位状态、`ros2 topic hz /nav/observation`、底盘串口，以及导航进程日志中的停车原因 |
 | 录包数据不齐 | 查 `bag_info.txt` 的逐话题计数和 `recorder.log` |

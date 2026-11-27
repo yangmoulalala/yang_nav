@@ -230,7 +230,7 @@
         }
       },
       "publish": {
-        "type": "point",
+        "type": "pose",
         "pointTopic": "/clicked_point",
         "poseTopic": "/goal_pose",
         "poseEstimateTopic": "/initialpose",

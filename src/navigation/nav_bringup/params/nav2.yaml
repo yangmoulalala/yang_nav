@@ -475,8 +475,6 @@ cmd_gate:
   ros__parameters:
     rate: 100.0
     input_timeout: 0.25
-    # /backend_node/localization_state is republished only when the state changes (transient
-    # local); a quiet NORMAL state must not expire the gate. 2 s covers any backend commit gap.
     state_timeout: 2.0
     require_observation: true
     observation_timeout: 0.5

@@ -85,6 +85,7 @@ async function loadConfig() {
   element('surface-map-options').replaceChildren(...[...config.maps, ...sources.filter((path) => /\.(pcd|surf\.npz)$/i.test(path))]
     .map((path) => new Option(path, path)));
   element('terrain-seed-options').replaceChildren(...config.terrain.map((path) => new Option(`${path}/terrain.json`)));
+  document.dispatchEvent(new Event('terrain-sources'));
   const sourceInput = optimizer.elements.source;
   if (!sourceInput.value || sourceInput.value === sourceInput.dataset.suggested) {
     const current = config[config.profile];
@@ -147,17 +148,23 @@ function setupProcessRows() {
   }
 }
 
+function hasExtrapolatedPose(localization) {
+  return localization?.status === 'SUSPECT' && localization.pose_extrapolated === 'true';
+}
+
 function displayStatus() {
   const {ros, profile, processes: rows} = status;
   const loc = ros.localization;
   const ready = loc?.pose_trusted === 'true';
+  const extrapolated = hasExtrapolatedPose(loc);
   element('domain').textContent = `ROS 域 ${status.domain}`;
   element('active-profile').textContent = `${profileLabels[profile]} · 运行控制`;
   element('real-operation-hint').hidden = profile !== 'real';
   element('loc-status').textContent = locationLabels[loc?.status] || loc?.status || '—';
   element('loc-status').className = loc ? (ready ? 'good' : 'warn') : '';
   const reason = locationReasons[loc?.reason] || loc?.reason;
-  element('loc-trust').textContent = loc ? `${ready ? '位姿可信' : '位姿未可信'}${reason ? ` · ${reason}` : ''}` : '等待定位数据';
+  const trust = ready ? '位姿可信' : extrapolated ? '里程计前推 · 限速通行' : '位姿未可信';
+  element('loc-trust').textContent = loc ? `${trust}${reason ? ` · ${reason}` : ''}` : '等待定位数据';
   const format = (value, digits = 2) => Number.isFinite(value) ? value.toFixed(digits) : '—';
   element('pose').textContent = ros.pose ? `${format(ros.pose.x)} / ${format(ros.pose.y)}` : '—';
   element('yaw').textContent = ros.pose ? `${ros.pose.frame} · 航向 ${format(ros.pose.yaw, 1)}°` : 'x / y · m';

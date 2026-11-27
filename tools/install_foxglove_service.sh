@@ -30,7 +30,7 @@ Description=yang_nav Foxglove Bridge
 [Service]
 Environment=ROS_DOMAIN_ID=$fox_domain
 WorkingDirectory=${fox_workspace//%/%%}
-ExecStart=/bin/bash -c 'source /opt/ros/jazzy/setup.bash && source install/setup.bash && exec /opt/ros/jazzy/lib/foxglove_bridge/foxglove_bridge --ros-args -p address:=0.0.0.0 -p port:=$fox_port -p capabilities:="[connectionGraph]"'
+ExecStart=/bin/bash -c 'source /opt/ros/jazzy/setup.bash && source install/setup.bash && exec /opt/ros/jazzy/lib/foxglove_bridge/foxglove_bridge --ros-args -p address:=0.0.0.0 -p port:=$fox_port -p capabilities:="[connectionGraph,clientPublish]" -p client_topic_whitelist:="[/goal_pose]"'
 Restart=always
 RestartSec=3
 

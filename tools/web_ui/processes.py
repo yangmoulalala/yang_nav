@@ -231,13 +231,16 @@ class Processes:
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline:
             state = self.ros.snapshot()
-            if state.get('localization', {}).get('pose_trusted') == 'true' and state.get('pose'):
+            localization = state.get('localization', {})
+            extrapolated = (localization.get('status') == 'SUSPECT' and
+                            localization.get('pose_extrapolated') == 'true')
+            if state.get('pose') and (localization.get('pose_trusted') == 'true' or extrapolated):
                 return
             process = self.entries.get('localization')
             if process and process.status() == 'failed':
                 raise ValueError('定位进程已退出，请查看定位日志')
             time.sleep(0.25)
-        raise ValueError('定位未得到可信位姿，Nav2 尚未启动。请查看定位日志。')
+        raise ValueError('定位尚未提供可用位姿，Nav2 尚未启动。请查看定位日志。')
 
     def send_goal(self, payload):
         state = self.ros.snapshot()
