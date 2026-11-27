@@ -9,14 +9,16 @@ const processLabels = {running: '运行中', stopped: '已停止', failed: '异�
   stopping: '正在关闭', external: '外部运行', cancelled: '已取消'};
 const locationLabels = {NORMAL: '正常', OBS_DEGRADED: '观测退化', SUSPECT: '可疑',
   LOST: '已丢失', INITIALIZING: '初始化'};
-const locationReasons = { 'operator requested global relocalization': '等待新点云进行全图匹配',
-  'global relocalization failed': '全图候选未通过验证，可在特征更明显处重试' };
+const globalRequest = 'operator requested global relocalization';
+const globalFailure = 'global relocalization failed';
 const profileLabels = {sim: '仿真', real: '真车'};
 const terrainLabels = {normal: '普通地形', tunnel: '隧道', ramp: '坡道', recovery: '恢复'};
 let config;
 let status;
 let busy = false;
 let noticeTimeout;
+let matchSince;
+let polling = false;
 
 function message(content, error = false, persistent = false) {
   const notice = element('notice');
@@ -40,11 +42,16 @@ async function operate(route, body = {}, reloadConfig = false) {
   if (busy) return;
   busy = true;
   updateControls();
-  message(route === 'stack/stop' ? '正在关闭，等待录包收尾和进程退出…' : '正在执行…', false, true);
+  const matching = ['stack/start', 'process/localization/start', 'process/localization/restart'].includes(route) &&
+    config?.[status?.profile]?.mode === 'localization';
+  const pending = route === 'stack/stop' ? '正在关闭，等待录包收尾和进程退出…' :
+    route === 'relocalize' ? '正在提交全局重定位请求…' :
+    matching ? '正在启动定位，匹配进度见「定位状态」…' : '正在执行…';
+  message(pending, false, true);
   try {
     const result = await api(route, body);
     if (reloadConfig) await loadConfig();
-    message(result.message);
+    message(route === 'relocalize' ? '全局重定位已受理，进度见「定位状态」。' : result.message);
   } catch (error) {
     message(error.message, true);
   } finally {
@@ -152,6 +159,87 @@ function hasExtrapolatedPose(localization) {
   return localization?.status === 'SUSPECT' && localization.pose_extrapolated === 'true';
 }
 
+function localizationMode(snapshot) {
+  return snapshot?.processes.localization.mode || config?.[snapshot?.profile]?.mode;
+}
+
+function matchLogStage(text) {
+  const session = text.split(/^\[[^\n]+\] 进程启动$/m).at(-1);
+  for (const line of session.split('\n').reverse()) {
+    if (/\[backend_node-\d+\]: process has (?:died|finished)/.test(line)) {
+      return ['定位后端已退出', '查看定位日志中的退出原因', 'bad'];
+    }
+    if (/\[backend_node-\d+\]: process started/.test(line)) return null;
+    if (line.includes('localization state -> NORMAL')) return ['等待定位数据', '等待定位后端发布最新状态', 'warn'];
+    const confirmation = line.match(/recovery candidate (?:awaiting confirmation|confirmed) (\d+\/\d+) via /);
+    if (confirmation) return ['正在确认候选', `连续验证 ${confirmation[1]}`, 'warn', true];
+    if (line.includes('recovery candidate accepted after ')) {
+      return ['候选已通过验证', '等待定位后端发布可信位姿', 'warn', true];
+    }
+    if (line.includes('scan-to-map verification failed after ')) {
+      return ['继续匹配', '本轮候选未通过验证，等待下一轮', 'warn', true];
+    }
+    if (line.includes('waiting for recovery source (')) return ['等待新点云', '正在累计可用于匹配的同步点云', 'warn', true];
+    if (line.includes('first synchronized front-end frame:')) {
+      return ['正在匹配', '已收到同步点云，正在搜索或验证候选', 'warn', true];
+    }
+    if (line.includes('loaded immutable prior:')) {
+      return ['等待点云', '先验地图已加载，等待雷达与里程计同步数据', 'warn', true];
+    }
+  }
+  return null;
+}
+
+function matchingState(snapshot, logStage) {
+  const loc = snapshot.ros.localization;
+  const row = snapshot.processes.localization;
+  if (row.state === 'failed') return ['定位进程异常退出', `退出码 ${row.code} · 查看定位日志`, 'bad'];
+  if (row.state === 'stopping') return ['正在停止定位', '等待定位进程退出'];
+  if (row.state === 'stopped') return ['待启动', '启动定位后开始匹配先验地图'];
+  if (loc?.pose_trusted === 'true') {
+    return ['匹配成功', loc.status === 'OBS_DEGRADED' ? '位姿可信 · 观测退化' : '位姿可信', 'good'];
+  }
+  if (loc?.reason === globalFailure) return ['全图匹配失败', '候选未通过验证，可在特征更明显处重试', 'bad'];
+  if (loc?.reason === globalRequest) return ['全图匹配中', '等待新点云并验证全图候选', 'warn', true];
+  const reason = loc?.reason ? ` · ${loc.reason}` : '';
+  if (loc?.status === 'LOST') return ['定位已丢失', `位姿未可信${reason}`, 'bad'];
+  if (loc?.status === 'SUSPECT') {
+    const trust = hasExtrapolatedPose(loc) ? '里程计前推 · 限速通行' : '位姿未可信';
+    return ['定位可疑', `${trust}${reason}`, 'warn'];
+  }
+  if (logStage) return logStage;
+  if (loc?.reason?.startsWith('initial localization via ')) {
+    return ['继续匹配', '仍在搜索可验证的定位候选', 'warn', true];
+  }
+  if (loc || snapshot.ros.measured) return ['等待匹配', '等待同步点云或候选验证结果', 'warn', true];
+  return ['正在启动定位', '等待定位后端加载先验地图并接入雷达数据', 'warn', true];
+}
+
+function displayLocalization(snapshot, logStage) {
+  const loc = snapshot?.ros.localization;
+  const trusted = loc?.pose_trusted === 'true';
+  const matching = snapshot && localizationMode(snapshot) === 'localization';
+  const trust = trusted ? '位姿可信' : hasExtrapolatedPose(loc) ? '里程计前推 · 限速通行' : '位姿未可信';
+  const reason = loc?.reason === globalRequest ? '等待新点云进行全图匹配' :
+    loc?.reason === globalFailure ? '全图候选未通过验证，可在特征更明显处重试' : loc?.reason;
+  const [label, detail, tone, inProgress] = matching ? matchingState(snapshot, logStage) : [
+    locationLabels[loc?.status] || loc?.status || '—',
+    loc ? `${trust}${reason ? ` · ${reason}` : ''}` : snapshot ? '等待定位数据' : '连接中断',
+    loc ? (trusted ? 'good' : 'warn') : '',
+  ];
+  if (inProgress) matchSince ??= performance.now();
+  else matchSince = undefined;
+  const elapsed = element('match-elapsed');
+  elapsed.hidden = !inProgress;
+  if (inProgress) elapsed.textContent = `已等待 ${Math.floor((performance.now() - matchSince) / 1000)} 秒`;
+  const heading = element('loc-status');
+  const explanation = element('loc-trust');
+  if (heading.textContent !== label) heading.textContent = label;
+  if (explanation.textContent !== detail) explanation.textContent = detail;
+  heading.className = tone || '';
+  element('match-logs').hidden = !matching || !(inProgress || tone === 'bad' || tone === 'warn');
+}
+
 function format(value, digits = 2) {
   return Number.isFinite(value) ? value.toFixed(digits) : '—';
 }
@@ -171,17 +259,9 @@ function displaySerialStatus(ros) {
 
 function displayStatus() {
   const {ros, profile, processes: rows} = status;
-  const loc = ros.localization;
-  const ready = loc?.pose_trusted === 'true';
-  const extrapolated = hasExtrapolatedPose(loc);
   element('domain').textContent = `ROS 域 ${status.domain}`;
   element('active-profile').textContent = `${profileLabels[profile]} · 运行控制`;
   element('real-operation-hint').hidden = profile !== 'real';
-  element('loc-status').textContent = locationLabels[loc?.status] || loc?.status || '—';
-  element('loc-status').className = loc ? (ready ? 'good' : 'warn') : '';
-  const reason = locationReasons[loc?.reason] || loc?.reason;
-  const trust = ready ? '位姿可信' : extrapolated ? '里程计前推 · 限速通行' : '位姿未可信';
-  element('loc-trust').textContent = loc ? `${trust}${reason ? ` · ${reason}` : ''}` : '等待定位数据';
   element('pose').textContent = ros.pose ? `${format(ros.pose.x)} / ${format(ros.pose.y)}` : '—';
   element('yaw').textContent = ros.pose ? `${ros.pose.frame} · 航向 ${format(ros.pose.yaw, 1)}°` : 'x / y · m';
   element('speed').textContent = `${format(ros.measured?.speed)} / ${format(ros.command?.speed)}`;
@@ -223,7 +303,7 @@ function displayStatus() {
 function updateControls() {
   const rows = status?.processes;
   const ros = status?.ros;
-  const mode = rows?.localization.mode || config?.[status?.profile]?.mode;
+  const mode = localizationMode(status);
   const unavailable = busy || !rows;
   for (const button of document.querySelectorAll('button[data-action]')) {
     const action = button.dataset.action;
@@ -330,17 +410,29 @@ element('copy-fox').addEventListener('click', async () => {
 });
 
 async function updateStatus() {
+  if (polling) return;
+  polling = true;
   const badge = element('connection');
   try {
     status = await api('status');
     displayStatus();
     badge.dataset.state = 'running';
     badge.textContent = '已连接';
+    const loc = status.ros.localization;
+    let logStage;
+    if (localizationMode(status) === 'localization' && status.processes.localization.state === 'running' &&
+        (!loc || loc.status === 'INITIALIZING')) {
+      logStage = await api('log/localization').then(({text}) => matchLogStage(text)).catch(() => null);
+    }
+    displayLocalization(status, logStage);
   } catch (_) {
     status = undefined;
+    displayLocalization();
     displaySerialStatus();
     badge.dataset.state = 'failed';
     badge.textContent = '连接中断';
+  } finally {
+    polling = false;
   }
   updateControls();
   if (status?.processes.bag) updateBagProgress(status.processes.bag);
@@ -399,6 +491,11 @@ setupProcessRows();
 showPage();
 window.addEventListener('hashchange', showPage);
 document.querySelector('.overview-nav a[href="#logs"]').addEventListener('click', () => { logs.open = true; });
+element('match-logs').addEventListener('click', () => {
+  element('log-name').value = 'localization';
+  logs.open = true;
+  updateLog();
+});
 logs.addEventListener('toggle', () => { if (logs.open) updateLog(); });
 element('log-name').addEventListener('change', updateLog);
 updateControls();

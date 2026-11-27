@@ -32,7 +32,7 @@ ARGS = {
     'mode': ('mapping', 'mapping 或 localization'),
     'prior_map': ('', '先验地图目录；localization 时留空则用 map_dir'),
     'map_dir': ('', '~/save_map 保存目录（绝对路径）'),
-    'save_interval': ('', '建图期间周期保存地图的间隔（秒）；留空时建图模式默认 60，定位模式 0'),
+    'save_interval': ('', '建图期间周期保存地图的间隔（秒）；留空时有输出目录的建图默认 30，定位模式 0'),
     'rviz': ('false', '后端 RViz'),
     'backend_overrides': ('', '后端 ROS 参数覆盖 YAML'),
     'lidar_min_range': ('', '雷达近距软件过滤下限（米），留空使用配置默认值'),
@@ -64,9 +64,9 @@ def build(context):
     dual = 'true' if lidar == 'dual' else 'false'
     mode = arg['mode'].perform(context)
     save_dir = arg['map_dir'].perform(context)
-    # 断电走不到退出保存，建图默认每 60 s 落盘一次；定位模式不保存运行轨迹。
+    # 断电走不到退出保存，建图默认每 30 s 落盘一次；定位模式不保存运行轨迹。
     save_interval = arg['save_interval'].perform(context).strip() or (
-        '60' if mode == 'mapping' and save_dir else '0')
+        '30' if mode == 'mapping' and save_dir else '0')
     # 建图时不能把 map_dir 设为先验目录：后端拒绝保存到先验地图所在位置
     prior_map = arg['prior_map'].perform(context) or (
         save_dir if mode == 'localization' else '')

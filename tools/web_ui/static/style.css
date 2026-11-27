@@ -54,6 +54,8 @@ button:disabled { opacity: .38; cursor: default; }
 .metric { display: grid; align-content: start; gap: 4px; padding: 14px 16px; }
 .metric strong { font-size: 20px; font-weight: 650; overflow-wrap: anywhere; }
 .metric label, .metric span { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.loc-readout { display: grid; gap: 4px; }
+#match-logs { justify-self: start; color: var(--teal); font-size: 12px; text-decoration: underline; }
 .numeric, pre, .result-path { font-family: "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
 .panel { padding: 16px; }
 .panel > header { padding-bottom: 14px; }
