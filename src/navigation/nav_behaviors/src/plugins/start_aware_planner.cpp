@@ -174,7 +174,9 @@ private:
       return planFromStart(start, goal, canceled);
     } catch (const nav2_core::PlannerCancelled &) {
       throw;
-    } catch (const nav2_core::PlannerException &) {
+    } catch (const nav2_core::PlannerException & error) {
+      RCLCPP_WARN_THROTTLE(logger_, *map_->get_clock(), 2000,
+        "StartAwarePlanner: direct plan rejected: %s", error.what());
     }
     if (canceled && canceled()) {throw nav2_core::PlannerCancelled("Approach planning canceled");}
     MapLock lock(*costs->getMutex());
