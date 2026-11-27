@@ -323,7 +323,7 @@
       else if (operation === 'seed') setGuess(result.guess);
       else await load(recenter, result.selected ?? (recenter ? [] : [...selection]));
       if (result.message) message(result.message);
-      if (result.output || (operation === 'save' && state.active === 'field')) await loadConfig();
+      if (result.output || operation === 'save') await loadConfig();
     } catch (error) {
       message(error.message, true);
     } finally {
@@ -451,6 +451,89 @@
   function onSubmit(form, handler) {
     element(form).addEventListener('submit', (event) => { event.preventDefault(); handler(event.target); });
   }
+  const previewDialog = element('terrain-preview-dialog');
+  const previewStatus = element('terrain-preview-status');
+  const previewResult = element('terrain-preview-result');
+  const previewView = element('terrain-preview-view');
+  const previewImage = element('terrain-preview-image');
+  let previewRequest;
+  let previewZoom = 1;
+
+  function showPreviewOptions() {
+    const paths = new Set((config?.terrain_sources || []).filter((path) => /\.surf\.npz$/i.test(path)));
+    if (project()?.archive) paths.add(project().archive);
+    element('terrain-preview-options').replaceChildren(...[...paths].sort().map((path) => new Option(path, path)));
+  }
+
+  function sizePreview() {
+    if (previewResult.hidden || !previewView.clientWidth) return;
+    const scale = Math.min(previewView.clientWidth / previewImage.width, previewView.clientHeight / previewImage.height);
+    previewImage.style.width = `${Math.max(1, Math.floor(previewImage.width * scale * previewZoom))}px`;
+    element('terrain-preview-out').disabled = previewZoom <= 1;
+    element('terrain-preview-in').disabled = previewZoom >= 8;
+  }
+
+  element('terrain-preview-open').addEventListener('click', () => {
+    showPreviewOptions();
+    const input = element('terrain-preview-form').elements.source;
+    if (!input.value) input.value = project()?.archive || '';
+    previewStatus.classList.remove('warn');
+    previewStatus.textContent = '选择现有工程，或输入服务器工作区内的 .surf.npz 路径。';
+    previewDialog.showModal();
+  });
+  document.addEventListener('terrain-sources', showPreviewOptions);
+  previewDialog.addEventListener('close', () => {
+    previewRequest?.abort();
+    previewResult.hidden = true;
+    previewImage.width = previewImage.height = 1;
+  });
+  window.addEventListener('resize', sizePreview);
+  for (const [action, factor] of [['out', 1 / 1.5], ['in', 1.5], ['fit', 0]]) {
+    element(`terrain-preview-${action}`).addEventListener('click', () => {
+      previewZoom = Math.min(8, Math.max(1, previewZoom * factor));
+      sizePreview();
+    });
+  }
+  onSubmit('terrain-preview-form', async (form) => {
+    const source = form.elements.source.value.trim();
+    previewRequest?.abort();
+    const request = new AbortController();
+    previewRequest = request;
+    previewResult.hidden = true;
+    previewStatus.classList.remove('warn');
+    previewStatus.textContent = '正在读取已保存的工程…';
+    try {
+      const response = await fetch(`/api/terrain/project-preview?${new URLSearchParams({source})}`, {signal: request.signal});
+      if (!response.ok) throw new Error((await response.json()).error);
+      const {frame, resolution, patches, annotated, legend} = JSON.parse(response.headers.get('X-Terrain-Preview'));
+      const image = await createImageBitmap(await response.blob());
+      try {
+        if (request.signal.aborted) return;
+        previewImage.width = image.width;
+        previewImage.height = image.height;
+        previewImage.getContext('2d').drawImage(image, 0, 0);
+      } finally {
+        image.close();
+      }
+      element('terrain-preview-legend').replaceChildren(...legend.map(([label, color]) => {
+        const item = document.createElement('span');
+        const swatch = document.createElement('i');
+        swatch.style.backgroundColor = `rgb(${color.join(',')})`;
+        item.append(swatch, label);
+        return item;
+      }));
+      previewStatus.textContent = `${source} · ${frame === 'map' ? '地图坐标' : '场地坐标'} · ` +
+        `${resolution.toFixed(3)} m/格 · ${annotated}/${patches} 个面片已标注`;
+      previewZoom = 1;
+      previewResult.hidden = false;
+      previewView.scrollTo(0, 0);
+      sizePreview();
+    } catch (error) {
+      if (request.signal.aborted) return;
+      previewStatus.classList.add('warn');
+      previewStatus.textContent = error.message;
+    }
+  });
   for (const button of documentButtons) {
     const frame = button.dataset.frame;
     button.addEventListener('click', () => { if (state?.active !== frame) run('switch', {frame}, true); });

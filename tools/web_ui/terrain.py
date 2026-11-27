@@ -130,6 +130,32 @@ def load_surface(source, body):
     raise ValueError(f'不支持的地形文件：{source.name}。支持 STEP、STP、STL、NPZ、PCD 和 .surf.npz。')
 
 
+def render_preview(project, overlay=None):
+    surface = compose_map(project, COLORS, show_unset=True, opacity=0.72, edges=True,
+                          overlay=overlay, selected=[], stroke=None)
+    success, image = cv2.imencode('.png', np.ascontiguousarray(surface[:, :, ::-1]))
+    if not success:
+        raise ValueError('地形预览生成失败')
+    return image.tobytes()
+
+
+def preview_archive(value):
+    source = workspace_path(value, '标注工程路径')
+    if not source.name.lower().endswith('.surf.npz') or not source.is_file():
+        raise ValueError('请选择工作区中已保存的 .surf.npz 标注工程')
+    try:
+        project = Project.load(source)
+        ids = project.ids()
+        annotated_types = [kind for pid in ids if (kind := project.a(pid)['type']) >= 0]
+        legend = [(TYPES.get(kind, f'类型 {kind}'), COLORS[kind])
+                  for kind in sorted(set(annotated_types)) if kind in COLORS]
+        metadata = dict(frame=project.frame, resolution=project.surf.resolution,
+                        patches=len(ids), annotated=len(annotated_types), legend=legend)
+        return render_preview(project), metadata
+    except (OSError, ValueError, KeyError, TypeError, IndexError, BadZipFile, cv2.error) as exc:
+        raise ValueError('无法预览该工程：文件无效、已损坏或无法读取') from exc
+
+
 @dataclass
 class TerrainDocument:
     project: Project
@@ -204,12 +230,7 @@ class TerrainEditor:
             if route == 'owners':
                 return project.owner[::-1].astype('<u4', copy=False).tobytes(), 'application/octet-stream'
             overlay = patch_edges(project.field_lookup(self.field.project)) if self.aligned(document) else None
-            surface = compose_map(project, COLORS, show_unset=True, opacity=0.72, edges=True,
-                                  overlay=overlay, selected=[], stroke=None)
-            success, image = cv2.imencode('.png', np.ascontiguousarray(surface[:, :, ::-1]))
-            if not success:
-                raise ValueError('地形预览生成失败')
-            return image.tobytes(), 'image/png'
+            return render_preview(project, overlay), 'image/png'
 
     def details(self, revision, pid):
         with self.lock:

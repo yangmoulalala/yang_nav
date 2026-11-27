@@ -18,7 +18,7 @@ from rclpy.signals import SignalHandlerOptions
 from .processes import LABELS, OWNERS, PROCESSES, Processes
 from .ros_state import RosState
 from .settings import Settings, WORKSPACE, candidates
-from .terrain import TerrainEditor, field_references, terrain_sources
+from .terrain import TerrainEditor, field_references, preview_archive, terrain_sources
 
 
 STATIC = Path(__file__).with_name('static')
@@ -129,7 +129,7 @@ class Handler(BaseHTTPRequestHandler):
         super().setup()
         self.connection.settimeout(8)
 
-    def respond(self, status, body, content_type='application/json'):
+    def respond(self, status, body, content_type='application/json', headers=()):
         if not isinstance(body, bytes):
             body = json.dumps(finite(body), ensure_ascii=False, allow_nan=False).encode()
         self.send_response(status)
@@ -139,6 +139,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Content-Security-Policy',
                          "default-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'")
+        for key, value in headers:
+            self.send_header(key, value)
         self.end_headers()
         try:
             self.wfile.write(body)
@@ -157,6 +159,13 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, self.console.config())
         elif route == '/api/terrain':
             self.respond(200, self.console.terrain.snapshot())
+        elif route == '/api/terrain/project-preview':
+            query = parse_qs(request.query)
+            try:
+                image, metadata = preview_archive(query.get('source', [''])[0])
+                self.respond(200, image, 'image/png', [('X-Terrain-Preview', json.dumps(metadata))])
+            except ValueError as exc:
+                self.respond(400, {'error': str(exc)})
         elif route in ('/api/terrain/preview', '/api/terrain/owners', '/api/terrain/patch'):
             query = parse_qs(request.query)
             revision = query.get('revision', [''])[0]
