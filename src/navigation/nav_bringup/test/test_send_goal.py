@@ -418,14 +418,16 @@ def test_mapping_uses_live_costmaps_without_terrain_servers():
     gate = params['cmd_gate']['ros__parameters']
     assert gate['require_observation'] and gate['limits']['normal']['max_linear'] == 0.5
     assert params['controller_server']['ros__parameters']['FollowPath']['ax_max'] == 0.9
-    # Goals clicked in unexplored space must plan through unknown cells; the global window has to
-    # reach past the 8 m local rollout, and the observed approach remains the out-of-window fallback.
     assert params['global_costmap']['global_costmap']['ros__parameters']['width'] == 30
     assert params['local_costmap']['local_costmap']['ros__parameters']['width'] == 8
     planners = params['planner_server']['ros__parameters']
     for name in ('GridBased', 'StrictGridBased'):
-        assert planners[name]['allow_unknown']
-        assert planners[name]['approach_unknown_goal']
+        assert not planners[name]['allow_unknown']
+        assert planners[name]['require_observed_path']
+        assert planners[name]['tolerance'] == 0.0
         assert not planners[name]['approach_occupied_goal']
+    assert planners['GridBased']['approach_unknown_goal']
+    assert not planners['StrictGridBased']['approach_unknown_goal']
     localization = launch.navigation_params(PACKAGE / 'params' / 'nav2.yaml')
     assert not localization['planner_server']['ros__parameters']['GridBased'].get('approach_unknown_goal')
+    assert not localization['planner_server']['ros__parameters']['GridBased'].get('require_observed_path')

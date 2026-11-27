@@ -60,13 +60,11 @@ def mapping_params(document):
                        resolution=0.05, plugins=['obstacle_layer', 'inflation_layer'])
         costmap.pop('filters', None)
         costmap['obstacle_layer']['plugin'] = 'nav2_costmap_2d::ObstacleLayer'
-    # Mapping has no static terrain, so unknown cells are traversable: a target clicked in
-    # unexplored space is planned through the rolling window and re-planned as LiDAR fills it
-    # in. approach_unknown_goal stays as the fallback for goals beyond the window edge.
     planners = document['planner_server']['ros__parameters']
     for name in ('GridBased', 'StrictGridBased'):
-        planners[name].update(allow_unknown=True, approach_occupied_goal=False,
-                              approach_unknown_goal=True)
+        planners[name].update(allow_unknown=False, approach_occupied_goal=False,
+                              require_observed_path=True, tolerance=0.0,
+                              approach_unknown_goal=(name == 'GridBased'))
     # Mapping keeps the pre-tune conservative envelope: the real profile raises the
     # driver limits for racing, not for building maps.
     follow = document['controller_server']['ros__parameters']['FollowPath']
@@ -148,12 +146,14 @@ def build(context):
     zones = '' if mapping else str(terrain_dir / 'zones.yaml')
     replacements = {'__NAV_ZONES_FILE__': zones,
                     '__NAV_BACKUP__': 'false' if mapping else 'true',
-                    '__NAV_RETRIES__': '1' if mapping else '-1'}
+                    '__NAV_RETRIES__': '1' if mapping else '-1',
+                    '__NAV_PATH_MAX_AGE__': '1' if mapping else '10'}
     bt_xml = str(share / 'behavior_trees' / 'navigate_to_pose.xml')
     bt_xml = ReplaceString(source_file=bt_xml, replacements=replacements)
     through_xml = ReplaceString(
         source_file=str(share / 'behavior_trees' / 'navigate_through_poses.xml'),
-        replacements=replacements)
+        replacements=dict(replacements, __NAV_THROUGH_PLANNER__=(
+            'StrictGridBased' if mapping else '{selected_planner}')))
     actions = []
     terrain_file = ''
     if mapping or real_overrides is not None:

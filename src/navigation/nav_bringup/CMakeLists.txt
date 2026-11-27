@@ -12,6 +12,7 @@ if(BUILD_TESTING)
   ament_add_pytest_test(test_send_goal test/test_send_goal.py TIMEOUT 120)
   ament_add_pytest_test(test_navigation_reference test/test_navigation_reference.py TIMEOUT 60)
   ament_add_pytest_test(test_goal_visualizer test/test_goal_visualizer.py TIMEOUT 60)
+  ament_add_pytest_test(test_mapping_navigation test/test_mapping_navigation.py TIMEOUT 90)
 endif()
 
 ament_package()

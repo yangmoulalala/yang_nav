@@ -31,6 +31,9 @@ public:
     node->get_parameter(name + ".approach_occupied_goal", approach_goal_);
     nav2_util::declare_parameter_if_not_declared(node, name + ".approach_unknown_goal", rclcpp::ParameterValue(false));
     node->get_parameter(name + ".approach_unknown_goal", approach_unknown_goal_);
+    nav2_util::declare_parameter_if_not_declared(node, name + ".require_observed_path", rclcpp::ParameterValue(false));
+    node->get_parameter(name + ".require_observed_path", require_observed_path_);
+    require_observed_path_ = require_observed_path_ || approach_unknown_goal_;
     // Same parameter the inner Smac planner reads; unknown cells are passable when it is set.
     nav2_util::declare_parameter_if_not_declared(node, name + ".allow_unknown", rclcpp::ParameterValue(true));
     node->get_parameter(name + ".allow_unknown", allow_unknown_);
@@ -167,22 +170,15 @@ private:
     }
     const auto footprint = map_->getRobotFootprint();
     using MapLock = std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t>;
-    // allow_unknown lets Smac route the real goal through unexplored cells, so try it first and
-    // keep the straight observed approach only for goals beyond the rolling window or a gap that
-    // Smac cannot cross.
     try {
       return planFromStart(start, goal, canceled);
     } catch (const nav2_core::PlannerCancelled &) {
       throw;
     } catch (const nav2_core::PlannerException &) {
     }
-    bool unknown_goal;
-    {
-      MapLock lock(*costs->getMutex());
-      unknown_goal = needsObservedApproach(*costs, footprint, target);
-    }
     if (canceled && canceled()) {throw nav2_core::PlannerCancelled("Approach planning canceled");}
     MapLock lock(*costs->getMutex());
+    const bool unknown_goal = needsObservedApproach(*costs, footprint, target);
     const auto approach = observedApproach(*costs, footprint, robot, target, approach_clearance_, !unknown_goal);
     if (approach.empty()) {
       throw nav2_core::NoValidPathCouldBeFound("No observed free approach toward the goal");
@@ -196,18 +192,14 @@ private:
     return path;
   }
 
-  void validateObservedPath(const nav_msgs::msg::Path & path, const Pose2 & start) const
+  void validateObservedPath(const nav_msgs::msg::Path & path, const Pose2 & start,
+    const Pose2 & target) const
   {
     auto * costs = map_->getCostmap();
     const auto footprint = map_->getRobotFootprint();
     std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t> lock(*costs->getMutex());
-    auto previous = start;
-    for (const auto & point : path.poses) {
-      const Pose2 pose{point.pose.position.x, point.pose.position.y, start.yaw};
-      if (!footprintMotionFree(*costs, footprint, previous, pose, nullptr, allow_unknown_)) {
-        throw nav2_core::NoValidPathCouldBeFound("Mapping path lacks observed footprint clearance");
-      }
-      previous = pose;
+    if (!observedPathFree(*costs, footprint, path, start, target)) {
+      throw nav2_core::NoValidPathCouldBeFound("Mapping path lacks observed footprint clearance");
     }
   }
 
@@ -228,16 +220,27 @@ private:
       unsigned sx, sy;
       // With allow_unknown the start may already touch unexplored cells; only real obstacles
       // make it an occupied start.
-      const bool footprint_clear = allow_unknown_ ?
+      const bool unknown_start_allowed = allow_unknown_ && !require_observed_path_;
+      const bool footprint_clear = unknown_start_allowed ?
         footprintFreeInUnknown(*map, fp, a) : footprintFree(*map, fp, a);
       if (footprint_clear && map->worldToMap(a.x, a.y, sx, sy) &&
-        (allow_unknown_ ? map->getCost(sx, sy) < nav2_costmap_2d::LETHAL_OBSTACLE :
+        (unknown_start_allowed ? map->getCost(sx, sy) < nav2_costmap_2d::LETHAL_OBSTACLE :
         map->getCost(sx, sy) < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE)) {
         lock.unlock();
         auto path = inner_->createPlan(start, goal, canceled);
         if (!path.poses.empty()) {path.poses.front() = start;}
-        if (approach_unknown_goal_) {validateObservedPath(path, a);}
+        if (require_observed_path_) {
+          validateObservedPath(path, a, b);
+          auto endpoint = path.poses.back();
+          if (endpoint.pose.position != goal.pose.position) {
+            endpoint.pose = goal.pose;
+            path.poses.push_back(endpoint);
+          }
+        }
         return path;
+      }
+      if (require_observed_path_) {
+        throw nav2_core::NoValidPathCouldBeFound("Mapping start lacks observed footprint clearance");
       }
       escapes = escapePaths(*map, fp, a, b, max_distance_);
     }
@@ -255,7 +258,6 @@ private:
         // zone_shaper will validate the full swept transition from here to the suffix.
         if (suffix.poses.empty()) {continue;}
         suffix.poses.front() = free_start;
-        if (approach_unknown_goal_) {validateObservedPath(suffix, end);}
         auto prefix = translationPoses(start, escape.poses);
         prefix.insert(prefix.end(), suffix.poses.begin() + 1, suffix.poses.end());
         suffix.poses = std::move(prefix);
@@ -308,6 +310,7 @@ private:
   geometry_msgs::msg::PoseStamped anchor_goal_;
   bool approach_goal_{false};
   bool approach_unknown_goal_{false};
+  bool require_observed_path_{false};
   bool allow_unknown_{true};
 };
 }  // namespace nav_behaviors

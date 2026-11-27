@@ -120,6 +120,25 @@ TEST(ObservedApproach, KnownGoalBeyondUnknownGap)
   EXPECT_LT(approach.back().x, 1.03);
 }
 
+TEST(ObservedApproach, DirectPathsRequireObservedSweptFootprintAndOriginalEndpoint)
+{
+  nav2_costmap_2d::Costmap2D map(160, 160, 0.05, -4, -4, 0);
+  const auto fp = footprint();
+  const Pose2 start{0, 0, 0}, goal{2, 0, 0};
+  nav_msgs::msg::Path path;
+  path.poses.resize(2);
+  path.poses.back().pose.position.x = 1.98;
+  EXPECT_TRUE(observedPathFree(map, fp, path, start, goal));
+  obstacle(map, 1.0, 0.2, nav2_costmap_2d::NO_INFORMATION);
+  EXPECT_FALSE(observedPathFree(map, fp, path, start, goal));
+  obstacle(map, 1.0, 0.2, nav2_costmap_2d::FREE_SPACE);
+  obstacle(map, 2.395, 0.2, nav2_costmap_2d::NO_INFORMATION);
+  EXPECT_FALSE(observedPathFree(map, fp, path, start, goal));
+  obstacle(map, 2.395, 0.2, nav2_costmap_2d::FREE_SPACE);
+  path.poses.back().pose.position.x = 1.85;
+  EXPECT_FALSE(observedPathFree(map, fp, path, start, goal));
+}
+
 TEST(CostmapCollision, ReentryCoversRotatingFootprintReactionAndBrakingInEveryDirection)
 {
   nav2_costmap_2d::Costmap2D map(200, 200, .025, -2.5, -2.5, 0);

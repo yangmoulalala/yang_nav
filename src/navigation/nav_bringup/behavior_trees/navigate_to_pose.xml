@@ -30,7 +30,7 @@
                   <PathReachesGoal path="{path}"/>
                   <Inverter><ZonePathBlocked state_topic="/nav_zone_state" timeout="1.5"/></Inverter>
                   <Inverter>
-                    <PathExpiringTimer seconds="10" path="{path}"/>
+                    <PathExpiringTimer seconds="__NAV_PATH_MAX_AGE__" path="{path}"/>
                   </Inverter>
                   <Inverter>
                     <GlobalUpdatedGoal/>

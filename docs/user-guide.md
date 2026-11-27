@@ -142,7 +142,13 @@ ros2 launch bringup sim.launch.py mode:=mapping lidar:=dual \
 
 仿真手动驾驶用 `ros2 run sentry_gazebo teleop`，空格停车，`x` 退出。手动建图时保持 Nav2 关闭。需要录包时，先按第 5 节开始录制，再驾驶走图。
 
-要边建图边导航，可在平坦开阔场地另开终端运行 `bash tools/start_navigation.sh profile:=real mode:=mapping`（仿真改为 `profile:=sim`），再按第 3 节发送单点目标。目标或途中遇到未知区、且没有可行绕路时，Nav2 只沿目标方向走已观测的空地，随雷达更新重规划；没有安全进展则停车，仍未到达原目标。不会把未知区域当成可通行区域。
+要边建图边导航，可在平坦开阔场地另开终端运行 `bash tools/start_navigation.sh profile:=real mode:=mapping`（仿真改为 `profile:=sim`），再从 WebUI、RViz 或命令行发送单点目标。命令行发送时，需要让客户端等待在线代价地图和雷达观测：
+
+```bash
+ros2 run nav_bringup send_goal.py 1.0 1.5 --ros-args -p mapping:=true
+```
+
+仿真再追加 `-p use_sim_time:=true`，坐标请按当前建图会话的 `map` 坐标系选择。目标或途中遇到未知区、且没有可行绕路时，Nav2 只沿目标方向走已观测的空地，随雷达更新重规划；没有安全进展则停车，临时停靠点不算到达原目标。
 
 走完路线后停车，保持建图进程运行，在另一终端保存地图：
 

@@ -1,9 +1,26 @@
 #pragma once
 
+#include "nav_msgs/msg/path.hpp"
 #include "nav_behaviors/costmap_collision.hpp"
 
 namespace nav_behaviors
 {
+
+inline bool observedPathFree(const nav2_costmap_2d::Costmap2D & map,
+  const std::vector<geometry_msgs::msg::Point> & footprint, const nav_msgs::msg::Path & path,
+  const Pose2 & start, const Pose2 & goal)
+{
+  if (path.poses.empty()) {return false;}
+  auto previous = start;
+  for (const auto & point : path.poses) {
+    const Pose2 pose{point.pose.position.x, point.pose.position.y, start.yaw};
+    if (!footprintMotionFree(map, footprint, previous, pose)) {return false;}
+    previous = pose;
+  }
+  return std::hypot(previous.x - goal.x, previous.y - goal.y) <=
+         std::sqrt(2.0) * map.getResolution() &&
+         footprintMotionFree(map, footprint, previous, {goal.x, goal.y, start.yaw});
+}
 
 inline bool needsObservedApproach(const nav2_costmap_2d::Costmap2D & map,
   const std::vector<geometry_msgs::msg::Point> & footprint, const Pose2 & goal)
@@ -38,7 +55,10 @@ inline std::vector<Pose2> observedApproach(const nav2_costmap_2d::Costmap2D & ma
     const Pose2 pose{start.x + fraction * (goal.x - start.x),
       start.y + fraction * (goal.y - start.y), start.yaw};
     unsigned mx, my;
-    if (!map.worldToMap(pose.x, pose.y, mx, my)) {break;}
+    if (!map.worldToMap(pose.x, pose.y, mx, my)) {
+      blocked_by_unknown = true;
+      break;
+    }
     const auto cost = map.getCost(mx, my);
     if (cost >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE || !footprintFree(map, footprint, pose)) {
       blocked_by_unknown = needsObservedApproach(map, footprint, pose);

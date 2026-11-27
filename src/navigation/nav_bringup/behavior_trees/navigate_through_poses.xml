@@ -28,7 +28,7 @@
                   <PathForGoal signature="{path_goal_signature}"/>
                   <Inverter><ZonePathBlocked state_topic="/nav_zone_state" timeout="1.5"/></Inverter>
                   <Inverter>
-                    <PathExpiringTimer seconds="10" path="{path}"/>
+                    <PathExpiringTimer seconds="__NAV_PATH_MAX_AGE__" path="{path}"/>
                   </Inverter>
                   <Inverter>
                     <GlobalUpdatedGoal/>
@@ -38,7 +38,7 @@
                 <Sequence name="PlanAndShape">
                   <CapturePathGoal signature="{planning_goal_signature}"/>
                   <RemovePassedGoals input_goals="{goals}" output_goals="{goals}" radius="0.3"/>
-                  <ComputePathThroughPoses goals="{goals}" path="{raw_path}" planner_id="{selected_planner}" error_code_id="{compute_path_error_code}"/>
+                  <ComputePathThroughPoses goals="{goals}" path="{raw_path}" planner_id="__NAV_THROUGH_PLANNER__" error_code_id="{compute_path_error_code}"/>
                   <SmoothPath unsmoothed_path="{raw_path}" smoothed_path="{shaped_path}" smoother_id="zone_shaper" check_for_collisions="false" error_code_id="{smoother_error_code}"/>
                   <CommitZonePath planned_signature="{planning_goal_signature}" input_path="{shaped_path}" path="{path}" signature="{path_goal_signature}"/>
                 </Sequence>
