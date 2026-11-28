@@ -17,6 +17,8 @@ def save_project(project, path):
             'resolution': surface.resolution, 'origin': list(surface.origin), 'reg': project.reg,
             'ann': {str(key): value for key, value in project.ann.items()}, 'landmarks': project.landmarks}
     tmp = path.with_name(path.name + '.tmp.npz')
+    if project.match_yaw_deg is not None:
+        meta['match_yaw_deg'] = project.match_yaw_deg
     gradients = {'gx': surface.gx, 'gy': surface.gy} if surface.gx is not None else {}
     scan = {} if project.scan_surface is None else {'scan_z': project.scan_surface.z,
                                                    'scan_clearance': project.scan_surface.clearance}
@@ -53,4 +55,7 @@ def load_project(project_type, path):
                 or len(point) != 2 or not all(type(value) in (int, float) and np.isfinite(value) for value in point)):
             raise ValueError('工程标点无效')
         project.landmarks[name] = tuple(point)
+    if meta.get('match_yaw_deg') is not None:
+        project.set_match_yaw(meta['match_yaw_deg'])
+        project.history.clear()
     return project

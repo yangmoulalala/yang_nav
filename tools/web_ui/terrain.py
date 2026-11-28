@@ -146,7 +146,7 @@ def render_preview(project, overlay=None):
     return image.tobytes()
 
 
-def render_match_reference(folder, grid, position):
+def render_match_reference(folder, grid, position, yaw_deg=None):
     resolution, origin, size = grid
     if (type(resolution) not in (int, float) or not np.isfinite(resolution) or resolution <= 0 or
             not isinstance(origin, list) or len(origin) != 2 or
@@ -163,6 +163,10 @@ def render_match_reference(folder, grid, position):
     for color, thickness in [((25, 25, 25), 4), ((255, 255, 255), 2)]:
         cv2.circle(image, center, radius, color, thickness)
         cv2.drawMarker(image, center, color, cv2.MARKER_CROSS, radius * 3, thickness)
+        if yaw_deg is not None:
+            angle = np.deg2rad(yaw_deg)
+            tip = (center[0] + round(radius * 4 * np.cos(angle)), center[1] - round(radius * 4 * np.sin(angle)))
+            cv2.arrowedLine(image, center, tip, color, thickness, tipLength=0.3)
     ok, png = cv2.imencode('.png', image)
     if not ok:
         raise ValueError('无法生成匹配参考图')
@@ -249,6 +253,7 @@ class TerrainEditor:
                                     resolution=project.surf.resolution, origin=project.surf.origin,
                                     patches=patches, params=project.params.to_dict(), registration=project.reg,
                                     landmarks=project.landmarks.copy(),
+                                    match_yaw_deg=project.match_yaw_deg,
                                     reference_filled_cells=int(np.count_nonzero(project.reference_fill)),
                                     reference=self.reference_path, can_adopt=self.aligned(document),
                                     reference_annotated=len(self.reference.project.ann) if self.reference else 0,
@@ -422,6 +427,10 @@ class TerrainEditor:
             if 'cell' not in body:
                 raise ValueError('需要标点格子或明确清除标点')
             project.set_landmark(body.get('name'), body['cell'])
+        elif operation == 'match-yaw':
+            if 'degrees' not in body:
+                raise ValueError('需要指定参考点朝向')
+            project.set_match_yaw(body['degrees'])
         elif operation == 'annotate':
             changes = {}
             if 'type' in body:

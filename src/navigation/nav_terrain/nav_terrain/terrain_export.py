@@ -304,6 +304,7 @@ def export(m, out, cfg, *, source, metadata=None):
         # map -> field registration from surface_studio (tools/nav_regress/goal.py converts world goals with it)
         'registration': m.extra.get('registration'),
         'frame': m.extra.get('frame'), 'landmarks': m.extra.get('landmarks', {}),
+        **({'match_yaw_deg': m.extra['match_yaw_deg']} if 'match_yaw_deg' in m.extra else {}),
     }
     meta.update(metadata or {})
     (out / 'terrain.json').write_text(json.dumps(meta, indent=2))

@@ -12,6 +12,7 @@ find_package(sensor_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/ResetFrontend.srv"
+  "srv/UseReferencePose.srv"
   "msg/FrontendFrame.msg"
   "msg/FrontendOdometry.msg"
   "msg/FrontendSession.msg"

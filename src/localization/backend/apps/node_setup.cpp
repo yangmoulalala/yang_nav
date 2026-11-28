@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -121,6 +122,25 @@ void LocalizationNode::configureExecution() {
 /// 创建前端重置客户端及地图保存、重定位和系统重置服务。
 void LocalizationNode::configureServices() {
     frontend_.connect();
+    using ReferencePose = localization_interfaces::srv::UseReferencePose;
+    reference_pose_service_ = create_service<ReferencePose>("~/use_reference_pose",
+        [this](const std::shared_ptr<ReferencePose::Request> request,
+               std::shared_ptr<ReferencePose::Response> response) {
+            invoke("operator reference pose", [&] {
+                std::error_code error;
+                if (parameters_.input.map_frame != "map" || request->body_frame != "gimbal_nav" ||
+                    request->body_frame != parameters_.input.body_frame || !body_extrinsic_ ||
+                    !std::filesystem::equivalent(request->prior_directory, parameters_.maps.prior_directory, error)) {
+                    response->message = "运行地图或导航参考系不匹配";
+                    return;
+                }
+                const double stamp = now().seconds();
+                response->success = controller_->useReferencePose(request->x, request->y, request->yaw_rad,
+                                                                  stamp, body_extrinsic_->at(stamp));
+                response->message = response->success ? "已将参考点和朝向设为当前位置" :
+                    "请求未应用：定位须在初始化阶段，且收到当前代次的新鲜里程计与点云";
+            });
+        });
     save_service_ = create_service<std_srvs::srv::Trigger>(
         parameters_.services.save_map,
         std::bind(&LocalizationNode::saveMapService, this, std::placeholders::_1,

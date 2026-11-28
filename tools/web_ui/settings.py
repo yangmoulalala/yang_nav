@@ -142,7 +142,7 @@ def defaults(profile):
     return dict(mode='localization', lidar='dual' if simulation else 'single',
                 prior_map='maps/sim' if simulation else 'maps/real/site_a_001', terrain_dir='',
                 map_dir=f'maps/{profile}/new_session', arena='rmuc', team='auto', gui=False, uwb=True,
-                chassis_port='/dev/nav', favorites=[], l2_launch='', tuning={}, auto_bag=simulation)
+                chassis_port='/dev/nav', favorites=[], l2_launch='', tuning={}, auto_bag=True)
 
 
 def yaml_write(destination, data):

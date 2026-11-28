@@ -193,8 +193,12 @@ class Processes:
                 params = self.directory / 'nav2.yaml'
                 self.settings.overrides(name, params)
                 command.append(f'params_file:={params}')
+            if not simulation:
+                enabled = config['auto_bag'] and not self.alive('bag') and not self.ros.node_names().intersection(OWNERS['bag'])
+                command.append('auto_bag:=' + ('true' if enabled else 'false'))
             self.launch(name, command, dict(config, mode=mode), output)
-            self.start_auto_bag()
+            if simulation:
+                self.start_auto_bag()
             return
         elif name == 'bag':
             bag_name, options = bag_request(payload)
@@ -318,6 +322,8 @@ class Processes:
             process.stop(0)
         elif name == 'optimizer':
             process.stop(16, signal_group=True)
+        elif name == 'navigation' and process.parameters.get('auto_bag') and self.settings.profile == 'real':
+            process.stop(75)
         else:
             process.stop(16)
 

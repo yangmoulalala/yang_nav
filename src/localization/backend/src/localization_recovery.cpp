@@ -12,6 +12,42 @@
 #include "backend/math.hpp"
 
 namespace backend {
+bool Localization::useReferencePose(double map_x, double map_y, double yaw, double now_seconds,
+                                    const Eigen::Matrix4d& sensor_from_body) {
+    if (!std::isfinite(map_x) || !std::isfinite(map_y) || !std::isfinite(yaw) ||
+        !std::isfinite(now_seconds) || !sensor_from_body.allFinite())
+        return false;
+    const bool applied = withOutputCommit([&] {
+        if (!config_.prior_map_enabled || state_.status() != LocalizationStatus::Initializing ||
+            frontend_status_ != FrontendStatus::Active || reset_coordinator_.pending() ||
+            estimator_failed_ || !frames_.hasLatest())
+            return false;
+        RecoveryWork work;
+        work.frame = frames_.latest();
+        const double age = now_seconds - work.frame.timestamp;
+        if (work.frame.epoch != active_epoch_ || age < 0 || age > 0.5)
+            return false;
+        work.source_history.assign(frames_.history().begin(), frames_.history().end());
+        Eigen::Matrix4d map_from_body = poses_.transform() * work.frame.odom_pose * sensor_from_body;
+        map_from_body.block<3, 3>(0, 0) = (yawGuess(yaw - yawFromMatrix(map_from_body), Eigen::Vector3d::Zero()) * map_from_body).block<3, 3>(0, 0).eval();
+        map_from_body(0, 3) = map_x;
+        map_from_body(1, 3) = map_y;
+        RecoveryResult result;
+        result.source = "operator reference pose";
+        result.pose = map_from_body * sensor_from_body.inverse();
+        result.covariance = PoseCovariance6d::Identity() * 0.04;
+        LocalizationTransition transition;
+        pending_recovery_.reset();
+        applyRecoveryLocked(work, result, transition);
+        return true;
+    });
+    if (applied) {
+        publishState();
+        BACKEND_INFO_STREAM("operator reference applied: map x=" << map_x << ", y=" << map_y << ", yaw_rad=" << yaw);
+    }
+    return applied;
+}
+
 /// 校验恢复任务的代次、状态及请求身份；不要求捕获帧仍是最新帧。
 bool Localization::recoveryIsCurrentLocked(const RecoveryIdentity& identity) const {
     return active_epoch_ == identity.epoch && state_.status() == identity.status &&

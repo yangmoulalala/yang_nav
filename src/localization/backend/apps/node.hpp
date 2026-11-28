@@ -16,6 +16,7 @@
 #include <localization_interfaces/msg/frontend_odometry.hpp>
 #include <localization_interfaces/msg/frontend_session.hpp>
 #include <localization_interfaces/srv/reset_frontend.hpp>
+#include <localization_interfaces/srv/use_reference_pose.hpp>
 #include <memory>
 #include <mutex>
 #include <nav_msgs/msg/odometry.hpp>
@@ -181,6 +182,7 @@ private:
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr relocalize_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr global_relocalize_service_;
+    rclcpp::Service<localization_interfaces::srv::UseReferencePose>::SharedPtr reference_pose_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_service_;
     bool logged_first_frame_ = false;
 };

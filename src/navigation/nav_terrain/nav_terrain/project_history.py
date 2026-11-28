@@ -15,21 +15,22 @@ class ProjectHistory:
 
     def begin(self, project):
         if self.before is None:
-            self.before = project.owner.copy(), _snapshot(project.ann), project.landmarks.copy()
+            self.before = project.owner.copy(), _snapshot(project.ann), (project.landmarks.copy(), project.match_yaw_deg)
 
     def commit(self, project):
         owner, annotations, landmarks = self.before
         self.before = None
         changed = owner != project.owner
         count = np.count_nonzero(changed)
-        if not count and annotations == project.ann and landmarks == project.landmarks:
+        if not count and annotations == project.ann and landmarks == (project.landmarks, project.match_yaw_deg):
             return 0
         record = None
         if count:
             rows, cols = np.nonzero(changed)
             region = np.s_[rows.min():rows.max() + 1, cols.min():cols.max() + 1]
             record = region, owner[region].copy(), project.owner[region].copy()
-        self.undo_stack.append((record, annotations, _snapshot(project.ann), landmarks, project.landmarks.copy()))
+        self.undo_stack.append((record, annotations, _snapshot(project.ann), landmarks,
+                                (project.landmarks.copy(), project.match_yaw_deg)))
         del self.undo_stack[:-200]
         self.redo_stack.clear()
         if count:
@@ -46,7 +47,8 @@ class ProjectHistory:
             project.owner[region] = before if use_old else after
         annotations = annotations_before if use_old else annotations_after
         project.ann = _snapshot(annotations)
-        project.landmarks = (landmarks_before if use_old else landmarks_after).copy()
+        landmarks, project.match_yaw_deg = landmarks_before if use_old else landmarks_after
+        project.landmarks = landmarks.copy()
         destination.append(entry)
         if record is not None:
             project.refresh()

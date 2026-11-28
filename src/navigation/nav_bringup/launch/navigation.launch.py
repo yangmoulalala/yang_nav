@@ -130,6 +130,13 @@ def build(context):
     if mapping and terrain_arg:
         raise RuntimeError('mapping navigation does not use an offline terrain_dir')
     terrain_dir = None if mapping else _terrain_dir(terrain_arg or str(share.parents[3] / 'maps' / profile))
+    landmarks_file = _get(context, 'landmarks_file') or ('' if mapping else str(terrain_dir / 'terrain.json'))
+    serial_intents = _get(context, 'serial_intents').lower() or 'true'
+    if serial_intents not in ('true', 'false'):
+        raise RuntimeError('serial_intents must be true or false')
+    # A4 only names a place (home/target), so the matching map landmark is the only goal source.
+    # The bridge always runs for real localization; the WebUI switch only decides whether it acts.
+    intents_bridge = profile == 'real' and not mapping and not goal_x and not serial_goals
     custom_params = _get(context, 'params_file')
     params_dir = share / 'params'
     params = custom_params or str(params_dir / 'nav2.yaml')
@@ -227,7 +234,17 @@ def build(context):
         actions.append(Node(package='rviz2', executable='rviz2', name='nav_rviz', output='screen',
                             arguments=['-d', str(rviz)] if rviz.is_file() else [],
                             parameters=[common]))
-    if serial_goals:
+    if intents_bridge:
+        actions.append(Node(
+            package='nav_bringup', executable='send_goal.py', name='serial_intent_goal',
+            output='screen',
+            arguments=['--listen-intents', '--landmarks-file', landmarks_file],
+            parameters=[dict(common, robot_base_frame=base_frame, require_trusted=True, mapping=mapping,
+                             intent_topic=_get(context, 'serial_intent_topic'),
+                             enabled_topic=_get(context, 'serial_intents_topic'),
+                             enabled=serial_intents == 'true',
+                             landmarks_file=landmarks_file)]))
+    elif serial_goals:
         actions.append(Node(
             package='nav_bringup', executable='send_goal.py', name='serial_navigation_goal',
             output='screen', arguments=['--listen-serial'],
@@ -258,6 +275,16 @@ def generate_launch_description():
         DeclareLaunchArgument('require_trusted', default_value='true',
                               description='require trusted or odometry-extrapolated localization'),
         DeclareLaunchArgument('rviz', default_value='false'),
+        DeclareLaunchArgument('serial_intents', default_value='true', choices=['true', 'false'],
+                              description='initial state of the WebUI 串口意图导航 switch; '
+                                          'the bridge always starts on the real profile'),
+        DeclareLaunchArgument('serial_intents_topic', default_value='/navigation/serial_intents_enabled',
+                              description='retained Bool the WebUI publishes to enable intent goals'),
+        DeclareLaunchArgument('serial_intent_topic', default_value='/chassis/nav_intent',
+                              description='String intent topic (home or target) when serial_intents is enabled'),
+        DeclareLaunchArgument('landmarks_file', default_value='',
+                              description='annotated terrain.json with home/target map landmarks; '
+                                          'defaults to <terrain_dir>/terrain.json'),
         DeclareLaunchArgument('serial_goals', default_value='false', choices=['true', 'false'],
                               description='legacy PointStamped input only, not A4 home/target intents'),
         DeclareLaunchArgument('serial_target_topic', default_value='/chassis/nav_target',

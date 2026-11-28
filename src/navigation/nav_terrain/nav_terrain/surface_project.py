@@ -54,6 +54,7 @@ class Project:
         self.stats = {}
         self.ann = {}
         self.landmarks = {}
+        self.match_yaw_deg = None
         self.reg = None
         self.reference_fill = np.zeros(surf.z.shape, dtype=bool)
         self.scan_surface = None
@@ -89,8 +90,19 @@ class Project:
         self.begin()
         if cell is None:
             self.landmarks.pop(name, None)
+            if name == 'match':
+                self.match_yaw_deg = None
         else:
             self.landmarks[name] = tuple(map(float, self.surf.centre(col, row)))
+        self.commit()
+
+    def set_match_yaw(self, degrees):
+        if self.frame != 'map' or 'match' not in self.landmarks:
+            raise ValueError('请先放置匹配参考点')
+        if degrees is not None and (type(degrees) not in (int, float) or not -180 <= degrees <= 180):
+            raise ValueError('参考点朝向必须是 -180 到 180 度之间的数值')
+        self.begin()
+        self.match_yaw_deg = degrees
         self.commit()
 
     # ------------------------------------------------------------------ segmentation
@@ -492,6 +504,8 @@ class Project:
             m.extra['reference_filled_cells'] = int(self.reference_fill.sum())
         if self.landmarks:
             m.extra['landmarks'] = self.landmarks.copy()
+        if self.match_yaw_deg is not None:
+            m.extra['match_yaw_deg'] = self.match_yaw_deg
         m.extra['source'] = 'surface_studio %s' % self.source
         if self.reg is not None:
             m.extra['registration'] = dict(self.reg)

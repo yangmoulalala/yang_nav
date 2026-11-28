@@ -10,10 +10,10 @@ from .processes import Processes
 from .settings import Settings, WORKSPACE
 
 
-def test_default_only_enabled_on_benchmarked_platform(tmp_path):
+def test_default_enabled_on_both_platforms(tmp_path):
     settings = Settings(tmp_path)
     assert settings.data['sim']['auto_bag'] is True
-    assert settings.data['real']['auto_bag'] is False
+    assert settings.data['real']['auto_bag'] is True
 
 
 def manager(tmp_path, profile='sim'):
@@ -51,6 +51,18 @@ def test_opt_out_or_existing_recording_does_not_start(tmp_path):
     processes.entries['bag'] = manual
     processes.start_auto_bag()
     processes.launch.assert_not_called()
+
+
+@pytest.mark.parametrize('enabled,existing,expected', [(True,False,'true'), (True,True,'false'), (False,False,'false')])
+def test_real_navigation_owns_summary(tmp_path, enabled, existing, expected):
+    processes = manager(tmp_path, 'real')
+    processes.settings.setup({'profile':'real', 'mode':'mapping', 'auto_bag':enabled})
+    processes.ros.node_names.return_value = {'/backend_node'} | ({'/rosbag2_recorder'} if existing else set())
+    processes.wait_for_localization = Mock()
+    processes.start('navigation', {})
+    processes.launch.assert_called_once()
+    name, command, *_ = processes.launch.call_args.args
+    assert name == 'navigation' and 'auto_bag:=' + expected in command
 
 
 @pytest.mark.parametrize('automatic', [True, False])

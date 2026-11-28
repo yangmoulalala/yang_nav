@@ -5,6 +5,23 @@ namespace backend {
 namespace {
 using testing::LocalizationFlow;
 
+TEST_F(LocalizationFlow, OperatorReferenceAnchorsNavigationFrameWithoutMatching) {
+    start(true);
+    const auto extrinsic = testing::scenePose(.4, -.2, .1, .6);
+    EXPECT_FALSE(controller->useReferencePose(4, -2, 1.2, 10, extrinsic));
+    const auto observation = frame(10, Eigen::Matrix4d::Identity(), testing::scenePose(1, 2, .3, -.4));
+    ASSERT_TRUE(ingest(observation));
+    EXPECT_FALSE(controller->useReferencePose(4, -2, 1.2, 11, extrinsic));
+    ASSERT_TRUE(controller->useReferencePose(4, -2, 1.2, 10.1, extrinsic));
+    const auto projected = output(observation);
+    ASSERT_TRUE(projected.pose_trusted);
+    Eigen::Matrix4d body = projected.T_map_sensor * extrinsic;
+    EXPECT_NEAR(body(0, 3), 4, 1e-5);
+    EXPECT_NEAR(body(1, 3), -2, 1e-5);
+    EXPECT_NEAR(std::atan2(body(1, 0), body(0, 0)), 1.2, 1e-5);
+    EXPECT_FALSE(controller->useReferencePose(0, 0, 0, 10.2, extrinsic));
+}
+
 TEST_F(LocalizationFlow, UwbRecoveryCorrectsPositionWithContinuousSameEpochHeading) {
     const auto anchor = testing::scenePose(.2, -.1, .05, 1.1);
     config.startup_hint.T_map_sensor = anchor;

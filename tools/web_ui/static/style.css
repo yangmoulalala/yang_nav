@@ -56,6 +56,13 @@ button:disabled { opacity: .38; cursor: default; }
 .metric { display: grid; align-content: start; gap: 4px; padding: 14px 16px; }
 .metric strong { font-size: 20px; font-weight: 650; overflow-wrap: anywhere; }
 .metric label, .metric span { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.metric .serial-intents { display: flex; align-items: center; gap: 6px; margin-top: 5px; color: var(--text); font-size: 13px; cursor: pointer; }
+.metric .serial-intents input { flex-shrink: 0; margin: 0; }
+.metric .serial-intents span { color: var(--text); font-size: 13px; }
+.metric .serial-intents[data-pending="true"] { opacity: .55; cursor: progress; }
+#serial-intents-state { padding: 1px 8px; }
+#serial-intents-state[data-state="on"] { color: var(--teal); }
+#serial-intents-state[data-state="off"] { color: var(--muted); }
 .loc-readout { display: grid; gap: 4px; }
 #match-logs { justify-self: start; color: var(--teal); font-size: 12px; text-decoration: underline; }
 .numeric, pre, .result-path { font-family: "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }

@@ -90,6 +90,19 @@ def test_map_landmarks_archive_export_and_history(tmp_path):
         project.set_landmark(name, [col + offset, row])
         assert project.landmarks[name] == project.surf.centre(col + offset, row)
     expected = project.landmarks.copy()
+    assert project.match_yaw_deg is None
+    for invalid in (True, '90', math.nan, math.inf, 181):
+        with pytest.raises(ValueError):
+            project.set_match_yaw(invalid)
+    project.set_match_yaw(0)
+    assert project.undo() and project.match_yaw_deg is None
+    assert project.redo() and project.match_yaw_deg == 0
+    project.set_match_yaw(90)
+    project.set_landmark('match', None)
+    assert project.match_yaw_deg is None
+    with pytest.raises(ValueError):
+        project.set_match_yaw(-90)
+    assert project.undo() and project.match_yaw_deg == 90
     project.set_landmark('target', None)
     assert 'target' not in project.landmarks
     assert project.undo() and project.landmarks == expected
@@ -101,11 +114,14 @@ def test_map_landmarks_archive_export_and_history(tmp_path):
     project.save(archive)
     loaded = sp.Project.load(archive)
     assert loaded.landmarks == expected
+    assert loaded.match_yaw_deg == 90
     output = tmp_path / 'terrain'
     loaded.export(output)
     points = {name: list(point) for name, point in expected.items()}
     assert json.loads((output / 'terrain.json').read_text())['landmarks'] == points
     assert TerrainMap.load(output / 'terrain.msgpack').extra['landmarks'] == points
+    assert json.loads((output / 'terrain.json').read_text())['match_yaw_deg'] == 90
+    assert TerrainMap.load(output / 'terrain.msgpack').extra['match_yaw_deg'] == 90
 
 
 def test_annotate_extent_undo_resegment_save(tmp_path):

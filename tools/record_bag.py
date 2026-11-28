@@ -22,7 +22,7 @@ import time
 WS=Path(__file__).resolve().parents[1]
 SUMMARY_TOPICS = '''/cmd_vel /cmd_vel_nav /backend_node/localization_state /nav_mode
 /navigation/goal_accepted /navigate_to_pose/_action/status /navigate_through_poses/_action/status
-/collision_monitor_state /rosout'''.split()
+/chassis/nav_intent /compute_path_to_pose/_action/status /collision_monitor_state /rosout'''.split()
 SUMMARY_RESERVE = 5 * 1024**3
 SUMMARY_LIMIT = 256 * 1024**2
 SENSOR_TOPICS='''/livox/lidar /livox/imu /unilidar/cloud /lidar/points
@@ -80,11 +80,13 @@ def main():
     ap.add_argument('--duration',type=float,default=0,help='optional recording duration in seconds; 0 until Ctrl-C')
     ap.add_argument('--use-sim-time',action='store_true',help='use simulation clock and record /clock; waits for the first clock message')
     ap.add_argument('--storage',choices=['mcap','sqlite3'],default='mcap')
+    ap.add_argument('--navigation-session',action='store_true',help='skip automatic recording if this ROS domain already has a recorder')
     ap.add_argument('--note',default='',help='session purpose, hardware, map, route or observed symptom')
     ap.add_argument('--dry-run',action='store_true',help='print topic list without starting ROS or creating files')
     args=ap.parse_args()
     if not math.isfinite(args.duration) or args.duration<0:ap.error('--duration must be finite and nonnegative')
     if args.summary and args.topic:ap.error('--summary uses a fixed small topic set; remove --topic')
+    if args.navigation_session and not args.summary:ap.error('--navigation-session requires --summary')
     topics=sorted(set((SUMMARY_TOPICS if args.summary else TOPICS)+args.topic+(['/clock'] if args.use_sim_time else [])))
     if args.dry_run:
         print(json.dumps(dict(topics=topics,all_topics=args.all,storage=args.storage,use_sim_time=args.use_sim_time),indent=2));return 0
@@ -93,7 +95,14 @@ def main():
     import rosbag2_py
     if args.storage not in rosbag2_py.get_registered_writers():
         ap.error(f'{args.storage} writer unavailable; installed writers: {rosbag2_py.get_registered_writers()}')
-    out=(args.output or WS/'bags/recordings'/datetime.now().strftime('%Y%m%d_%H%M%S_%f')).expanduser().resolve()
+    if args.navigation_session:
+        nodes, code = capture(['ros2','node','list','--no-daemon','--spin-time','1'])
+        if code or '/rosbag2_recorder' in nodes.splitlines():
+            print('Skipping automatic bag: graph unavailable or recorder already running.', flush=True)
+            return 1 if code else 0
+        if stop.is_set():return 0
+    session_name = datetime.now().strftime('%Y%m%d_%H%M%S_%f') + ('_summary' if args.summary else '')
+    out=(args.output or WS/'bags/recordings'/session_name).expanduser().resolve()
     if args.summary:
         ancestor = next(parent for parent in out.parents if parent.is_dir())
         if shutil.disk_usage(ancestor).free < SUMMARY_RESERVE:
@@ -123,7 +132,7 @@ def main():
     import yaml
     qos_path=out/'qos.yaml';qos_path.write_text(yaml.safe_dump(qos,sort_keys=True))
     command=['ros2','bag','record','--output',str(out/'bag'),'--storage',args.storage,
-             '--max-bag-duration','120','--max-cache-size',str(4 * 1024**2 if args.summary else 268435456),'--disable-keyboard-controls',
+             '--max-bag-duration','30' if args.summary else '120','--max-cache-size',str(4 * 1024**2 if args.summary else 268435456),'--disable-keyboard-controls',
              '--qos-profile-overrides-path',str(qos_path)]
     command+=['--include-hidden-topics']
     if args.use_sim_time:command+=['--use-sim-time']

@@ -1,0 +1,8 @@
+string prior_directory
+string body_frame
+float64 x
+float64 y
+float64 yaw_rad
+---
+bool success
+string message

@@ -51,7 +51,7 @@ class Console:
     def snapshot(self):
         return dict(domain=self.domain, profile=self.settings.profile,
                     ros=self.ros.snapshot(), processes=self.processes.describe(),
-                    matching_map=self.matching_map(),
+                    serial_intents=self.ros.intents_enabled(), matching_map=self.matching_map(),
                     foxglove_online='/foxglove_bridge' in self.ros.node_names(),
                     foxglove_port=self.foxglove_port)
 
@@ -81,6 +81,18 @@ class Console:
             return prior_path(self.settings.active['prior_map'])
         except ValueError:
             return None
+
+    def serial_intents(self):
+        return dict(enabled=self.ros.intents_enabled())
+
+    def set_serial_intents(self, body):
+        if set(body) - {'enabled'}:
+            raise ValueError('串口意图导航只接受 enabled 参数')
+        enabled = body.get('enabled')
+        if type(enabled) is not bool:
+            raise ValueError('串口意图导航的 enabled 必须是布尔值 true 或 false')
+        self.ros.set_intents_enabled(enabled)
+        return dict(enabled=enabled, message=f'串口意图导航已{"开启" if enabled else "关闭"}')
 
     def config(self):
         sources = terrain_sources()
@@ -150,6 +162,20 @@ class Console:
             if processes.alive('navigation') or {'/bt_navigator', '/cmd_gate'} & self.ros.node_names():
                 raise ValueError('请先停止 Nav2 并确认车辆停稳，再做全局重定位')
             return self.ros.call('relocalize')
+        if route == '/api/use-reference-pose':
+            if not processes.alive('localization') or processes.active_mapping():
+                raise ValueError('请单独启动先验地图定位，再使用参考点')
+            if processes.alive('navigation') or processes.alive('goal') or self.ros.node_names().intersection(OWNERS['navigation']):
+                raise ValueError('请先停止 Nav2 并确认车辆停稳')
+            terrain = self.matching_map()
+            if (not terrain or body.get('revision') != terrain['revision'] or
+                    'match' not in terrain['landmarks'] or terrain.get('match_yaw_deg') is None):
+                raise ValueError('匹配参考点或 yaw 缺失，或所选地图已更新；请刷新核对')
+            if body.get('confirmed') is not True:
+                raise ValueError('请确认车辆已停在参考点且雷达朝向与标注一致')
+            if self.ros.snapshot().get('localization', {}).get('status') != 'INITIALIZING':
+                raise ValueError('仅在初始化阶段接受人工位姿，不覆盖已建立的定位')
+            return self.ros.use_reference_pose(terrain)
         prefix, _, action = route.rpartition('/')
         name = prefix.removeprefix('/api/process/')
         if not prefix.startswith('/api/process/') or name not in PROCESSES[:-1] or action not in ('start', 'stop', 'restart'):
@@ -174,7 +200,10 @@ def read_landmarks(meta, prior, inode, modified):
     points = {name: pair for name, pair in raw.items() if name in ('home', 'target', 'match') and
               isinstance(pair, list) and len(pair) == 2 and
               all(type(value) in (int, float) and math.isfinite(value) for value in pair)}
-    return dict(terrain=str(meta.parent), prior=str(prior), landmarks=points, revision=f'{inode}-{modified}',
+    yaw = data.get('match_yaw_deg')
+    if 'match' not in points or type(yaw) not in (int, float) or not -180 <= yaw <= 180:
+        yaw = None
+    return dict(terrain=str(meta.parent), prior=str(prior), landmarks=points, match_yaw_deg=yaw, revision=f'{inode}-{modified}',
                 grid=[data.get('resolution'), data.get('origin'), data.get('size')])
 
 
@@ -215,13 +244,15 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, self.console.snapshot())
         elif route == '/api/config':
             self.respond(200, self.console.config())
+        elif route == '/api/serial_intents':
+            self.respond(200, self.console.serial_intents())
         elif route == '/api/match-reference':
             try:
                 terrain = self.console.matching_map()
                 revision = parse_qs(request.query).get('revision', [''])[0]
                 if not terrain or 'match' not in terrain['landmarks'] or terrain['revision'] != revision:
                     raise ValueError('匹配参考点缺失或地图已经切换')
-                png = render_match_reference(Path(terrain['terrain']), terrain['grid'], terrain['landmarks']['match'])
+                png = render_match_reference(Path(terrain['terrain']), terrain['grid'], terrain['landmarks']['match'], terrain['match_yaw_deg'])
                 if terrain != self.console.matching_map():
                     raise ValueError('地形已经更新，请重新选用')
                 self.respond(200, png, 'image/png')
@@ -268,6 +299,8 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError('无效的请求数据')
             if terrain_operation:
                 result = self.console.terrain.action(route.removeprefix('/api/terrain/'), body)
+            elif route == '/api/serial_intents':
+                result = self.console.set_serial_intents(body)
             else:
                 result = {'message': self.console.action(route, body)}
             self.respond(200, result)

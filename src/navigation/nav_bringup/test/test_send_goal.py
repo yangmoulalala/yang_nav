@@ -4,6 +4,7 @@ No navigation stack, sensors, chassis or velocity publishers are started.
 """
 
 import importlib.util
+import json
 import math
 import os
 from pathlib import Path
@@ -12,7 +13,7 @@ import subprocess
 import sys
 import threading
 import time
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 import rclpy
@@ -27,7 +28,7 @@ from rclpy.context import Context
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from std_msgs.msg import Header, String
+from std_msgs.msg import Bool, Header, String
 from tf2_ros import TransformBroadcaster
 
 
@@ -69,6 +70,10 @@ class FakeNav(Node):
         self.costmap = self.create_publisher(OccupancyGrid, '/local_costmap/costmap', 1)
         self.live_costmap = self.create_publisher(OccupancyGrid, '/global_costmap/costmap', 1)
         self.serial_target = self.create_publisher(PointStamped, '/chassis/nav_target', 10)
+        self.intent = self.create_publisher(String, '/chassis/nav_intent', 10)
+        self.intent_enabled = self.create_publisher(
+            Bool, '/navigation/serial_intents_enabled',
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.observation = self.create_publisher(Header, '/nav/observation', 5)
         self.service = self.create_service(GetState, '/bt_navigator/get_state', self.get_state)
         self.server = ActionServer(
@@ -137,10 +142,13 @@ def nav():
     thread.start()
     processes = []
 
-    def client(*extra, timeout=10.0, serial=False):
+    def client(*extra, timeout=10.0, serial=False, intents=None):
         env = dict(os.environ, ROS_DOMAIN_ID=str(DOMAIN))
-        arguments = (['--listen-serial'] if serial else
-                     ['1.0', '1.5', '--yaw', str(math.pi / 2), '--wait-timeout', str(timeout)])
+        if intents is not None:
+            arguments = ['--listen-intents', '--landmarks-file', str(intents)]
+        else:
+            arguments = (['--listen-serial'] if serial else
+                         ['1.0', '1.5', '--yaw', str(math.pi / 2), '--wait-timeout', str(timeout)])
         process = subprocess.Popen(
             [sys.executable, str(CLIENT), *arguments, *extra],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
@@ -243,6 +251,121 @@ def test_serial_goals_wait_skip_stale_and_deduplicate(nav):
     assert not node.interactive_goals
 
 
+def landmark_file(tmp_path, landmarks=None, frame='map'):
+    path = tmp_path / 'terrain.json'
+    path.write_text(json.dumps({'frame': frame, 'landmarks': landmarks or {
+        'home': [-2.325, 0.725], 'target': [-2.225, 0.675]}}))
+    return path
+
+
+def test_intent_goals_use_map_landmarks_and_submit_each_change_once(nav, tmp_path):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = True
+    client(intents=landmark_file(tmp_path))
+    wait_until(lambda: node.intent.get_subscription_count() == 1)
+
+    def stream(name, count=12):
+        for _ in range(count):
+            node.intent.publish(String(data=name))
+            time.sleep(0.05)
+
+    stream('target')
+    wait_until(lambda: len(node.display_goals) == 1)
+    stream('target', count=20)  # A4 streams at 200 Hz; the same intent must not replan.
+    time.sleep(0.4)
+    assert len(node.goals) == 1
+    stream('home')
+    wait_until(lambda: len(node.display_goals) == 2)
+    assert [(goal.pose.pose.position.x, goal.pose.pose.position.y) for goal in node.goals] == [
+        (-2.225, 0.675), (-2.325, 0.725)]
+    assert all(goal.pose.header.frame_id == 'map' for goal in node.goals)
+    assert not node.interactive_goals
+
+
+def test_intent_goals_never_fall_back_to_raw_coordinates(nav, tmp_path):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = True
+    client(intents=landmark_file(tmp_path, {'match': [5.0, 4.0]}))
+    wait_until(lambda: node.intent.get_subscription_count() == 1)
+    for _ in range(12):
+        node.intent.publish(String(data='match'))
+        time.sleep(0.05)
+    time.sleep(0.5)
+    assert not node.goals
+    assert not node.display_goals
+
+
+@pytest.mark.parametrize('reenable', [False, True])
+def test_switch_invalidates_goal_waiting_for_ack(reenable):
+    spec = importlib.util.spec_from_file_location('send_goal', CLIENT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sender = Mock(enabled=True, switch_generation=0, goal_handle=None)
+    sender.get_logger.return_value = Mock()
+    generation = sender.switch_generation
+    module.IntentGoalSender.on_enabled(sender, Bool(data=False))
+    if reenable:
+        module.IntentGoalSender.on_enabled(sender, Bool(data=True))
+    future = Mock()
+    future.result.return_value.accepted = True
+    module.IntentGoalSender.on_response(sender, future, 'target', PoseStamped(), generation)
+    future.result.return_value.cancel_goal_async.assert_called_once_with()
+    sender.goal_display.publish.assert_not_called()
+
+
+def test_intent_goals_reject_landmarks_outside_the_map_frame(nav, tmp_path):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = True
+    process = client(intents=landmark_file(tmp_path, frame='odom'))
+    time.sleep(0.8)
+    for _ in range(8):
+        node.intent.publish(String(data='target'))
+        time.sleep(0.05)
+    time.sleep(0.4)
+    assert not node.goals
+    process.send_signal(signal.SIGINT)
+    output, _ = process.communicate(timeout=20)
+    assert 'frame must be map' in output
+
+
+def test_intent_goals_need_a_readable_landmark_file(nav, tmp_path):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = True
+    process = client(intents=tmp_path / 'missing.json')
+    time.sleep(0.8)
+    for _ in range(8):
+        node.intent.publish(String(data='target'))
+        time.sleep(0.05)
+    time.sleep(0.4)
+    assert not node.goals
+    process.send_signal(signal.SIGINT)
+    output, _ = process.communicate(timeout=20)
+    assert 'cannot read landmarks_file' in output
+
+
+def test_webui_switch_gates_intent_goals(nav, tmp_path):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = True
+    node.intent_enabled.publish(Bool(data=False))
+    client(intents=landmark_file(tmp_path))
+    wait_until(lambda: node.intent.get_subscription_count() == 1)
+    time.sleep(0.4)
+
+    def stream(name, count=10):
+        for _ in range(count):
+            node.intent.publish(String(data=name))
+            time.sleep(0.05)
+
+    stream('target')
+    time.sleep(0.4)
+    assert not node.goals
+    node.intent_enabled.publish(Bool(data=True))
+    time.sleep(0.2)
+    stream('target')
+    wait_until(lambda: len(node.display_goals) == 1)
+    assert (node.goals[0].pose.pose.position.x, node.goals[0].pose.pose.position.y) == (-2.225, 0.675)
+
+
 def test_goal_sender_accepts_an_explicit_reference_override(nav):
     node, client = nav
     node.base_frame = 'test_nav_reference'
@@ -338,13 +461,37 @@ def test_launch_validates_goal_and_defaults_to_no_sender():
                   params_file=str(PACKAGE / 'params' / 'nav2.yaml'),
                   require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false',
                   goal_x='', goal_y='', goal_yaw='0', goal_wait_timeout='120',
-                  serial_goals='false', serial_target_topic='/chassis/nav_target')
+                  serial_goals='false', serial_target_topic='/chassis/nav_target',
+                  serial_intents='true', serial_intents_topic='/navigation/serial_intents_enabled',
+                                         serial_intent_topic='/chassis/nav_intent', landmarks_file='')
     with patch.object(launch, '_get', side_effect=lambda _, key: values[key]), \
             patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)), \
             patch.object(Path, 'is_file', return_value=True):
-        assert all('send_goal.py' not in str(action.node_executable) for action in launch.build(None))
-        values['serial_goals'] = 'true'
+        # Real localization always starts the intent bridge; the switch only decides whether it acts.
+        with patch.object(launch, 'Node', wraps=launch.Node) as launch_node:
+            intents = [action for action in launch.build(None) if 'send_goal.py' in str(action.node_executable)]
+        assert len(intents) == 1
+        bridge = next(call for call in launch_node.call_args_list
+                      if call.kwargs.get('name') == 'serial_intent_goal')
+        landmarks = str(launch._terrain_dir(str(PACKAGE)) / 'terrain.json')
+        assert bridge.kwargs['arguments'] == ['--listen-intents', '--landmarks-file', landmarks]
+        assert bridge.kwargs['parameters'][0]['landmarks_file'] == landmarks
+        assert bridge.kwargs['parameters'][0]['enabled'] is True
+        values['serial_intents'] = 'false'
+        with patch.object(launch, 'Node', wraps=launch.Node) as launch_node:
+            launch.build(None)
+        off = next(call for call in launch_node.call_args_list
+                   if call.kwargs.get('name') == 'serial_intent_goal')
+        assert off.kwargs['parameters'][0]['enabled'] is False
+        values.update(serial_intents='true', serial_goals='true')
         assert sum('send_goal.py' in str(action.node_executable) for action in launch.build(None)) == 1
+        values.update(serial_goals='false', mode='mapping', terrain_dir='')
+        assert not [action for action in launch.build(None)
+                    if 'send_goal.py' in str(getattr(action, 'node_executable', ''))]
+        values.update(mode='localization', terrain_dir=str(PACKAGE), profile='sim')
+        assert not [action for action in launch.build(None)
+                    if 'send_goal.py' in str(getattr(action, 'node_executable', ''))]
+        values.update(profile='real', serial_goals='true')
         values['profile'] = 'sim'
         with pytest.raises(RuntimeError, match='serial_goals requires the real profile'):
             launch.build(None)
@@ -376,7 +523,9 @@ def test_localization_launch_resolves_platform_params(tmp_path, profile, custom,
     context.launch_configurations.update(
         profile=profile, mode='localization', terrain_dir=str(PACKAGE),
         params_file=str(base_params) if custom else '', goal_x='', goal_y='', use_sim_time='',
-        require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false', serial_goals='false')
+        require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false', serial_goals='false',
+        serial_intents='false', serial_intents_topic='/navigation/serial_intents_enabled',
+                                         serial_intent_topic='/chassis/nav_intent', landmarks_file='')
     make_temp_file = launch.NamedTemporaryFile
     with patch.object(launch, 'NamedTemporaryFile', side_effect=lambda **kwargs: make_temp_file(dir=tmp_path, **kwargs)), \
             patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)), \
@@ -400,7 +549,10 @@ def test_mapping_uses_live_costmaps_without_terrain_servers():
     context.launch_configurations.update(profile='real', mode='mapping', use_sim_time='', terrain_dir='',
                                          params_file='', cmd_vel_topic='/cmd_vel', rviz='false',
                                          goal_x='', goal_y='', serial_goals='true',
-                                         serial_target_topic='/chassis/nav_target')
+                                         serial_target_topic='/chassis/nav_target',
+                                         serial_intents='false', serial_intents_topic='/navigation/serial_intents_enabled',
+                                         serial_intent_topic='/chassis/nav_intent',
+                                         landmarks_file='')
     with patch.object(launch, 'get_package_share_directory', return_value=str(PACKAGE)), \
             patch.object(launch, 'Node', wraps=Node) as launch_node:
         actions = launch.build(context)

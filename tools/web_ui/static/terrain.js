@@ -5,6 +5,10 @@
   const context = canvas.getContext('2d');
   const tool = element('surface-tool');
   const landmarks = {home: ['家', '#73efbb'], target: ['目标', '#ffad65'], match: ['匹配参考', '#a7c8ff']};
+  const originAxes = [
+    {label: '+X', color: '#ff7979', x: 22, y: -9, path: new Path2D('M0 0 H40 M34 -5 L40 0 L34 5')},
+    {label: '+Y', color: '#8bff98', x: 8, y: -35, path: new Path2D('M0 0 V-40 M-5 -34 L0 -40 L5 -34')},
+  ];
   const documentButtons = [...element('terrain-documents').querySelectorAll('[data-frame]')];
   const referenceInput = element('terrain-reference-source');
   const registerForm = element('terrain-register');
@@ -63,6 +67,9 @@
     const mapPoint = project()?.frame === 'map' && Object.hasOwn(landmarks, tool.value);
     element('landmark-remove').hidden = !mapPoint;
     element('landmark-remove').disabled = busy || !project()?.landmarks?.[tool.value];
+    const showYaw = mapPoint && tool.value === 'match';
+    element('match-yaw-field').hidden = element('match-yaw-apply').hidden = !showYaw;
+    element('match-yaw').disabled = element('match-yaw-apply').disabled = busy || !project()?.landmarks?.match || project()?.match_yaw_deg === undefined;
     element('patch-type').disabled = element('patch-passable').disabled = busy || !selected;
     element('patch-direction').querySelector('button').disabled = busy || !selected;
     const referenceChanged = referenceInput.value && referenceInput.value !== project()?.reference;
@@ -106,6 +113,38 @@
     draw();
   }
 
+  function mapToCanvas(map, x, y) {
+    return [view.x + (x - map.origin[0]) / map.resolution * view.scale,
+      view.y + (map.height - (y - map.origin[1]) / map.resolution) * view.scale];
+  }
+
+  function drawMapOrigin(map) {
+    context.save();
+    context.translate(...mapToCanvas(map, 0, 0));
+    context.lineCap = context.lineJoin = 'round';
+    context.font = 'bold 12px sans-serif';
+    for (const {label, color, x, y, path} of originAxes) {
+      context.lineWidth = 5;
+      context.strokeStyle = '#10161d';
+      context.stroke(path);
+      context.lineWidth = 2.5;
+      context.strokeStyle = color;
+      context.stroke(path);
+      context.strokeStyle = '#10161d';
+      context.fillStyle = color;
+      context.strokeText(label, x, y);
+      context.fillText(label, x, y);
+    }
+    context.beginPath();
+    context.arc(0, 0, 4, 0, 2 * Math.PI);
+    context.stroke();
+    context.fillStyle = '#fff';
+    context.fill();
+    context.strokeText('map (0, 0)', 7, 16);
+    context.fillText('map (0, 0)', 7, 16);
+    context.restore();
+  }
+
   function draw() {
     if (!image || !canvas.clientWidth) return;
     const {width, height, ratio} = sizeCanvas();
@@ -116,22 +155,25 @@
     context.drawImage(image, ...dimensions);
     if (selection.size) context.drawImage(selectionLayer, ...dimensions);
     const map = project();
+    if (map?.frame === 'map') drawMapOrigin(map);
     for (const [name, [x, y]] of Object.entries(map?.landmarks || {})) {
       const [label, color] = landmarks[name];
-      const left = view.x + (x - map.origin[0]) / map.resolution * view.scale;
-      const top = view.y + (map.height - (y - map.origin[1]) / map.resolution) * view.scale;
+      const [left, top] = mapToCanvas(map, x, y);
       context.save();
       context.beginPath(); context.arc(left, top, 5, 0, 2 * Math.PI);
       context.fillStyle = color; context.fill();
       context.lineWidth = 3; context.strokeStyle = '#162026'; context.stroke();
+      if (name === 'match' && Number.isFinite(map.match_yaw_deg)) {
+        context.save(); context.translate(left, top); context.rotate(-map.match_yaw_deg * Math.PI / 180);
+        context.beginPath(); context.moveTo(0, 0); context.lineTo(24, 0); context.lineTo(17, -5);
+        context.moveTo(24, 0); context.lineTo(17, 5); context.strokeStyle = color; context.stroke(); context.restore();
+      }
       context.font = 'bold 13px sans-serif'; context.strokeText(label, left + 9, top - 4);
       context.fillText(label, left + 9, top - 4); context.restore();
     }
     if (details?.arrows) {
-      const map = project();
       for (const [x, y, angle] of details.arrows) {
-        const px = view.x + (x - map.origin[0]) / map.resolution * view.scale;
-        const py = view.y + (map.height - (y - map.origin[1]) / map.resolution) * view.scale;
+        const [px, py] = mapToCanvas(map, x, y);
         context.save();
         context.translate(px, py);
         context.rotate(-angle * Math.PI / 180);
@@ -296,9 +338,11 @@
     }
     const summary = element('landmark-summary');
     summary.hidden = map.frame !== 'map';
+    element('match-yaw').value = map.match_yaw_deg ?? '';
     summary.textContent = Object.entries(landmarks).map(([name, [label]]) => {
       const point = map.landmarks[name];
-      return `${label}：${point ? `(${point.map(value => value.toFixed(2)).join(', ')}) m` : '未放置'}`;
+      const yaw = name === 'match' && point ? `，yaw ${map.match_yaw_deg == null ? '未标注' : `${map.match_yaw_deg}°`}` : '';
+      return `${label}：${point ? `(${point.map(value => value.toFixed(2)).join(', ')}) m` : '未放置'}${yaw}`;
     }).join(' · ');
     statusLine.textContent = `${map.frame === 'map' ? '地图坐标' : '场地坐标'} · ${map.resolution.toFixed(3)} m/格 · ` +
       `${marked}/${map.patches.length} 个面片已标注${map.reference_filled_cells ? ` · 参考补齐 ${map.reference_filled_cells} 格` : ''}${map.dirty ? ' · 有未保存修改' : ''}`;
@@ -460,6 +504,10 @@
     controls();
   });
   element('landmark-remove').addEventListener('click', () => run('landmark', {name: tool.value, cell: null}));
+  element('match-yaw-apply').addEventListener('click', () => {
+    const input = element('match-yaw');
+    if (input.reportValidity()) run('match-yaw', {degrees: input.value === '' ? null : input.valueAsNumber});
+  });
   element('patch-list').addEventListener('click', (event) => {
     const item = event.target.closest('[data-patch]');
     if (item && !busy) pick([Number(item.dataset.patch)], event.ctrlKey || event.metaKey);

@@ -81,6 +81,8 @@ public:
     /// 在 LOST 状态记录等待下一有效帧的手动恢复请求。
     bool requestManualRelocalization();
     bool requestGlobalRelocalization();
+    bool useReferencePose(double map_x, double map_y, double yaw, double now_seconds,
+                          const Eigen::Matrix4d& sensor_from_body);
     /// 冻结定位并请求协调重置；仅调用方明确保证整个跨代空档停车时允许静止衔接。
     bool requestCoordinatedReset(bool assume_stationary = false);
     /// 为匹配代次的前端输入中断冻结输出并作废旧观测，幂等尝试重置且保留图和轨迹。

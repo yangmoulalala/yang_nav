@@ -21,6 +21,7 @@ let previewMatch;
 let noticeTimeout;
 let matchSince;
 let polling = false;
+let serialPending = false;
 
 function message(content, error = false, persistent = false) {
   const notice = element('notice');
@@ -212,6 +213,7 @@ function matchingState(snapshot, logStage) {
   if (row.state === 'stopping') return ['正在停止定位', '等待定位进程退出'];
   if (row.state === 'stopped') return ['待启动', '启动定位后开始匹配先验地图'];
   if (loc?.pose_trusted === 'true') {
+    if (loc.reason === 'recovered via operator reference pose') return ['已采用人工参考点', '当前位置来自操作员标注', 'good'];
     return ['匹配成功', loc.status === 'OBS_DEGRADED' ? '位姿可信 · 观测退化' : '位姿可信', 'good'];
   }
   if (loc?.reason === globalFailure) return ['全图匹配失败', '候选未通过验证，可在特征更明显处重试', 'bad'];
@@ -264,10 +266,15 @@ function displayLocalization(snapshot, logStage) {
   const button = element('match-preview');
   button.hidden = !matching || trusted;
   button.disabled = !point || stopping;
+  element('match-apply').hidden = !matching || trusted;
   const reference = element('match-reference');
   reference.hidden = !matching || trusted;
-  reference.textContent = point ? `${previewMatch ? '已选用人工参考（仅预览）' : '参考点'}：map (${point.map(value => format(value)).join(', ')}) m，不改变定位。` :
+  reference.textContent = point ? `${previewMatch ? '已选用人工参考（仅预览）' : '参考点'}：map (${point.map(value => format(value)).join(', ')}) m，${referenceYaw(terrain)}，不改变定位。` :
     '未找到匹配参考点；请在同一先验地图的建图工程中标注并导出。';
+}
+
+function referenceYaw(terrain) {
+  return Number.isFinite(terrain.match_yaw_deg) ? `yaw ${terrain.match_yaw_deg}°` : 'yaw 未标注';
 }
 
 function format(value, digits = 2) {
@@ -288,6 +295,14 @@ function displaySerialStatus(ros) {
     ros ? '暂无 A3 下发' : '连接中断';
 }
 
+function displaySerialIntents(enabled) {
+  if (serialPending) return;
+  const state = element('serial-intents-state');
+  element('serial-intents').checked = enabled === true;
+  state.dataset.state = enabled === true ? 'on' : enabled === false ? 'off' : 'unknown';
+  state.textContent = enabled === true ? '已开启' : enabled === false ? '已关闭' : '—';
+}
+
 function displayStatus() {
   const {ros, profile, processes: rows} = status;
   element('domain').textContent = `ROS 域 ${status.domain}`;
@@ -301,6 +316,7 @@ function displayStatus() {
   element('nav2').className = ros.nav2 === 'active' ? 'good' : '';
   element('chassis').textContent = ros.chassis === undefined ? '底盘反馈 —' : `底盘反馈${ros.chassis ? '在线' : '离线'}`;
   displaySerialStatus(ros);
+  displaySerialIntents(status.serial_intents);
   element('row-gazebo').hidden = profile !== 'sim' && rows.gazebo.state !== 'external';
   for (const name of ['gazebo', 'localization', 'navigation']) {
     const row = rows[name];
@@ -333,11 +349,36 @@ function displayStatus() {
   element('fox-address').value = `ws://${location.hostname}:${status.foxglove_port}`;
 }
 
+function referencePoseBlock(snapshot, mode) {
+  if (stopping) return '正在关闭进程，请等待关闭完成。';
+  if (busy) return '当前操作尚未结束。若正在一键启动，请先停稳车辆、点「关闭全部」，再选「仅启动定位（使用参考点）」。';
+  if (!snapshot) return '等待工作台连接。';
+  if (mode !== 'localization') return '请先选择并保存「先验地图匹配」模式。';
+  const rows = snapshot.processes;
+  if (!snapshot.matching_map?.landmarks?.match || !Number.isFinite(snapshot.matching_map.match_yaw_deg)) return '当前地图缺少匹配参考点或 yaw，请核对标注和导出地图。';
+  if (rows.navigation.state !== 'stopped' || rows.goal.state === 'running') return '请先停止 Nav2 和目标发送器，并确认车辆停稳。';
+  if (['stopped', 'failed'].includes(rows.localization.state)) return '定位未运行。先点「仅启动定位（使用参考点）」，不需要启动 Nav2。';
+  if (rows.localization.state !== 'running') return '需要由本工作台单独运行先验定位。';
+  if (!snapshot.ros?.services?.reference_pose) return '等待定位后端的参考位姿服务就绪。';
+  const state = snapshot.ros.localization?.status;
+  if (!state) return '等待定位状态，请检查雷达和定位日志。';
+  return state === 'INITIALIZING' ? '' : `当前定位状态为 ${state}，仅初始化阶段可设置参考位姿。`;
+}
+
 function updateControls() {
   const rows = status?.processes;
   const ros = status?.ros;
   const mode = localizationMode(status);
   const unavailable = busy || stopping || !rows;
+  const block = referencePoseBlock(status, mode);
+  const apply = element('match-apply');
+  apply.disabled = Boolean(block);
+  apply.title = block || '使用标注的点和 yaw 作为当前位置，不发送导航目标。';
+  const hint = element('match-apply-hint');
+  hint.hidden = apply.hidden || !block;
+  if (hint.textContent !== block) hint.textContent = block;
+  element('match-start-localization').hidden = mode !== 'localization' ||
+    !['stopped', 'failed'].includes(rows?.localization.state) || rows?.navigation.state !== 'stopped';
   for (const button of document.querySelectorAll('button[data-action]')) {
     const action = button.dataset.action;
     let enabled = !unavailable;
@@ -364,6 +405,9 @@ function updateControls() {
   for (const form of [setup, tuning]) form.querySelector('[type="submit"]').disabled = busy || stopping || !config;
   element('favorite-add').disabled = unavailable || !config;
   for (const id of ['favorite-use', 'favorite-remove']) element(id).disabled = unavailable || !element('favorite-list').value;
+  const intents = element('serial-intents');
+  intents.disabled = unavailable || serialPending || status?.serial_intents === undefined;
+  intents.closest('.serial-intents').dataset.pending = String(serialPending);
 }
 
 element('match-preview').addEventListener('click', () => {
@@ -373,7 +417,15 @@ element('match-preview').addEventListener('click', () => {
   const image = element('match-map-image');
   image.src = `/api/match-reference?revision=${encodeURIComponent(terrain.revision)}`;
   image.hidden = false;
-  element('match-reference').textContent = `已选用人工参考（仅预览）：map (${terrain.landmarks.match.map(value => format(value)).join(', ')}) m，不改变定位。`;
+  element('match-reference').textContent = `已选用人工参考（仅预览）：map (${terrain.landmarks.match.map(value => format(value)).join(', ')}) m，${referenceYaw(terrain)}，不改变定位。`;
+});
+element('match-apply').addEventListener('click', () => {
+  const terrain = status?.matching_map;
+  if (!terrain || !Number.isFinite(terrain.match_yaw_deg)) return;
+  const point = terrain.landmarks.match.map(value => format(value, 3)).join(', ');
+  if (window.confirm(`确认车已停在 map (${point}) m，雷达朝向 ${terrain.match_yaw_deg}°？将直接设为当前位置，不做点云匹配。`)) {
+    operate('use-reference-pose', {revision: terrain.revision, confirmed: true});
+  }
 });
 element('match-map-image').addEventListener('error', () => {
   element('match-map-image').hidden = true;
@@ -426,6 +478,29 @@ for (const [id, remove] of [['favorite-add', false], ['favorite-remove', true]])
     finally { busy = false; updateControls(); }
   });
 }
+
+element('serial-intents').addEventListener('change', async (event) => {
+  if (serialPending) return;
+  const enabled = event.target.checked;
+  const previous = status?.serial_intents === true;
+  const state = element('serial-intents-state');
+  serialPending = true;
+  state.dataset.state = enabled ? 'on' : 'off';
+  state.textContent = enabled ? '已开启' : '已关闭';
+  updateControls();
+  try {
+    const result = await api('serial_intents', {enabled});
+    if (status) status.serial_intents = result.enabled;
+    message(result.message);
+  } catch (error) {
+    event.target.checked = previous;
+    message(`串口意图导航切换失败，已恢复原状态：${error.message}`, true);
+  } finally {
+    serialPending = false;
+    displaySerialIntents(status?.serial_intents);
+    updateControls();
+  }
+});
 
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button[data-action]');
@@ -525,6 +600,7 @@ async function updateStatus() {
     status = undefined;
     displayLocalization();
     displaySerialStatus();
+    displaySerialIntents();
     badge.dataset.state = 'failed';
     badge.textContent = '连接中断';
   } finally {

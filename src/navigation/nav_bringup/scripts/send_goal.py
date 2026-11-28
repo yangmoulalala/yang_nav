@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Send a map-frame navigation goal, or bridge fresh chassis targets to Nav2."""
+"""Send a map-frame navigation goal, bridge chassis targets, or map chassis intents to landmarks."""
 
 import argparse
+import json
 import math
+from pathlib import Path
 import sys
 import time
 
@@ -21,7 +23,7 @@ from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.signals import SignalHandlerOptions
 from rclpy.time import Time
 from rclpy.utilities import remove_ros_args
-from std_msgs.msg import Header, String
+from std_msgs.msg import Bool, Header, String
 from tf2_ros import Buffer, TransformListener
 
 
@@ -231,39 +233,202 @@ class SerialGoalSender(GoalSender):
                 f'error_msg={result.result.error_msg}')
 
 
+def load_landmarks(path):
+    """Named map-frame points from a terrain.json export or a flat {name: [x, y]} file.
+
+    A4 only carries an intent name and a chassis-frame radar angle, so a landmark name is the
+    only thing that can become a map goal. Nothing here falls back to A4 x/y or the map origin.
+    """
+    if not path:
+        return {}
+    data = json.loads(Path(path).read_text())
+    if not isinstance(data, dict):
+        raise ValueError('landmark file must contain a JSON object')
+    frame = data.get('frame') if 'landmarks' in data else data.get('frame', 'map')
+    if frame != 'map':
+        raise ValueError(f'landmark file frame must be map, not {frame}')
+    raw = data.get('landmarks', data)
+    if not isinstance(raw, dict):
+        raise ValueError('landmarks must be an object of name -> [x, y]')
+    points = {}
+    for name, value in raw.items():
+        if not isinstance(value, list) or len(value) != 2 or any(type(part) not in (int, float) for part in value):
+            raise ValueError(f'landmark {name!r} must contain two numeric map coordinates')
+        x, y = map(float, value)
+        if not (math.isfinite(x) and math.isfinite(y)):
+            raise ValueError(f'landmark {name!r} must be finite')
+        points[str(name).strip().lower()] = (x, y)
+    return points
+
+
+class IntentGoalSender(GoalSender):
+    """Map a repeated A4 place intent (home/target) to that place's map landmark, once."""
+
+    def __init__(self, landmarks_file=''):
+        super().__init__()
+        self.intent_topic = self.declare_parameter('intent_topic', '/chassis/nav_intent').value
+        self.landmarks_file = self.declare_parameter('landmarks_file', landmarks_file or '').value
+        self.intent_timeout = self.declare_parameter('intent_timeout', 0.5).value
+        try:
+            self.landmarks = load_landmarks(self.landmarks_file)
+        except (OSError, ValueError, TypeError) as exc:
+            # Stay alive so each rejected intent is visible instead of the bridge dying at startup.
+            self.landmarks = {}
+            self.get_logger().error(f'cannot read landmarks_file {self.landmarks_file!r}: {exc}')
+        self.enabled_topic = self.declare_parameter(
+            'enabled_topic', '/navigation/serial_intents_enabled').value
+        self.enabled = bool(self.declare_parameter('enabled', True).value)
+        self.switch_generation = 0
+        self.pending_intent = None
+        self.pending_since = 0.0
+        self.last_submitted_intent = None
+        self.missing_intent = None
+        self.sub = self.create_subscription(String, self.intent_topic, self.on_intent, 10)
+        # The WebUI owns the runtime switch; retained so a late bridge still sees the operator's choice.
+        self.enabled_sub = self.create_subscription(
+            Bool, self.enabled_topic, self.on_enabled,
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        self.timer = self.create_timer(0.1, self.forward_intent,
+                                       clock=Clock(clock_type=ClockType.STEADY_TIME))
+        self.get_logger().info(
+            f'Intent goals enabled: {self.intent_topic} -> map landmarks '
+            f'({", ".join(sorted(self.landmarks)) or "none"}) from {self.landmarks_file or "no file"}')
+
+    def on_intent(self, message):
+        name = (message.data or '').strip().lower()
+        if not self.enabled:
+            return
+        self.pending_intent = name or None
+        self.pending_since = time.monotonic()
+
+    def on_enabled(self, message):
+        enabled = bool(message.data)
+        if enabled == self.enabled:
+            return
+        self.enabled = enabled
+        self.switch_generation += 1
+        self.pending_intent = None
+        # Re-arm so the intent held by the chassis still becomes a goal after an operator toggle.
+        self.last_submitted_intent = None
+        if not enabled and self.goal_handle is not None and self.goal_handle.accepted:
+            self.goal_handle.cancel_goal_async()
+        self.get_logger().info(f'Serial intent goals {"enabled" if enabled else "disabled"} by {self.enabled_topic}')
+
+    def forward_intent(self):
+        if not self.enabled:
+            return
+        now = time.monotonic()
+        if self.pending_intent is None:
+            return
+        name = self.pending_intent
+        if now - self.pending_since > self.intent_timeout:
+            self.pending_intent = None  # Stale intent is not a goal request.
+            return
+        if name == self.last_submitted_intent:
+            # The chassis streams the same intent at A4 rate; never replan it.
+            self.pending_intent = None
+            return
+        if name not in ('home', 'target') or name not in self.landmarks:
+            self.pending_intent = None
+            if self.missing_intent != name:
+                self.missing_intent = name
+                self.get_logger().error(
+                    f'Intent {name!r} requires home or target with a map landmark in '
+                    f'{self.landmarks_file or "no file"}; no goal sent.')
+            return
+        if self.send_future is not None:
+            return
+        if self.wait_reason(now) is not None:
+            return
+        x, y = self.landmarks[name]
+        goal = self.make_goal(x, y, yaw=0.0)
+        self.pending_intent = None
+        self.missing_intent = None
+        self.last_submitted_intent = name
+        self.get_logger().info(f'Sending intent goal {name!r}: map x={x:g}m, y={y:g}m')
+        self.send_future = self.action.send_goal_async(goal)
+        generation = self.switch_generation
+        self.send_future.add_done_callback(lambda future: self.on_response(future, name, goal.pose, generation))
+
+    def on_response(self, future, name, pose, generation):
+        self.send_future = None
+        handle = future.result()
+        if generation != self.switch_generation:
+            if handle.accepted:
+                handle.cancel_goal_async()
+                self.get_logger().info(f'Cancelling intent goal {name!r} acknowledged after switch change')
+            return
+        if not handle.accepted:
+            # Allow the same intent to retry once Nav2 is actually ready again.
+            if self.last_submitted_intent == name:
+                self.last_submitted_intent = None
+            self.get_logger().error(f'Intent goal {name!r} rejected; waiting for Nav2 readiness')
+            return
+        self.goal_handle = handle
+        self.goal_display.publish(pose)
+        self.get_logger().info(f'Intent goal {name!r} accepted')
+        handle.get_result_async().add_done_callback(lambda result: self.on_result(result, handle))
+
+    def on_result(self, future, handle):
+        if handle is self.goal_handle:
+            self.goal_handle = None
+        result = future.result()
+        if result.status == GoalStatus.STATUS_SUCCEEDED:
+            self.get_logger().info('Intent goal succeeded')
+        else:
+            self.get_logger().info(
+                f'Intent goal ended: status={result.status}, error_code={result.result.error_code}, '
+                f'error_msg={result.result.error_msg}')
+
+
 def main(argv=None):
     argv = sys.argv if argv is None else argv
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('x', type=float, nargs='?', help='goal x in map, metres')
     parser.add_argument('y', type=float, nargs='?', help='goal y in map, metres')
     parser.add_argument('--listen-serial', action='store_true', help='forward chassis targets to Nav2')
+    parser.add_argument('--listen-intents', action='store_true',
+                        help='map A4 home/target intents to map landmarks as NavigateToPose goals')
+    parser.add_argument('--landmarks-file', default='',
+                        help='terrain.json (or {name: [x, y]}) holding the home/target map points')
     parser.add_argument('--yaw', type=float, default=0.0, help='heading in radians, default 0 faces map +X')
     parser.add_argument('--wait-timeout', type=float, default=120.0, help='readiness timeout in seconds')
     args = parser.parse_args(remove_ros_args(argv)[1:])
-    if args.listen_serial:
+    listening = args.listen_serial or args.listen_intents
+    if args.listen_serial and args.listen_intents:
+        parser.error('--listen-serial and --listen-intents cannot be combined')
+    if listening:
         if args.x is not None or args.y is not None:
-            parser.error('--listen-serial cannot be combined with goal coordinates')
+            parser.error('listening modes cannot be combined with goal coordinates')
     else:
         if args.x is None or args.y is None:
-            parser.error('goal x and y are required unless --listen-serial is used')
+            parser.error('goal x and y are required unless a listening mode is used')
         if not all(math.isfinite(value) for value in (args.x, args.y, args.yaw, args.wait_timeout)):
             parser.error('coordinates, yaw and wait timeout must be finite')
         if args.wait_timeout <= 0:
             parser.error('--wait-timeout must be positive')
     rclpy.init(args=argv, signal_handler_options=SignalHandlerOptions.NO)
-    node = SerialGoalSender() if args.listen_serial else GoalSender()
+    node = None
     try:
-        if args.listen_serial:
+        if args.listen_intents:
+            node = IntentGoalSender(args.landmarks_file)
+        elif args.listen_serial:
+            node = SerialGoalSender()
+        else:
+            node = GoalSender()
+        if listening:
             rclpy.spin(node)
             return 0
         if not node.wait_ready(args.wait_timeout):
             return 2
         return node.send(args.x, args.y, args.yaw)
     except KeyboardInterrupt:
-        node.cancel()
+        if node is not None:
+            node.cancel()
         return 130
     finally:
-        node.destroy_node()
+        if node is not None:
+            node.destroy_node()
         rclpy.try_shutdown()
 
 

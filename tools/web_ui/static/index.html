@@ -35,14 +35,19 @@
           <div class="loc-readout" role="status"><strong id="loc-status">—</strong><span id="loc-trust">等待定位数据</span></div>
           <span id="match-elapsed" class="numeric" hidden></span><a id="match-logs" href="#logs" hidden>查看定位日志</a>
           <button id="match-stop" data-action="stack/stop" hidden>终止匹配并关闭程序</button>
-          <button id="match-preview" type="button" hidden>直接选用匹配参考点（预览）</button>
+          <button id="match-preview" type="button" hidden>预览匹配参考点</button>
+          <button id="match-start-localization" type="button" data-action="process/localization/start" hidden>仅启动定位（使用参考点）</button>
+          <button id="match-apply" type="button" hidden>将参考点设为当前位置</button>
+          <small id="match-apply-hint" role="status" hidden></small>
           <small id="match-reference" hidden></small>
           <img id="match-map-image" alt="白色十字为人工选用的匹配参考点" hidden>
         </article>
         <article class="metric"><label>地图位姿</label><strong class="numeric" id="pose">—</strong><span id="yaw">x / y · m</span></article>
         <article class="metric"><label>实测 / 指令速度</label><strong class="numeric" id="speed">— / —</strong><span id="velocity">m/s</span></article>
         <article class="metric"><label>Nav2 / 底盘反馈</label><strong id="nav2">—</strong><span id="chassis">等待状态</span></article>
-        <article class="metric"><label>串口地点指令（A4 · 只读）</label><strong id="serial-target">—</strong><span id="serial-target-detail">等待 A4 上行</span></article>
+        <article class="metric"><label>串口地点指令（A4 · 只读）</label><strong id="serial-target">—</strong><span id="serial-target-detail">等待 A4 上行</span>
+          <label class="serial-intents"><input type="checkbox" id="serial-intents" disabled><span>串口意图导航</span><span class="pill" id="serial-intents-state">—</span></label>
+        </article>
         <article class="metric"><label>串口下发速度（A3）</label><strong class="numeric" id="serial-speed">—</strong><span id="serial-speed-detail">暂无 A3 下发</span></article>
       </section>
       <div class="grid">
@@ -181,6 +186,8 @@
             <div class="map-toolbar">
               <label>工具<select id="surface-tool"><option value="select">选择</option><option value="box">框选</option><option value="pan">平移</option><option value="brush">画笔</option><option value="rectangle">矩形</option><option value="polygon">套索</option><option value="line">切割线</option><optgroup id="landmark-tools" label="地图标点"><option value="home">放置家的点</option><option value="target">放置目标点</option><option value="match">放置匹配参考点</option></optgroup></select></label>
               <button type="button" id="landmark-remove" hidden>清除此标点</button>
+              <label id="match-yaw-field" hidden>参考点 yaw（°）<input id="match-yaw" type="number" min="-180" max="180" step="any" placeholder="未标注" title="0° 朝地图 +X，90° 朝 +Y，逆时针为正"></label>
+              <button type="button" id="match-yaw-apply" hidden>应用朝向</button>
               <label id="region-mode-field" hidden>范围处理<select id="region-mode"><option value="new">新建面片</option><option value="join">并入选中</option><option value="restore">恢复分割</option></select></label>
               <label id="brush-radius-field" hidden>画笔半径 · 格<input id="brush-radius" type="number" value="3" min="1" max="50"></label>
               <label id="clip-field" class="check" hidden><input id="clip-selection" type="checkbox" checked> 限于选中范围</label>

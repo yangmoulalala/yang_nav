@@ -34,6 +34,12 @@ Launch arguments are forwarded to nav_bringup/navigation.launch.py:
   goal_x:=X goal_y:=Y  Optional: send one goal in map (metres) after navigation is ready
   goal_yaw:=RADIANS   Default: 0.0 (faces map +X)
   goal_wait_timeout:=SECONDS Default: 120.0; no goal is sent if readiness times out
+  serial_intents:=auto|true|false  Default: auto; map A4 home/target intents from
+                       /chassis/nav_intent to the same-named map landmark and send
+                       NavigateToPose once per change. auto enables this for the real
+                       localization profile when the terrain has home/target landmarks
+  landmarks_file:=PATH Annotated terrain.json holding home/target in map frame
+                       Default: <terrain_dir>/terrain.json
   serial_goals:=BOOL  Legacy PointStamped input only; not compatible with A4 home/target intents
   serial_target_topic:=TOPIC Default: /chassis/nav_target (geometry_msgs/PointStamped)
 

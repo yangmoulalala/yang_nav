@@ -61,12 +61,43 @@ def test_favorites_persist_as_platform_specific_pairs(tmp_path):
     assert not Settings(tmp_path).data['real']['favorites']
 
 
+def test_apply_reference_requires_confirmation_current_map_yaw_and_idle_nav(tmp_path):
+    ros = Mock()
+    ros.node_names.return_value = set()
+    ros.snapshot.return_value = {'localization': {'status': 'INITIALIZING'}}
+    console = Console(tmp_path, ros, 8766)
+    console.processes.alive = lambda name: name == 'localization'
+    console.processes.active_mapping = lambda: False
+    terrain = {'revision': 'new', 'landmarks': {'match': [1, 2]}, 'match_yaw_deg': 0}
+    console.matching_map = lambda: terrain
+    apply = lambda **body: console.perform('/api/use-reference-pose', body)
+    good = {'revision': 'new', 'confirmed': True}
+    with pytest.raises(ValueError):
+        apply(revision='old', confirmed=True)
+    with pytest.raises(ValueError):
+        apply(revision='new')
+    ros.node_names.return_value = {'/bt_navigator'}
+    with pytest.raises(ValueError):
+        apply(**good)
+    ros.node_names.return_value = set()
+    terrain['match_yaw_deg'] = None
+    with pytest.raises(ValueError):
+        apply(**good)
+    terrain['match_yaw_deg'] = 0
+    ros.use_reference_pose.assert_not_called()
+    apply(**good)
+    ros.use_reference_pose.assert_called_once_with(terrain)
+
+
 def test_preview_never_uses_landmarks_from_a_different_prior(tmp_path):
     prior = tmp_path / 'prior'
     meta = tmp_path / 'terrain.json'
     meta.write_text(json.dumps(dict(frame='map', source=str(prior), landmarks={'match': [0, 0]})))
     assert read_landmarks(meta, prior, 1, 1)['landmarks'] == {'match': [0, 0]}
     assert read_landmarks(meta, Path('/different-map'), 1, 1) is None
+    assert read_landmarks(meta, prior, 1, 1)['match_yaw_deg'] is None
+    meta.write_text(json.dumps(dict(frame='map', source=str(prior), landmarks={'match': [0, 0]}, match_yaw_deg=0)))
+    assert read_landmarks(meta, prior, 1, 2)['match_yaw_deg'] == 0
 
 
 def test_reference_overlay_uses_map_origin_and_flipped_image_row(tmp_path):
@@ -77,5 +108,8 @@ def test_reference_overlay_uses_map_origin_and_flipped_image_row(tmp_path):
     image = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
     assert image[89, 20].min() == 255
     assert not image[10, 20].any()
+    north = render_match_reference(tmp_path, grid, [0.25, -14.75], 90)
+    arrow = cv2.imdecode(np.frombuffer(north, np.uint8), cv2.IMREAD_COLOR)
+    assert arrow[75, 20].min() == 255 and not image[75, 20].any()
     with pytest.raises(ValueError, match='范围外'):
         render_match_reference(tmp_path, grid, [111., 222.])

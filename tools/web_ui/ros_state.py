@@ -6,6 +6,7 @@ from urllib.parse import unquote
 from action_msgs.srv import CancelGoal
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistStamped
 from lifecycle_msgs.srv import GetState
+from localization_interfaces.srv import UseReferencePose
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
@@ -42,9 +43,13 @@ class RosState(Node):
         self.trigger_clients = {
             'save_map': self.create_client(Trigger, '/backend_node/save_map'),
             'relocalize': self.create_client(Trigger, '/backend_node/global_relocalize'),
+            'reference_pose': self.create_client(UseReferencePose, '/backend_node/use_reference_pose'),
             'cancel_goal': self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal'),
         }
         latched = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+        self.serial_intents_enabled = True
+        self.serial_intents = self.create_publisher(Bool, '/navigation/serial_intents_enabled', latched)
+        self.serial_intents.publish(Bool(data=self.serial_intents_enabled))
         self.watch('localization', String, '/backend_node/localization_state', latched, fields, 2.0)
         self.watch('mode', String, '/nav_mode', latched, lambda msg: msg.data, None)
         self.watch('pose', PoseWithCovarianceStamped, '/backend_node/localization_pose',
@@ -68,6 +73,14 @@ class RosState(Node):
 
         self.create_subscription(ros_type, topic, receive, qos)
 
+    def intents_enabled(self):
+        with self.lock:
+            return self.serial_intents_enabled
+    def set_intents_enabled(self, enabled):
+        with self.lock:
+            self.serial_intents_enabled = enabled
+        self.serial_intents.publish(Bool(data=enabled))
+        return enabled
     def query_lifecycle(self):
         if not self.lifecycle.service_is_ready():
             return
@@ -98,11 +111,12 @@ class RosState(Node):
         data['services'] = {name: client.service_is_ready() for name, client in self.trigger_clients.items()}
         return data
 
-    def call(self, action):
+    def call(self, action, request=None):
         client = self.trigger_clients[action]
         if not client.service_is_ready():
             raise ValueError('ROS 服务未就绪，请检查对应进程和 ROS_DOMAIN_ID')
-        request = CancelGoal.Request() if action == 'cancel_goal' else Trigger.Request()
+        if request is None:
+            request = CancelGoal.Request() if action == 'cancel_goal' else Trigger.Request()
         future = client.call_async(request)
         done = threading.Event()
         future.add_done_callback(lambda _: done.set())
@@ -117,3 +131,9 @@ class RosState(Node):
         if not result.success:
             raise ValueError(result.message or 'ROS 服务拒绝了请求')
         return result.message
+
+    def use_reference_pose(self, terrain):
+        map_x, map_y = terrain['landmarks']['match']
+        request = UseReferencePose.Request(prior_directory=terrain['prior'], body_frame='gimbal_nav',
+                                           x=float(map_x), y=float(map_y), yaw_rad=math.radians(terrain['match_yaw_deg']))
+        return self.call('reference_pose', request)

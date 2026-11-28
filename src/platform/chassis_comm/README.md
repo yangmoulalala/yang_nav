@@ -31,11 +31,11 @@ A4 | yaw:f32 | x:f32 | y:f32 | crc:u16
 | --- | --- | --- |
 | `/chassis/big_yaw` | `std_msgs/msg/Float32` | 每个有效 A4 发布一次编码器角，rad |
 | `/chassis/big_yaw_online` | `std_msgs/msg/Bool` | 启动 false，有效 A4 后 true；超过 `feedback_timeout`（默认 0.1 s）无有效 A4 后 false；仅变化时发布，reliable + transient_local |
-| `/chassis/nav_intent` | `std_msgs/msg/String` | 每个有效 A4 发布一次 `home` 或 `target`；仅供查看和录包 |
+| `/chassis/nav_intent` | `std_msgs/msg/String` | 每个有效 A4 发布一次 `home` 或 `target`；真车定位导航的意图桥按同名地图标点发送 Nav2 目标 |
 
 角度和目标话题为 reliable + volatile、depth=20；失联不重复旧值、不补零。协议没有采样时间戳，未规定 A4 频率；接收端以 200 Hz 非阻塞轮询，支持半帧、粘包、噪声和坏帧后逐字节重新同步。跨静默超时的半帧丢弃，CRC 正确但含 NaN/Inf 的 A4 也会丢弃。其他类型的帧不刷新 A4 在线状态。
 
-新版串口节点不再发布 `/chassis/nav_target`，不能把选择值交给旧坐标目标发送器。WebUI 只读显示地点意图和同一先验地图的标点；没有标点时不回退到原始 x/y 或地图原点。编码器角不会自动写入关节状态或 TF。
+新版串口节点不再发布 `/chassis/nav_target`。WebUI 的「串口意图导航」开关控制意图桥；连续重复意图不重复下发。没有对应标点时不回退到原始 x/y 或地图原点。编码器角不会自动写入关节状态或 TF。
 
 ## 启动和联调
 
