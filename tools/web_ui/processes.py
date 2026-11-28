@@ -113,6 +113,8 @@ class Processes:
                               code=process.child.poll() if process else None)
             if name in ('localization', 'navigation') and state == 'running':
                 data[name]['mode'] = process.parameters['mode']
+                if name == 'localization' and process.parameters['mode'] == 'mapping':
+                    data[name]['mapping_points'] = process.parameters.get('mapping_points', {})
             if name == 'bag':
                 data[name]['warning'] = self.auto_bag_warning
                 data[name]['automatic'] = bool(process and process.parameters.get('automatic'))

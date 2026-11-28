@@ -1,3 +1,4 @@
+import math
 import os
 from pathlib import Path
 import re
@@ -142,7 +143,8 @@ def defaults(profile):
     return dict(mode='localization', lidar='dual' if simulation else 'single',
                 prior_map='maps/sim' if simulation else 'maps/real/site_a_001', terrain_dir='',
                 map_dir=f'maps/{profile}/new_session', arena='rmuc', team='auto', gui=False, uwb=True,
-                chassis_port='/dev/nav', favorites=[], l2_launch='', tuning={}, auto_bag=True)
+                chassis_port='/dev/nav', favorites=[], l2_launch='', tuning={}, auto_bag=True,
+                mapping_points={})
 
 
 def yaml_write(destination, data):
@@ -207,6 +209,14 @@ class Settings:
         document['uwb'] = flag(payload.get('uwb', previous['uwb']), '仿真 UWB')
         document['auto_bag'] = flag(payload.get('auto_bag', previous['auto_bag']), '导航自动摘要录包')
         document['tuning'] = previous['tuning']
+        points = payload.get('mapping_points', previous['mapping_points'])
+        if not isinstance(points, dict) or points.keys() - {'home', 'target'}:
+            raise ValueError('建图标点只支持家和目标点')
+        for point in points.values():
+            if (not isinstance(point, list) or len(point) != 2 or
+                    not all(type(value) in (int, float) and -math.inf < value < math.inf for value in point)):
+                raise ValueError('每个建图标点必须包含有限的 X 和 Y 坐标')
+        document['mapping_points'] = points
         self.save(dict(self.data, profile=profile, **{profile: document}))
 
     def favorite(self, payload):

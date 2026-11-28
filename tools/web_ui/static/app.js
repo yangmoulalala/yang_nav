@@ -22,6 +22,11 @@ let noticeTimeout;
 let matchSince;
 let polling = false;
 let serialPending = false;
+const pointKinds = ['home', 'target'];
+
+function pointInputs(kind) {
+  return ['x', 'y'].map(axis => element(`mapping-${kind}-${axis}`));
+}
 
 function message(content, error = false, persistent = false) {
   const notice = element('notice');
@@ -69,6 +74,9 @@ async function operate(route, body = {}, reloadConfig = false) {
 
 function paintSetup(profile) {
   const values = config[profile];
+  for (const kind of pointKinds) {
+    pointInputs(kind).forEach((input, index) => { input.value = values.mapping_points?.[kind]?.[index] ?? ''; });
+  }
   setup.elements.profile.value = profile;
   for (const [name, value] of Object.entries(values)) {
     const field = setup.elements.namedItem(name);
@@ -283,7 +291,8 @@ function format(value, digits = 2) {
 
 function displaySerialStatus(ros) {
   const intent = ros?.serial_intent;
-  const destination = status?.matching_map?.landmarks[intent];
+  const destination = localizationMode(status) === 'mapping' ?
+    status?.processes.localization.mapping_points?.[intent] : status?.matching_map?.landmarks?.[intent];
   const velocity = ros?.serial_velocity;
   element('serial-target').textContent = intent === 'home' ? '回家' : intent === 'target' ? '前往目标点' : '—';
   element('serial-target-detail').textContent = ['home', 'target'].includes(intent) ?
@@ -298,6 +307,12 @@ function displaySerialStatus(ros) {
 function displaySerialIntents(enabled) {
   if (serialPending) return;
   const state = element('serial-intents-state');
+  if (localizationMode(status) === 'mapping') {
+    element('serial-intents').checked = false;
+    state.dataset.state = 'off';
+    state.textContent = '建图仅预览';
+    return;
+  }
   element('serial-intents').checked = enabled === true;
   state.dataset.state = enabled === true ? 'on' : enabled === false ? 'off' : 'unknown';
   state.textContent = enabled === true ? '已开启' : enabled === false ? '已关闭' : '—';
@@ -406,7 +421,7 @@ function updateControls() {
   element('favorite-add').disabled = unavailable || !config;
   for (const id of ['favorite-use', 'favorite-remove']) element(id).disabled = unavailable || !element('favorite-list').value;
   const intents = element('serial-intents');
-  intents.disabled = unavailable || serialPending || status?.serial_intents === undefined;
+  intents.disabled = unavailable || mode === 'mapping' || serialPending || status?.serial_intents === undefined;
   intents.closest('.serial-intents').dataset.pending = String(serialPending);
 }
 
@@ -516,6 +531,18 @@ setup.addEventListener('change', (event) => {
 setup.addEventListener('submit', (event) => {
   event.preventDefault();
   const body = Object.fromEntries(new FormData(setup));
+  body.mapping_points = {};
+  for (const kind of pointKinds) {
+    const inputs = pointInputs(kind);
+    if (inputs.every(input => input.value === '')) continue;
+    const point = inputs.map(input => input.valueAsNumber);
+    if (!point.every(Number.isFinite)) {
+      message(`${kind === 'home' ? '家' : '目标点'}的 X 和 Y 必须一起填写，或同时留空。`, true);
+      inputs.find(input => !Number.isFinite(input.valueAsNumber)).focus();
+      return;
+    }
+    body.mapping_points[kind] = point;
+  }
   body.gui = setup.elements.gui.checked;
   body.uwb = setup.elements.uwb.checked;
   body.auto_bag = setup.elements.auto_bag.checked;
@@ -644,7 +671,7 @@ async function updateLog() {
 
 function showPage() {
   const target = element(location.hash.slice(1));
-  const jump = target?.matches('#overview > .overview-block') ? target : null;
+  const jump = target?.matches('#overview > .overview-block, #mapping-points') ? target : null;
   const selected = target?.matches('main > section') ? target.id : 'overview';
   for (const page of document.querySelectorAll('main > section')) page.hidden = page.id !== selected;
   for (const link of document.querySelectorAll('.sidebar nav a')) {

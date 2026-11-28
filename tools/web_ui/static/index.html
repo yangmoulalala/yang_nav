@@ -27,6 +27,7 @@
       </header>
       <nav class="overview-nav" aria-label="运行工作台区块">
         <a href="#setup">模式与地图</a>
+        <a href="#mapping-points">建图标点（家 / 目标点）</a>
         <a href="#recording">录包与 Foxglove</a>
         <a href="#logs">运行日志</a>
       </nav>
@@ -64,7 +65,8 @@
       </div>
       <section id="setup" class="overview-block" aria-labelledby="setup-heading">
         <header class="section-head"><div><h2 id="setup-heading">模式与地图</h2><p>仿真和真车各自保存启动配置。</p></div></header>
-        <form class="panel form-panel" id="setup-form">
+        <div class="panel form-panel">
+        <form id="setup-form">
           <div class="form-grid">
             <label>运行平台<select name="profile"><option value="sim">仿真</option><option value="real">真车</option></select></label>
             <label>定位后端<select name="mode"><option value="localization">先验地图匹配</option><option value="mapping">从零建图</option></select></label>
@@ -93,8 +95,16 @@
             <small id="favorite-current"></small>
             <div class="actions"><button type="button" id="favorite-use">选用</button><button type="button" id="favorite-add">收藏当前组合</button><button type="button" id="favorite-remove">移除</button></div>
           </div></div>
+          <section id="mapping-points" class="goal-form" aria-labelledby="mapping-points-heading">
+            <b id="mapping-points-heading">建图标点（家 / 目标点） <small>map 坐标（米）</small></b>
+            <small>启动前填写，随当前平台的启动配置保存。每个点的 X、Y 均留空即不设置。更换建图起点或朝向时请核对坐标。</small>
+            <div class="pair"><label>家 X<input id="mapping-home-x" type="number" step="any"></label><label>家 Y<input id="mapping-home-y" type="number" step="any"></label></div>
+            <div class="pair"><label>目标点 X<input id="mapping-target-x" type="number" step="any"></label><label>目标点 Y<input id="mapping-target-y" type="number" step="any"></label></div>
+            <small>从零建图时，A4 预览使用启动时保存的坐标，不发送导航目标。</small>
+          </section>
           <div class="form-footer"><small>保存后，启动或重启对应进程加载配置。</small><button class="primary" type="submit">保存启动配置</button></div>
         </form>
+        </div>
       </section>
       <section id="recording" class="overview-block" aria-labelledby="recording-heading">
         <header class="section-head"><h2 id="recording-heading">录包与 Foxglove</h2></header>
