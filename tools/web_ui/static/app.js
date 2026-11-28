@@ -312,9 +312,11 @@ function displayStatus() {
   }
   processPill('bag-status', rows.bag);
   if (rows.bag.state === 'stopping') element('bag-status').textContent = '正在完成录包写入';
+  if (rows.bag.automatic && rows.bag.state === 'running') element('bag-status').textContent = '自动摘要录包中';
   if (rows.bag.state === 'stopped' && rows.bag.code === 0 && rows.bag.output) {
     element('bag-status').textContent = '录包已保存';
   }
+  if (rows.bag.warning) element('bag-status').textContent = rows.bag.warning;
   const foxStatus = element('fox-status');
   foxStatus.dataset.state = status.foxglove_online ? 'running' : 'stopped';
   foxStatus.textContent = status.foxglove_online ? '已发现 Bridge' : '当前 ROS 域未发现';
@@ -441,6 +443,7 @@ setup.addEventListener('submit', (event) => {
   const body = Object.fromEntries(new FormData(setup));
   body.gui = setup.elements.gui.checked;
   body.uwb = setup.elements.uwb.checked;
+  body.auto_bag = setup.elements.auto_bag.checked;
   operate('setup', body, true);
 });
 tuning.addEventListener('submit', (event) => {

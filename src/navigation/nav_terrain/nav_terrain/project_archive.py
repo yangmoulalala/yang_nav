@@ -18,8 +18,10 @@ def save_project(project, path):
             'ann': {str(key): value for key, value in project.ann.items()}, 'landmarks': project.landmarks}
     tmp = path.with_name(path.name + '.tmp.npz')
     gradients = {'gx': surface.gx, 'gy': surface.gy} if surface.gx is not None else {}
+    scan = {} if project.scan_surface is None else {'scan_z': project.scan_surface.z,
+                                                   'scan_clearance': project.scan_surface.clearance}
     np.savez_compressed(tmp, z=surface.z, clearance=surface.clearance, seg=project.seg, owner=project.owner,
-                        meta=np.frombuffer(json.dumps(meta).encode(), np.uint8), **gradients)
+                        reference_fill=project.reference_fill, meta=np.frombuffer(json.dumps(meta).encode(), np.uint8), **gradients, **scan)
     tmp.replace(path)
 
 
@@ -31,6 +33,19 @@ def load_project(project_type, path):
         project = project_type(surface, SegParams.from_dict(meta['params']), meta['frame'], meta.get('source', ''))
         project.seg = data['seg'].astype(np.int32)
         project.owner = data['owner'].astype(np.int32)
+        if 'reference_fill' in data:
+            mask = data['reference_fill']
+            if mask.dtype != bool or mask.shape != surface.z.shape:
+                raise ValueError('参考补齐来源网格无效')
+            project.reference_fill = mask
+        if 'scan_z' in data or 'scan_clearance' in data:
+            if not {'scan_z', 'scan_clearance'}.issubset(data.files):
+                raise ValueError('原始观测网格不完整')
+            scan_z, scan_clearance = data['scan_z'], data['scan_clearance']
+            if scan_z.shape != surface.z.shape or scan_clearance.shape != surface.z.shape:
+                raise ValueError('原始观测网格尺寸不一致')
+            project.scan_surface = Surface(scan_z, surface.resolution, surface.origin, scan_clearance,
+                                           surface.gx, surface.gy)
     project.ann = {int(key): value for key, value in meta.get('ann', {}).items()}
     project.reg = meta.get('reg')
     for name, point in meta.get('landmarks', {}).items():

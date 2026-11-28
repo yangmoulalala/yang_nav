@@ -14,6 +14,21 @@ ROS_DOMAIN_ID=122 LIDAR=single OUT=/tmp/nav_single \
 
 已有定位与传感器时执行 `bash tools/start_navigation.sh rviz:=true`。位姿、观测、规划与速度之间的接线见[系统架构](../../docs/architecture.md)。
 
+## RMUL 普通地面中心往返（实车导航参数）
+
+`rmul_flat_roundtrip.py` 是独立的导航试验台，不改变 WebUI 的平台或配置。它从 `nav2.yaml`、`nav2_real.yaml` 和域 0 WebUI 已保存的 `real.tuning` 导出导航参数，使用实车设置的雷达数量。传感器消息格式、IMU 单位、Gazebo 时钟等仍使用仿真配置。建图与实车一样保留独立的低速上限，不用匹配模式的巡航速度。`effective.json` 是对运行节点的参数回读，不是模板拷贝。
+
+场地使用 RMUL 2027 的几何和轮地接触模型；只在平地从 `(6.0, 1.5)` 到场地中心 `(6.0, 4.0)` 并返回。使用原底盘、悬挂、固定的雷达支架及 IMU，不装瞄准执行器、不打开串口、不启用 UWB。真值只在测试进程内核验，不送入定位；已知停靠点匹配使用预先标定的站位，仍须通过真实点云的几何验证。各轮在本机独立 ROS domain 和 Gazebo partition 运行，限定域 143（建图）、144（匹配），不要与其他程序共用。
+
+```bash
+source /opt/ros/jazzy/setup.bash && source install/setup.bash
+run="reports/rmul-flat-$(date +%Y%m%d_%H%M%S)"
+python3 tools/nav_regress/rmul_flat_roundtrip.py mapping --spawn-yaw=-90 --out "$run/mapping"
+python3 tools/nav_regress/rmul_flat_roundtrip.py localization --spawn-yaw=-90 --known-dock --out "$run/matching"
+```
+
+匹配默认选用工作区的 `maps/sim/new_session_optimized` 及其 RMUL 配套地形，也可用 `--prior` 和 `--terrain` 指定导出时配对的目录。去掉 `--known-dock` 可单测无初始位姿提示的匹配，错误匹配不会发车。两轮均要求两个 Nav2 Action 成功、全程不离开平地走廊、停车后 Gazebo 真值误差不超过 0.25 m；建图还必须保存完整地图包。`result.json`、`truth.csv` 和各进程日志保留失败现场。参见[实测结果与限制](../../docs/rmul-flat-roundtrip.md)。
+
 `support/plant.py` 提供按最终 `/cmd_vel` 积分的运动学底盘。`support/terrain.py` 生成测试地形。`support/runtime.py` 管理日志、进程组和结果文件，各场景单独维护验收判据。
 
 在 WSL 项目根目录执行，先加载 ROS 和工作区环境：

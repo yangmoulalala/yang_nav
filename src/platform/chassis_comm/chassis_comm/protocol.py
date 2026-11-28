@@ -1,4 +1,4 @@
-"""MiniPC A1/A2/A3/A4 frames; CRC16/MODBUS covers SOF + payload.
+"""MiniPC navigation frames; CRC16/MODBUS covers SOF + payload.
 
 No ROS or serial dependencies. The navigation bridge sends A3 and receives A4.
 """
@@ -15,7 +15,7 @@ class Command:
     vx: float
     vy: float
     yaw: float  # Desired turn relative to current radar +X; CCW positive, rad.
-    is_through_hole: int = 0  # Level: 1 follows the gun, 0 enables chassis spin.
+    is_through_hole: int = 0
     x: float = 0.0
     y: float = 0.0
 
@@ -23,25 +23,6 @@ class Command:
     def action_flag(self):
         """Compatibility for the existing simulation-only edge command state."""
         return self.is_through_hole
-
-
-@dataclass(frozen=True)
-class AimTarget:
-    is_detect: int
-    is_fire: int
-    yaw: float  # Absolute gun yaw, degrees, CCW positive.
-    pitch: float  # Absolute gun pitch, degrees, down positive.
-    distance: float
-
-
-@dataclass(frozen=True)
-class AimState:
-    is_red: int
-    bullet_speed: float
-    qx: float
-    qy: float
-    qz: float
-    qw: float
 
 
 @dataclass(frozen=True)
@@ -57,13 +38,12 @@ class NavigationTarget:
 
 # The navigation API keeps vx/vy/yaw first for callers; the wire puts the flag first.
 FORMATS = {
-    0xA1: (struct.Struct('<BBfff'), AimTarget),
-    0xA2: (struct.Struct('<Bfffff'), AimState),
     0xA3: (struct.Struct('<Bfffff'), Command),
     0xA4: (struct.Struct('<fff'), NavigationTarget),
 }
 FRAME_SIZES = {header: layout.size + 3 for header, (layout, _) in FORMATS.items()}
 FRAME_SIZE = FRAME_SIZES[0xA3]
+DISCARD_SIZES = {0xA1: 17, 0xA2: 24}
 
 
 def crc16_modbus(data: bytes) -> int:
@@ -80,16 +60,6 @@ def encode_frame(message) -> bytes:
         header = 0xA3
         flags = (message.is_through_hole,)
         floats = (message.vx, message.vy, message.yaw, message.x, message.y)
-    elif isinstance(message, AimTarget):
-        header = 0xA1
-        flags = (message.is_detect, message.is_fire)
-        floats = (message.yaw, message.pitch, message.distance)
-        if not message.is_detect and message.is_fire:
-            raise ValueError('is_fire must be 0 when is_detect is 0')
-    elif isinstance(message, AimState):
-        header = 0xA2
-        flags = (message.is_red,)
-        floats = (message.bullet_speed, message.qx, message.qy, message.qz, message.qw)
     elif isinstance(message, NavigationTarget):
         header = 0xA4
         flags = ()
@@ -109,7 +79,7 @@ def encode_frame(message) -> bytes:
 
 def decode_frame(frame: bytes):
     if not frame or frame[0] not in FORMATS or len(frame) != FRAME_SIZES[frame[0]]:
-        raise ValueError('expected a complete A1/A2/A3/A4 MiniPC frame')
+        raise ValueError('expected a complete A3/A4 navigation frame')
     if crc16_modbus(frame[:-2]) != struct.unpack('<H', frame[-2:])[0]:
         raise ValueError('CRC-16/MODBUS mismatch')
     layout, cls = FORMATS[frame[0]]
@@ -126,8 +96,7 @@ def decode_frame(frame: bytes):
 class FrameParser:
     """Drop one byte per unknown SOF or bad CRC and consume valid frames whole.
 
-    All four types are consumed atomically even when filtered by direction, so
-    header-valued payload bytes cannot be interpreted as another valid frame.
+    Retired envelopes with valid CRC are discarded without decoding their payload.
     """
 
     def __init__(self, headers=None):
@@ -144,12 +113,16 @@ class FrameParser:
         messages = []
         while self._buffer:
             header = self._buffer[0]
-            size = FRAME_SIZES.get(header)
+            size = FRAME_SIZES.get(header, DISCARD_SIZES.get(header))
             if size is None:
                 del self._buffer[0]
                 continue
             if len(self._buffer) < size:
                 break
+            if header in DISCARD_SIZES:
+                valid = crc16_modbus(self._buffer[:size - 2]) == int.from_bytes(self._buffer[size - 2:size], 'little')
+                del self._buffer[:size if valid else 1]
+                continue
             try:
                 message = decode_frame(bytes(self._buffer[:size]))
             except ValueError:

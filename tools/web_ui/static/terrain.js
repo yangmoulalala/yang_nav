@@ -301,7 +301,7 @@
       return `${label}：${point ? `(${point.map(value => value.toFixed(2)).join(', ')}) m` : '未放置'}`;
     }).join(' · ');
     statusLine.textContent = `${map.frame === 'map' ? '地图坐标' : '场地坐标'} · ${map.resolution.toFixed(3)} m/格 · ` +
-      `${marked}/${map.patches.length} 个面片已标注${map.dirty ? ' · 有未保存修改' : ''}`;
+      `${marked}/${map.patches.length} 个面片已标注${map.reference_filled_cells ? ` · 参考补齐 ${map.reference_filled_cells} 格` : ''}${map.dirty ? ' · 有未保存修改' : ''}`;
     if (recenter || fresh) {
       const source = map.source.replace(/\.surf\.npz$|\.(pcd|stl|step|stp|npz)$/i, '');
       const base = source.startsWith('maps/') ? source : `maps/${source.split('/').at(-1) || 'terrain'}`;
@@ -351,7 +351,7 @@
         revision: state.revision}) : {};
       if (operation === 'connected') await select(result.selected);
       else if (operation === 'seed') setGuess(result.guess);
-      else await load(recenter, result.selected ?? (recenter ? [] : [...selection]));
+      else await load(recenter || operation === 'adopt', result.selected ?? (recenter ? [] : [...selection]));
       if (result.message) message(result.message);
       if (result.output || operation === 'save') await loadConfig();
     } catch (error) {

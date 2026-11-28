@@ -1,6 +1,6 @@
 # chassis_comm
 
-真车导航通信使用 `/dev/nav`，默认 115200 波特、8N1、100 Hz 下行。协议以 [最新版 MiniPC 协议](docs/minipc_protocol.md) 的导航部分为准：单字节帧头、小端 float32、CRC16/MODBUS（初值 `0xFFFF`，多项式 `0xA001`，覆盖帧头和载荷，CRC 低字节先发）。导航节点只发送 A3、接收 A4，同一串口出现自瞄帧时消费整帧后忽略，不发布自瞄话题。
+真车导航通信使用 `/dev/nav`，默认 115200 波特、8N1、100 Hz 下行。见 [MiniPC 导航协议](docs/minipc_protocol.md)：单字节帧头、小端 float32、CRC16/MODBUS（初值 `0xFFFF`，多项式 `0xA001`，覆盖帧头和载荷，CRC 低字节先发）。节点只发送 A3、接收 A4；已退役的帧仅按长度和 CRC 跳过，不解释载荷，也不能生成。
 
 ## 导航下行 A3（24 字节）
 
@@ -9,7 +9,7 @@ A3 | is_through_hole:u8 | vx:f32 | vy:f32 | yaw:f32 | x:f32 | y:f32 | crc:u16
  0          1              2        6        10       14      18      22
 ```
 
-- `/cmd_vel.linear.x/y` 是雷达（大 yaw）坐标系的前/左速度，m/s，默认参考系为 `gimbal_nav`。速度直接透传，下位机按小 yaw 实测角转换到枪口系。
+- `/cmd_vel.linear.x/y` 是雷达（大 yaw）坐标系的前/左速度，m/s，默认参考系为 `gimbal_nav`。上位机直接透传，由下位机转换为底盘运动。
 - `yaw` 是**从雷达当前 +X 到期望朝向的有向转角**，rad，俯视逆时针为正。0 保持当前朝向，+π/2 逆时针转 90°，−π/2 顺时针转 90°。显式输入为 `/chassis/yaw_target`（Float32），不是绝对地图航向，也不是底盘相对角；不从定位 TF 或上行编码器角复制，不把 `angular.z`（rad/s）直接作为角度。
 - 普通平移不依赖转角输入：启动、未收到输入、输入非法或超过 `yaw_timeout`（默认 0.3 s）时发送 yaw=0。需要转向时，上层应根据剩余角度持续更新相对转角；保持非零输入代表每帧都相对当时朝向请求该转角，不是只转一次的增量命令。
 - `x/y` 是定位当前坐标，m，来自最新 `world_frame → base_frame` TF，默认 `map → gimbal_nav`。定位航向不参与 A3.yaw。TF 新鲜度检查使用采样时间，重复查询旧变换不会刷新看门狗。
@@ -52,7 +52,7 @@ ros2 topic echo /chassis/nav_intent
 ros2 topic echo /chassis/big_yaw_online --qos-durability transient_local
 ```
 
-独立 launch 可用 `--show-args` 查看参数；整车参数统一加 `chassis_` 前缀，如 `chassis_yaw_topic:=/chassis/yaw_target`、`chassis_feedback_timeout:=0.1`。端口仍可覆盖，以支持 PTY 联调，但节点、独立 launch、整车入口的默认值均为 `/dev/nav`。`yaw_mode`、`yaw_horizon` 以及此前 A2 自瞄话题参数不属于当前导航节点。
+独立 launch 可用 `--show-args` 查看参数；整车参数统一加 `chassis_` 前缀，如 `chassis_yaw_topic:=/chassis/yaw_target`、`chassis_feedback_timeout:=0.1`。端口可覆盖以支持 PTY 联调。`yaw_mode`、`yaw_horizon` 不属于当前导航节点。
 
 `tools/record_bag.py` 录制相对转角输入、过洞模式、A4 地点意图、编码器角和在线状态。测试使用固定参考帧逐字节验证，ROS + Linux PTY 验证转角语义、输入超时、A4 接收、帧过滤、并发收发和串口错误，不访问硬件：
 

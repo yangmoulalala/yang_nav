@@ -86,6 +86,7 @@ class Processes:
         self.directory = directory
         self.entries = {}
         self.cancel_start = Event()
+        self.auto_bag_warning = None
 
     def check_start(self, delay=0):
         if self.cancel_start.wait(delay):
@@ -112,6 +113,9 @@ class Processes:
                               code=process.child.poll() if process else None)
             if name in ('localization', 'navigation') and state == 'running':
                 data[name]['mode'] = process.parameters['mode']
+            if name == 'bag':
+                data[name]['warning'] = self.auto_bag_warning
+                data[name]['automatic'] = bool(process and process.parameters.get('automatic'))
         return data
 
     def launch(self, name, command, parameters=None, output=None, environment=None):
@@ -190,6 +194,7 @@ class Processes:
                 self.settings.overrides(name, params)
                 command.append(f'params_file:={params}')
             self.launch(name, command, dict(config, mode=mode), output)
+            self.start_auto_bag()
             return
         elif name == 'bag':
             bag_name, options = bag_request(payload)
@@ -200,7 +205,8 @@ class Processes:
             command = ['python3', 'tools/record_bag.py', '--output', str(output), *options]
             if simulation:
                 command.append('--use-sim-time')
-            self.launch(name, command, payload, str(output))
+            self.launch(name, command, dict(payload, automatic=False), str(output))
+            self.auto_bag_warning = None
             return
         elif name == 'optimizer':
             source = prior_path(str(workspace_path(payload.get('source'), '输入地图')))
@@ -271,12 +277,39 @@ class Processes:
     def active_mapping(self):
         return self.alive('localization') and self.entries['localization'].parameters['mode'] == 'mapping'
 
+    def start_auto_bag(self):
+        self.auto_bag_warning = None
+        if not self.settings.active['auto_bag'] or self.cancel_start.is_set():
+            return
+        previous = self.entries.get('bag')
+        if self.alive('bag') and previous.parameters.get('automatic') and previous.stopping:
+            deadline = time.monotonic() + 10
+            while self.alive('bag') and time.monotonic() < deadline and not self.cancel_start.wait(.2):
+                pass
+        if self.alive('bag') or self.cancel_start.is_set():
+            if previous and previous.stopping:
+                self.auto_bag_warning = '上一录包仍在收尾，本轮未重复启动摘要录包'
+            return
+        if self.ros.node_names().intersection(OWNERS['bag']):
+            return
+        output = WORKSPACE / 'bags/recordings' / datetime.now().strftime('%Y%m%d_%H%M%S_%f_summary')
+        command = ['python3', 'tools/record_bag.py', '--summary', '--output', str(output)]
+        if self.settings.profile == 'sim':
+            command.append('--use-sim-time')
+        try:
+            self.launch('bag', command, {'automatic': True}, str(output))
+        except OSError as exc:
+            self.auto_bag_warning = f'自动录包启动失败：{exc}；导航继续运行'
+
     def stop(self, name):
         process = self.entries.get(name)
         if not process:
             return
         if name == 'navigation':
             self.stop('goal')
+            bag = self.entries.get('bag')
+            if bag and bag.parameters.get('automatic') and self.alive('bag'):
+                self.stop('bag')
         if name == 'gazebo' and self.alive('localization'):
             self.stop('localization')
         if name in ('gazebo', 'localization') and self.alive('navigation'):

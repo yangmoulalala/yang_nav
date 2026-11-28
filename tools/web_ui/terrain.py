@@ -249,6 +249,7 @@ class TerrainEditor:
                                     resolution=project.surf.resolution, origin=project.surf.origin,
                                     patches=patches, params=project.params.to_dict(), registration=project.reg,
                                     landmarks=project.landmarks.copy(),
+                                    reference_filled_cells=int(np.count_nonzero(project.reference_fill)),
                                     reference=self.reference_path, can_adopt=self.aligned(document),
                                     reference_annotated=len(self.reference.project.ann) if self.reference else 0,
                                     registration_seed=self.default_seed(document))
@@ -471,7 +472,7 @@ class TerrainEditor:
                 raise ValueError('请先配准点云和参考工程或场地模型')
             project.adopt_from(self.reference.project)
             document.registered_to = None
-            ids = []
+            return dict(message=f'已按参考标注更新静态地形（含已扫描区域），补齐 {int(np.count_nonzero(project.reference_fill))} 个缺测格', selected=[])
         else:
             raise ValueError('未知地形操作')
         return dict(message='已更新地形工程' if operation != 'connected' else f'已选中 {len(ids)} 个同高相连面片',

@@ -1,5 +1,6 @@
 """Rigid transforms and point-cloud registration in map and field frames."""
 import math
+from dataclasses import replace
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -32,26 +33,72 @@ def reg_matrix(reg):
 
 
 class FieldProjection:
-    """Map-frame cell centres projected into a registered field grid at map z=0."""
+    """Intersect map-frame verticals with the registered reference ground, not scanned objects."""
 
     def __init__(self, source, field, registration):
         self.rotation, self.translation = reg_matrix(registration)
         self.shape = source.z.shape
         rows, cols = np.ogrid[:self.shape[0], :self.shape[1]]
         x, y = source.centre(cols, rows)
-        def indices(axis):
-            coord = self.rotation[axis, 0] * x + self.rotation[axis, 1] * y + self.translation[axis]
-            return np.floor((coord - field.origin[axis]) / field.resolution).astype(np.int64)
-
-        col, row = indices(0), indices(1)
         height, width = field.z.shape
-        self.inside = (col >= 0) & (col < width) & (row >= 0) & (row < height)
+        rotation = self.rotation
+        if rotation[2, 2] <= 0.1 or not np.isfinite(self.translation).all():
+            raise ValueError('配准姿态无法用于俯视地形，请重新配准')
+        offsets = [rotation[axis, 0] * x + rotation[axis, 1] * y + self.translation[axis] for axis in range(3)]
+        def locate(map_z):
+            return [np.floor((offsets[axis] + rotation[axis, 2] * map_z - field.origin[axis]) /
+                             field.resolution).astype(np.int64) for axis in (0, 1)]
+
+        finite_heights = field.z[np.isfinite(field.z)]
+        if not finite_heights.size:
+            raise ValueError('参考工程没有有效高程')
+        level = np.median(finite_heights)
+        col, row = locate((level - offsets[2]) / rotation[2, 2])
+        for _ in range(4):
+            ref_z = field.z[row.clip(0, height - 1), col.clip(0, width - 1)]
+            map_z = (np.where(np.isfinite(ref_z), ref_z, level) - offsets[2]) / rotation[2, 2]
+            next_col, next_row = locate(map_z)
+            stable = (col == next_col) & (row == next_row)
+            if stable.all():
+                break
+            col, row = next_col, next_row
+        self.inside = stable & (col >= 0) & (col < width) & (row >= 0) & (row < height)
         self.field_indices = row[self.inside], col[self.inside]
+        self.map_height = (self.sample(field.z, np.nan) - offsets[2]) / rotation[2, 2]
 
     def sample(self, grid, fill):
         result = np.full(self.shape, fill)
         result[self.inside] = grid[self.field_indices]
         return result
+
+
+def extend_to_reference(surface, reference, eligible, registration):
+    """Pad on whole map cells without moving existing observations or world landmarks."""
+    rows, cols = np.nonzero(eligible)
+    if not rows.size:
+        return surface, (slice(None), slice(None))
+    rotation, translation = reg_matrix(registration)
+    x, y = reference.centre(cols, rows)
+    centres = (np.column_stack((x, y, reference.z[rows, cols])) - translation) @ rotation[:, :2]
+    half_width = reference.resolution * np.abs(rotation[:2, :2]).sum(axis=0) / 2
+    origin = np.asarray(surface.origin)
+    resolution = surface.resolution
+    lower = np.minimum(0, np.floor((centres.min(axis=0) - half_width - origin) / resolution + 1e-8)).astype(int)
+    upper = np.maximum(surface.z.shape[::-1], np.ceil((centres.max(axis=0) + half_width - origin) / resolution - 1e-8)).astype(int)
+    width, height = map(int, upper - lower)
+    if width * height > max(4_000_000, surface.z.size):
+        raise ValueError('合并后的地形网格过大，请检查配准平移和栅格分辨率')
+    row, col = map(int, -lower[::-1])
+    region = np.s_[row:row + surface.z.shape[0], col:col + surface.z.shape[1]]
+    def padded(values, fill):
+        if values is None:
+            return None
+        result = np.full((height, width), fill, dtype=values.dtype)
+        result[region] = values
+        return result
+    return replace(surface, z=padded(surface.z, np.nan), clearance=padded(surface.clearance, np.inf),
+                   gx=padded(surface.gx, np.nan), gy=padded(surface.gy, np.nan),
+                   origin=tuple(origin + lower * resolution)), region
 
 
 def align_points(source, tree, rotation, translation, iters=60, min_matches=3):

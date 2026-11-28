@@ -94,7 +94,7 @@ def navigation_params(source, real_overrides=None, mapping=False):
 
 def velocity_smoother_executable(profile, document):
     follow = document.get('controller_server', {}).get('ros__parameters', {}).get('FollowPath', {})
-    if profile == 'real' and follow.get('fixed_frame_translation') is True:
+    if follow.get('fixed_frame_translation') is True:
         return 'nav_behaviors', 'fixed_frame_velocity_smoother'
     return 'nav2_velocity_smoother', 'velocity_smoother'
 
@@ -139,7 +139,7 @@ def build(context):
     follow = document.get('controller_server', {}).get('ros__parameters', {}).get('FollowPath', {})
     curve_accel = 0.0
     reentry_timeout = 0.0
-    if profile == 'real' and follow.get('fixed_frame_translation') and follow.get('path_departure_limit', 0.) > 0.:
+    if follow.get('fixed_frame_translation') and follow.get('path_departure_limit', 0.) > 0.:
         smoother = document['velocity_smoother']['ros__parameters']
         curve_accel = min(min(smoother['max_accel'][:2]), -max(smoother['max_decel'][:2]),
                           follow.get('ax_max', 0.), follow.get('ay_max', 0.),
@@ -200,7 +200,7 @@ def build(context):
         Node(package='nav_terrain', executable='terrain_obstacles.py', name='terrain_obstacles',
              output='screen', parameters=[params, obstacle_params]),
         nav2('nav2_controller', 'controller_server', remap=[('cmd_vel', 'cmd_vel_nav'),
-             ('~/executed_velocity', '/cmd_vel')], extra={
+             ('~/executed_velocity', _get(context, 'cmd_vel_topic'))], extra={
             'FollowPath.zone.zones_file': zones, 'FollowPath.executed_velocity_topic': '~/executed_velocity',
             'FollowPath.reference_curve_accel': float(curve_accel), 'FollowPath.clear_space_reentry': clear_reentry,
             'FollowPath.reentry_timeout': float(reentry_timeout)}),

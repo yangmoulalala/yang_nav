@@ -75,6 +75,7 @@ def test_exported_real_tuning_preserves_fixed_frame_smoother(tmp_path):
     assert launch_module.velocity_smoother_executable('real', tuned) == fixed
     assert launch_module.velocity_smoother_executable('real', PARAMS) == normal
     assert launch_module.velocity_smoother_executable('sim', PARAMS) == normal
+    assert launch_module.velocity_smoother_executable('sim', tuned) == fixed
 
 
 def test_real_profile_matches_controller_smoother_and_gate_without_changing_collision_monitor():

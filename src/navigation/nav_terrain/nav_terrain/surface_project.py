@@ -11,19 +11,21 @@ patch the annotation of the old patch it overlaps most (> half of its cells); th
 replaced by the new segmentation.
 
 A prior-cloud project (frame 'map') can be registered onto a field model or another cloud project,
-p_reference = R p_map + t, and adopt the reference's patches and annotations. The cloud keeps its own heights.
+p_reference = R p_map + t, and adopt the reference's patches and annotations. Annotated reference
+surfaces define static terrain even under scanned objects. The scan remains separate for ICP.
 
 Export: observed, unannotated or not-passable cells -> OBSTACLE; cells without a surface observation
 -> UNKNOWN. Then terrain_export writes Nav2 maps, the direction field and zones.
 """
 import math
+from dataclasses import replace
 
 import numpy as np
 from scipy import ndimage
 
 from nav_terrain.project_archive import FORMAT, load_project, save_project
 from nav_terrain.project_history import ProjectHistory
-from nav_terrain.registration import FieldProjection, icp, matrix_rpy
+from nav_terrain.registration import FieldProjection, extend_to_reference, icp, matrix_rpy
 from nav_terrain import surface_seg as ss
 from nav_terrain.terrain_map import (OBSTACLE, UNKNOWN, SLOPE, STEP_HIGH, STEP_L1, STEP_L2, TUNNEL, UNDULATION,
                          DIRECTIONAL, TerrainMap, encode_angle)
@@ -53,6 +55,8 @@ class Project:
         self.ann = {}
         self.landmarks = {}
         self.reg = None
+        self.reference_fill = np.zeros(surf.z.shape, dtype=bool)
+        self.scan_surface = None
         self.history = ProjectHistory()
 
     # ------------------------------------------------------------------ construction
@@ -79,7 +83,8 @@ class Project:
             if not isinstance(cell, (list, tuple)) or len(cell) != 2 or any(type(index) is not int for index in cell):
                 raise ValueError('请选择地图上的格子')
             col, row = cell
-            if not (0 <= col < self.shape[1] and 0 <= row < self.shape[0] and np.isfinite(self.surf.z[row, col])):
+            if not (0 <= col < self.shape[1] and 0 <= row < self.shape[0] and np.isfinite(self.surf.z[row, col])
+                    and not self.reference_fill[row, col]):
                 raise ValueError('标点必须位于地图已观测范围内')
         self.begin()
         if cell is None:
@@ -381,11 +386,19 @@ class Project:
         return self.history.redo(self)
 
     # ------------------------------------------------------------------ registration / transfer
+    def measured_surface(self):
+        if self.scan_surface is not None:
+            return self.scan_surface
+        if not self.reference_fill.any():
+            return self.surf
+        return replace(self.surf, z=np.where(self.reference_fill, np.nan, self.surf.z),
+                       clearance=np.where(self.reference_fill, np.inf, self.surf.clearance))
+
     def register_to(self, field_proj, guess_xyz, guess_yaw_deg, log=print):
         if self.frame != 'map' or field_proj.frame not in ('field', 'map'):
             raise ValueError('register a prior-cloud project onto a field model or cloud project')
         tgt = ss.surface_points(field_proj.surf, field_proj.params)
-        src = ss.surface_points(self.surf, self.params, max_points=200000)
+        src = ss.surface_points(self.measured_surface(), self.params, max_points=200000)
         self.reg = icp(tgt, src, guess_xyz, math.radians(guess_yaw_deg))
         self.reg['reference_frame'] = field_proj.frame
         log('配准：t %s，rpy %s°，残差 p50 %.3f / p90 %.3f m，内点 %.0f %%'
@@ -402,26 +415,27 @@ class Project:
     def adopt_from(self, field_proj, log=print):
         """Replace this project's patches by the reference's (same ids) and copy its annotations.
 
-        Every cloud cell takes the reference patch under its centre. Only a field model can supply
-        heights in cells without cloud data (tunnel floors under the roof, scan shadows).
+        Annotated reference patches supply static geometry on both observed and missing ground.
+        Unannotated model geometry may fill gaps but does not replace observed heights.
         Cells outside the reference get no patch (obstacle on export). Directions are rotated into the map frame; a
         multi-direction slope on its geometric direction stays per face.  Like a re-segmentation this
         resets the undo history and the 'restore' extent (now the model patches)."""
         if self.reg is None:
             raise ValueError('register first')
         before = len(self.ids())
-        projection = FieldProjection(self.surf, field_proj.surf, self.reg)
+        field = field_proj.surf
+        annotated = [pid for pid, entry in field_proj.ann.items() if entry['type'] != UNSET or not entry['passable']]
+        eligible = np.isfinite(field.z) & (field_proj.owner > 0 if field_proj.frame == 'field' else np.isin(field_proj.owner, annotated))
+        measured, _ = extend_to_reference(self.measured_surface(), field, eligible, self.reg)
+        projection = FieldProjection(measured, field, self.reg)
         look = projection.sample(field_proj.owner, 0)
-        hole = (look > 0) & ~np.isfinite(self.surf.z)
-        if field_proj.frame == 'field' and hole.any():
-            fz = projection.sample(field_proj.surf.z, np.nan)
-            R, t = projection.rotation, projection.translation
-            z = self.surf.z.copy()
-            z[hole] = (fz[hole] - t[2]) / max(R[2, 2], 1e-6)     # field height back into the map frame
-            self.surf.z = z.astype(self.surf.z.dtype)
-            self.grad = ss.cell_gradient(self.surf, self.params)
-            log('%d 个格子点云无数据，用模型高程补齐' % int(hole.sum()))
-        look[~np.isfinite(self.surf.z)] = 0
+        look[~np.isfinite(projection.map_height)] = 0
+        hole = ~np.isfinite(measured.z) & projection.sample(eligible, False) & (look > 0)
+        use_reference = hole | np.isin(look, annotated)
+        clearance = projection.sample(field.clearance, np.nan) / projection.rotation[2, 2]
+        surface = replace(measured, z=np.where(use_reference, projection.map_height, measured.z).astype(measured.z.dtype),
+                          clearance=np.where(use_reference, clearance, measured.clearance).astype(measured.clearance.dtype))
+        look[~np.isfinite(surface.z)] = 0
         yaw = math.degrees(matrix_rpy(projection.rotation)[2])
         present = set(np.unique(look))
         ann = {}
@@ -432,6 +446,10 @@ class Project:
             if a['type'] in DIRECTIONAL and not field_proj.is_local(fp):
                 b['dir'], b['rev'] = (field_proj.direction(fp) - yaw) % 360.0, False
             ann[fp] = b
+        self.surf = surface
+        self.scan_surface = measured
+        self.reference_fill = hole
+        self.grad = ss.cell_gradient(surface, self.params)
         self._replace_patches(look.astype(np.int32), ann)
         log('采用参考面片：%d 个点云面片 -> %d 个参考面片，%d 个标注（参考共 %d 个）'
             % (before, len(self.ids()), len(ann), len(field_proj.ann)))
@@ -470,6 +488,8 @@ class Project:
         m = TerrainMap(terrain, direction, self.surf.resolution, tuple(self.surf.origin),
                        elevation=self.surf.z.astype(np.float32), clearance=self.surf.clearance.astype(np.float32))
         m.extra['frame'] = self.frame
+        if self.reference_fill.any():
+            m.extra['reference_filled_cells'] = int(self.reference_fill.sum())
         if self.landmarks:
             m.extra['landmarks'] = self.landmarks.copy()
         m.extra['source'] = 'surface_studio %s' % self.source
@@ -477,7 +497,7 @@ class Project:
             m.extra['registration'] = dict(self.reg)
         return m, {'unannotated_cells': int((valid & (typ < 0)).sum()),
                     'blocked_cells': int((valid & ~pas).sum()), 'no_data_cells': int((~valid).sum()),
-                    'unknown_cells': int((~valid).sum())}
+                    'unknown_cells': int((~valid).sum()), 'reference_filled_cells': int(self.reference_fill.sum())}
 
     def export(self, out, cfg=None):
         from nav_terrain import terrain_export as tx

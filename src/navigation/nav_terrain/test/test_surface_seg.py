@@ -7,6 +7,7 @@ import pytest
 
 from nav_terrain import registration, surface_project as sp
 from nav_terrain import surface_seg as ss
+from nav_terrain.obstacle_filter import GroundFilter
 from nav_terrain.surface_seg._regions import _absorb_clutter
 from nav_terrain.terrain_map import OBSTACLE, UNKNOWN, SLOPE, TUNNEL, UNDULATION, FLAT, TerrainMap, decode_angle, encode_angle
 
@@ -169,7 +170,8 @@ def test_cloud_registration_transfer():
     hole = c.surf.cell_of(*(R.T @ (np.array([1.5, 0.8, 0.0]) - t))[:2])
     c.surf.z[hole[1] - 2:hole[1] + 3, hole[0] - 2:hole[0] + 3] = np.nan     # scan shadow on the ramp
     assert c.adopt_from(f, log=lambda *_: None) == 2
-    assert c.patch_at(*hole) == ramp and np.isfinite(c.surf.z[hole[1], hole[0]])
+    col, row = c.surf.cell_of(*(R.T @ (np.array([1.5, 0.8, 0.0]) - t))[:2])
+    assert c.patch_at(col, row) == ramp and np.isfinite(c.surf.z[row, col])
     pm = R.T @ (np.array([1.5, 1.0, 0.0]) - t)
     assert pid_at(c, pm[0], pm[1]) == ramp                    # model patch, not a cloud fragment
     assert set(c.ids()) <= set(f.ids())
@@ -199,7 +201,9 @@ def test_cloud_registration_transfers_saved_map_annotations(tmp_path):
     cloud.surf.z[row, col] = np.nan
     assert cloud.field_lookup(reference)[row, col] == patch
     assert cloud.adopt_from(reference, log=lambda *_: None) == 1
-    assert np.isnan(cloud.surf.z[row, col]) and cloud.patch_at(col, row) == 0
+    col, row = cloud.surf.cell_of(0.5 - translation[0], 3.5 - translation[1])
+    assert np.isfinite(cloud.surf.z[row, col]) and cloud.patch_at(col, row) == patch
+    assert cloud.reference_fill[row, col]
     annotation = cloud.a(pid_at(cloud, 0.6 - translation[0], 3.5 - translation[1]))
     assert annotation['type'] == UNDULATION and not annotation['passable']
     assert annotation['dir'] == pytest.approx(30.0, abs=0.5)
@@ -219,6 +223,93 @@ def test_no_surface_observation_exports_as_unknown(tmp_path):
     assert np.all(m.terrain[observed_unannotated] == OBSTACLE)
     p.export(tmp_path)
     assert TerrainMap.load(tmp_path / 'terrain.msgpack').terrain[r, c] == UNKNOWN
+
+
+def test_adopt_extends_cropped_map_without_erasing_evidence(tmp_path):
+    def project(heights, origin, resolution, labels):
+        heights = np.array(heights, dtype=np.float32)
+        surface = ss.Surface(heights, resolution, origin, np.full_like(heights, np.inf))
+        result = sp.Project(surface, params(), 'map')
+        result._replace_patches(np.asarray(labels, dtype=np.int32), {})
+        result.grad = ss.cell_gradient(surface, result.params)
+        return result
+
+    reference = project(np.zeros((4, 6)), (1., -2.), .5, [[1, 1, 2, 2, 3, 4]] * 4)
+    reference.set_ann([1], type=FLAT)
+    reference.set_ann([2], type=TUNNEL, dir=120.)
+    reference.set_ann([3], type=OBSTACLE, passable=False)
+    reference.surf.clearance[:, 2:4] = .32
+    reference.surf.z[1, 2] = np.nan
+    current = project([[.20, .50], [np.nan, .20]], (.5, 1.), .25, [[1, 2], [0, 1]])
+    current.set_ann([2], type=OBSTACLE, passable=False)
+    current.surf.clearance[0, 1] = .08
+    current.reg = dict(rpy_deg=[0, 0, 90], t_world_map=[3., -2., -.20])
+    current.landmarks['home'] = (.625, 1.125)
+    current.adopt_from(reference, log=lambda *_: None)
+    assert current.shape[0] > 2 and current.shape[1] > 2
+    def cell(x_value, y_value):
+        col, row = current.surf.cell_of(x_value, y_value)
+        return row, col
+    observed = cell(.625, 1.125)
+    conflict = cell(.875, 1.125)
+    shadow = cell(.625, 1.375)
+    tunnel = cell(1.625, .625)
+    wall = cell(1.625, -.375)
+    no_source = cell(.625, .875)
+    outside_unset = cell(.125, -.875)
+    grid, _ = current.terrain_map()
+    assert current.landmarks['home'] == (.625, 1.125)
+    assert not current.reference_fill[observed] and grid.terrain[observed] == FLAT
+    assert not current.reference_fill[conflict] and grid.terrain[conflict] == FLAT
+    assert grid.elevation[conflict] == pytest.approx(.20) and np.isinf(grid.clearance[conflict])
+    assert current.reference_fill[shadow] and grid.elevation[shadow] == pytest.approx(.20)
+    assert grid.terrain[tunnel] == TUNNEL and grid.clearance[tunnel] == pytest.approx(.32)
+    assert current.a(2)['dir'] == pytest.approx(30.) and grid.terrain[wall] == OBSTACLE
+    assert grid.terrain[no_source] == UNKNOWN
+    assert outside_unset[0] < 0 or outside_unset[1] < 0 or grid.terrain[outside_unset] == UNKNOWN
+    archive = tmp_path / 'adopted.surf.npz'
+    current.save(archive)
+    restored = sp.Project.load(archive)
+    assert np.array_equal(restored.reference_fill, current.reference_fill)
+    restored.export(tmp_path / 'out')
+    exported = TerrainMap.load(tmp_path / 'out/terrain.msgpack')
+    assert np.array_equal(exported.terrain, grid.terrain)
+    assert exported.elevation[conflict] == pytest.approx(.20) and np.isinf(exported.clearance[conflict])
+    raster = (tmp_path / 'out/nav_map.pgm').read_bytes().split(b'\n', 3)[3]
+    static_cost = np.frombuffer(raster, dtype=np.uint8).reshape(exported.terrain.shape)[::-1]
+    assert static_cost[conflict] < 100 and static_cost[wall] == 100
+    live_points = np.array([[.875, 1.125, .20], [.875, 1.125, .35]])
+    hits, _ = GroundFilter(exported).select(live_points, live_points, [0., 0., .20], .20)
+    assert hits.tolist() == [1]
+    assert exported.clearance[tunnel] == pytest.approx(.32)
+    assert exported.extra['reference_filled_cells'] == current.reference_fill.sum()
+    reference.surf.z[:, 4] = np.nan
+    reference.ann.pop(1)
+    assert restored.measured_surface().z[conflict] == pytest.approx(.50)
+    assert restored.measured_surface().clearance[conflict] == pytest.approx(.08)
+    restored.adopt_from(reference, log=lambda *_: None)
+    revised = restored.terrain_map()[0]
+    assert revised.terrain[wall] == UNKNOWN
+    assert revised.terrain[conflict] == OBSTACLE and revised.elevation[conflict] == pytest.approx(.50)
+
+
+def test_reference_back_projection_respects_tilt():
+    surface = ss.Surface(np.full((4, 4), np.nan, np.float32), .1, (1., 1.), np.full((4, 4), np.inf))
+    reference = ss.Surface(np.full((80, 80), .8, np.float32), .1, (-3., -3.), np.full((80, 80), np.inf))
+    reg = dict(rpy_deg=[10., -8., 20.], t_world_map=[.1, .2, .3])
+    projection = registration.FieldProjection(surface, reference, reg)
+    assert projection.inside.all()
+    surface.z.fill(2.5)
+    with_obstacle = registration.FieldProjection(surface, reference, reg)
+    assert np.array_equal(projection.field_indices, with_obstacle.field_indices)
+    np.testing.assert_allclose(projection.map_height, with_obstacle.map_height)
+    for row, col in np.ndindex(surface.z.shape):
+        map_point = [*surface.centre(col, row), projection.map_height[row, col]]
+        transformed = projection.rotation @ map_point + projection.translation
+        assert transformed[2] == pytest.approx(.8)
+        ref_col, ref_row = reference.cell_of(*transformed[:2])
+        index = row * surface.z.shape[1] + col
+        assert tuple(axis[index] for axis in projection.field_indices) == (ref_row, ref_col)
 
 
 def test_vertical_view_two_direction_slope():

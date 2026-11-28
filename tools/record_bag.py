@@ -20,6 +20,11 @@ import threading
 import time
 
 WS=Path(__file__).resolve().parents[1]
+SUMMARY_TOPICS = '''/cmd_vel /cmd_vel_nav /backend_node/localization_state /nav_mode
+/navigation/goal_accepted /navigate_to_pose/_action/status /navigate_through_poses/_action/status
+/collision_monitor_state /rosout'''.split()
+SUMMARY_RESERVE = 5 * 1024**3
+SUMMARY_LIMIT = 256 * 1024**2
 SENSOR_TOPICS='''/livox/lidar /livox/imu /unilidar/cloud /lidar/points
 /lidar_mid360/points /lidar_l2/points /lidar_mid360/imu'''.split()
 TOPICS=SENSOR_TOPICS+'''
@@ -69,7 +74,9 @@ def main():
     ap=argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--output',type=Path,help='new session directory; default bags/recordings/<timestamp>')
     ap.add_argument('--topic',action='append',default=[],help='extra topic; repeat for remapped inputs or namespaced nodes')
-    ap.add_argument('--all',action='store_true',help='record every discovered topic, including hidden topics')
+    profile = ap.add_mutually_exclusive_group()
+    profile.add_argument('--all',action='store_true',help='record every discovered topic, including hidden topics')
+    profile.add_argument('--summary',action='store_true',help='lightweight navigation log, no point clouds, costmaps or graph snapshots')
     ap.add_argument('--duration',type=float,default=0,help='optional recording duration in seconds; 0 until Ctrl-C')
     ap.add_argument('--use-sim-time',action='store_true',help='use simulation clock and record /clock; waits for the first clock message')
     ap.add_argument('--storage',choices=['mcap','sqlite3'],default='mcap')
@@ -77,7 +84,8 @@ def main():
     ap.add_argument('--dry-run',action='store_true',help='print topic list without starting ROS or creating files')
     args=ap.parse_args()
     if not math.isfinite(args.duration) or args.duration<0:ap.error('--duration must be finite and nonnegative')
-    topics=sorted(set(TOPICS+args.topic+(['/clock'] if args.use_sim_time else [])))
+    if args.summary and args.topic:ap.error('--summary uses a fixed small topic set; remove --topic')
+    topics=sorted(set((SUMMARY_TOPICS if args.summary else TOPICS)+args.topic+(['/clock'] if args.use_sim_time else [])))
     if args.dry_run:
         print(json.dumps(dict(topics=topics,all_topics=args.all,storage=args.storage,use_sim_time=args.use_sim_time),indent=2));return 0
     stop=threading.Event()
@@ -86,26 +94,36 @@ def main():
     if args.storage not in rosbag2_py.get_registered_writers():
         ap.error(f'{args.storage} writer unavailable; installed writers: {rosbag2_py.get_registered_writers()}')
     out=(args.output or WS/'bags/recordings'/datetime.now().strftime('%Y%m%d_%H%M%S_%f')).expanduser().resolve()
+    if args.summary:
+        ancestor = next(parent for parent in out.parents if parent.is_dir())
+        if shutil.disk_usage(ancestor).free < SUMMARY_RESERVE:
+            ap.error('summary recording needs 5 GiB of free disk space')
     out.mkdir(parents=True,exist_ok=False)
     # colcon would otherwise discover the snapshotted packages inside config/
     (out/'COLCON_IGNORE').write_text('recording snapshot of src/, not a colcon source tree\n')
-    config=out/'config';config.mkdir()
     sources=['src/localization/bringup/config','src/localization/bringup/launch',
              'src/platform/sentry_description/urdf','src/navigation/nav_bringup','src/navigation/nav_behaviors','src/navigation/nav_safety','src/navigation/nav_terrain']
-    for relative in sources:
-        source=WS/relative
-        if source.exists():shutil.copytree(source,config/relative,ignore=shutil.ignore_patterns('__pycache__','.git'),dirs_exist_ok=True)
-    for name,command in [('git_status',['git','status','--short']),('git_revision',['git','rev-parse','HEAD']),
-                         ('git_diff',['git','diff','HEAD','--','src','tools']),('system',['uname','-a'])]:
+    if not args.summary:
+        config=out/'config';config.mkdir()
+        for relative in sources:
+            source=WS/relative
+            if source.exists():shutil.copytree(source,config/relative,ignore=shutil.ignore_patterns('__pycache__','.git'),dirs_exist_ok=True)
+    diagnostics = [('git_revision',['git','rev-parse','HEAD'])]
+    if not args.summary:
+        diagnostics += [('git_status',['git','status','--short']),('git_diff',['git','diff','HEAD','--','src','tools']),('system',['uname','-a'])]
+    for name,command in diagnostics:
         text,code=capture(command);(out/(name+'.txt')).write_text(text)
     raw=set(SENSOR_TOPICS)-{'/livox/lidar'}
     qos={topic:dict(reliability='best_effort',durability='volatile',history='keep_last',depth=100) for topic in raw}
     for topic in LATCHED_TOPICS:
         qos[topic]=dict(reliability='reliable',durability='transient_local',history='keep_last',depth=100)
+    if args.summary:
+        qos = {topic: policy for topic, policy in qos.items() if topic in topics}
+        qos['/navigation/goal_accepted'] = dict(reliability='reliable', durability='transient_local', history='keep_last', depth=1)
     import yaml
     qos_path=out/'qos.yaml';qos_path.write_text(yaml.safe_dump(qos,sort_keys=True))
     command=['ros2','bag','record','--output',str(out/'bag'),'--storage',args.storage,
-             '--max-bag-duration','120','--max-cache-size','268435456','--disable-keyboard-controls',
+             '--max-bag-duration','120','--max-cache-size',str(4 * 1024**2 if args.summary else 268435456),'--disable-keyboard-controls',
              '--qos-profile-overrides-path',str(qos_path)]
     command+=['--include-hidden-topics']
     if args.use_sim_time:command+=['--use-sim-time']
@@ -113,17 +131,24 @@ def main():
     else:command+=['--topics',*topics]
     manifest=dict(created=datetime.now().astimezone().isoformat(),workspace=str(WS),note=args.note,
                   ros_domain_id=os.environ.get('ROS_DOMAIN_ID','0'),command=command,
-                  use_sim_time=args.use_sim_time,topics=topics,all_topics=args.all,completed=False)
+                  use_sim_time=args.use_sim_time,topics=topics,all_topics=args.all,summary=args.summary,completed=False)
     (out/'session.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(f'Session: {out}\nRecording existing topics. Ctrl-C stops only this recorder.',flush=True)
     with ThreadPoolExecutor(max_workers=2) as snapshots:
         with (out/'recorder.log').open('w') as log:
             process=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
-            snapshots.submit(snapshot,out,'start_graph')
+            if not args.summary:snapshots.submit(snapshot,out,'start_graph')
             begin=time.monotonic()
+            next_check = begin + 5
             try:
                 while process.poll() is None and not stop.wait(.2):
                     if args.duration and time.monotonic()-begin>=args.duration:break
+                    if args.summary and time.monotonic() >= next_check:
+                        next_check = time.monotonic() + 5
+                        if shutil.disk_usage(out).free < SUMMARY_RESERVE or sum(item.stat().st_size for item in (out/'bag').glob('*') if item.is_file()) >= SUMMARY_LIMIT:
+                            manifest['stop_reason'] = 'disk reserve or session size limit'
+                            print('Summary disk limit reached; finalizing only the recorder.',flush=True)
+                            break
             finally:
                 if process.poll() is None:os.killpg(process.pid,signal.SIGINT)
                 try:process.wait(timeout=30)
@@ -134,8 +159,8 @@ def main():
         recorder_ok=process.returncode in (0,130,-signal.SIGINT)
         if recorder_ok and (out/'bag'/'metadata.yaml').is_file():
             print(f'Bag data saved: {out}',flush=True)
-        print('Collecting final ROS diagnostics and checking bag metadata.',flush=True)
-        snapshots.submit(snapshot,out,'stop_graph')
+        print('Checking bag metadata.',flush=True)
+        if not args.summary:snapshots.submit(snapshot,out,'stop_graph')
         info,info_code=capture(['ros2','bag','info',str(out/'bag')],timeout=15)
         (out/'bag_info.txt').write_text(info)
     manifest.update(completed=recorder_ok and info_code==0,recorder_exit_code=process.returncode,

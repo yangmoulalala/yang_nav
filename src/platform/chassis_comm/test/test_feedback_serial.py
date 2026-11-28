@@ -8,10 +8,11 @@ from rclpy.qos import DurabilityPolicy, QoSProfile
 import serial
 from std_msgs.msg import Bool, Float32, String
 
-from chassis_comm.protocol import Command, NavigationTarget, encode_frame
+from chassis_comm.protocol import Command, NavigationTarget, crc16_modbus, encode_frame
 
 
-A2 = bytes.fromhex('A2 00 00 00 C8 41 00 00 00 3F 00 00 80 BE 00 00 40 3F 00 00 60 3F D5 DF')
+A2_PREFIX = b'\xa2' + bytes(21)
+A2 = A2_PREFIX + crc16_modbus(A2_PREFIX).to_bytes(2, 'little')
 A4 = bytes.fromhex('A4 DB 0F 49 3F 00 00 C0 3F 00 00 20 C0 41 20')
 
 
