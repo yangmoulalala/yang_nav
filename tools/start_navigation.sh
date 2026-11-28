@@ -28,6 +28,7 @@ Launch arguments are forwarded to nav_bringup/navigation.launch.py:
   params_file:=PATH    Full custom YAML; otherwise use installed sim/real profile defaults
   profile:=sim|real    Default: sim (use_sim_time:=false also selects real)
   use_sim_time:=BOOL   Default: true for sim, false for real
+  auto_bag:=BOOL       Default: true for real navigation; false disables the lightweight bag
   cmd_vel_topic:=TOPIC Default: /cmd_vel (geometry_msgs/Twist)
   require_trusted:=BOOL Default: true
   rviz:=BOOL           Default: false

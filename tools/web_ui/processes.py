@@ -199,7 +199,7 @@ class Processes:
                 enabled = config['auto_bag'] and not self.alive('bag') and not self.ros.node_names().intersection(OWNERS['bag'])
                 command.append('auto_bag:=' + ('true' if enabled else 'false'))
             self.launch(name, command, dict(config, mode=mode), output)
-            if simulation:
+            if simulation and not self.alive('bag'):
                 self.start_auto_bag()
             return
         elif name == 'bag':
@@ -283,12 +283,12 @@ class Processes:
     def active_mapping(self):
         return self.alive('localization') and self.entries['localization'].parameters['mode'] == 'mapping'
 
-    def start_auto_bag(self):
+    def start_auto_bag(self, stack=False):
         self.auto_bag_warning = None
         if not self.settings.active['auto_bag'] or self.cancel_start.is_set():
             return
         previous = self.entries.get('bag')
-        if self.alive('bag') and previous.parameters.get('automatic') and previous.stopping:
+        if not stack and self.alive('bag') and previous.parameters.get('automatic') and previous.stopping:
             deadline = time.monotonic() + 10
             while self.alive('bag') and time.monotonic() < deadline and not self.cancel_start.wait(.2):
                 pass
@@ -302,24 +302,30 @@ class Processes:
         command = ['python3', 'tools/record_bag.py', '--summary', '--output', str(output)]
         if self.settings.profile == 'sim':
             command.append('--use-sim-time')
+        parameters = {'automatic': True}
+        if stack:
+            command.append('--navigation-session')
+            parameters['stack_start'] = True
         try:
-            self.launch('bag', command, {'automatic': True}, str(output))
+            self.launch('bag', command, parameters, str(output))
         except OSError as exc:
-            self.auto_bag_warning = f'自动录包启动失败：{exc}；导航继续运行'
+            self.auto_bag_warning = f'自动录包启动失败：{exc}；定位导航继续运行'
 
     def stop(self, name):
         process = self.entries.get(name)
         if not process:
             return
+        bag = self.entries.get('bag')
         if name == 'navigation':
             self.stop('goal')
-            bag = self.entries.get('bag')
-            if bag and bag.parameters.get('automatic') and self.alive('bag'):
+            if bag and bag.parameters.get('automatic') and not bag.parameters.get('stack_start') and self.alive('bag'):
                 self.stop('bag')
         if name == 'gazebo' and self.alive('localization'):
             self.stop('localization')
         if name in ('gazebo', 'localization') and self.alive('navigation'):
             self.stop('navigation')
+        if name == 'localization' and bag and bag.parameters.get('stack_start') and self.alive('bag'):
+            self.stop('bag')
         if name == 'bag':
             process.stop(0)
         elif name == 'optimizer':
@@ -340,7 +346,13 @@ class Processes:
         if self.settings.profile == 'sim':
             targets.insert(0, 'gazebo')
         launched = []
+        stack_bag = None
         try:
+            if not self.alive('navigation') and not self.ros.node_names().intersection(OWNERS['navigation']):
+                previous_bag = self.entries.get('bag')
+                self.start_auto_bag(stack=True)
+                if self.entries.get('bag') is not previous_bag:
+                    stack_bag = self.entries['bag']
             for name in targets:
                 self.check_start()
                 if self.alive(name) or self.ros.node_names().intersection(OWNERS[name]):
@@ -354,6 +366,8 @@ class Processes:
             if not self.cancel_start.is_set():
                 for name in reversed(launched):
                     self.stop(name)
+                if stack_bag is not None and self.entries.get('bag') is stack_bag:
+                    self.stop('bag')
             raise
         if (not self.alive('navigation') and
                 not self.ros.node_names().intersection(OWNERS['navigation'])):

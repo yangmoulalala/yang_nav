@@ -25,6 +25,9 @@ SUMMARY_TOPICS = '''/cmd_vel /cmd_vel_nav /backend_node/localization_state /nav_
 /chassis/nav_intent /compute_path_to_pose/_action/status /collision_monitor_state /rosout'''.split()
 SUMMARY_RESERVE = 5 * 1024**3
 SUMMARY_LIMIT = 256 * 1024**2
+SUMMARY_MCAP_SPLIT_SECONDS = 10
+SUMMARY_CHECKPOINT_SECONDS = 1
+MCAP_MAGIC = b'\x89MCAP0\r\n'
 SENSOR_TOPICS='''/livox/lidar /livox/imu /unilidar/cloud /lidar/points
 /lidar_mid360/points /lidar_l2/points /lidar_mid360/imu'''.split()
 TOPICS=SENSOR_TOPICS+'''
@@ -70,6 +73,54 @@ def snapshot(out, phase):
     if code:print(f'{phase}: ROS snapshot incomplete; bag data is unaffected.',flush=True)
 
 
+def sync_directory(path):
+    descriptor = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def sync_file(path):
+    with path.open('rb') as stream:
+        os.fsync(stream.fileno())
+
+
+def write_manifest(out, manifest, durable=False):
+    path = out / 'session.json'
+    if not durable:
+        path.write_text(json.dumps(manifest, indent=2) + '\n')
+        return
+    temporary = out / 'session.json.tmp'
+    with temporary.open('w') as stream:
+        stream.write(json.dumps(manifest, indent=2) + '\n')
+        stream.flush()
+        os.fsync(stream.fileno())
+    temporary.replace(path)
+    sync_directory(out)
+
+
+def checkpoint_mcap(out, manifest):
+    bag = out / 'bag'
+    previous = set(manifest['durable_mcap_segments'])
+    durable = previous.copy()
+    for segment in bag.glob('*.mcap'):
+        if segment.name in previous:
+            continue
+        with segment.open('rb') as stream:
+            if stream.seek(0, os.SEEK_END) < 2 * len(MCAP_MAGIC):
+                continue
+            stream.seek(-len(MCAP_MAGIC), os.SEEK_END)
+            if stream.read() != MCAP_MAGIC:
+                continue
+            os.fsync(stream.fileno())
+        durable.add(segment.name)
+    if durable != previous:
+        sync_directory(bag)
+        manifest['durable_mcap_segments'] = sorted(durable)
+        write_manifest(out, manifest, durable=True)
+
+
 def main():
     ap=argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--output',type=Path,help='new session directory; default bags/recordings/<timestamp>')
@@ -103,6 +154,7 @@ def main():
         if stop.is_set():return 0
     session_name = datetime.now().strftime('%Y%m%d_%H%M%S_%f') + ('_summary' if args.summary else '')
     out=(args.output or WS/'bags/recordings'/session_name).expanduser().resolve()
+    durable = args.summary and args.storage == 'mcap'
     if args.summary:
         ancestor = next(parent for parent in out.parents if parent.is_dir())
         if shutil.disk_usage(ancestor).free < SUMMARY_RESERVE:
@@ -131,8 +183,9 @@ def main():
         qos['/navigation/goal_accepted'] = dict(reliability='reliable', durability='transient_local', history='keep_last', depth=1)
     import yaml
     qos_path=out/'qos.yaml';qos_path.write_text(yaml.safe_dump(qos,sort_keys=True))
+    split_seconds = SUMMARY_MCAP_SPLIT_SECONDS if durable else (30 if args.summary else 120)
     command=['ros2','bag','record','--output',str(out/'bag'),'--storage',args.storage,
-             '--max-bag-duration','30' if args.summary else '120','--max-cache-size',str(4 * 1024**2 if args.summary else 268435456),'--disable-keyboard-controls',
+             '--max-bag-duration',str(split_seconds),'--max-cache-size',str(4 * 1024**2 if args.summary else 268435456),'--disable-keyboard-controls',
              '--qos-profile-overrides-path',str(qos_path)]
     command+=['--include-hidden-topics']
     if args.use_sim_time:command+=['--use-sim-time']
@@ -141,7 +194,14 @@ def main():
     manifest=dict(created=datetime.now().astimezone().isoformat(),workspace=str(WS),note=args.note,
                   ros_domain_id=os.environ.get('ROS_DOMAIN_ID','0'),command=command,
                   use_sim_time=args.use_sim_time,topics=topics,all_topics=args.all,summary=args.summary,completed=False)
-    (out/'session.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    if durable:
+        manifest['durable_mcap_segments'] = []
+    write_manifest(out, manifest, durable)
+    if durable:
+        for parent in out.parents:
+            sync_directory(parent)
+            if parent == ancestor:
+                break
     print(f'Session: {out}\nRecording existing topics. Ctrl-C stops only this recorder.',flush=True)
     with ThreadPoolExecutor(max_workers=2) as snapshots:
         with (out/'recorder.log').open('w') as log:
@@ -149,9 +209,13 @@ def main():
             if not args.summary:snapshots.submit(snapshot,out,'start_graph')
             begin=time.monotonic()
             next_check = begin + 5
+            next_checkpoint = begin + SUMMARY_CHECKPOINT_SECONDS
             try:
                 while process.poll() is None and not stop.wait(.2):
                     if args.duration and time.monotonic()-begin>=args.duration:break
+                    if durable and time.monotonic() >= next_checkpoint:
+                        checkpoint_mcap(out, manifest)
+                        next_checkpoint = time.monotonic() + SUMMARY_CHECKPOINT_SECONDS
                     if args.summary and time.monotonic() >= next_check:
                         next_check = time.monotonic() + 5
                         if shutil.disk_usage(out).free < SUMMARY_RESERVE or sum(item.stat().st_size for item in (out/'bag').glob('*') if item.is_file()) >= SUMMARY_LIMIT:
@@ -166,15 +230,23 @@ def main():
                     os.killpg(process.pid,signal.SIGTERM)
                     process.wait(timeout=10)
         recorder_ok=process.returncode in (0,130,-signal.SIGINT)
-        if recorder_ok and (out/'bag'/'metadata.yaml').is_file():
+        metadata = out / 'bag' / 'metadata.yaml'
+        if durable:
+            checkpoint_mcap(out, manifest)
+            if metadata.is_file():
+                sync_file(metadata)
+                sync_directory(metadata.parent)
+        if recorder_ok and metadata.is_file():
             print(f'Bag data saved: {out}',flush=True)
         print('Checking bag metadata.',flush=True)
         if not args.summary:snapshots.submit(snapshot,out,'stop_graph')
         info,info_code=capture(['ros2','bag','info',str(out/'bag')],timeout=15)
         (out/'bag_info.txt').write_text(info)
+        if durable:
+            sync_file(out / 'bag_info.txt')
     manifest.update(completed=recorder_ok and info_code==0,recorder_exit_code=process.returncode,
                     elapsed_seconds=time.monotonic()-begin,finished=datetime.now().astimezone().isoformat())
-    (out/'session.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    write_manifest(out, manifest, durable)
     print(info,flush=True)
     print(f'{"Saved session" if manifest["completed"] else "Incomplete session"}: {out}',flush=True)
     return 0 if manifest['completed'] else 1

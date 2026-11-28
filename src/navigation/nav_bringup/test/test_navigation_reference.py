@@ -3,11 +3,60 @@ import ast
 from importlib.util import module_from_spec, spec_from_file_location
 import math
 from pathlib import Path
+import pytest
 from bringup.configuration import merge
+from launch import LaunchContext
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo
+from launch.utilities import perform_substitutions
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 PARAMS = yaml.safe_load((ROOT/'params/nav2.yaml').read_text())
+
+
+@pytest.fixture
+def navigation_launch():
+    launch_spec = spec_from_file_location('navigation_launch', ROOT / 'launch/navigation.launch.py')
+    launch_module = module_from_spec(launch_spec)
+    launch_spec.loader.exec_module(launch_module)
+    return launch_module
+
+
+@pytest.mark.parametrize('profile,auto_bag,expected', [
+    ('real', None, True), ('real', 'false', False), ('sim', None, False),
+])
+def test_navigation_build_owns_only_enabled_real_recording(
+        navigation_launch, monkeypatch, tmp_path, profile, auto_bag, expected):
+    recorder = object()
+    monkeypatch.setattr(navigation_launch, 'navigation_summary_recorder', lambda share: recorder)
+    monkeypatch.setattr(navigation_launch, 'get_package_share_directory', lambda package: str(ROOT))
+    context = LaunchContext()
+    context.launch_configurations.update(profile=profile)
+    for name in ('nav_map.yaml', 'speed_mask.yaml', 'zones.yaml', 'terrain.msgpack'):
+        (tmp_path / name).touch()
+    context.launch_configurations['terrain_dir'] = str(tmp_path)
+    context.launch_configurations['params_file'] = str(ROOT / 'params' / 'nav2.yaml')
+    if auto_bag is not None:
+        context.launch_configurations['auto_bag'] = auto_bag
+    for action in navigation_launch.generate_launch_description().entities:
+        if isinstance(action, DeclareLaunchArgument):
+            action.execute(context)
+    assert (recorder in navigation_launch.build(context)) == expected
+
+
+@pytest.mark.parametrize('install_layout', ['install', 'install/nav_bringup'])
+def test_navigation_summary_recorder_uses_workspace_tool(navigation_launch, tmp_path, install_layout):
+    share = tmp_path / install_layout / 'share' / 'nav_bringup'
+    assert isinstance(navigation_launch.navigation_summary_recorder(share), LogInfo)
+    recorder = tmp_path / 'tools' / 'record_bag.py'
+    recorder.parent.mkdir()
+    recorder.touch()
+    action = navigation_launch.navigation_summary_recorder(share)
+    context = LaunchContext()
+    assert isinstance(action, ExecuteProcess)
+    assert [perform_substitutions(context, part) for part in action.cmd][1:] == [
+        '-u', str(recorder), '--summary', '--navigation-session']
+    assert perform_substitutions(context, action.cwd) == str(tmp_path)
 
 
 def test_obstacle_frames_and_physical_envelope_agree():
@@ -61,21 +110,18 @@ def test_real_profile_only_reduces_local_inflation_radius():
     assert real['collision_monitor'] == PARAMS['collision_monitor']
 
 
-def test_exported_real_tuning_preserves_fixed_frame_smoother(tmp_path):
-    launch_spec = spec_from_file_location('navigation_launch', ROOT / 'launch/navigation.launch.py')
-    launch_module = module_from_spec(launch_spec)
-    launch_spec.loader.exec_module(launch_module)
-    real = launch_module.navigation_params(ROOT / 'params/nav2.yaml', ROOT / 'params/nav2_real.yaml')
+def test_exported_real_tuning_preserves_fixed_frame_smoother(tmp_path, navigation_launch):
+    real = navigation_launch.navigation_params(ROOT / 'params/nav2.yaml', ROOT / 'params/nav2_real.yaml')
     custom_file = tmp_path / 'nav2.yaml'
     custom_file.write_text(yaml.safe_dump(real))
-    tuned = launch_module.navigation_params(custom_file)
+    tuned = navigation_launch.navigation_params(custom_file)
     normal = ('nav2_velocity_smoother', 'velocity_smoother')
     fixed = ('nav_behaviors', 'fixed_frame_velocity_smoother')
-    assert launch_module.velocity_smoother_executable('real', real) == fixed
-    assert launch_module.velocity_smoother_executable('real', tuned) == fixed
-    assert launch_module.velocity_smoother_executable('real', PARAMS) == normal
-    assert launch_module.velocity_smoother_executable('sim', PARAMS) == normal
-    assert launch_module.velocity_smoother_executable('sim', tuned) == fixed
+    assert navigation_launch.velocity_smoother_executable('real', real) == fixed
+    assert navigation_launch.velocity_smoother_executable('real', tuned) == fixed
+    assert navigation_launch.velocity_smoother_executable('real', PARAMS) == normal
+    assert navigation_launch.velocity_smoother_executable('sim', PARAMS) == normal
+    assert navigation_launch.velocity_smoother_executable('sim', tuned) == fixed
 
 
 def test_real_profile_matches_controller_smoother_and_gate_without_changing_collision_monitor():

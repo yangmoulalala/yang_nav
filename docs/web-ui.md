@@ -72,8 +72,8 @@ python3 -m venv --system-site-packages ~/.venvs/nav-terrain
 
 ## 录包与 Foxglove
 
-- 真车摘要录包由 `nav_bringup/navigation.launch.py` 启停。通过 WebUI、`tools/start_navigation.sh` 或 `ros2 launch` 启动真车导航均默认开始录包；停止该 launch 时封包。只开 WebUI 或只启定位不录。真车单次关闭可传 `auto_bag:=false`，WebUI 勾选框向 launch 传递相同开关。已有录包时不替换它。仿真的 WebUI 自动录包行为不变。
-- 轻量摘要也记录串口地点意图和单点规划 Action 状态；使用 4 MiB 缓存，有消息时每 30 秒滚动关闭一个 MCAP 分片。断开浏览器或 SSH 不会停止服务端录包；正常停止会生成整包元数据。强杀时最后一个分片可能不完整，已关闭的分片可用 `ros2 bag info -s mcap <分片路径>` 单独检查。分片不能保证突然掉电时零丢失。
+- WebUI 一键启动定位导航系统时，默认同时发起轻量摘要录包和定位导航启动，不等待录包节点就绪；导航仍按原有规则等待可用定位。录包写入 `bags/recordings/<时间>_summary/`；只停导航时继续录，关闭整个系统或停止定位时封包。已有录包时不替换它；只开 WebUI 或单独点「仅启动定位」不会另开录包。单独启动导航（包括真车的 `tools/start_navigation.sh` 和 `ros2 launch`）仍可自动录包作为后备；可用 WebUI 勾选框或真车 launch 参数 `auto_bag:=false` 关闭。
+- 轻量摘要也记录串口地点意图和单点规划 Action 状态，使用 4 MiB 缓存。MCAP 有持续消息时约每 10 秒关闭一个分片，录包器每秒检查新封口分片并将文件与目录同步落盘，再原子更新 `session.json` 的 `durable_mcap_segments`。正常停止会生成整包元数据；异常断电后，在 `bag/` 中按清单找已落盘分片，可用 `ros2 bag info -s mcap <分片路径>` 单独检查。正在写入或尚未同步的分片可能丢失，低频话题、系统负载和硬件也会影响保存间隔，不能保证断电零丢失。
 - 每 5 秒检查 5 GiB 剩余空间及约 256 MiB 单会话限额；达到限制只停止录包，不停止导航，也不删除旧包。完整传感器回放仍需手动录包。
 
 - 「开始录包」使用项目的 `record_bag.py`。可设时长、备注、追加话题或录制全部话题。仿真自动使用 `/clock`。录包目录位于 `bags/recordings/`。话题边录边写；停录后先写完缓存并封包，再并行检查包信息和采集 ROS 诊断。每次诊断快照共享一个参数查询时限，跳过的节点记录在相应的 `snapshot.yaml`。待「录包已保存」后再关闭 ROS 节点；点击「关闭全部」也会先等待录包收尾。

@@ -22,6 +22,7 @@ mode:=mapping uses rolling live costmaps instead of the offline terrain package.
 """
 import math
 import os
+import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -30,7 +31,7 @@ import yaml
 from ament_index_python.packages import get_package_share_directory
 from bringup.configuration import merge
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction, RegisterEventHandler
 from launch.event_handlers import OnShutdown
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -97,6 +98,17 @@ def velocity_smoother_executable(profile, document):
     if follow.get('fixed_frame_translation') is True:
         return 'nav_behaviors', 'fixed_frame_velocity_smoother'
     return 'nav2_velocity_smoother', 'velocity_smoother'
+
+
+def navigation_summary_recorder(share):
+    for workspace in share.parents:
+        recorder = workspace / 'tools' / 'record_bag.py'
+        if recorder.is_file():
+            return ExecuteProcess(
+                cmd=[sys.executable, '-u', str(recorder), '--summary', '--navigation-session'],
+                cwd=str(workspace), name='navigation_summary_recorder', output='screen',
+                sigterm_timeout='60', sigkill_timeout='5')
+    return LogInfo(msg='Skipping automatic bag: tools/record_bag.py not found in the workspace.')
 
 
 def build(context):
@@ -185,6 +197,8 @@ def build(context):
             if not (terrain_dir / required).is_file():
                 raise RuntimeError(f'Terrain package is missing {required}: {terrain_dir}; re-export it first')
         terrain_file = str(terrain_dir / 'terrain.msgpack')
+    if profile == 'real' and _get(context, 'auto_bag') == 'true':
+        actions.append(navigation_summary_recorder(share))
 
     def nav2(pkg, exe, name=None, extra=None, remap=None):
         return Node(package=pkg, executable=exe, name=name or exe, output='screen',
@@ -272,6 +286,8 @@ def generate_launch_description():
                                           '(maps/sim or an export folder such as maps/sim/terrain)'),
         DeclareLaunchArgument('params_file', default_value='', description='full Nav2 parameters (replaces profile defaults)'),
         DeclareLaunchArgument('use_sim_time', default_value='', description='default true for sim, false for real'),
+        DeclareLaunchArgument('auto_bag', default_value='true', choices=['true', 'false'],
+                              description='record a lightweight ROS bag for the real navigation session'),
         DeclareLaunchArgument('require_trusted', default_value='true',
                               description='require trusted or odometry-extrapolated localization'),
         DeclareLaunchArgument('rviz', default_value='false'),
