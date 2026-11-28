@@ -142,7 +142,7 @@ def defaults(profile):
     return dict(mode='localization', lidar='dual' if simulation else 'single',
                 prior_map='maps/sim' if simulation else 'maps/real/site_a_001', terrain_dir='',
                 map_dir=f'maps/{profile}/new_session', arena='rmuc', team='auto', gui=False, uwb=True,
-                chassis_port='/dev/nav', serial_goals=False, l2_launch='', tuning={})
+                chassis_port='/dev/nav', favorites=[], l2_launch='', tuning={})
 
 
 def yaml_write(destination, data):
@@ -184,6 +184,7 @@ class Settings:
             self.data['profile'] = choice(saved['profile'], ('sim', 'real'), '平台')
             for profile in ('sim', 'real'):
                 self.data[profile].update(saved[profile])
+                self.data[profile].pop('serial_goals', None)
 
     @property
     def profile(self):
@@ -204,9 +205,27 @@ class Settings:
             document[name] = text(payload.get(name, previous[name]), name)
         document['gui'] = flag(payload.get('gui', previous['gui']), 'Gazebo GUI')
         document['uwb'] = flag(payload.get('uwb', previous['uwb']), '仿真 UWB')
-        document['serial_goals'] = flag(payload.get('serial_goals', previous['serial_goals']), '串口触发导航')
         document['tuning'] = previous['tuning']
         self.save(dict(self.data, profile=profile, **{profile: document}))
+
+    def favorite(self, payload):
+        profile = choice(payload.get('profile'), ('sim', 'real'), '平台')
+        pair = {key: text(payload.get(key), key) for key in ('prior_map', 'terrain_dir')}
+        items = list(self.data[profile]['favorites'])
+        if flag(payload.get('remove'), '移除常用地形'):
+            if pair in items:
+                items.remove(pair)
+            message = '已移除常用地形'
+        else:
+            prior_path(pair['prior_map'])
+            terrain_path(pair['terrain_dir'] or pair['prior_map'])
+            if pair not in items:
+                if len(items) >= 50:
+                    raise ValueError('每个平台最多保存 50 组常用地形')
+                items.append(pair)
+            message = '先验地图和配套地形已加入常用'
+        self.save(dict(self.data, **{profile: dict(self.data[profile], favorites=items)}))
+        return message
 
     def tune(self, payload):
         values = {}

@@ -34,11 +34,15 @@
         <article class="metric"><label>定位状态</label>
           <div class="loc-readout" role="status"><strong id="loc-status">—</strong><span id="loc-trust">等待定位数据</span></div>
           <span id="match-elapsed" class="numeric" hidden></span><a id="match-logs" href="#logs" hidden>查看定位日志</a>
+          <button id="match-stop" data-action="stack/stop" hidden>终止匹配并关闭程序</button>
+          <button id="match-preview" type="button" hidden>直接选用匹配参考点（预览）</button>
+          <small id="match-reference" hidden></small>
+          <img id="match-map-image" alt="白色十字为人工选用的匹配参考点" hidden>
         </article>
         <article class="metric"><label>地图位姿</label><strong class="numeric" id="pose">—</strong><span id="yaw">x / y · m</span></article>
         <article class="metric"><label>实测 / 指令速度</label><strong class="numeric" id="speed">— / —</strong><span id="velocity">m/s</span></article>
         <article class="metric"><label>Nav2 / 底盘反馈</label><strong id="nav2">—</strong><span id="chassis">等待状态</span></article>
-        <article class="metric"><label>串口接收目标（A4）</label><strong class="numeric" id="serial-target">—</strong><span id="serial-target-detail">等待 A4 上行</span></article>
+        <article class="metric"><label>串口地点指令（A4 · 只读）</label><strong id="serial-target">—</strong><span id="serial-target-detail">等待 A4 上行</span></article>
         <article class="metric"><label>串口下发速度（A3）</label><strong class="numeric" id="serial-speed">—</strong><span id="serial-speed-detail">暂无 A3 下发</span></article>
       </section>
       <div class="grid">
@@ -60,18 +64,29 @@
             <label>运行平台<select name="profile"><option value="sim">仿真</option><option value="real">真车</option></select></label>
             <label>定位后端<select name="mode"><option value="localization">先验地图匹配</option><option value="mapping">从零建图</option></select></label>
             <label>雷达配置<select name="lidar"><option value="single">单雷达</option><option value="dual">双雷达</option></select></label>
-            <label data-mode="localization">先验地图目录<input name="prior_map" list="map-options" placeholder="maps/sim"></label>
-            <label data-mode="localization">导航地形目录<input name="terrain_dir" list="terrain-options" placeholder="留空时从先验地图目录查找"></label>
             <label data-mode="mapping">建图输出目录<input name="map_dir" placeholder="maps/sim/new_session"></label>
             <label data-profile="sim">Gazebo 场地<select name="arena"><option value="rmuc">RMUC</option><option value="rmul">RMUL</option></select></label>
             <label data-profile="sim">出生阵营<select name="team"><option value="auto">场地默认</option><option value="red">红方</option><option value="blue">蓝方</option></select></label>
             <label data-profile="sim" class="check"><input name="gui" type="checkbox"> 在主机显示 Gazebo 窗口</label>
             <label data-profile="sim" class="check"><input name="uwb" type="checkbox"> 发布仿真 UWB</label>
             <label data-profile="real">底盘串口<input name="chassis_port" placeholder="/dev/nav"></label>
-            <label data-profile="real" class="check"><input name="serial_goals" type="checkbox"> 串口目标自动触发导航（车辆可能立即移动）</label>
             <label data-profile="real" data-lidar="dual">L2 驱动 launch 路径<input name="l2_launch" placeholder="留空时使用已启动驱动"></label>
           </div>
           <datalist id="map-options"></datalist><datalist id="terrain-options"></datalist>
+          <div id="terrain-picker" hidden>
+          <div class="terrain-documents" role="tablist" aria-label="匹配地形选择">
+            <button type="button" role="tab" id="paths-tab" aria-controls="terrain-paths" aria-selected="true">地图路径</button>
+            <button type="button" role="tab" id="favorite-tab" aria-controls="favorite-terrain" aria-selected="false" tabindex="-1">常用地形</button>
+          </div>
+          <div id="terrain-paths" class="form-grid" role="tabpanel" aria-labelledby="paths-tab">
+            <label>先验地图目录<input name="prior_map" list="map-options" placeholder="maps/sim"></label>
+            <label>导航地形目录<input name="terrain_dir" list="terrain-options" placeholder="留空时从先验地图目录查找"></label>
+          </div>
+          <div id="favorite-terrain" role="tabpanel" aria-labelledby="favorite-tab" hidden>
+            <label>已收藏的先验地图 / 配套地形<select id="favorite-list"></select></label>
+            <small id="favorite-current"></small>
+            <div class="actions"><button type="button" id="favorite-use">选用</button><button type="button" id="favorite-add">收藏当前组合</button><button type="button" id="favorite-remove">移除</button></div>
+          </div></div>
           <div class="form-footer"><small>保存后，启动或重启对应进程加载配置。</small><button class="primary" type="submit">保存启动配置</button></div>
         </form>
       </section>
@@ -163,7 +178,8 @@
         <div class="terrain-grid">
           <article class="panel terrain-map">
             <div class="map-toolbar">
-              <label>工具<select id="surface-tool"><option value="select">选择</option><option value="box">框选</option><option value="pan">平移</option><option value="brush">画笔</option><option value="rectangle">矩形</option><option value="polygon">套索</option><option value="line">切割线</option></select></label>
+              <label>工具<select id="surface-tool"><option value="select">选择</option><option value="box">框选</option><option value="pan">平移</option><option value="brush">画笔</option><option value="rectangle">矩形</option><option value="polygon">套索</option><option value="line">切割线</option><optgroup id="landmark-tools" label="地图标点"><option value="home">放置家的点</option><option value="target">放置目标点</option><option value="match">放置匹配参考点</option></optgroup></select></label>
+              <button type="button" id="landmark-remove" hidden>清除此标点</button>
               <label id="region-mode-field" hidden>范围处理<select id="region-mode"><option value="new">新建面片</option><option value="join">并入选中</option><option value="restore">恢复分割</option></select></label>
               <label id="brush-radius-field" hidden>画笔半径 · 格<input id="brush-radius" type="number" value="3" min="1" max="50"></label>
               <label id="clip-field" class="check" hidden><input id="clip-selection" type="checkbox" checked> 限于选中范围</label>
@@ -171,6 +187,7 @@
             </div>
             <canvas id="terrain-canvas" aria-label="可交互地形俯视图"></canvas>
             <div class="map-footer"><small id="terrain-cursor">滚轮缩放 · 中键或右键拖动平移</small><small>Ctrl / ⌘ 加选 · Shift 拖动框选</small></div>
+            <p id="landmark-summary" class="muted" hidden></p>
           </article>
           <article class="panel terrain-inspector">
             <header><h3>面片标注</h3><small id="terrain-selection">未选择</small></header>

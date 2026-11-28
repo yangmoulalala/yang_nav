@@ -1,6 +1,6 @@
 import argparse
 import fcntl
-from functools import partial
+from functools import lru_cache, partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import math
@@ -17,8 +17,9 @@ from rclpy.signals import SignalHandlerOptions
 
 from .processes import LABELS, OWNERS, PROCESSES, Processes
 from .ros_state import RosState
-from .settings import Settings, WORKSPACE, candidates, prior_path
-from .terrain import TerrainEditor, field_references, preview_archive, terrain_sources
+from .settings import Settings, WORKSPACE, candidates, prior_path, terrain_path
+from .terrain import (TerrainEditor, field_references, matches_prior, preview_archive,
+                      render_match_reference, terrain_sources)
 
 
 STATIC = Path(__file__).with_name('static')
@@ -43,14 +44,32 @@ class Console:
         self.terrain = TerrainEditor()
         self.ros = ros
         self.operation = threading.Lock()
+        self.admission = threading.Lock()
         self.domain = os.environ.get('ROS_DOMAIN_ID', '0')
         self.foxglove_port = foxglove_port
 
     def snapshot(self):
         return dict(domain=self.domain, profile=self.settings.profile,
                     ros=self.ros.snapshot(), processes=self.processes.describe(),
+                    matching_map=self.matching_map(),
                     foxglove_online='/foxglove_bridge' in self.ros.node_names(),
                     foxglove_port=self.foxglove_port)
+
+    def matching_map(self):
+        prior = self.preview_prior()
+        if not prior:
+            return None
+        loc = self.processes.entries.get('localization')
+        config = loc.parameters if self.processes.alive('localization') else self.settings.active
+        nav = self.processes.entries.get('navigation')
+        try:
+            folder = (Path(nav.output) if self.processes.alive('navigation') and nav.output else
+                      terrain_path(config['terrain_dir'] or str(prior)))
+            meta = folder / 'terrain.json'
+            stat = meta.stat()
+            return read_landmarks(meta, prior, stat.st_ino, stat.st_mtime_ns)
+        except (ValueError, OSError, TypeError):
+            return None
 
     def preview_prior(self):
         if self.processes.alive('localization'):
@@ -70,12 +89,23 @@ class Console:
                 'fields': {profile: self.settings.fields(profile) for profile in ('sim', 'real')}}
 
     def action(self, route, body):
-        if not self.operation.acquire(blocking=False):
-            raise ValueError('有操作正在执行，请等待完成')
+        stop = route == '/api/stack/stop'
+        with self.admission:
+            if self.processes.cancel_start.is_set():
+                raise ValueError('工作台正在关闭进程')
+            if stop:
+                self.processes.cancel_start.set()
+            elif not self.operation.acquire(blocking=False):
+                raise ValueError('有操作正在执行，请等待完成，或点击关闭全部')
+        if stop:
+            self.operation.acquire()
         try:
             return self.perform(route, body)
         finally:
-            self.operation.release()
+            with self.admission:
+                self.operation.release()
+                if stop:
+                    self.processes.cancel_start.clear()
 
     def perform(self, route, body):
         processes = self.processes
@@ -94,6 +124,8 @@ class Console:
                 raise ValueError('请刷新页面并核对当前平台')
             self.settings.tune(overrides)
             return '参数已保存。重启相关进程后应用。'
+        if route == '/api/favorite':
+            return self.settings.favorite(body)
         if route == '/api/stack/start':
             processes.start_stack()
             return '启动请求已提交，可在工作台查看 ROS 节点是否就绪。'
@@ -129,6 +161,21 @@ class Console:
         else:
             processes.restart(name, body)
         return f'{LABELS[name]} 操作已提交'
+
+
+@lru_cache(maxsize=32)
+def read_landmarks(meta, prior, inode, modified):
+    data = json.loads(meta.read_text(encoding='utf-8'))
+    if not isinstance(data, dict) or not matches_prior(data.get('frame'), data.get('source'), prior):
+        return None
+    raw = data.get('landmarks', {})
+    if not isinstance(raw, dict):
+        return None
+    points = {name: pair for name, pair in raw.items() if name in ('home', 'target', 'match') and
+              isinstance(pair, list) and len(pair) == 2 and
+              all(type(value) in (int, float) and math.isfinite(value) for value in pair)}
+    return dict(terrain=str(meta.parent), prior=str(prior), landmarks=points, revision=f'{inode}-{modified}',
+                grid=[data.get('resolution'), data.get('origin'), data.get('size')])
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -168,6 +215,18 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, self.console.snapshot())
         elif route == '/api/config':
             self.respond(200, self.console.config())
+        elif route == '/api/match-reference':
+            try:
+                terrain = self.console.matching_map()
+                revision = parse_qs(request.query).get('revision', [''])[0]
+                if not terrain or 'match' not in terrain['landmarks'] or terrain['revision'] != revision:
+                    raise ValueError('匹配参考点缺失或地图已经切换')
+                png = render_match_reference(Path(terrain['terrain']), terrain['grid'], terrain['landmarks']['match'])
+                if terrain != self.console.matching_map():
+                    raise ValueError('地形已经更新，请重新选用')
+                self.respond(200, png, 'image/png')
+            except (OSError, ValueError) as exc:
+                self.respond(400, {'error': str(exc)})
         elif route == '/api/terrain':
             self.respond(200, self.console.terrain.snapshot())
         elif route == '/api/terrain/project-preview':
@@ -267,6 +326,7 @@ def main():
             http.serve_forever()
     finally:
         try:
+            console.processes.cancel_start.set()
             with console.operation:
                 try:
                     console.processes.stop_stack()

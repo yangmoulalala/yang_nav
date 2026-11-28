@@ -4,7 +4,7 @@ import time
 from urllib.parse import unquote
 
 from action_msgs.srv import CancelGoal
-from geometry_msgs.msg import PointStamped, PoseWithCovarianceStamped, Twist, TwistStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistStamped
 from lifecycle_msgs.srv import GetState
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
@@ -55,8 +55,8 @@ class RosState(Node):
                    lambda msg: vector(msg.linear), 0.6)
         self.watch('chassis', Bool, '/chassis/big_yaw_online', latched,
                    lambda msg: msg.data, None)
-        self.watch('serial_target', PointStamped, '/chassis/nav_target', qos_profile_sensor_data,
-                   lambda msg: {'x': msg.point.x, 'y': msg.point.y, 'frame': msg.header.frame_id}, None)
+        self.watch('serial_intent', String, '/chassis/nav_intent', qos_profile_sensor_data,
+                   lambda msg: msg.data, None)
         self.watch('serial_velocity', TwistStamped, '/chassis/tx_velocity', qos_profile_sensor_data,
                    lambda msg: {**vector(msg.twist.linear), 'frame': msg.header.frame_id}, 0.1)
         self.create_timer(1.0, self.query_lifecycle)

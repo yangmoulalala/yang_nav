@@ -16,6 +16,8 @@ const terrainLabels = {normal: '普通地形', tunnel: '隧道', ramp: '坡道',
 let config;
 let status;
 let busy = false;
+let stopping = false;
+let previewMatch;
 let noticeTimeout;
 let matchSince;
 let polling = false;
@@ -39,8 +41,10 @@ async function api(route, body) {
 }
 
 async function operate(route, body = {}, reloadConfig = false) {
-  if (busy) return;
-  busy = true;
+  const stop = route === 'stack/stop';
+  if (stopping || (busy && !stop)) return;
+  if (stop) stopping = true;
+  else busy = true;
   updateControls();
   const matching = ['stack/start', 'process/localization/start', 'process/localization/restart'].includes(route) &&
     config?.[status?.profile]?.mode === 'localization';
@@ -51,11 +55,12 @@ async function operate(route, body = {}, reloadConfig = false) {
   try {
     const result = await api(route, body);
     if (reloadConfig) await loadConfig();
-    message(route === 'relocalize' ? '全局重定位已受理，进度见「定位状态」。' : result.message);
+    if (stop || !stopping) message(route === 'relocalize' ? '全局重定位已受理，进度见「定位状态」。' : result.message);
   } catch (error) {
-    message(error.message, true);
+    if (stop || !stopping) message(error.message, true);
   } finally {
-    busy = false;
+    if (stop) stopping = false;
+    else busy = false;
     updateControls();
     await updateStatus();
   }
@@ -71,9 +76,19 @@ function paintSetup(profile) {
     else field.value = value;
   }
   updateSetupVisibility();
+  renderFavorites();
+}
+
+function renderFavorites() {
+  const items = config[setup.elements.profile.value].favorites || [];
+  element('favorite-list').replaceChildren(...(items.length ? items.map((item, index) =>
+    new Option(`${item.prior_map} / ${item.terrain_dir || '地图内置地形'}`, String(index))) : [new Option('尚无收藏', '')]));
+  updateControls();
 }
 
 function updateSetupVisibility() {
+  element('terrain-picker').hidden = setup.elements.mode.value !== 'localization';
+  element('favorite-current').textContent = `当前组合：${setup.elements.prior_map.value} / ${setup.elements.terrain_dir.value || '地图内置地形'}`;
   for (const label of setup.querySelectorAll('[data-profile], [data-mode], [data-lidar]')) {
     label.hidden = ['profile', 'mode', 'lidar'].some((name) =>
       label.dataset[name] && label.dataset[name] !== setup.elements[name].value);
@@ -238,6 +253,21 @@ function displayLocalization(snapshot, logStage) {
   if (explanation.textContent !== detail) explanation.textContent = detail;
   heading.className = tone || '';
   element('match-logs').hidden = !matching || !(inProgress || tone === 'bad' || tone === 'warn');
+  element('match-stop').hidden = !matching || (trusted && !busy);
+  const terrain = snapshot?.matching_map;
+  const point = terrain?.landmarks.match;
+  const key = point && terrain.revision;
+  if (previewMatch !== key || !matching || trusted) {
+    previewMatch = undefined;
+    element('match-map-image').hidden = true;
+  }
+  const button = element('match-preview');
+  button.hidden = !matching || trusted;
+  button.disabled = !point || stopping;
+  const reference = element('match-reference');
+  reference.hidden = !matching || trusted;
+  reference.textContent = point ? `${previewMatch ? '已选用人工参考（仅预览）' : '参考点'}：map (${point.map(value => format(value)).join(', ')}) m，不改变定位。` :
+    '未找到匹配参考点；请在同一先验地图的建图工程中标注并导出。';
 }
 
 function format(value, digits = 2) {
@@ -245,11 +275,12 @@ function format(value, digits = 2) {
 }
 
 function displaySerialStatus(ros) {
-  const target = ros?.serial_target;
+  const intent = ros?.serial_intent;
+  const destination = status?.matching_map?.landmarks[intent];
   const velocity = ros?.serial_velocity;
-  element('serial-target').textContent = target ? `${format(target.x)} / ${format(target.y)}` : '—';
-  element('serial-target-detail').textContent = target ?
-    `${target.frame} · X / Y · m${ros.chassis === true ? '' : ' · 上次接收'}` :
+  element('serial-target').textContent = intent === 'home' ? '回家' : intent === 'target' ? '前往目标点' : '—';
+  element('serial-target-detail').textContent = ['home', 'target'].includes(intent) ?
+    `${ros.chassis === true ? '' : '上次接收 · '}${destination ? `map (${destination.map(value => format(value)).join(', ')}) m` : '无对应地图标点'} · 仅预览` :
     ros ? (ros.chassis === false ? 'A4 反馈离线' : '等待 A4 上行') : '连接中断';
   element('serial-speed').textContent = velocity ? `${format(velocity.speed)} m/s` : '—';
   element('serial-speed-detail').textContent = velocity ?
@@ -304,7 +335,7 @@ function updateControls() {
   const rows = status?.processes;
   const ros = status?.ros;
   const mode = localizationMode(status);
-  const unavailable = busy || !rows;
+  const unavailable = busy || stopping || !rows;
   for (const button of document.querySelectorAll('button[data-action]')) {
     const action = button.dataset.action;
     let enabled = !unavailable;
@@ -322,13 +353,76 @@ function updateControls() {
       (mode !== 'mapping' || rows.localization.state === 'external') &&
       !['running', 'external', 'stopping'].includes(rows.navigation.state);
     if (enabled && action === 'cancel_goal') enabled = !!ros.services.cancel_goal || rows.goal.state === 'running';
-    button.disabled = !enabled;
+    button.disabled = action === 'stack/stop' ? stopping || (!rows && !busy) : !enabled;
   }
   element('bag-start').disabled = unavailable || !['stopped', 'failed'].includes(rows.bag.state);
   element('optimizer-start').disabled = unavailable || !['stopped', 'failed', 'cancelled'].includes(rows?.optimizer?.state);
   element('send-goal').disabled = unavailable || ros.nav2 !== 'active' || !ros.pose ||
     ros.localization?.pose_trusted !== 'true' || rows.goal.state === 'running';
-  for (const form of [setup, tuning]) form.querySelector('[type="submit"]').disabled = busy || !config;
+  for (const form of [setup, tuning]) form.querySelector('[type="submit"]').disabled = busy || stopping || !config;
+  element('favorite-add').disabled = unavailable || !config;
+  for (const id of ['favorite-use', 'favorite-remove']) element(id).disabled = unavailable || !element('favorite-list').value;
+}
+
+element('match-preview').addEventListener('click', () => {
+  const terrain = status?.matching_map;
+  if (!terrain?.landmarks.match) return;
+  previewMatch = terrain.revision;
+  const image = element('match-map-image');
+  image.src = `/api/match-reference?revision=${encodeURIComponent(terrain.revision)}`;
+  image.hidden = false;
+  element('match-reference').textContent = `已选用人工参考（仅预览）：map (${terrain.landmarks.match.map(value => format(value)).join(', ')}) m，不改变定位。`;
+});
+element('match-map-image').addEventListener('error', () => {
+  element('match-map-image').hidden = true;
+  message('参考图不可用，请检查导出的 terrain.png 和栅格信息。', true);
+});
+
+const terrainTabs = ['paths-tab', 'favorite-tab'].map(element);
+for (const tab of terrainTabs) {
+  tab.addEventListener('click', () => {
+    for (const item of terrainTabs) {
+      const active = item === tab;
+      item.setAttribute('aria-selected', String(active));
+      item.tabIndex = active ? 0 : -1;
+      element(item.getAttribute('aria-controls')).hidden = !active;
+    }
+  });
+  tab.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? terrainTabs[0] : event.key === 'End' ? terrainTabs[1] : terrainTabs.find(item => item !== tab);
+    next.click(); next.focus();
+  });
+}
+
+function selectedFavorite() {
+  return config[setup.elements.profile.value].favorites[element('favorite-list').value];
+}
+element('favorite-use').addEventListener('click', () => {
+  const pair = selectedFavorite();
+  if (!pair) return;
+  setup.elements.prior_map.value = pair.prior_map;
+  setup.elements.terrain_dir.value = pair.terrain_dir;
+  updateSetupVisibility();
+  message('已填入常用地形；保存启动配置后生效。');
+});
+for (const [id, remove] of [['favorite-add', false], ['favorite-remove', true]]) {
+  element(id).addEventListener('click', async () => {
+    if (busy || stopping) return;
+    const profile = setup.elements.profile.value;
+    const pair = remove ? selectedFavorite() : {prior_map: setup.elements.prior_map.value, terrain_dir: setup.elements.terrain_dir.value};
+    if (!pair) return;
+    busy = true;
+    updateControls();
+    try {
+      const result = await api('favorite', {profile, remove, ...pair});
+      config = await api('config');
+      renderFavorites();
+      message(result.message);
+    } catch (error) { message(error.message, true); }
+    finally { busy = false; updateControls(); }
+  });
 }
 
 document.addEventListener('click', (event) => {
@@ -347,7 +441,6 @@ setup.addEventListener('submit', (event) => {
   const body = Object.fromEntries(new FormData(setup));
   body.gui = setup.elements.gui.checked;
   body.uwb = setup.elements.uwb.checked;
-  body.serial_goals = setup.elements.serial_goals.checked;
   operate('setup', body, true);
 });
 tuning.addEventListener('submit', (event) => {

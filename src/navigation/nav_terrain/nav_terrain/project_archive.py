@@ -15,7 +15,7 @@ def save_project(project, path):
     surface = project.surf
     meta = {'format': FORMAT, 'frame': project.frame, 'source': project.source, 'params': project.params.to_dict(),
             'resolution': surface.resolution, 'origin': list(surface.origin), 'reg': project.reg,
-            'ann': {str(key): value for key, value in project.ann.items()}}
+            'ann': {str(key): value for key, value in project.ann.items()}, 'landmarks': project.landmarks}
     tmp = path.with_name(path.name + '.tmp.npz')
     gradients = {'gx': surface.gx, 'gy': surface.gy} if surface.gx is not None else {}
     np.savez_compressed(tmp, z=surface.z, clearance=surface.clearance, seg=project.seg, owner=project.owner,
@@ -33,4 +33,9 @@ def load_project(project_type, path):
         project.owner = data['owner'].astype(np.int32)
     project.ann = {int(key): value for key, value in meta.get('ann', {}).items()}
     project.reg = meta.get('reg')
+    for name, point in meta.get('landmarks', {}).items():
+        if (project.frame != 'map' or name not in ('home', 'target', 'match') or not isinstance(point, list)
+                or len(point) != 2 or not all(type(value) in (int, float) and np.isfinite(value) for value in point)):
+            raise ValueError('工程标点无效')
+        project.landmarks[name] = tuple(point)
     return project

@@ -25,17 +25,17 @@ A4 | yaw:f32 | x:f32 | y:f32 | crc:u16
  0      1        5       9       13
 ```
 
-上行 yaw 是**从底盘 +X 到雷达 +X 的编码器实测角**，rad、逆时针为正，两轴同向为 0。x/y 是目标点，须与 A3 的当前坐标使用同一世界坐标系。旧版 11 字节 A4 不再兼容。
+上行 yaw 是**从底盘 +X 到雷达 +X 的编码器实测角**，rad、逆时针为正，两轴同向为 0。x/y 现在是地点选择值，不是地图坐标：两者均为零表示回家，任一非零表示选择标注目标点。帧长和 CRC 不变；旧版坐标语义和 11 字节 A4 均不兼容。
 
 | 默认话题 | ROS 类型 | 含义 |
 | --- | --- | --- |
 | `/chassis/big_yaw` | `std_msgs/msg/Float32` | 每个有效 A4 发布一次编码器角，rad |
 | `/chassis/big_yaw_online` | `std_msgs/msg/Bool` | 启动 false，有效 A4 后 true；超过 `feedback_timeout`（默认 0.1 s）无有效 A4 后 false；仅变化时发布，reliable + transient_local |
-| `/chassis/nav_target` | `geometry_msgs/msg/PointStamped` | 每个有效 A4 发布一次目标 x/y，z=0，frame_id 为 `world_frame`（默认 map）；时间戳为主机接收时间 |
+| `/chassis/nav_intent` | `std_msgs/msg/String` | 每个有效 A4 发布一次 `home` 或 `target`；仅供查看和录包 |
 
 角度和目标话题为 reliable + volatile、depth=20；失联不重复旧值、不补零。协议没有采样时间戳，未规定 A4 频率；接收端以 200 Hz 非阻塞轮询，支持半帧、粘包、噪声和坏帧后逐字节重新同步。跨静默超时的半帧丢弃，CRC 正确但含 NaN/Inf 的 A4 也会丢弃。其他类型的帧不刷新 A4 在线状态。
 
-串口节点只发布 `nav_target`。需要由串口触发导航时，可在真车定位或建图模式启用 `serial_goals:=true`，由导航层去重并提交 Nav2 Action；默认关闭。编码器角不会自动写入关节状态或 TF；CAD 关节轴向、安装零位的转换仍须按实物约定处理。历史 `big_yaw.py` 的 AA 55 解码器仅为旧台架保留，真车节点不使用它。
+新版串口节点不再发布 `/chassis/nav_target`，不能把选择值交给旧坐标目标发送器。WebUI 只读显示地点意图和同一先验地图的标点；没有标点时不回退到原始 x/y 或地图原点。编码器角不会自动写入关节状态或 TF。
 
 ## 启动和联调
 
@@ -48,13 +48,13 @@ ros2 launch bringup real.launch.py
 # 独立导航串口节点也默认 /dev/nav、115200；只能一个节点打开该端口：
 # ros2 launch chassis_comm chassis.launch.py
 ros2 topic echo /chassis/big_yaw
-ros2 topic echo /chassis/nav_target
+ros2 topic echo /chassis/nav_intent
 ros2 topic echo /chassis/big_yaw_online --qos-durability transient_local
 ```
 
 独立 launch 可用 `--show-args` 查看参数；整车参数统一加 `chassis_` 前缀，如 `chassis_yaw_topic:=/chassis/yaw_target`、`chassis_feedback_timeout:=0.1`。端口仍可覆盖，以支持 PTY 联调，但节点、独立 launch、整车入口的默认值均为 `/dev/nav`。`yaw_mode`、`yaw_horizon` 以及此前 A2 自瞄话题参数不属于当前导航节点。
 
-`tools/record_bag.py` 录制相对转角输入、过洞模式、A4 目标点、编码器角和在线状态。测试使用新版导航固定参考帧逐字节验证，ROS + Linux PTY 验证转角语义、输入超时、A4 接收、帧过滤、并发收发和串口错误，不访问硬件：
+`tools/record_bag.py` 录制相对转角输入、过洞模式、A4 地点意图、编码器角和在线状态。测试使用固定参考帧逐字节验证，ROS + Linux PTY 验证转角语义、输入超时、A4 接收、帧过滤、并发收发和串口错误，不访问硬件：
 
 ```bash
 colcon test --packages-select chassis_comm --event-handlers console_direct+

@@ -26,7 +26,7 @@ def link():
     args = ['--ros-args', '-r', f'/chassis/tx_velocity:={prefix}/tx_velocity']
     topics = {
         'cmd_vel_topic': '/velocity', 'action_topic': '/hole',
-        'target_topic': '/target', 'yaw_topic': '/turn',
+        'intent_topic': '/intent', 'yaw_topic': '/turn',
         'big_yaw_topic': '/angle', 'big_yaw_online_topic': '/online',
     }
     for name, value in {

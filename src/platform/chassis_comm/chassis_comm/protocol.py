@@ -50,6 +50,10 @@ class NavigationTarget:
     x: float
     y: float
 
+    @property
+    def intent(self):
+        return 'home' if self.x == 0 and self.y == 0 else 'target'
+
 
 # The navigation API keeps vx/vy/yaw first for callers; the wire puts the flag first.
 FORMATS = {

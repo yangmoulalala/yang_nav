@@ -30,7 +30,7 @@ TOPICS=SENSOR_TOPICS+'''
 /backend_node/odom_path /backend_node/optimized_path
 /backend_node/debug/aligned_source /backend_node/debug/target
 /cmd_vel /cmd_vel_nav /cmd_vel_smoothed /cmd_vel_collision_checked
-/chassis/yaw_target /chassis/pass_hole /chassis/nav_target
+/chassis/yaw_target /chassis/pass_hole /chassis/nav_intent
 /chassis/big_yaw /chassis/big_yaw_online
 /uwb_pose /diagnostics /parameter_events /rosout /localization_start
 /initialpose /goal_pose /plan /plan_smoothed /local_plan /transformed_global_plan

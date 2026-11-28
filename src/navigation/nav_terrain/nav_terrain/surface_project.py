@@ -51,6 +51,7 @@ class Project:
         self.grad = None
         self.stats = {}
         self.ann = {}
+        self.landmarks = {}
         self.reg = None
         self.history = ProjectHistory()
 
@@ -70,6 +71,22 @@ class Project:
     @property
     def shape(self):
         return self.surf.z.shape
+
+    def set_landmark(self, name, cell):
+        if self.frame != 'map' or name not in ('home', 'target', 'match'):
+            raise ValueError('定位标点只支持建图工程中的家、目标和匹配参考点')
+        if cell is not None:
+            if not isinstance(cell, (list, tuple)) or len(cell) != 2 or any(type(index) is not int for index in cell):
+                raise ValueError('请选择地图上的格子')
+            col, row = cell
+            if not (0 <= col < self.shape[1] and 0 <= row < self.shape[0] and np.isfinite(self.surf.z[row, col])):
+                raise ValueError('标点必须位于地图已观测范围内')
+        self.begin()
+        if cell is None:
+            self.landmarks.pop(name, None)
+        else:
+            self.landmarks[name] = tuple(map(float, self.surf.centre(col, row)))
+        self.commit()
 
     # ------------------------------------------------------------------ segmentation
     def segment(self, params=None, log=print):
@@ -453,6 +470,8 @@ class Project:
         m = TerrainMap(terrain, direction, self.surf.resolution, tuple(self.surf.origin),
                        elevation=self.surf.z.astype(np.float32), clearance=self.surf.clearance.astype(np.float32))
         m.extra['frame'] = self.frame
+        if self.landmarks:
+            m.extra['landmarks'] = self.landmarks.copy()
         m.extra['source'] = 'surface_studio %s' % self.source
         if self.reg is not None:
             m.extra['registration'] = dict(self.reg)

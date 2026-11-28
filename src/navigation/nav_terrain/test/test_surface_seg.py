@@ -1,4 +1,5 @@
 import math
+import json
 import struct
 
 import numpy as np
@@ -76,6 +77,34 @@ def test_patches_carry_geometry_only():
     assert abs(p.info(tun)['clearance'] - 0.30) < 1e-6 and p.info(floor)['clearance'] == math.inf
     assert any(n == top and abs(dz - 0.2) < 0.03 for n, _, dz in p.neighbours(floor))
     assert not p.ann                                            # nothing guessed
+
+
+def test_map_landmarks_archive_export_and_history(tmp_path):
+    project = proj()
+    with pytest.raises(ValueError):
+        project.set_landmark('home', [0, 0])
+    project.frame = 'map'
+    col, row = project.surf.cell_of(1.5, 1.)
+    for name, offset in [('home', 0), ('target', 1), ('match', 2)]:
+        project.set_landmark(name, [col + offset, row])
+        assert project.landmarks[name] == project.surf.centre(col + offset, row)
+    expected = project.landmarks.copy()
+    project.set_landmark('target', None)
+    assert 'target' not in project.landmarks
+    assert project.undo() and project.landmarks == expected
+    assert project.redo() and 'target' not in project.landmarks
+    project.undo()
+    with pytest.raises(ValueError):
+        project.set_landmark('home', [-1, row])
+    archive = tmp_path / 'test.surf.npz'
+    project.save(archive)
+    loaded = sp.Project.load(archive)
+    assert loaded.landmarks == expected
+    output = tmp_path / 'terrain'
+    loaded.export(output)
+    points = {name: list(point) for name, point in expected.items()}
+    assert json.loads((output / 'terrain.json').read_text())['landmarks'] == points
+    assert TerrainMap.load(output / 'terrain.msgpack').extra['landmarks'] == points
 
 
 def test_annotate_extent_undo_resegment_save(tmp_path):

@@ -259,7 +259,7 @@ def generate_launch_description():
                               description='require trusted or odometry-extrapolated localization'),
         DeclareLaunchArgument('rviz', default_value='false'),
         DeclareLaunchArgument('serial_goals', default_value='false', choices=['true', 'false'],
-                              description='forward live A4 goals in the real profile'),
+                              description='legacy PointStamped input only, not A4 home/target intents'),
         DeclareLaunchArgument('serial_target_topic', default_value='/chassis/nav_target',
                               description='PointStamped target input when serial_goals is enabled'),
         DeclareLaunchArgument('goal_x', default_value='', description='optional startup goal x in map, metres; set with goal_y'),

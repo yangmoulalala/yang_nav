@@ -146,6 +146,29 @@ def render_preview(project, overlay=None):
     return image.tobytes()
 
 
+def render_match_reference(folder, grid, position):
+    resolution, origin, size = grid
+    if (type(resolution) not in (int, float) or not np.isfinite(resolution) or resolution <= 0 or
+            not isinstance(origin, list) or len(origin) != 2 or
+            not all(type(value) in (int, float) and np.isfinite(value) for value in origin)):
+        raise ValueError('地形缺少有效的地图栅格坐标')
+    image = cv2.imread(str(folder / 'terrain.png'))
+    if image is None or size != [image.shape[1], image.shape[0]]:
+        raise ValueError('缺少或不匹配的地形预览图，请重新导出')
+    col, row = np.floor((np.asarray(position) - origin) / resolution)
+    if not (0 <= col < size[0] and 0 <= row < size[1]):
+        raise ValueError('匹配参考点在地图范围外')
+    center = (int(col), size[1] - 1 - int(row))
+    radius = max(4, min(size) // 45)
+    for color, thickness in [((25, 25, 25), 4), ((255, 255, 255), 2)]:
+        cv2.circle(image, center, radius, color, thickness)
+        cv2.drawMarker(image, center, color, cv2.MARKER_CROSS, radius * 3, thickness)
+    ok, png = cv2.imencode('.png', image)
+    if not ok:
+        raise ValueError('无法生成匹配参考图')
+    return png.tobytes()
+
+
 def preview_archive(value, prior=None):
     source = workspace_path(value, '标注工程路径')
     if not source.name.lower().endswith('.surf.npz') or not source.is_file():
@@ -225,6 +248,7 @@ class TerrainEditor:
                                     frame=project.frame, width=project.shape[1], height=project.shape[0],
                                     resolution=project.surf.resolution, origin=project.surf.origin,
                                     patches=patches, params=project.params.to_dict(), registration=project.reg,
+                                    landmarks=project.landmarks.copy(),
                                     reference=self.reference_path, can_adopt=self.aligned(document),
                                     reference_annotated=len(self.reference.project.ann) if self.reference else 0,
                                     registration_seed=self.default_seed(document))
@@ -393,7 +417,11 @@ class TerrainEditor:
         ids = list(dict.fromkeys(pid for pid in selected if pid in present))
         if operation in ('annotate', 'flip', 'auto_direction', 'merge', 'grow', 'shrink', 'reset', 'connected') and not ids:
             raise ValueError('请先选中面片')
-        if operation == 'annotate':
+        if operation == 'landmark':
+            if 'cell' not in body:
+                raise ValueError('需要标点格子或明确清除标点')
+            project.set_landmark(body.get('name'), body['cell'])
+        elif operation == 'annotate':
             changes = {}
             if 'type' in body:
                 label = body['type']

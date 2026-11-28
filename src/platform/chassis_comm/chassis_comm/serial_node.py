@@ -3,7 +3,7 @@
 import math
 import time
 
-from geometry_msgs.msg import PointStamped, Twist, TwistStamped
+from geometry_msgs.msg import Twist, TwistStamped
 import rclpy
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
@@ -12,7 +12,7 @@ from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from rclpy.utilities import try_shutdown
 import serial
-from std_msgs.msg import Bool, Float32
+from std_msgs.msg import Bool, Float32, String
 from tf2_ros import Buffer, TransformException, TransformListener
 
 from .navigation_state import NavigationState
@@ -55,8 +55,8 @@ class ChassisSerial(Node):
         self._feedback_online = None
         self._tf_buffer = Buffer()
         self._tf_listener = TransformListener(self._tf_buffer, self)
-        self._target_pub = self.create_publisher(
-            PointStamped, self.declare_parameter('target_topic', '/chassis/nav_target').value, 20)
+        self._intent_pub = self.create_publisher(
+            String, self.declare_parameter('intent_topic', '/chassis/nav_intent').value, 20)
         self._tx_velocity_pub = self.create_publisher(
             TwistStamped, '/chassis/tx_velocity',
             QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT))
@@ -113,11 +113,7 @@ class ChassisSerial(Node):
                 self._last_feedback_stamp = stamp
                 self._set_feedback_online(True)
                 self._big_yaw_pub.publish(Float32(data=message.yaw))
-                target = PointStamped()
-                target.header.stamp = self.get_clock().now().to_msg()
-                target.header.frame_id = self._world_frame
-                target.point.x, target.point.y = message.x, message.y
-                self._target_pub.publish(target)
+                self._intent_pub.publish(String(data=message.intent))
         online = (self._last_feedback_stamp is not None
                   and stamp - self._last_feedback_stamp <= self._feedback_timeout)
         self._set_feedback_online(online)

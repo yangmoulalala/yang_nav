@@ -303,6 +303,7 @@ def export(m, out, cfg, *, source, metadata=None):
         'nav_map_mode': 'raw',
         # map -> field registration from surface_studio (tools/nav_regress/goal.py converts world goals with it)
         'registration': m.extra.get('registration'),
+        'frame': m.extra.get('frame'), 'landmarks': m.extra.get('landmarks', {}),
     }
     meta.update(metadata or {})
     (out / 'terrain.json').write_text(json.dumps(meta, indent=2))

@@ -4,6 +4,7 @@ from pathlib import Path
 import signal
 import subprocess
 import time
+from threading import Event
 from contextlib import suppress
 
 from ament_index_python.packages import PackageNotFoundError, get_package_prefix
@@ -84,6 +85,11 @@ class Processes:
         self.ros = ros
         self.directory = directory
         self.entries = {}
+        self.cancel_start = Event()
+
+    def check_start(self, delay=0):
+        if self.cancel_start.wait(delay):
+            raise ValueError('启动已终止，不再等待匹配或启动后续进程')
 
     def alive(self, name):
         process = self.entries.get(name)
@@ -109,6 +115,7 @@ class Processes:
         return data
 
     def launch(self, name, command, parameters=None, output=None, environment=None):
+        self.check_start()
         self.entries[name] = ManagedProcess(command, self.directory / f'{name}.log', parameters,
                                             output, environment)
 
@@ -172,8 +179,6 @@ class Processes:
             self.wait_for_localization()
             command = ['ros2', 'launch', 'nav_bringup', 'navigation.launch.py',
                        f'profile:={profile}', f'mode:={mode}']
-            if not simulation and config['serial_goals']:
-                command.append('serial_goals:=true')
             output = None
             if mode == 'localization':
                 prior = loc.output if managed_loc else config['prior_map']
@@ -232,6 +237,7 @@ class Processes:
     def wait_for_localization(self):
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline:
+            self.check_start()
             state = self.ros.snapshot()
             localization = state.get('localization', {})
             extrapolated = (localization.get('status') == 'SUSPECT' and
@@ -241,7 +247,7 @@ class Processes:
             process = self.entries.get('localization')
             if process and process.status() == 'failed':
                 raise ValueError('定位进程已退出，请查看定位日志')
-            time.sleep(0.25)
+            self.check_start(0.25)
         raise ValueError('定位尚未提供可用位姿，Nav2 尚未启动。请查看定位日志。')
 
     def send_goal(self, payload):
@@ -295,16 +301,18 @@ class Processes:
         launched = []
         try:
             for name in targets:
+                self.check_start()
                 if self.alive(name) or self.ros.node_names().intersection(OWNERS[name]):
                     continue
                 self.start(name, {})
                 launched.append(name)
-                time.sleep(0.25)
+                self.check_start(0.25)
                 if not self.alive(name):
                     raise ValueError(f'{LABELS[name]} 退出，请查看进程日志')
         except Exception:
-            for name in reversed(launched):
-                self.stop(name)
+            if not self.cancel_start.is_set():
+                for name in reversed(launched):
+                    self.stop(name)
             raise
         if (not self.alive('navigation') and
                 not self.ros.node_names().intersection(OWNERS['navigation'])):
@@ -317,7 +325,7 @@ class Processes:
                 self.entries['bag'].child.wait(timeout=180)
             except subprocess.TimeoutExpired as exc:
                 raise ValueError('录包仍在收尾，请查看日志，导航和定位保持运行') from exc
-        for name in ('goal', 'navigation', 'localization', 'gazebo'):
+        for name in ('goal', 'navigation', 'localization', 'gazebo', 'optimizer'):
             self.stop(name)
 
     def restart(self, name, payload):
@@ -338,7 +346,7 @@ class Processes:
         for target in targets:
             deadline = time.monotonic() + 5
             while self.ros.node_names().intersection(OWNERS.get(target, ())) and time.monotonic() < deadline:
-                time.sleep(0.15)
+                self.check_start(0.15)
             self.start(target, payload)
 
     def log(self, name):

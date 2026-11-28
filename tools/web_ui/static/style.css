@@ -40,6 +40,8 @@ h3 { font-size: 15px; }
 .log-picker { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
 .log-picker select { width: auto; margin: 0; }
 .actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 7px; }
+#match-map-image { display: block; width: 100%; max-height: 32vh; object-fit: contain; }
+.metric button { white-space: normal; }
 button, input, select { font: inherit; color: var(--text); border: 1px solid var(--edge); border-radius: 7px; }
 button { padding: 7px 12px; background: #252d36; cursor: pointer; white-space: nowrap; }
 button:hover:enabled { background: #343f4c; }
@@ -98,7 +100,7 @@ details .form-grid, details form, details > .pair { margin-top: 8px; }
 summary { cursor: pointer; color: var(--muted); }
 .terrain-documents { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
 .terrain-documents button { display: grid; gap: 4px; min-width: 0; text-align: left; padding: 10px 12px; }
-.terrain-documents button[aria-pressed="true"] { border-color: var(--teal); color: var(--teal); }
+.terrain-documents button[aria-pressed="true"], .terrain-documents button[aria-selected="true"] { border-color: var(--teal); color: var(--teal); }
 .terrain-documents small { overflow: hidden; text-overflow: ellipsis; }
 .terrain-open { margin-bottom: 12px; }
 #terrain-discard-hint { margin-bottom: 8px; }

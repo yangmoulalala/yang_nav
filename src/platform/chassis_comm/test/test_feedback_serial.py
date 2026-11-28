@@ -4,10 +4,9 @@ import os
 import time
 
 import pytest
-from geometry_msgs.msg import PointStamped
 from rclpy.qos import DurabilityPolicy, QoSProfile
 import serial
-from std_msgs.msg import Bool, Float32
+from std_msgs.msg import Bool, Float32, String
 
 from chassis_comm.protocol import Command, NavigationTarget, encode_frame
 
@@ -18,11 +17,12 @@ A4 = bytes.fromhex('A4 DB 0F 49 3F 00 00 C0 3F 00 00 20 C0 41 20')
 
 def test_navigation_feedback_over_pseudoterminal(link, monkeypatch):
     angles = link.subscribe(Float32, '/angle')
-    targets = link.subscribe(PointStamped, '/target')
+    targets = link.subscribe(String, '/intent')
     states = link.subscribe(Bool, '/online', QoSProfile(
         depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
     link.wait(lambda: bool(states))
     assert [msg.data for msg in states] == [False]
+    link.wait(lambda: link.node._serial.is_open)
     os.write(link.master, b'noise\xaa\x55' + A4[:7])
     link.run(.01)
     assert not angles and not targets
@@ -30,9 +30,7 @@ def test_navigation_feedback_over_pseudoterminal(link, monkeypatch):
     os.write(link.master, A4[7:] + A2 + encode_frame(Command(1, 0, 0)) + A4)
     link.wait(lambda: len(angles) == len(targets) == 2)
     assert [msg.data for msg in angles] == pytest.approx([.7853981634] * 2)
-    assert targets[0].header.frame_id == link.world
-    assert (targets[0].point.x, targets[0].point.y) == (1.5, -2.5)
-    assert targets[0].header.stamp.sec > 0
+    assert [message.data for message in targets] == ['target', 'target']
     assert states[-1].data is True
 
     # Bad CRC and unrelated A2 traffic cannot refresh A4 online state.
@@ -56,7 +54,7 @@ def test_navigation_feedback_over_pseudoterminal(link, monkeypatch):
         link.run(.001, velocity=True, pose=True)
     link.wait(lambda: len(angles) == len(targets) == begin_rx + 200)
     assert [q.data for q in angles[begin_rx:]] == pytest.approx([i / 256. for i in range(200)])
-    assert [p.point.x for p in targets[begin_rx:]] == list(range(200))
+    assert [message.data for message in targets[begin_rx:]] == ['target'] * 200
     assert len(link.commands) - begin_tx >= 50
     assert all(c.yaw == 0 for c in link.commands)  # Encoder yaw is never a turn request.
     assert states[-1].data is True
@@ -75,6 +73,15 @@ def test_navigation_feedback_over_pseudoterminal(link, monkeypatch):
         raise serial.SerialException('injected read failure')
 
     monkeypatch.setattr(link.node._serial, 'read', failed_read)
-    with pytest.raises(RuntimeError, match='chassis serial read failed'):
-        link.node._receive()
-    assert link.node._failed and not link.node._serial.is_open
+    link.node._receive()
+    assert not link.node._serial.is_open
+
+
+def test_destination_intent_does_not_publish_a_coordinate_goal(link):
+    intents = link.subscribe(String, '/intent')
+    link.wait(lambda: link.node._serial.is_open)
+    for x_value, y_value in [(0., -0.), (0., -1e-7), (1., 0.), (4., 7.), (0., 0.)]:
+        os.write(link.master, encode_frame(NavigationTarget(2., x_value, y_value)))
+    link.wait(lambda: len(intents) == 5)
+    assert [message.data for message in intents] == ['home', 'target', 'target', 'target', 'home']
+    assert link.peer.count_publishers('/chassis/nav_target') == 0

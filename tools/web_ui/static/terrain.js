@@ -4,6 +4,7 @@
   const canvas = element('terrain-canvas');
   const context = canvas.getContext('2d');
   const tool = element('surface-tool');
+  const landmarks = {home: ['家', '#73efbb'], target: ['目标', '#ffad65'], match: ['匹配参考', '#a7c8ff']};
   const documentButtons = [...element('terrain-documents').querySelectorAll('[data-frame]')];
   const referenceInput = element('terrain-reference-source');
   const registerForm = element('terrain-register');
@@ -59,6 +60,9 @@
     for (const button of element('terrain').querySelectorAll('form button')) button.disabled = busy;
     for (const button of documentButtons) button.disabled = busy;
     const selected = selection.size;
+    const mapPoint = project()?.frame === 'map' && Object.hasOwn(landmarks, tool.value);
+    element('landmark-remove').hidden = !mapPoint;
+    element('landmark-remove').disabled = busy || !project()?.landmarks?.[tool.value];
     element('patch-type').disabled = element('patch-passable').disabled = busy || !selected;
     element('patch-direction').querySelector('button').disabled = busy || !selected;
     const referenceChanged = referenceInput.value && referenceInput.value !== project()?.reference;
@@ -111,6 +115,18 @@
     const dimensions = [view.x, view.y, image.width * view.scale, image.height * view.scale];
     context.drawImage(image, ...dimensions);
     if (selection.size) context.drawImage(selectionLayer, ...dimensions);
+    const map = project();
+    for (const [name, [x, y]] of Object.entries(map?.landmarks || {})) {
+      const [label, color] = landmarks[name];
+      const left = view.x + (x - map.origin[0]) / map.resolution * view.scale;
+      const top = view.y + (map.height - (y - map.origin[1]) / map.resolution) * view.scale;
+      context.save();
+      context.beginPath(); context.arc(left, top, 5, 0, 2 * Math.PI);
+      context.fillStyle = color; context.fill();
+      context.lineWidth = 3; context.strokeStyle = '#162026'; context.stroke();
+      context.font = 'bold 13px sans-serif'; context.strokeText(label, left + 9, top - 4);
+      context.fillText(label, left + 9, top - 4); context.restore();
+    }
     if (details?.arrows) {
       const map = project();
       for (const [x, y, angle] of details.arrows) {
@@ -134,7 +150,7 @@
         context.restore();
       }
     }
-    if (!gesture || gesture.kind === 'pan' || gesture.kind === 'select') return;
+    if (!gesture || gesture.kind === 'pan' || gesture.kind === 'select' || Object.hasOwn(landmarks, gesture.kind)) return;
     const {points, kind} = gesture;
     const [first, last] = [points[0], points.at(-1)];
     const point = ([col, row]) => [view.x + (col + 0.5) * view.scale,
@@ -274,6 +290,16 @@
     workspace.hidden = false;
     const map = project();
     const marked = map.patches.filter((row) => row.type >= 0).length;
+    element('landmark-tools').disabled = map.frame !== 'map';
+    if (map.frame !== 'map' && Object.hasOwn(landmarks, tool.value)) {
+      tool.value = 'select'; tool.dispatchEvent(new Event('change'));
+    }
+    const summary = element('landmark-summary');
+    summary.hidden = map.frame !== 'map';
+    summary.textContent = Object.entries(landmarks).map(([name, [label]]) => {
+      const point = map.landmarks[name];
+      return `${label}：${point ? `(${point.map(value => value.toFixed(2)).join(', ')}) m` : '未放置'}`;
+    }).join(' · ');
     statusLine.textContent = `${map.frame === 'map' ? '地图坐标' : '场地坐标'} · ${map.resolution.toFixed(3)} m/格 · ` +
       `${marked}/${map.patches.length} 个面片已标注${map.dirty ? ' · 有未保存修改' : ''}`;
     if (recenter || fresh) {
@@ -384,7 +410,7 @@
       view.x += cursor[0] - gesture.cursor[0];
       view.y += cursor[1] - gesture.cursor[1];
       gesture.cursor = cursor;
-    } else if (gesture.kind !== 'select') {
+    } else if (gesture.kind !== 'select' && !Object.hasOwn(landmarks, gesture.kind)) {
       const point = cellAt(...cursor, true);
       if (['box', 'rectangle', 'line'].includes(gesture.kind)) gesture.points[1] = point;
       else if (gesture.points.length < 499 && point.some((value, axis) => value !== gesture.points.at(-1)[axis])) gesture.points.push(point);
@@ -397,6 +423,11 @@
     gesture = undefined;
     draw();
     if (kind === 'pan') return;
+    if (Object.hasOwn(landmarks, kind)) {
+      const cell = cellAt(...pointer(event));
+      if (cell) run('landmark', {name: kind, cell});
+      return;
+    }
     const end = cellAt(...pointer(event), true);
     if (kind === 'select') return pick([ownerAt(end)], toggle);
     if (kind === 'box') {
@@ -426,7 +457,9 @@
     for (const id of ['region-mode-field', 'clip-field']) element(id).hidden = !['brush', 'rectangle', 'polygon'].includes(tool.value);
     element('brush-radius-field').hidden = tool.value !== 'brush';
     canvas.dataset.tool = tool.value;
+    controls();
   });
+  element('landmark-remove').addEventListener('click', () => run('landmark', {name: tool.value, cell: null}));
   element('patch-list').addEventListener('click', (event) => {
     const item = event.target.closest('[data-patch]');
     if (item && !busy) pick([Number(item.dataset.patch)], event.ctrlKey || event.metaKey);
