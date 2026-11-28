@@ -249,6 +249,8 @@ def build(context):
                             arguments=['-d', str(rviz)] if rviz.is_file() else [],
                             parameters=[common]))
     if intents_bridge:
+        controller = document.get('controller_server', {}).get('ros__parameters', {})
+        xy_goal_tolerance = float(controller.get('goal_checker', {}).get('xy_goal_tolerance', 0.15))
         actions.append(Node(
             package='nav_bringup', executable='send_goal.py', name='serial_intent_goal',
             output='screen',
@@ -257,6 +259,7 @@ def build(context):
                              intent_topic=_get(context, 'serial_intent_topic'),
                              enabled_topic=_get(context, 'serial_intents_topic'),
                              enabled=serial_intents == 'true',
+                             xy_goal_tolerance=xy_goal_tolerance,
                              landmarks_file=landmarks_file)]))
     elif serial_goals:
         actions.append(Node(

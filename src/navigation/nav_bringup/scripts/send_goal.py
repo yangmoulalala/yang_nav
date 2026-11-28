@@ -24,7 +24,7 @@ from rclpy.signals import SignalHandlerOptions
 from rclpy.time import Time
 from rclpy.utilities import remove_ros_args
 from std_msgs.msg import Bool, Header, String
-from tf2_ros import Buffer, TransformListener
+from tf2_ros import Buffer, TransformException, TransformListener
 
 
 class GoalSender(Node):
@@ -262,13 +262,16 @@ def load_landmarks(path):
 
 
 class IntentGoalSender(GoalSender):
-    """Map a repeated A4 place intent (home/target) to that place's map landmark, once."""
+    """Navigate to the selected A4 landmark and return if pushed out after success."""
 
     def __init__(self, landmarks_file=''):
         super().__init__()
         self.intent_topic = self.declare_parameter('intent_topic', '/chassis/nav_intent').value
         self.landmarks_file = self.declare_parameter('landmarks_file', landmarks_file or '').value
         self.intent_timeout = self.declare_parameter('intent_timeout', 0.5).value
+        self.xy_goal_tolerance = self.declare_parameter('xy_goal_tolerance', 0.15).value
+        if not math.isfinite(self.xy_goal_tolerance) or self.xy_goal_tolerance <= 0:
+            raise ValueError('xy_goal_tolerance must be positive and finite')
         try:
             self.landmarks = load_landmarks(self.landmarks_file)
         except (OSError, ValueError, TypeError) as exc:
@@ -282,6 +285,7 @@ class IntentGoalSender(GoalSender):
         self.pending_intent = None
         self.pending_since = 0.0
         self.last_submitted_intent = None
+        self.last_intent_succeeded = False
         self.missing_intent = None
         self.sub = self.create_subscription(String, self.intent_topic, self.on_intent, 10)
         # The WebUI owns the runtime switch; retained so a late bridge still sees the operator's choice.
@@ -310,9 +314,22 @@ class IntentGoalSender(GoalSender):
         self.pending_intent = None
         # Re-arm so the intent held by the chassis still becomes a goal after an operator toggle.
         self.last_submitted_intent = None
+        self.last_intent_succeeded = False
         if not enabled and self.goal_handle is not None and self.goal_handle.accepted:
             self.goal_handle.cancel_goal_async()
         self.get_logger().info(f'Serial intent goals {"enabled" if enabled else "disabled"} by {self.enabled_topic}')
+
+    def outside_goal_tolerance(self, x, y):
+        try:
+            transform = self.tf_buffer.lookup_transform('map', self.base_frame, Time())
+        except TransformException:
+            return False
+        age = self.get_clock().now() - Time.from_msg(transform.header.stamp)
+        if not 0 <= age.nanoseconds <= 500_000_000:
+            return False
+        position = transform.transform.translation
+        distance = math.hypot(position.x - x, position.y - y)
+        return math.isfinite(distance) and distance > self.xy_goal_tolerance
 
     def forward_intent(self):
         if not self.enabled:
@@ -324,8 +341,8 @@ class IntentGoalSender(GoalSender):
         if now - self.pending_since > self.intent_timeout:
             self.pending_intent = None  # Stale intent is not a goal request.
             return
-        if name == self.last_submitted_intent:
-            # The chassis streams the same intent at A4 rate; never replan it.
+        same_intent = name == self.last_submitted_intent
+        if same_intent and not self.last_intent_succeeded:
             self.pending_intent = None
             return
         if name not in ('home', 'target') or name not in self.landmarks:
@@ -341,10 +358,13 @@ class IntentGoalSender(GoalSender):
         if self.wait_reason(now) is not None:
             return
         x, y = self.landmarks[name]
+        if same_intent and not self.outside_goal_tolerance(x, y):
+            return
         goal = self.make_goal(x, y, yaw=0.0)
         self.pending_intent = None
         self.missing_intent = None
         self.last_submitted_intent = name
+        self.last_intent_succeeded = False
         self.get_logger().info(f'Sending intent goal {name!r}: map x={x:g}m, y={y:g}m')
         self.send_future = self.action.send_goal_async(goal)
         generation = self.switch_generation
@@ -367,13 +387,16 @@ class IntentGoalSender(GoalSender):
         self.goal_handle = handle
         self.goal_display.publish(pose)
         self.get_logger().info(f'Intent goal {name!r} accepted')
-        handle.get_result_async().add_done_callback(lambda result: self.on_result(result, handle))
+        handle.get_result_async().add_done_callback(lambda result: self.on_result(result, handle, name, generation))
 
-    def on_result(self, future, handle):
+    def on_result(self, future, handle, name, generation):
+        result = future.result()
+        succeeded = result.status == GoalStatus.STATUS_SUCCEEDED
         if handle is self.goal_handle:
             self.goal_handle = None
-        result = future.result()
-        if result.status == GoalStatus.STATUS_SUCCEEDED:
+            if generation == self.switch_generation and name == self.last_submitted_intent:
+                self.last_intent_succeeded = succeeded
+        if succeeded:
             self.get_logger().info('Intent goal succeeded')
         else:
             self.get_logger().info(

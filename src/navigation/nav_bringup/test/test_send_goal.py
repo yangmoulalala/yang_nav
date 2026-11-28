@@ -49,6 +49,7 @@ class FakeNav(Node):
         self.publish_static_map = True
         self.publish_observation = False
         self.base_frame = 'gimbal_nav'
+        self.position = (0.0, 0.0)
         self.reject = False
         self.abort = False
         self.hold = False
@@ -106,6 +107,7 @@ class FakeNav(Node):
             transform.header.frame_id = 'map'
             transform.child_frame_id = self.base_frame
             transform.header.stamp = self.get_clock().now().to_msg()
+            transform.transform.translation.x, transform.transform.translation.y = self.position
             transform.transform.rotation.w = 1.0
             self.tf.sendTransform(transform)
 
@@ -258,28 +260,85 @@ def landmark_file(tmp_path, landmarks=None, frame='map'):
     return path
 
 
+def stream_intent(node, name, count=12):
+    for _ in range(count):
+        node.intent.publish(String(data=name))
+        time.sleep(0.05)
+
+
 def test_intent_goals_use_map_landmarks_and_submit_each_change_once(nav, tmp_path):
     node, client = nav
     node.active = node.trusted = node.publish_tf = True
+    node.position = (-2.225, 0.675)
     client(intents=landmark_file(tmp_path))
     wait_until(lambda: node.intent.get_subscription_count() == 1)
 
-    def stream(name, count=12):
-        for _ in range(count):
-            node.intent.publish(String(data=name))
-            time.sleep(0.05)
-
-    stream('target')
+    stream_intent(node, 'target')
     wait_until(lambda: len(node.display_goals) == 1)
-    stream('target', count=20)  # A4 streams at 200 Hz; the same intent must not replan.
-    time.sleep(0.4)
+    stream_intent(node, 'target')
     assert len(node.goals) == 1
-    stream('home')
+    stream_intent(node, 'home')
     wait_until(lambda: len(node.display_goals) == 2)
     assert [(goal.pose.pose.position.x, goal.pose.pose.position.y) for goal in node.goals] == [
         (-2.225, 0.675), (-2.325, 0.725)]
     assert all(goal.pose.header.frame_id == 'map' for goal in node.goals)
     assert not node.interactive_goals
+
+
+def test_intent_returns_after_displacement_with_fresh_intent_and_trusted_pose(nav, tmp_path):
+    node, client = nav
+    node.active = node.trusted = node.publish_tf = node.hold = True
+    coordinates = (1.0, 1.0)
+    client('--ros-args', '-p', 'xy_goal_tolerance:=0.25',
+           intents=landmark_file(tmp_path, {'target': list(coordinates)}))
+    wait_until(lambda: node.intent.get_subscription_count() == 1)
+
+    stream_intent(node, 'target')
+    wait_until(lambda: len(node.display_goals) == 1)
+    stream_intent(node, 'target')
+    assert len(node.goals) == 1
+
+    node.position = coordinates
+    time.sleep(0.15)
+    node.hold = False
+    node.position = (1.2, 1.0)
+    stream_intent(node, 'target')
+    assert len(node.goals) == 1
+
+    time.sleep(0.65)
+    node.position = (1.2, 1.2)
+    time.sleep(0.3)
+    assert len(node.goals) == 1
+
+    node.trusted = False
+    time.sleep(0.2)
+    stream_intent(node, 'target')
+    assert len(node.goals) == 1
+
+    node.publish_tf = False
+    time.sleep(0.65)
+    node.trusted = True
+    stream_intent(node, 'target')
+    assert len(node.goals) == 1
+
+    node.hold = node.publish_tf = True
+    stream_intent(node, 'target')
+    wait_until(lambda: len(node.display_goals) == 2)
+    stream_intent(node, 'target')
+    assert len(node.goals) == 2
+    assert node.goals[1].pose.pose == node.goals[0].pose.pose
+
+    node.position = coordinates
+    time.sleep(0.15)
+    node.hold = False
+    stream_intent(node, 'target')
+    assert len(node.goals) == 2
+
+    node.hold = True
+    node.position = (1.2, 1.2)
+    stream_intent(node, 'target')
+    wait_until(lambda: len(node.display_goals) == 3)
+    assert node.goals[2].pose.pose == node.goals[0].pose.pose
 
 
 def test_intent_goals_never_fall_back_to_raw_coordinates(nav, tmp_path):
@@ -346,24 +405,25 @@ def test_intent_goals_need_a_readable_landmark_file(nav, tmp_path):
 def test_webui_switch_gates_intent_goals(nav, tmp_path):
     node, client = nav
     node.active = node.trusted = node.publish_tf = True
+    node.position = (-2.225, 0.675)
     node.intent_enabled.publish(Bool(data=False))
     client(intents=landmark_file(tmp_path))
     wait_until(lambda: node.intent.get_subscription_count() == 1)
     time.sleep(0.4)
 
-    def stream(name, count=10):
-        for _ in range(count):
-            node.intent.publish(String(data=name))
-            time.sleep(0.05)
-
-    stream('target')
+    stream_intent(node, 'target')
     time.sleep(0.4)
     assert not node.goals
     node.intent_enabled.publish(Bool(data=True))
     time.sleep(0.2)
-    stream('target')
+    stream_intent(node, 'target')
     wait_until(lambda: len(node.display_goals) == 1)
     assert (node.goals[0].pose.pose.position.x, node.goals[0].pose.pose.position.y) == (-2.225, 0.675)
+    node.intent_enabled.publish(Bool(data=False))
+    time.sleep(0.2)
+    node.position = (0.0, 0.0)
+    stream_intent(node, 'target')
+    assert len(node.goals) == 1
 
 
 def test_goal_sender_accepts_an_explicit_reference_override(nav):
@@ -519,11 +579,15 @@ def test_localization_launch_resolves_platform_params(tmp_path, profile, custom,
     launch = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(launch)
     context = LaunchContext()
-    base_params = PACKAGE / 'params' / 'nav2.yaml'
+    custom_params = tmp_path / 'custom.yaml'
+    if custom:
+        document = yaml.safe_load((PACKAGE / 'params' / 'nav2.yaml').read_text())
+        document['controller_server']['ros__parameters']['goal_checker']['xy_goal_tolerance'] = 0.27
+        custom_params.write_text(yaml.safe_dump(document))
     context.launch_configurations.update(
         profile=profile, mode='localization', terrain_dir=str(PACKAGE),
-        params_file=str(base_params) if custom else '', goal_x='', goal_y='', use_sim_time='',
-        require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false', serial_goals='false',
+        params_file=str(custom_params) if custom else '', goal_x='', goal_y='', use_sim_time='',
+        require_trusted='true', cmd_vel_topic='/cmd_vel', rviz='false', auto_bag='false', serial_goals='false',
         serial_intents='false', serial_intents_topic='/navigation/serial_intents_enabled',
                                          serial_intent_topic='/chassis/nav_intent', landmarks_file='')
     make_temp_file = launch.NamedTemporaryFile
@@ -536,6 +600,10 @@ def test_localization_launch_resolves_platform_params(tmp_path, profile, custom,
         source = Path(gate.kwargs['parameters'][0])
         params = yaml.safe_load(source.read_text())
         assert params['cmd_gate']['ros__parameters']['limits']['normal']['max_linear'] == limit
+        if profile == 'real':
+            bridge = next(call for call in launch_node.call_args_list
+                          if call.kwargs.get('name') == 'serial_intent_goal')
+            assert bridge.kwargs['parameters'][0]['xy_goal_tolerance'] == (0.27 if custom else 0.15)
 
 
 def test_mapping_uses_live_costmaps_without_terrain_servers():
